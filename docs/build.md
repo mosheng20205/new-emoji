@@ -30,4 +30,4 @@ x64：
 
 ## 验证建议
 
-组件级验证优先运行对应的 `test_*_complete_components.py`。UI 测试应保持窗口可见足够时间，确认中文、emoji、DPI、首次窗口尺寸和交互行为正常。
+组件级验证优先运行对应的 `tests/python/test_*_complete_components.py`。UI 测试应保持窗口可见足够时间，确认中文、emoji、DPI、首次窗口尺寸和交互行为正常。

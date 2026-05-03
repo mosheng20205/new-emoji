@@ -1,6 +1,6 @@
 # API 索引
 
-本索引从 `new_emoji.def` 生成，用于快速确认当前 DLL 导出名称。说明列可逐步补充，组件级说明请查看 [组件文档](components/README.md)。
+本索引从 `src/new_emoji.def` 生成，用于快速确认当前 DLL 导出名称。说明列可逐步补充，组件级说明请查看 [组件文档](components/README.md)。
 
 | 导出 | 说明 |
 |---|---|

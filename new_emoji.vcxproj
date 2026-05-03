@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -102,7 +102,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -125,7 +125,7 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -143,7 +143,7 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
@@ -166,191 +166,191 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
-      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
       <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="element_types.h" />
-    <ClInclude Include="utf8_helpers.h" />
-    <ClInclude Include="factory.h" />
-    <ClInclude Include="exports.h" />
-    <ClInclude Include="render_context.h" />
-    <ClInclude Include="theme.h" />
-    <ClInclude Include="element_base.h" />
-    <ClInclude Include="element_panel.h" />
-    <ClInclude Include="element_button.h" />
-    <ClInclude Include="element_editbox.h" />
-    <ClInclude Include="element_infobox.h" />
-    <ClInclude Include="element_messagebox.h" />
-    <ClInclude Include="element_text.h" />
-    <ClInclude Include="element_link.h" />
-    <ClInclude Include="element_icon.h" />
-    <ClInclude Include="element_space.h" />
-    <ClInclude Include="element_container.h" />
-    <ClInclude Include="element_layout.h" />
-    <ClInclude Include="element_border.h" />
-    <ClInclude Include="element_checkbox.h" />
-    <ClInclude Include="element_radio.h" />
-    <ClInclude Include="element_switch.h" />
-    <ClInclude Include="element_slider.h" />
-    <ClInclude Include="element_inputnumber.h" />
-    <ClInclude Include="element_input.h" />
-    <ClInclude Include="element_inputtag.h" />
-    <ClInclude Include="element_select.h" />
-    <ClInclude Include="element_rate.h" />
-    <ClInclude Include="element_colorpicker.h" />
-    <ClInclude Include="element_tag.h" />
-    <ClInclude Include="element_badge.h" />
-    <ClInclude Include="element_progress.h" />
-    <ClInclude Include="element_avatar.h" />
-    <ClInclude Include="element_empty.h" />
-    <ClInclude Include="element_skeleton.h" />
-    <ClInclude Include="element_descriptions.h" />
-    <ClInclude Include="element_table.h" />
-    <ClInclude Include="element_card.h" />
-    <ClInclude Include="element_collapse.h" />
-    <ClInclude Include="element_timeline.h" />
-    <ClInclude Include="element_statistic.h" />
-    <ClInclude Include="element_metrics.h" />
-    <ClInclude Include="element_dashboard.h" />
-    <ClInclude Include="element_charts.h" />
-    <ClInclude Include="element_divider.h" />
-    <ClInclude Include="element_calendar.h" />
-    <ClInclude Include="element_treeview.h" />
-    <ClInclude Include="element_transfer.h" />
-    <ClInclude Include="element_autocomplete.h" />
-    <ClInclude Include="element_mentions.h" />
-    <ClInclude Include="element_cascader.h" />
-    <ClInclude Include="element_datepicker.h" />
-    <ClInclude Include="element_timepicker.h" />
-    <ClInclude Include="element_datetimepicker.h" />
-    <ClInclude Include="element_timeselect.h" />
-    <ClInclude Include="element_treeselect.h" />
-    <ClInclude Include="element_selectv2.h" />
-    <ClInclude Include="element_dropdown.h" />
-    <ClInclude Include="element_menu.h" />
-    <ClInclude Include="element_anchor.h" />
-    <ClInclude Include="element_backtop.h" />
-    <ClInclude Include="element_segmented.h" />
-    <ClInclude Include="element_pageheader.h" />
-    <ClInclude Include="element_affix.h" />
-    <ClInclude Include="element_watermark.h" />
-    <ClInclude Include="element_image.h" />
-    <ClInclude Include="element_carousel.h" />
-    <ClInclude Include="element_upload.h" />
-    <ClInclude Include="element_scrollbar.h" />
-    <ClInclude Include="element_breadcrumb.h" />
-    <ClInclude Include="element_tabs.h" />
-    <ClInclude Include="element_pagination.h" />
-    <ClInclude Include="element_steps.h" />
-    <ClInclude Include="element_alert.h" />
-    <ClInclude Include="element_result.h" />
-    <ClInclude Include="element_notification.h" />
-    <ClInclude Include="element_loading.h" />
-    <ClInclude Include="element_dialog.h" />
-    <ClInclude Include="element_drawer.h" />
-    <ClInclude Include="element_tooltip.h" />
-    <ClInclude Include="element_popover.h" />
-    <ClInclude Include="element_popconfirm.h" />
-    <ClInclude Include="element_tour.h" />
-    <ClInclude Include="emoji_fallback.h" />
-    <ClInclude Include="element_tree.h" />
-    <ClInclude Include="element_titlebar.h" />
-    <ClInclude Include="dpi_context.h" />
-    <ClInclude Include="window_state.h" />
+    <ClInclude Include="src\element_types.h" />
+    <ClInclude Include="src\utf8_helpers.h" />
+    <ClInclude Include="src\factory.h" />
+    <ClInclude Include="src\exports.h" />
+    <ClInclude Include="src\render_context.h" />
+    <ClInclude Include="src\theme.h" />
+    <ClInclude Include="src\element_base.h" />
+    <ClInclude Include="src\element_panel.h" />
+    <ClInclude Include="src\element_button.h" />
+    <ClInclude Include="src\element_editbox.h" />
+    <ClInclude Include="src\element_infobox.h" />
+    <ClInclude Include="src\element_messagebox.h" />
+    <ClInclude Include="src\element_text.h" />
+    <ClInclude Include="src\element_link.h" />
+    <ClInclude Include="src\element_icon.h" />
+    <ClInclude Include="src\element_space.h" />
+    <ClInclude Include="src\element_container.h" />
+    <ClInclude Include="src\element_layout.h" />
+    <ClInclude Include="src\element_border.h" />
+    <ClInclude Include="src\element_checkbox.h" />
+    <ClInclude Include="src\element_radio.h" />
+    <ClInclude Include="src\element_switch.h" />
+    <ClInclude Include="src\element_slider.h" />
+    <ClInclude Include="src\element_inputnumber.h" />
+    <ClInclude Include="src\element_input.h" />
+    <ClInclude Include="src\element_inputtag.h" />
+    <ClInclude Include="src\element_select.h" />
+    <ClInclude Include="src\element_rate.h" />
+    <ClInclude Include="src\element_colorpicker.h" />
+    <ClInclude Include="src\element_tag.h" />
+    <ClInclude Include="src\element_badge.h" />
+    <ClInclude Include="src\element_progress.h" />
+    <ClInclude Include="src\element_avatar.h" />
+    <ClInclude Include="src\element_empty.h" />
+    <ClInclude Include="src\element_skeleton.h" />
+    <ClInclude Include="src\element_descriptions.h" />
+    <ClInclude Include="src\element_table.h" />
+    <ClInclude Include="src\element_card.h" />
+    <ClInclude Include="src\element_collapse.h" />
+    <ClInclude Include="src\element_timeline.h" />
+    <ClInclude Include="src\element_statistic.h" />
+    <ClInclude Include="src\element_metrics.h" />
+    <ClInclude Include="src\element_dashboard.h" />
+    <ClInclude Include="src\element_charts.h" />
+    <ClInclude Include="src\element_divider.h" />
+    <ClInclude Include="src\element_calendar.h" />
+    <ClInclude Include="src\element_treeview.h" />
+    <ClInclude Include="src\element_transfer.h" />
+    <ClInclude Include="src\element_autocomplete.h" />
+    <ClInclude Include="src\element_mentions.h" />
+    <ClInclude Include="src\element_cascader.h" />
+    <ClInclude Include="src\element_datepicker.h" />
+    <ClInclude Include="src\element_timepicker.h" />
+    <ClInclude Include="src\element_datetimepicker.h" />
+    <ClInclude Include="src\element_timeselect.h" />
+    <ClInclude Include="src\element_treeselect.h" />
+    <ClInclude Include="src\element_selectv2.h" />
+    <ClInclude Include="src\element_dropdown.h" />
+    <ClInclude Include="src\element_menu.h" />
+    <ClInclude Include="src\element_anchor.h" />
+    <ClInclude Include="src\element_backtop.h" />
+    <ClInclude Include="src\element_segmented.h" />
+    <ClInclude Include="src\element_pageheader.h" />
+    <ClInclude Include="src\element_affix.h" />
+    <ClInclude Include="src\element_watermark.h" />
+    <ClInclude Include="src\element_image.h" />
+    <ClInclude Include="src\element_carousel.h" />
+    <ClInclude Include="src\element_upload.h" />
+    <ClInclude Include="src\element_scrollbar.h" />
+    <ClInclude Include="src\element_breadcrumb.h" />
+    <ClInclude Include="src\element_tabs.h" />
+    <ClInclude Include="src\element_pagination.h" />
+    <ClInclude Include="src\element_steps.h" />
+    <ClInclude Include="src\element_alert.h" />
+    <ClInclude Include="src\element_result.h" />
+    <ClInclude Include="src\element_notification.h" />
+    <ClInclude Include="src\element_loading.h" />
+    <ClInclude Include="src\element_dialog.h" />
+    <ClInclude Include="src\element_drawer.h" />
+    <ClInclude Include="src\element_tooltip.h" />
+    <ClInclude Include="src\element_popover.h" />
+    <ClInclude Include="src\element_popconfirm.h" />
+    <ClInclude Include="src\element_tour.h" />
+    <ClInclude Include="src\emoji_fallback.h" />
+    <ClInclude Include="src\element_tree.h" />
+    <ClInclude Include="src\element_titlebar.h" />
+    <ClInclude Include="src\dpi_context.h" />
+    <ClInclude Include="src\window_state.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="dllmain.cpp" />
-    <ClCompile Include="utf8_helpers.cpp" />
-    <ClCompile Include="factory.cpp" />
-    <ClCompile Include="render_context.cpp" />
-    <ClCompile Include="theme.cpp" />
-    <ClCompile Include="element_base.cpp" />
-    <ClCompile Include="element_panel.cpp" />
-    <ClCompile Include="element_button.cpp" />
-    <ClCompile Include="element_editbox.cpp" />
-    <ClCompile Include="element_infobox.cpp" />
-    <ClCompile Include="element_messagebox.cpp" />
-    <ClCompile Include="element_text.cpp" />
-    <ClCompile Include="element_link.cpp" />
-    <ClCompile Include="element_icon.cpp" />
-    <ClCompile Include="element_space.cpp" />
-    <ClCompile Include="element_container.cpp" />
-    <ClCompile Include="element_layout.cpp" />
-    <ClCompile Include="element_border.cpp" />
-    <ClCompile Include="element_checkbox.cpp" />
-    <ClCompile Include="element_radio.cpp" />
-    <ClCompile Include="element_switch.cpp" />
-    <ClCompile Include="element_slider.cpp" />
-    <ClCompile Include="element_inputnumber.cpp" />
-    <ClCompile Include="element_input.cpp" />
-    <ClCompile Include="element_inputtag.cpp" />
-    <ClCompile Include="element_select.cpp" />
-    <ClCompile Include="element_rate.cpp" />
-    <ClCompile Include="element_colorpicker.cpp" />
-    <ClCompile Include="element_tag.cpp" />
-    <ClCompile Include="element_badge.cpp" />
-    <ClCompile Include="element_progress.cpp" />
-    <ClCompile Include="element_avatar.cpp" />
-    <ClCompile Include="element_empty.cpp" />
-    <ClCompile Include="element_skeleton.cpp" />
-    <ClCompile Include="element_descriptions.cpp" />
-    <ClCompile Include="element_table.cpp" />
-    <ClCompile Include="element_card.cpp" />
-    <ClCompile Include="element_collapse.cpp" />
-    <ClCompile Include="element_timeline.cpp" />
-    <ClCompile Include="element_statistic.cpp" />
-    <ClCompile Include="element_metrics.cpp" />
-    <ClCompile Include="element_dashboard.cpp" />
-    <ClCompile Include="element_charts.cpp" />
-    <ClCompile Include="element_divider.cpp" />
-    <ClCompile Include="element_calendar.cpp" />
-    <ClCompile Include="element_treeview.cpp" />
-    <ClCompile Include="element_transfer.cpp" />
-    <ClCompile Include="element_autocomplete.cpp" />
-    <ClCompile Include="element_mentions.cpp" />
-    <ClCompile Include="element_cascader.cpp" />
-    <ClCompile Include="element_datepicker.cpp" />
-    <ClCompile Include="element_timepicker.cpp" />
-    <ClCompile Include="element_datetimepicker.cpp" />
-    <ClCompile Include="element_timeselect.cpp" />
-    <ClCompile Include="element_treeselect.cpp" />
-    <ClCompile Include="element_selectv2.cpp" />
-    <ClCompile Include="element_dropdown.cpp" />
-    <ClCompile Include="element_menu.cpp" />
-    <ClCompile Include="element_anchor.cpp" />
-    <ClCompile Include="element_backtop.cpp" />
-    <ClCompile Include="element_segmented.cpp" />
-    <ClCompile Include="element_pageheader.cpp" />
-    <ClCompile Include="element_affix.cpp" />
-    <ClCompile Include="element_watermark.cpp" />
-    <ClCompile Include="element_image.cpp" />
-    <ClCompile Include="element_carousel.cpp" />
-    <ClCompile Include="element_upload.cpp" />
-    <ClCompile Include="element_scrollbar.cpp" />
-    <ClCompile Include="element_breadcrumb.cpp" />
-    <ClCompile Include="element_tabs.cpp" />
-    <ClCompile Include="element_pagination.cpp" />
-    <ClCompile Include="element_steps.cpp" />
-    <ClCompile Include="element_alert.cpp" />
-    <ClCompile Include="element_result.cpp" />
-    <ClCompile Include="element_notification.cpp" />
-    <ClCompile Include="element_loading.cpp" />
-    <ClCompile Include="element_dialog.cpp" />
-    <ClCompile Include="element_drawer.cpp" />
-    <ClCompile Include="element_tooltip.cpp" />
-    <ClCompile Include="element_popover.cpp" />
-    <ClCompile Include="element_popconfirm.cpp" />
-    <ClCompile Include="element_tour.cpp" />
-    <ClCompile Include="emoji_fallback.cpp" />
-    <ClCompile Include="element_titlebar.cpp" />
-    <ClCompile Include="element_tree.cpp" />
-    <ClCompile Include="exports.cpp" />
-    <ClCompile Include="window_proc.cpp" />
+    <ClCompile Include="src\dllmain.cpp" />
+    <ClCompile Include="src\utf8_helpers.cpp" />
+    <ClCompile Include="src\factory.cpp" />
+    <ClCompile Include="src\render_context.cpp" />
+    <ClCompile Include="src\theme.cpp" />
+    <ClCompile Include="src\element_base.cpp" />
+    <ClCompile Include="src\element_panel.cpp" />
+    <ClCompile Include="src\element_button.cpp" />
+    <ClCompile Include="src\element_editbox.cpp" />
+    <ClCompile Include="src\element_infobox.cpp" />
+    <ClCompile Include="src\element_messagebox.cpp" />
+    <ClCompile Include="src\element_text.cpp" />
+    <ClCompile Include="src\element_link.cpp" />
+    <ClCompile Include="src\element_icon.cpp" />
+    <ClCompile Include="src\element_space.cpp" />
+    <ClCompile Include="src\element_container.cpp" />
+    <ClCompile Include="src\element_layout.cpp" />
+    <ClCompile Include="src\element_border.cpp" />
+    <ClCompile Include="src\element_checkbox.cpp" />
+    <ClCompile Include="src\element_radio.cpp" />
+    <ClCompile Include="src\element_switch.cpp" />
+    <ClCompile Include="src\element_slider.cpp" />
+    <ClCompile Include="src\element_inputnumber.cpp" />
+    <ClCompile Include="src\element_input.cpp" />
+    <ClCompile Include="src\element_inputtag.cpp" />
+    <ClCompile Include="src\element_select.cpp" />
+    <ClCompile Include="src\element_rate.cpp" />
+    <ClCompile Include="src\element_colorpicker.cpp" />
+    <ClCompile Include="src\element_tag.cpp" />
+    <ClCompile Include="src\element_badge.cpp" />
+    <ClCompile Include="src\element_progress.cpp" />
+    <ClCompile Include="src\element_avatar.cpp" />
+    <ClCompile Include="src\element_empty.cpp" />
+    <ClCompile Include="src\element_skeleton.cpp" />
+    <ClCompile Include="src\element_descriptions.cpp" />
+    <ClCompile Include="src\element_table.cpp" />
+    <ClCompile Include="src\element_card.cpp" />
+    <ClCompile Include="src\element_collapse.cpp" />
+    <ClCompile Include="src\element_timeline.cpp" />
+    <ClCompile Include="src\element_statistic.cpp" />
+    <ClCompile Include="src\element_metrics.cpp" />
+    <ClCompile Include="src\element_dashboard.cpp" />
+    <ClCompile Include="src\element_charts.cpp" />
+    <ClCompile Include="src\element_divider.cpp" />
+    <ClCompile Include="src\element_calendar.cpp" />
+    <ClCompile Include="src\element_treeview.cpp" />
+    <ClCompile Include="src\element_transfer.cpp" />
+    <ClCompile Include="src\element_autocomplete.cpp" />
+    <ClCompile Include="src\element_mentions.cpp" />
+    <ClCompile Include="src\element_cascader.cpp" />
+    <ClCompile Include="src\element_datepicker.cpp" />
+    <ClCompile Include="src\element_timepicker.cpp" />
+    <ClCompile Include="src\element_datetimepicker.cpp" />
+    <ClCompile Include="src\element_timeselect.cpp" />
+    <ClCompile Include="src\element_treeselect.cpp" />
+    <ClCompile Include="src\element_selectv2.cpp" />
+    <ClCompile Include="src\element_dropdown.cpp" />
+    <ClCompile Include="src\element_menu.cpp" />
+    <ClCompile Include="src\element_anchor.cpp" />
+    <ClCompile Include="src\element_backtop.cpp" />
+    <ClCompile Include="src\element_segmented.cpp" />
+    <ClCompile Include="src\element_pageheader.cpp" />
+    <ClCompile Include="src\element_affix.cpp" />
+    <ClCompile Include="src\element_watermark.cpp" />
+    <ClCompile Include="src\element_image.cpp" />
+    <ClCompile Include="src\element_carousel.cpp" />
+    <ClCompile Include="src\element_upload.cpp" />
+    <ClCompile Include="src\element_scrollbar.cpp" />
+    <ClCompile Include="src\element_breadcrumb.cpp" />
+    <ClCompile Include="src\element_tabs.cpp" />
+    <ClCompile Include="src\element_pagination.cpp" />
+    <ClCompile Include="src\element_steps.cpp" />
+    <ClCompile Include="src\element_alert.cpp" />
+    <ClCompile Include="src\element_result.cpp" />
+    <ClCompile Include="src\element_notification.cpp" />
+    <ClCompile Include="src\element_loading.cpp" />
+    <ClCompile Include="src\element_dialog.cpp" />
+    <ClCompile Include="src\element_drawer.cpp" />
+    <ClCompile Include="src\element_tooltip.cpp" />
+    <ClCompile Include="src\element_popover.cpp" />
+    <ClCompile Include="src\element_popconfirm.cpp" />
+    <ClCompile Include="src\element_tour.cpp" />
+    <ClCompile Include="src\emoji_fallback.cpp" />
+    <ClCompile Include="src\element_titlebar.cpp" />
+    <ClCompile Include="src\element_tree.cpp" />
+    <ClCompile Include="src\exports.cpp" />
+    <ClCompile Include="src\window_proc.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="new_emoji.def" />
+    <None Include="src\new_emoji.def" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

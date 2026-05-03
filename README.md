@@ -28,6 +28,9 @@
 ```python
 import ctypes
 from ctypes import wintypes
+import sys
+
+sys.path.insert(0, "tests/python")
 import test_new_emoji as ui
 
 hwnd = ui.create_window("✨ new_emoji 示例", 240, 120, 820, 560)

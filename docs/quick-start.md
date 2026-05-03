@@ -23,6 +23,9 @@
 import ctypes
 from ctypes import wintypes
 import time
+import sys
+
+sys.path.insert(0, "tests/python")
 import test_new_emoji as ui
 
 @ui.CloseCallback

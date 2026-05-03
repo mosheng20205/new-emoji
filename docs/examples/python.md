@@ -1,6 +1,6 @@
 # Python 示例说明
 
-Python 示例和测试使用 `ctypes` 加载 `new_emoji.dll`。推荐复用根目录的 `test_new_emoji.py`，其中已经声明了导出函数签名和常用 helper。
+Python 示例和测试使用 `ctypes` 加载 `new_emoji.dll`。推荐复用 `tests/python/test_new_emoji.py`，其中已经声明了导出函数签名和常用 helper。
 
 ## 位数检查
 
