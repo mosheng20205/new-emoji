@@ -16,6 +16,7 @@ public:
     bool show_password_toggle = false;
     bool show_word_limit = false;
     bool autosize = false;
+    bool context_menu_enabled = true;
     int min_rows = 0;
     int max_rows = 0;
     int size = 0; // 0 default, 1 medium, 2 small, 3 mini
@@ -28,6 +29,7 @@ public:
     void paint(RenderContext& ctx) override;
     void on_mouse_down(int x, int y, MouseButton btn) override;
     void on_mouse_up(int x, int y, MouseButton btn) override;
+    void on_mouse_move(int x, int y) override;
     void on_key_down(int vk, int mods) override;
     void on_char(wchar_t ch) override;
     void on_focus() override;
@@ -42,11 +44,18 @@ public:
     void set_visual_options(int next_size, bool next_show_password_toggle,
                             bool next_show_word_limit, bool next_autosize,
                             int next_min_rows, int next_max_rows);
+    void set_context_menu_enabled(bool enabled);
+    void set_selection(int start, int end);
+    void get_selection(int& start, int& end) const;
     void set_max_length(int next_max_length);
     void get_state(int& cursor, int& length) const;
 
 private:
     int m_cursor_pos = 0;
+    int m_sel_start = -1;
+    int m_sel_end = -1;
+    int m_select_anchor = 0;
+    bool m_drag_selecting = false;
     bool m_press_clear = false;
     bool m_press_password_toggle = false;
     bool m_password_visible = false;
@@ -85,6 +94,17 @@ private:
     int char_width() const;
     int xpos_to_char(int x) const;
     int char_to_xpos(int index) const;
+    bool has_selection() const;
+    void normalized_selection(int& start, int& end) const;
+    void clear_selection();
+    void delete_selection();
+    void select_all();
+    void move_cursor_to(int pos, bool extend);
+    std::wstring selected_text() const;
+    void copy_selection_to_clipboard() const;
+    void cut_selection_to_clipboard();
+    void paste_from_clipboard();
+    void show_context_menu(int x, int y);
     void insert_text(const std::wstring& text);
     void delete_char_before();
     void delete_char_after();

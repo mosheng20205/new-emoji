@@ -266,6 +266,22 @@ void ElementTree::dispatch_lbutton_up(int x, int y) {
     if (should_click && tree_cb) tree_cb(captured_id);
 }
 
+void ElementTree::dispatch_rbutton_down(int x, int y) {
+    Element* hit = hit_test_impl(m_root.get(), x, y);
+    if (hit && hit->enabled) {
+        set_focus(hit);
+    }
+}
+
+void ElementTree::dispatch_rbutton_up(int x, int y) {
+    Element* hit = hit_test_impl(m_root.get(), x, y);
+    if (!hit || !hit->enabled) return;
+    set_focus(hit);
+    int lx = x, ly = y;
+    mouse_to_local(hit, lx, ly);
+    hit->on_mouse_up(lx, ly, MouseButton::Right);
+}
+
 // ── Keyboard ──────────────────────────────────────────────────────────
 
 void ElementTree::dispatch_key_down(int vk, int mods) {

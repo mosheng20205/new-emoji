@@ -6,6 +6,8 @@
 #include "utf8_helpers.h"
 #include <algorithm>
 #include <cmath>
+#include <cstring>
+#include <vector>
 
 #define ROUNDED(r, rx, ry) D2D1_ROUNDED_RECT{ (r), (rx), (ry) }
 
@@ -69,6 +71,7 @@ void Input::set_value(const std::wstring& next_value) {
     value = next_value;
     if (max_length > 0 && (int)value.size() > max_length) value.resize(max_length);
     m_cursor_pos = (int)value.size();
+    clear_selection();
     text = value;
     update_autosize_height();
     invalidate();
@@ -133,10 +136,43 @@ void Input::set_max_length(int next_max_length) {
     if (max_length > 0 && (int)value.size() > max_length) {
         value.resize(max_length);
         if (m_cursor_pos > (int)value.size()) m_cursor_pos = (int)value.size();
+        if (m_sel_start > (int)value.size()) m_sel_start = (int)value.size();
+        if (m_sel_end > (int)value.size()) m_sel_end = (int)value.size();
         text = value;
         notify_text_changed();
     }
     invalidate();
+}
+
+void Input::set_context_menu_enabled(bool next_enabled) {
+    context_menu_enabled = next_enabled;
+    invalidate();
+}
+
+void Input::set_selection(int start, int end) {
+    int len = (int)value.size();
+    if (start < 0) start = 0;
+    if (end < 0) end = 0;
+    if (start > len) start = len;
+    if (end > len) end = len;
+    m_cursor_pos = end;
+    if (start == end) {
+        clear_selection();
+    } else {
+        m_sel_start = start;
+        m_sel_end = end;
+        m_select_anchor = start;
+    }
+    invalidate();
+}
+
+void Input::get_selection(int& start, int& end) const {
+    if (!has_selection()) {
+        start = m_cursor_pos;
+        end = m_cursor_pos;
+        return;
+    }
+    normalized_selection(start, end);
 }
 
 void Input::get_state(int& cursor, int& length) const {
@@ -360,8 +396,153 @@ int Input::char_to_xpos(int index) const {
     return (int)std::lround(metrics.text_x + index * char_width());
 }
 
+bool Input::has_selection() const {
+    return m_sel_start >= 0 && m_sel_end >= 0 && m_sel_start != m_sel_end;
+}
+
+void Input::normalized_selection(int& start, int& end) const {
+    start = m_sel_start;
+    end = m_sel_end;
+    if (start > end) std::swap(start, end);
+    int len = (int)value.size();
+    if (start < 0) start = 0;
+    if (end < 0) end = 0;
+    if (start > len) start = len;
+    if (end > len) end = len;
+}
+
+void Input::clear_selection() {
+    m_sel_start = -1;
+    m_sel_end = -1;
+}
+
+void Input::delete_selection() {
+    if (!has_selection()) return;
+    int start = 0;
+    int end = 0;
+    normalized_selection(start, end);
+    if (end <= start) {
+        clear_selection();
+        return;
+    }
+    value.erase(start, end - start);
+    m_cursor_pos = start;
+    clear_selection();
+    text = value;
+    update_autosize_height();
+    invalidate();
+    notify_text_changed();
+}
+
+void Input::select_all() {
+    m_cursor_pos = (int)value.size();
+    if (value.empty()) {
+        clear_selection();
+    } else {
+        m_sel_start = 0;
+        m_sel_end = (int)value.size();
+        m_select_anchor = 0;
+    }
+    invalidate();
+}
+
+void Input::move_cursor_to(int pos, bool extend) {
+    int len = (int)value.size();
+    if (pos < 0) pos = 0;
+    if (pos > len) pos = len;
+    if (extend) {
+        if (!has_selection()) m_select_anchor = m_cursor_pos;
+        m_cursor_pos = pos;
+        m_sel_start = m_select_anchor;
+        m_sel_end = m_cursor_pos;
+        if (m_sel_start == m_sel_end) clear_selection();
+    } else {
+        m_cursor_pos = pos;
+        clear_selection();
+        m_select_anchor = m_cursor_pos;
+    }
+}
+
+std::wstring Input::selected_text() const {
+    if (!has_selection()) return L"";
+    int start = 0;
+    int end = 0;
+    normalized_selection(start, end);
+    if (end <= start) return L"";
+    return value.substr(start, end - start);
+}
+
+void Input::copy_selection_to_clipboard() const {
+    if (password && !m_password_visible) return;
+    std::wstring sel = selected_text();
+    if (sel.empty()) return;
+    if (!OpenClipboard(owner_hwnd)) return;
+    EmptyClipboard();
+    size_t bytes = (sel.size() + 1) * sizeof(wchar_t);
+    HGLOBAL mem = GlobalAlloc(GMEM_MOVEABLE, bytes);
+    if (mem) {
+        void* ptr = GlobalLock(mem);
+        if (ptr) {
+            memcpy(ptr, sel.c_str(), bytes);
+            GlobalUnlock(mem);
+            SetClipboardData(CF_UNICODETEXT, mem);
+            mem = nullptr;
+        }
+        if (mem) GlobalFree(mem);
+    }
+    CloseClipboard();
+}
+
+void Input::cut_selection_to_clipboard() {
+    if (readonly || !enabled || !has_selection()) return;
+    if (password && !m_password_visible) return;
+    copy_selection_to_clipboard();
+    delete_selection();
+}
+
+void Input::paste_from_clipboard() {
+    if (readonly || !enabled) return;
+    if (!OpenClipboard(owner_hwnd)) return;
+    HANDLE data = GetClipboardData(CF_UNICODETEXT);
+    if (data) {
+        wchar_t* text_ptr = (wchar_t*)GlobalLock(data);
+        if (text_ptr) {
+            insert_text(text_ptr);
+            GlobalUnlock(data);
+        }
+    }
+    CloseClipboard();
+}
+
+void Input::show_context_menu(int x, int y) {
+    if (!context_menu_enabled || !owner_hwnd) return;
+    HMENU menu = CreatePopupMenu();
+    if (!menu) return;
+
+    bool can_copy = has_selection() && !(password && !m_password_visible);
+    bool can_edit = enabled && !readonly;
+    AppendMenuW(menu, can_copy ? MF_STRING : (MF_STRING | MF_GRAYED), 1, L"复制");
+    AppendMenuW(menu, (can_copy && can_edit) ? MF_STRING : (MF_STRING | MF_GRAYED), 2, L"剪切");
+    AppendMenuW(menu, can_edit ? MF_STRING : (MF_STRING | MF_GRAYED), 3, L"粘贴");
+    AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
+    AppendMenuW(menu, value.empty() ? (MF_STRING | MF_GRAYED) : MF_STRING, 4, L"全选");
+
+    POINT pt{ x, y };
+    ClientToScreen(owner_hwnd, &pt);
+    SetForegroundWindow(owner_hwnd);
+    int cmd = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
+                             pt.x, pt.y, 0, owner_hwnd, nullptr);
+    DestroyMenu(menu);
+
+    if (cmd == 1) copy_selection_to_clipboard();
+    else if (cmd == 2) cut_selection_to_clipboard();
+    else if (cmd == 3) paste_from_clipboard();
+    else if (cmd == 4) select_all();
+}
+
 void Input::insert_text(const std::wstring& s) {
     if (s.empty()) return;
+    if (has_selection()) delete_selection();
     if (m_cursor_pos < 0) m_cursor_pos = 0;
     if (m_cursor_pos > (int)value.size()) m_cursor_pos = (int)value.size();
     std::wstring next = s;
@@ -379,6 +560,10 @@ void Input::insert_text(const std::wstring& s) {
 }
 
 void Input::delete_char_before() {
+    if (has_selection()) {
+        delete_selection();
+        return;
+    }
     if (m_cursor_pos <= 0 || value.empty()) return;
     value.erase(m_cursor_pos - 1, 1);
     --m_cursor_pos;
@@ -389,6 +574,10 @@ void Input::delete_char_before() {
 }
 
 void Input::delete_char_after() {
+    if (has_selection()) {
+        delete_selection();
+        return;
+    }
     if (m_cursor_pos < 0 || m_cursor_pos >= (int)value.size()) return;
     value.erase(m_cursor_pos, 1);
     text = value;
@@ -442,11 +631,56 @@ void Input::paint(RenderContext& ctx) {
 
     std::wstring shown = display_text();
     bool showing_placeholder = value.empty();
-    draw_text(ctx, shown, style, showing_placeholder ? hint : fg,
-              metrics.text_x, metrics.text_y, metrics.text_w, metrics.text_h,
-              DWRITE_TEXT_ALIGNMENT_LEADING,
-              multiline ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR : DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
-              multiline);
+    if (!shown.empty() && metrics.text_w > 0.0f && metrics.text_h > 0.0f) {
+        auto* layout = ctx.create_text_layout(shown, style.font_name, style.font_size,
+                                              metrics.text_w, metrics.text_h);
+        if (layout) {
+            apply_emoji_font_fallback(layout, shown);
+            layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
+            layout->SetParagraphAlignment(multiline
+                ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR
+                : DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+            layout->SetWordWrapping(multiline ? DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING_NO_WRAP);
+
+            if (!showing_placeholder && has_selection()) {
+                int sel_start = 0;
+                int sel_end = 0;
+                normalized_selection(sel_start, sel_end);
+                UINT32 range_len = (UINT32)(sel_end - sel_start);
+                if (range_len > 0) {
+                    std::vector<DWRITE_HIT_TEST_METRICS> hit_metrics((std::max)(1u, range_len + 4));
+                    UINT32 actual_count = 0;
+                    HRESULT hr = layout->HitTestTextRange(
+                        (UINT32)sel_start, range_len, 0.0f, 0.0f,
+                        hit_metrics.data(), (UINT32)hit_metrics.size(), &actual_count);
+                    if (hr == E_NOT_SUFFICIENT_BUFFER && actual_count > hit_metrics.size()) {
+                        hit_metrics.resize(actual_count);
+                        hr = layout->HitTestTextRange(
+                            (UINT32)sel_start, range_len, 0.0f, 0.0f,
+                            hit_metrics.data(), (UINT32)hit_metrics.size(), &actual_count);
+                    }
+                    if (SUCCEEDED(hr)) {
+                        Color sel_color = with_alpha(t->accent, 0x66);
+                        for (UINT32 i = 0; i < actual_count && i < hit_metrics.size(); ++i) {
+                            const auto& hm = hit_metrics[i];
+                            D2D1_RECT_F sel_rect = {
+                                metrics.text_x + hm.left,
+                                metrics.text_y + hm.top,
+                                metrics.text_x + hm.left + hm.width,
+                                metrics.text_y + hm.top + hm.height
+                            };
+                            ctx.rt->FillRectangle(sel_rect, ctx.get_brush(sel_color));
+                        }
+                    }
+                }
+            }
+
+            ctx.rt->DrawTextLayout(D2D1::Point2F(metrics.text_x, metrics.text_y), layout,
+                ctx.get_brush(showing_placeholder ? hint : fg),
+                D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+            layout->Release();
+        }
+    }
 
     if (has_focus && !disabled && !multiline) {
         std::wstring caret_prefix = display_text();
@@ -501,19 +735,34 @@ void Input::paint(RenderContext& ctx) {
     ctx.rt->SetTransform(saved);
 }
 
-void Input::on_mouse_down(int x, int y, MouseButton) {
-    if (!enabled || readonly) return;
+void Input::on_mouse_down(int x, int y, MouseButton btn) {
+    if (!enabled) return;
+    if (btn != MouseButton::Left) return;
     LayoutMetrics metrics = compute_metrics();
-    m_press_clear = metrics.show_clear && metrics.clear_rect.contains(x, y);
+    m_press_clear = !readonly && metrics.show_clear && metrics.clear_rect.contains(x, y);
     m_press_password_toggle = metrics.show_password_toggle && metrics.password_rect.contains(x, y);
     pressed = true;
     if (!m_press_clear && !m_press_password_toggle) {
         m_cursor_pos = xpos_to_char(x);
+        m_select_anchor = m_cursor_pos;
+        m_drag_selecting = true;
+        clear_selection();
     }
     invalidate();
 }
 
-void Input::on_mouse_up(int x, int y, MouseButton) {
+void Input::on_mouse_up(int x, int y, MouseButton btn) {
+    if (btn == MouseButton::Right) {
+        if (enabled && context_menu_enabled) {
+            if (!has_selection()) {
+                m_cursor_pos = xpos_to_char(x);
+                m_select_anchor = m_cursor_pos;
+            }
+            show_context_menu(x, y);
+            invalidate();
+        }
+        return;
+    }
     LayoutMetrics metrics = compute_metrics();
     if (m_press_clear && metrics.clear_rect.contains(x, y)) {
         set_value(L"");
@@ -523,20 +772,66 @@ void Input::on_mouse_up(int x, int y, MouseButton) {
     }
     m_press_clear = false;
     m_press_password_toggle = false;
+    m_drag_selecting = false;
     pressed = false;
     invalidate();
 }
 
-void Input::on_key_down(int vk, int) {
-    if (!enabled || readonly) return;
+void Input::on_mouse_move(int x, int) {
+    if (!enabled || !m_drag_selecting) return;
+    int pos = xpos_to_char(x);
+    m_cursor_pos = pos;
+    m_sel_start = m_select_anchor;
+    m_sel_end = pos;
+    if (m_sel_start == m_sel_end) clear_selection();
+    invalidate();
+}
+
+void Input::on_key_down(int vk, int mods) {
+    if (!enabled) return;
+    bool shift = (mods & KeyMod::Shift) != 0;
+    bool ctrl = (mods & KeyMod::Control) != 0;
+    if (ctrl) {
+        if (vk == 'A') {
+            select_all();
+            return;
+        }
+        if (vk == 'C') {
+            copy_selection_to_clipboard();
+            invalidate();
+            return;
+        }
+        if (vk == 'X') {
+            cut_selection_to_clipboard();
+            return;
+        }
+        if (vk == 'V') {
+            paste_from_clipboard();
+            return;
+        }
+    }
     if (vk == VK_LEFT) {
-        if (m_cursor_pos > 0) --m_cursor_pos;
+        if (!shift && has_selection()) {
+            int start = 0, end = 0;
+            normalized_selection(start, end);
+            move_cursor_to(start, false);
+        } else {
+            move_cursor_to(m_cursor_pos - 1, shift);
+        }
     } else if (vk == VK_RIGHT) {
-        if (m_cursor_pos < (int)value.size()) ++m_cursor_pos;
+        if (!shift && has_selection()) {
+            int start = 0, end = 0;
+            normalized_selection(start, end);
+            move_cursor_to(end, false);
+        } else {
+            move_cursor_to(m_cursor_pos + 1, shift);
+        }
     } else if (vk == VK_HOME) {
-        m_cursor_pos = 0;
+        move_cursor_to(0, shift);
     } else if (vk == VK_END) {
-        m_cursor_pos = (int)value.size();
+        move_cursor_to((int)value.size(), shift);
+    } else if (readonly) {
+        // Navigation and selection are allowed on readonly inputs, editing is not.
     } else if (vk == VK_BACK) {
         delete_char_before();
     } else if (vk == VK_DELETE) {
@@ -566,5 +861,6 @@ void Input::on_blur() {
     pressed = false;
     m_press_clear = false;
     m_press_password_toggle = false;
+    m_drag_selecting = false;
     invalidate();
 }

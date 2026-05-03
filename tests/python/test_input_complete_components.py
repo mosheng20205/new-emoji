@@ -7,6 +7,8 @@ import test_new_emoji as ui
 
 WM_KEYDOWN = 0x0100
 WM_KEYUP = 0x0101
+WM_MOUSEMOVE = 0x0200
+VK_CONTROL = 0x11
 
 
 @ui.CloseCallback
@@ -84,6 +86,14 @@ def click_logical_point(user32, hwnd, x, y):
 
 def click_input_right_affix(user32, hwnd, x, y, w, h, offset=18):
     click_logical_point(user32, hwnd, x + w - offset, y + h / 2.0)
+
+
+def drag_logical(user32, hwnd, x1, y1, x2, y2):
+    px1, py1 = logical_point(hwnd, x1, y1)
+    px2, py2 = logical_point(hwnd, x2, y2)
+    user32.SendMessageW(hwnd, 0x0201, 0x0001, make_lparam(px1, py1))
+    user32.SendMessageW(hwnd, WM_MOUSEMOVE, 0x0001, make_lparam(px2, py2))
+    user32.SendMessageW(hwnd, 0x0202, 0, make_lparam(px2, py2))
 
 
 def main():
@@ -202,6 +212,29 @@ def main():
     user32 = ctypes.windll.user32
     msg = wintypes.MSG()
     pump_messages(user32, msg, 0.35)
+
+    require_equal("context menu default", ui.get_input_context_menu_enabled(hwnd, legacy_input), True)
+    ui.set_input_context_menu_enabled(hwnd, legacy_input, False)
+    require_equal("context menu disabled", ui.get_input_context_menu_enabled(hwnd, legacy_input), False)
+    ui.set_input_context_menu_enabled(hwnd, legacy_input, True)
+
+    ui.dll.EU_SetElementFocus(hwnd, legacy_input)
+    pump_messages(user32, msg, 0.15)
+    user32.keybd_event(VK_CONTROL, 0, 0, 0)
+    pump_messages(user32, msg, 0.05)
+    user32.PostMessageW(hwnd, WM_KEYDOWN, ord("A"), 0)
+    user32.PostMessageW(hwnd, WM_KEYUP, ord("A"), 0)
+    pump_messages(user32, msg, 0.05)
+    user32.keybd_event(VK_CONTROL, 0, 2, 0)
+    pump_messages(user32, msg, 0.2)
+    require_equal("Ctrl+A selection", ui.get_input_selection(hwnd, legacy_input),
+                  (0, len(ui.get_input_value(hwnd, legacy_input))))
+
+    ui.set_input_selection(hwnd, legacy_input, 0, 0)
+    drag_logical(user32, hwnd, 52, 173, 180, 173)
+    pump_messages(user32, msg, 0.2)
+    drag_start, drag_end = ui.get_input_selection(hwnd, legacy_input)
+    require_true("mouse drag selection", drag_end > drag_start)
 
     before_height = get_bounds(hwnd, multiline_input)[3]
     ui.set_input_value(hwnd, multiline_input, "第 1 行\n第 2 行\n第 3 行\n第 4 行")

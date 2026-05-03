@@ -584,6 +584,7 @@ def showcase_input(hwnd, stage, w, h):
                     prefix_icon="🌐", suffix_icon="🔎", x=36, y=132, w=430, h=40)
     ui.create_input(hwnd, basics, value="计数字段", placeholder="最多 20 字", clearable=True,
                     show_word_limit=True, max_length=20, x=492, y=132, w=300, h=40)
+    add_text(hwnd, basics, "支持 Ctrl+A 全选、鼠标拖选文字；右键菜单可通过 Input API 开关。", 820, 166, 420, 28, MUTED)
     add_text(hwnd, basics, "Input 已补齐 prefix/suffix 文案、prefix/suffix icon、clearable、密码显隐和字数统计。", 820, 136, 360, 28, MUTED)
 
     textarea = add_demo_panel(hwnd, stage, "📝 多行、autosize 与字数限制", 28, 264, w - 56, 230)

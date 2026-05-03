@@ -216,6 +216,10 @@ EXPORTS
     EU_SetInputOptions
     EU_SetInputVisualOptions
     EU_GetInputVisualOptions
+    EU_SetInputSelection
+    EU_GetInputSelection
+    EU_SetInputContextMenuEnabled
+    EU_GetInputContextMenuEnabled
     EU_GetInputState
     EU_SetInputMaxLength
     EU_GetInputMaxLength

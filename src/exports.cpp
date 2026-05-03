@@ -4310,6 +4310,34 @@ int __stdcall EU_GetInputVisualOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetInputSelection(HWND hwnd, int element_id, int start, int end) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_selection(start, end);
+    }
+}
+
+int __stdcall EU_GetInputSelection(HWND hwnd, int element_id, int* start, int* end) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    int s = 0;
+    int e = 0;
+    el->get_selection(s, e);
+    if (start) *start = s;
+    if (end) *end = e;
+    return 1;
+}
+
+void __stdcall EU_SetInputContextMenuEnabled(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_context_menu_enabled(enabled != 0);
+    }
+}
+
+int __stdcall EU_GetInputContextMenuEnabled(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    return (el && el->context_menu_enabled) ? 1 : 0;
+}
+
 int __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable,
                                int* readonly, int* password, int* multiline, int* validate_state) {
     auto* el = find_typed_element<Input>(hwnd, element_id);

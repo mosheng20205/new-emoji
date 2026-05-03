@@ -325,6 +325,16 @@ void register_window_class() {
             if (st && st->element_tree) st->element_tree->dispatch_lbutton_up(x, y);
             return 0;
         }
+        case WM_RBUTTONDOWN: {
+            int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
+            if (st && st->element_tree) { SetFocus(hwnd); st->element_tree->dispatch_rbutton_down(x, y); }
+            return 0;
+        }
+        case WM_RBUTTONUP: {
+            int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
+            if (st && st->element_tree) st->element_tree->dispatch_rbutton_up(x, y);
+            return 0;
+        }
         // ── Keyboard ────────────────────────────────────────────────
         case WM_KEYDOWN: {
             if (st && st->element_tree) {

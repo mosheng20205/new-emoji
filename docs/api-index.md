@@ -220,6 +220,10 @@
 | `EU_SetInputOptions` | |
 | `EU_SetInputVisualOptions` | 设置 Input 尺寸、密码显隐、字数统计与 autosize |
 | `EU_GetInputVisualOptions` | 读取 Input 视觉选项 |
+| `EU_SetInputSelection` | 设置 Input 文本选区 |
+| `EU_GetInputSelection` | 读取 Input 文本选区 |
+| `EU_SetInputContextMenuEnabled` | 设置 Input 右键菜单是否启用 |
+| `EU_GetInputContextMenuEnabled` | 读取 Input 右键菜单是否启用 |
 | `EU_GetInputState` | |
 | `EU_SetInputMaxLength` | |
 | `EU_GetInputMaxLength` | |

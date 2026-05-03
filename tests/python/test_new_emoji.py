@@ -166,6 +166,13 @@ dll.EU_GetInputVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetInputVisualOptions.restype = ctypes.c_int
+dll.EU_SetInputSelection.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputSelection.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputSelection.restype = ctypes.c_int
+dll.EU_SetInputContextMenuEnabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputContextMenuEnabled.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputContextMenuEnabled.restype = ctypes.c_int
 dll.EU_SetInputGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetInputGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -3357,6 +3364,23 @@ def get_input_visual_options(hwnd, element_id):
         state[key] = bool(state[key])
     return state
 
+def set_input_selection(hwnd, element_id, start=0, end=0):
+    dll.EU_SetInputSelection(hwnd, element_id, start, end)
+
+def get_input_selection(hwnd, element_id):
+    start = ctypes.c_int()
+    end = ctypes.c_int()
+    ok = dll.EU_GetInputSelection(hwnd, element_id, ctypes.byref(start), ctypes.byref(end))
+    if not ok:
+        return None
+    return start.value, end.value
+
+def set_input_context_menu_enabled(hwnd, element_id, enabled=True):
+    dll.EU_SetInputContextMenuEnabled(hwnd, element_id, 1 if enabled else 0)
+
+def get_input_context_menu_enabled(hwnd, element_id):
+    return bool(dll.EU_GetInputContextMenuEnabled(hwnd, element_id))
+
 def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
                  prefix="", suffix="", clearable=False,
                  size=0, prefix_icon="", suffix_icon="",
@@ -3364,7 +3388,7 @@ def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
                  show_word_limit=False, multiline=False, autosize=False,
                  min_rows=0, max_rows=0, readonly=False, validate_state=0,
                  max_length=0,
-                 x=0, y=0, w=260, h=36):
+                 x=0, y=0, w=260, h=36, context_menu=True):
     if (
         type(size) is int and
         type(prefix_icon) is int and
@@ -3410,6 +3434,8 @@ def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
                                  autosize=autosize, min_rows=min_rows, max_rows=max_rows)
     if max_length:
         set_input_max_length(hwnd, element_id, max_length)
+    if not context_menu:
+        set_input_context_menu_enabled(hwnd, element_id, False)
     return element_id
 
 def _apply_input_group_addon(hwnd, element_id, side, addon):

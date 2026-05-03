@@ -561,6 +561,10 @@ int  __stdcall EU_GetInputVisualOptions(HWND hwnd, int element_id,
                                         int* size, int* show_password_toggle,
                                         int* show_word_limit, int* autosize,
                                         int* min_rows, int* max_rows);
+void __stdcall EU_SetInputSelection(HWND hwnd, int element_id, int start, int end);
+int  __stdcall EU_GetInputSelection(HWND hwnd, int element_id, int* start, int* end);
+void __stdcall EU_SetInputContextMenuEnabled(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetInputContextMenuEnabled(HWND hwnd, int element_id);
 int  __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable, int* readonly, int* password, int* multiline, int* validate_state);
 void __stdcall EU_SetInputMaxLength(HWND hwnd, int element_id, int max_length);
 int  __stdcall EU_GetInputMaxLength(HWND hwnd, int element_id);

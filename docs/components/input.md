@@ -12,6 +12,8 @@
 - `password` + 密码显隐按钮
 - `show_word_limit`
 - `maxlength`
+- `Ctrl+A` 全选、鼠标拖动选中文字
+- 右键菜单，可通过 `EU_SetInputContextMenuEnabled` 开关
 - `size`：`0默认 / 1中等 / 2小型 / 3超小`
 - `autosize`、`min_rows`、`max_rows`
 - `readonly`、校验态、文本变化回调
@@ -42,6 +44,10 @@
 - `EU_SetInputMaxLength`
 - `EU_GetInputMaxLength`
 - `EU_SetInputTextCallback`
+- `EU_SetInputSelection`
+- `EU_GetInputSelection`
+- `EU_SetInputContextMenuEnabled`
+- `EU_GetInputContextMenuEnabled`
 
 ### 前后缀与视觉扩展
 

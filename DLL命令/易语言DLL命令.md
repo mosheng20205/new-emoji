@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：844。
+当前导出命令数量：848。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -1937,6 +1937,27 @@
     .参数 是否自动高度指针, 整数型, 传址
     .参数 最小行数指针, 整数型, 传址
     .参数 最大行数指针, 整数型, 传址
+
+.DLL命令 设置输入框选区, , "new_emoji.dll", "EU_SetInputSelection", , 对应 C++ 导出命令 EU_SetInputSelection
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 起始位置, 整数型, , 从 0 开始
+    .参数 结束位置, 整数型, , 从 0 开始，不包含该位置
+
+.DLL命令 取输入框选区, 整数型, "new_emoji.dll", "EU_GetInputSelection", , 对应 C++ 导出命令 EU_GetInputSelection；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 起始位置指针, 整数型, 传址
+    .参数 结束位置指针, 整数型, 传址
+
+.DLL命令 设置输入框右键菜单, , "new_emoji.dll", "EU_SetInputContextMenuEnabled", , 对应 C++ 导出命令 EU_SetInputContextMenuEnabled
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用, 整数型, , 1启用 0禁用
+
+.DLL命令 取输入框右键菜单, 整数型, "new_emoji.dll", "EU_GetInputContextMenuEnabled", , 对应 C++ 导出命令 EU_GetInputContextMenuEnabled；返回 1 表示启用，0 表示禁用或元素不存在
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 取输入框状态, 整数型, "new_emoji.dll", "EU_GetInputState", , 对应 C++ 导出命令 EU_GetInputState；返回 1 表示成功
     .参数 窗口句柄, 整数型
