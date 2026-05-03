@@ -527,7 +527,10 @@ void Input::show_context_menu(int x, int y) {
     AppendMenuW(menu, MF_SEPARATOR, 0, nullptr);
     AppendMenuW(menu, value.empty() ? (MF_STRING | MF_GRAYED) : MF_STRING, 4, L"全选");
 
-    POINT pt{ x, y };
+    int abs_x = 0;
+    int abs_y = 0;
+    get_absolute_pos(abs_x, abs_y);
+    POINT pt{ abs_x + x, abs_y + y };
     ClientToScreen(owner_hwnd, &pt);
     SetForegroundWindow(owner_hwnd);
     int cmd = TrackPopupMenu(menu, TPM_RETURNCMD | TPM_RIGHTBUTTON,
