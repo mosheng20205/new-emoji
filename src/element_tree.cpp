@@ -223,7 +223,7 @@ void ElementTree::dispatch_mouse_wheel(int x, int y, int delta) {
     Element* hit = hit_test_impl(m_root.get(), x, y);
     if (!hit || !hit->enabled) hit = m_hover;
     if (!hit || !hit->enabled) hit = m_focus;
-    if (hit && hit->enabled) {
+    if (hit && hit->accepts_input()) {
         int lx = x, ly = y;
         mouse_to_local(hit, lx, ly);
         hit->on_mouse_wheel(lx, ly, delta);
@@ -252,6 +252,7 @@ void ElementTree::dispatch_lbutton_up(int x, int y) {
     int captured_id = captured->id;
     ElementClickCallback captured_cb = captured->click_cb;
     ElementClickCallback tree_cb = element_click_cb;
+    bool should_click = captured->accepts_input();
     HWND hwnd = m_hwnd;
 
     m_capture = nullptr;
@@ -260,9 +261,9 @@ void ElementTree::dispatch_lbutton_up(int x, int y) {
     captured->on_mouse_up(lx, ly, MouseButton::Left);
     if (!IsWindow(hwnd)) return;
 
-    if (captured_cb) captured_cb(captured_id);
+    if (should_click && captured_cb) captured_cb(captured_id);
     if (!IsWindow(hwnd)) return;
-    if (tree_cb) tree_cb(captured_id);
+    if (should_click && tree_cb) tree_cb(captured_id);
 }
 
 // ── Keyboard ──────────────────────────────────────────────────────────

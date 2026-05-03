@@ -3415,6 +3415,28 @@ int __stdcall EU_GetButtonState(HWND hwnd, int element_id, int* pressed, int* fo
     return 1;
 }
 
+void __stdcall EU_SetButtonOptions(HWND hwnd, int element_id,
+                                   int variant, int plain, int round,
+                                   int circle, int loading, int size) {
+    if (auto* el = find_typed_element<Button>(hwnd, element_id)) {
+        el->set_options(variant, plain, round, circle, loading, size);
+    }
+}
+
+int __stdcall EU_GetButtonOptions(HWND hwnd, int element_id,
+                                  int* variant, int* plain, int* round,
+                                  int* circle, int* loading, int* size) {
+    auto* el = find_typed_element<Button>(hwnd, element_id);
+    if (!el) return 0;
+    if (variant) *variant = el->variant;
+    if (plain) *plain = el->plain ? 1 : 0;
+    if (round) *round = el->round ? 1 : 0;
+    if (circle) *circle = el->circle ? 1 : 0;
+    if (loading) *loading = el->loading ? 1 : 0;
+    if (size) *size = el->size;
+    return 1;
+}
+
 void __stdcall EU_SetEditBoxText(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
     if (auto* el = find_typed_element<EditBox>(hwnd, element_id)) {
         el->set_value(utf8_to_wide(bytes, len));

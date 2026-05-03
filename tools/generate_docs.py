@@ -178,8 +178,8 @@ import ctypes
 from ctypes import wintypes
 import sys
 
-sys.path.insert(0, "tests/python")
-import test_new_emoji as ui
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
 
 hwnd = ui.create_window("✨ new_emoji 示例", 240, 120, 820, 560)
 root = ui.create_container(hwnd, 0, 0, 0, 780, 500)
@@ -270,8 +270,8 @@ from ctypes import wintypes
 import time
 import sys
 
-sys.path.insert(0, "tests/python")
-import test_new_emoji as ui
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
 
 @ui.CloseCallback
 def on_close(hwnd):
@@ -390,7 +390,7 @@ Python helper 和 DLL API 中的窗口、控件坐标通常按逻辑尺寸传入
 - 对应 `docs/components/*.md`
 - `docs/components/README.md`
 - `docs/api-index.md`
-- `tests/python/test_new_emoji.py`
+- `examples/python/new_emoji_ui.py`
 - `DLL命令/易语言DLL命令.md`
 - 必要时更新独立测试文件
 """
@@ -400,7 +400,7 @@ def example_python() -> str:
     return """
 # Python 示例说明
 
-Python 示例和测试使用 `ctypes` 加载 `new_emoji.dll`。推荐复用 `tests/python/test_new_emoji.py`，其中已经声明了导出函数签名和常用 helper。
+Python 示例和测试使用 `ctypes` 加载 `new_emoji.dll`。推荐复用 `examples/python/new_emoji_ui.py`，其中已经声明了导出函数签名和常用 helper。
 
 ## 位数检查
 
@@ -456,7 +456,7 @@ C# 可通过 P/Invoke 调用 `new_emoji.dll`。注意应用进程位数必须和
 - 文本参数按 UTF-8 byte array 传递。
 - 回调保持 `StdCall` 调用约定。
 
-更完整的 P/Invoke 声明可参考导出表 `src/new_emoji.def` 和 Python ctypes 封装 `tests/python/test_new_emoji.py`。
+更完整的 P/Invoke 声明可参考导出表 `src/new_emoji.def` 和 Python ctypes 封装 `examples/python/new_emoji_ui.py`。
 """
 
 
@@ -503,7 +503,7 @@ def component_doc(c: dict[str, str], apis: list[str]) -> str:
 |---|---|
 | 创建导出 | `{c['create']}` |
 | 组件分类 | {c['category']} |
-| Python helper | `tests/python/test_new_emoji.py` 中的 `create_{c['slug'].replace('-', '_')}` 或同类 helper |
+| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_{c['slug'].replace('-', '_')}` 或同类 helper |
 | 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
 
 ## 相关 API
@@ -517,12 +517,12 @@ def component_doc(c: dict[str, str], apis: list[str]) -> str:
 ```python
 import sys
 
-sys.path.insert(0, "tests/python")
-import test_new_emoji as ui
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
 
 hwnd = ui.create_window("✨ {c['zh']} 示例", 240, 120, 860, 560)
 root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `tests/python/test_new_emoji.py` 中的 helper 创建 `{c['name']}`。
+# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `{c['name']}`。
 # 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
 ui.dll.EU_ShowWindow(hwnd, 1)
 ```
@@ -547,7 +547,7 @@ ui.dll.EU_ShowWindow(hwnd, 1)
 
 ## 文档维护
 
-如果 `{c['name']}` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`tests/python/test_new_emoji.py` 和 `DLL命令/易语言DLL命令.md`。
+如果 `{c['name']}` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
 """
 
 

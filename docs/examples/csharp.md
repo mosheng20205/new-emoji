@@ -9,4 +9,4 @@ C# 可通过 P/Invoke 调用 `new_emoji.dll`。注意应用进程位数必须和
 - 文本参数按 UTF-8 byte array 传递。
 - 回调保持 `StdCall` 调用约定。
 
-更完整的 P/Invoke 声明可参考导出表 `src/new_emoji.def` 和 Python ctypes 封装 `tests/python/test_new_emoji.py`。
+更完整的 P/Invoke 声明可参考导出表 `src/new_emoji.def` 和 Python ctypes 封装 `examples/python/new_emoji_ui.py`。

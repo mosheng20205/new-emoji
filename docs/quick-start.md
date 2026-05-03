@@ -25,8 +25,8 @@ from ctypes import wintypes
 import time
 import sys
 
-sys.path.insert(0, "tests/python")
-import test_new_emoji as ui
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
 
 @ui.CloseCallback
 def on_close(hwnd):

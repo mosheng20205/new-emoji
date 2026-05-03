@@ -132,6 +132,8 @@ EXPORTS
     EU_SetButtonEmoji
     EU_SetButtonVariant
     EU_GetButtonState
+    EU_SetButtonOptions
+    EU_GetButtonOptions
     EU_SetEditBoxText
     EU_SetEditBoxOptions
     EU_GetEditBoxOptions

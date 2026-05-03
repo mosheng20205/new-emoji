@@ -6,6 +6,7 @@
 #include "factory.h"
 #include "window_state.h"
 #include "element_tree.h"
+#include "element_button.h"
 #include "element_titlebar.h"
 #include "element_editbox.h"
 #include "element_messagebox.h"
@@ -23,6 +24,7 @@ extern HMODULE g_module;
 std::map<HWND, WindowState*> g_windows;
 static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
+extern std::map<UINT_PTR, Button*> g_button_timer_map;
 extern std::map<UINT_PTR, Carousel*> g_carousel_timer_map;
 extern std::map<UINT_PTR, Notification*> g_notification_timer_map;
 extern std::map<UINT_PTR, Loading*> g_loading_timer_map;
@@ -300,6 +302,10 @@ void register_window_class() {
                 return 0;
             }
             if (auto it = g_loading_timer_map.find((UINT_PTR)wp); it != g_loading_timer_map.end()) {
+                if (it->second) it->second->tick(33);
+                return 0;
+            }
+            if (auto it = g_button_timer_map.find((UINT_PTR)wp); it != g_button_timer_map.end()) {
                 if (it->second) it->second->tick(33);
                 return 0;
             }

@@ -12,7 +12,7 @@
 |---|---|
 | 创建导出 | `EU_CreateUpload` |
 | 组件分类 | 媒体/工具 |
-| Python helper | `tests/python/test_new_emoji.py` 中的 `create_upload` 或同类 helper |
+| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_upload` 或同类 helper |
 | 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
 
 ## 相关 API
@@ -38,12 +38,12 @@
 ```python
 import sys
 
-sys.path.insert(0, "tests/python")
-import test_new_emoji as ui
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
 
 hwnd = ui.create_window("✨ 上传 示例", 240, 120, 860, 560)
 root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `tests/python/test_new_emoji.py` 中的 helper 创建 `Upload`。
+# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Upload`。
 # 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
 ui.dll.EU_ShowWindow(hwnd, 1)
 ```
@@ -68,4 +68,4 @@ ui.dll.EU_ShowWindow(hwnd, 1)
 
 ## 文档维护
 
-如果 `Upload` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`tests/python/test_new_emoji.py` 和 `DLL命令/易语言DLL命令.md`。
+如果 `Upload` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。

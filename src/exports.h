@@ -402,6 +402,12 @@ int  __stdcall EU_GetDividerSpacing(HWND hwnd, int element_id, int* margin, int*
 void __stdcall EU_SetButtonEmoji(HWND hwnd, int element_id, const unsigned char* bytes, int len);
 void __stdcall EU_SetButtonVariant(HWND hwnd, int element_id, int variant);
 int  __stdcall EU_GetButtonState(HWND hwnd, int element_id, int* pressed, int* focused, int* variant);
+void __stdcall EU_SetButtonOptions(HWND hwnd, int element_id,
+                                   int variant, int plain, int round,
+                                   int circle, int loading, int size);
+int  __stdcall EU_GetButtonOptions(HWND hwnd, int element_id,
+                                   int* variant, int* plain, int* round,
+                                   int* circle, int* loading, int* size);
 void __stdcall EU_SetEditBoxText(HWND hwnd, int element_id, const unsigned char* bytes, int len);
 void __stdcall EU_SetEditBoxOptions(HWND hwnd, int element_id, int readonly, int password, int multiline,
                                     Color focus_border, const unsigned char* placeholder_bytes, int placeholder_len);

@@ -645,6 +645,18 @@ dll.EU_GetButtonState.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                   ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetButtonState.restype = ctypes.c_int
+dll.EU_SetButtonOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+]
+dll.EU_GetButtonOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetButtonOptions.restype = ctypes.c_int
 dll.EU_SetEditBoxText.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetEditBoxOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2172,15 +2184,19 @@ def create_panel(hwnd, parent_id=0, x=0, y=0, w=800, h=600, color=0):
         dll.EU_SetElementColor(hwnd, pid, color, 0xFFFFFFFF)
     return pid
 
-def create_button(hwnd, parent_id, emoji="", text="Button", x=0, y=0, w=200, h=40):
+def create_button(hwnd, parent_id, emoji="", text="Button", x=0, y=0, w=200, h=40,
+                  variant=0, plain=False, round=False, circle=False, loading=False, size=0):
     e_data = make_utf8(emoji)
     t_data = make_utf8(text)
-    return dll.EU_CreateButton(
+    element_id = dll.EU_CreateButton(
         hwnd, parent_id,
         (ctypes.c_ubyte * len(e_data))(*e_data), len(e_data),
         (ctypes.c_ubyte * len(t_data))(*t_data), len(t_data),
         x, y, w, h
     )
+    if element_id and (variant or plain or round or circle or loading or size):
+        set_button_options(hwnd, element_id, variant, plain, round, circle, loading, size)
+    return element_id
 
 def create_editbox(hwnd, parent_id, x=0, y=0, w=300, h=32):
     return dll.EU_CreateEditBox(hwnd, parent_id, x, y, w, h)
@@ -2241,6 +2257,9 @@ def get_element_visible(hwnd, element_id):
 
 def get_element_enabled(hwnd, element_id):
     return bool(dll.EU_GetElementEnabled(hwnd, element_id))
+
+def set_element_enabled(hwnd, element_id, enabled=True):
+    dll.EU_SetElementEnabled(hwnd, element_id, 1 if enabled else 0)
 
 def create_infobox(hwnd, parent_id, title="Info", text="", x=0, y=0, w=420, h=86):
     title_data = make_utf8(title)
@@ -2392,6 +2411,42 @@ def set_button_emoji(hwnd, element_id, emoji=""):
 
 def set_button_variant(hwnd, element_id, variant=0):
     dll.EU_SetButtonVariant(hwnd, element_id, variant)
+
+def set_button_options(hwnd, element_id, variant=0, plain=False, round=False,
+                       circle=False, loading=False, size=0):
+    dll.EU_SetButtonOptions(
+        hwnd, element_id,
+        variant,
+        1 if plain else 0,
+        1 if round else 0,
+        1 if circle else 0,
+        1 if loading else 0,
+        size,
+    )
+
+def get_button_options(hwnd, element_id):
+    variant = ctypes.c_int()
+    plain = ctypes.c_int()
+    round_value = ctypes.c_int()
+    circle = ctypes.c_int()
+    loading = ctypes.c_int()
+    size = ctypes.c_int()
+    ok = dll.EU_GetButtonOptions(
+        hwnd, element_id,
+        ctypes.byref(variant), ctypes.byref(plain),
+        ctypes.byref(round_value), ctypes.byref(circle),
+        ctypes.byref(loading), ctypes.byref(size),
+    )
+    if not ok:
+        return None
+    return {
+        "variant": variant.value,
+        "plain": bool(plain.value),
+        "round": bool(round_value.value),
+        "circle": bool(circle.value),
+        "loading": bool(loading.value),
+        "size": size.value,
+    }
 
 def get_button_state(hwnd, element_id):
     pressed = ctypes.c_int()

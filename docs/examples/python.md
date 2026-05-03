@@ -1,6 +1,30 @@
 # Python 示例说明
 
-Python 示例和测试使用 `ctypes` 加载 `new_emoji.dll`。推荐复用 `tests/python/test_new_emoji.py`，其中已经声明了导出函数签名和常用 helper。
+Python 示例和测试使用 `ctypes` 加载 `new_emoji.dll`。普通示例推荐复用 `examples/python/new_emoji_ui.py`，其中已经声明了导出函数签名和常用 helper。
+
+## 组件总览
+
+运行 81 个组件的完整总览 Demo：
+
+```powershell
+python examples/python/component_gallery.py
+```
+
+该 Demo 使用中文界面和 emoji 文案，按 6 个分类分页展示所有组件：
+
+- 基础布局
+- 表单输入
+- 选择媒体
+- 数据展示
+- 图表导航
+- 反馈流程
+
+默认窗口保持 180 秒。短时间冒烟验证可以设置：
+
+```powershell
+$env:NEW_EMOJI_GALLERY_SECONDS="12"
+python examples/python/component_gallery.py
+```
 
 ## 位数检查
 
@@ -9,6 +33,29 @@ python -c "import struct; print(struct.calcsize('P') * 8, 'bit')"
 ```
 
 32 位 Python 对应 Win32 DLL，64 位 Python 对应 x64 DLL。
+
+## 最小示例
+
+```python
+import ctypes
+from ctypes import wintypes
+import sys
+
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
+
+hwnd = ui.create_window("✨ new_emoji 示例", 240, 120, 820, 560)
+root = ui.create_container(hwnd, 0, 0, 0, 780, 500)
+ui.create_text(hwnd, root, "你好，new_emoji 🚀", 32, 32, 360, 40)
+ui.create_button(hwnd, root, "✅", "确认操作", 32, 96, 160, 42)
+ui.dll.EU_ShowWindow(hwnd, 1)
+
+user32 = ctypes.windll.user32
+msg = wintypes.MSG()
+while user32.GetMessageW(ctypes.byref(msg), None, 0, 0):
+    user32.TranslateMessage(ctypes.byref(msg))
+    user32.DispatchMessageW(ctypes.byref(msg))
+```
 
 ## 示例要求
 

@@ -1,14 +1,14 @@
 # new_emoji
 
-`new_emoji` 是一个面向 易语言 / Python / C# 调用的 Windows 原生 UI DLL。它采用单一 HWND + 纯 Direct2D 渲染架构，把所有控件封装成 Element 组件，重点解决传统 GDI 子窗口在缩放和重绘时的闪烁问题，同时原生支持中文与彩色 emoji。
+`new_emoji` 是一个面向易语言 / Python / C# 调用的 Windows 原生 UI DLL。它采用单一 HWND + 纯 Direct2D / DirectWrite 渲染，把所有 UI 控件封装成 Element 组件，重点解决传统 GDI 子窗口在缩放和重绘时的闪烁问题，同时原生支持中文与彩色 emoji。
 
 ## 特性
 
-- 纯 Direct2D / DirectWrite 渲染，单窗口树，减少闪烁。
+- 纯 Direct2D / DirectWrite 渲染，单窗口元素树，减少闪烁。
 - 统一 `EU_` C API 导出，适合 DLL 方式集成。
 - 文本参数统一使用 UTF-8 字节数组 + 长度，方便易语言传递 emoji 和 Unicode 文本。
 - 支持 Win32 与 x64 Release 构建，其中 Win32 是易语言交付优先目标。
-- 组件完成度：81 / 81，所有计划内组件均已完成独立中文 emoji 验证。
+- 组件完成度：81 / 81，计划内组件均已完成独立中文 emoji 验证。
 - 内置主题、DPI、键鼠交互、Set/Get 状态读回和 Python ctypes helper。
 
 ## 快速入口
@@ -18,10 +18,30 @@
 - [构建说明](docs/build.md)
 - [API 约定](docs/api-conventions.md)
 - [组件文档导航](docs/components/README.md)
+- [Python 示例说明](docs/examples/python.md)
 - [易语言 DLL 命令](DLL命令/易语言DLL命令.md)
 - [贡献指南](CONTRIBUTING.md)
 - [更新日志](CHANGELOG.md)
 - [许可证](LICENSE)
+
+## 组件总览 Demo
+
+运行完整组件总览：
+
+```powershell
+python examples/python/component_gallery.py
+```
+
+该 Demo 展示当前 81 个组件，包含中文界面、emoji 渲染、主题切换、分类分页、常见交互和复杂组件预览。默认窗口保持 180 秒，便于检查首屏尺寸、DPI 和交互效果。
+
+如果只想短时间冒烟验证：
+
+```powershell
+$env:NEW_EMOJI_GALLERY_SECONDS="12"
+python examples/python/component_gallery.py
+```
+
+公共 Python ctypes 封装位于 `examples/python/new_emoji_ui.py`，普通示例建议优先复用它，而不是从测试目录导入 helper。
 
 ## 最短 Python 示例
 
@@ -30,8 +50,8 @@ import ctypes
 from ctypes import wintypes
 import sys
 
-sys.path.insert(0, "tests/python")
-import test_new_emoji as ui
+sys.path.insert(0, "examples/python")
+import new_emoji_ui as ui
 
 hwnd = ui.create_window("✨ new_emoji 示例", 240, 120, 820, 560)
 root = ui.create_container(hwnd, 0, 0, 0, 780, 500)
@@ -59,7 +79,7 @@ while user32.GetMessageW(ctypes.byref(msg), None, 0, 0):
 
 ## 文档维护
 
-当某个组件新增、删除、重命名或修改导出 API 时，必须同步更新该组件文档、组件导航、Python ctypes/helper 和易语言 DLL 命令文档，避免开源用户看到过期接口。
+当某个组件新增、删除、重命名或修改导出 API 时，必须同步更新该组件文档、组件导航、`docs/api-index.md`、Python ctypes/helper 和易语言 DLL 命令文档，避免开源用户看到过期接口。
 
 ## 许可证
 

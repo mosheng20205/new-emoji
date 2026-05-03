@@ -41,6 +41,7 @@ public:
     virtual void paint_overlay(RenderContext& ctx);
     virtual Element* hit_test(int x, int y);
     virtual Element* hit_test_overlay(int x, int y);
+    virtual bool accepts_input() const { return enabled; }
 
     // Input events — default no-ops
     virtual void on_mouse_enter();
