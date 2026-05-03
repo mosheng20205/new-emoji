@@ -54,6 +54,7 @@ extern HMODULE g_module;
 #include "element_mentions.h"
 #include "element_cascader.h"
 #include "element_datepicker.h"
+#include "element_daterangepicker.h"
 #include "element_timepicker.h"
 #include "element_datetimepicker.h"
 #include "element_timeselect.h"
@@ -4035,6 +4036,58 @@ int __stdcall EU_GetSwitchOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetSwitchActiveColor(HWND hwnd, int element_id, Color color) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_active_color(color);
+    }
+}
+
+Color __stdcall EU_GetSwitchActiveColor(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->active_color;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetSwitchInactiveColor(HWND hwnd, int element_id, Color color) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_inactive_color(color);
+    }
+}
+
+Color __stdcall EU_GetSwitchInactiveColor(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->inactive_color;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetSwitchValue(HWND hwnd, int element_id, int value) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_value(value);
+    }
+}
+
+int __stdcall EU_GetSwitchValue(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->get_value();
+    }
+    return 0;
+}
+
+void __stdcall EU_SetSwitchSize(HWND hwnd, int element_id, int size) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_size(size);
+    }
+}
+
+int __stdcall EU_GetSwitchSize(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->size;
+    }
+    return 0;
+}
+
 void __stdcall EU_SetSliderRange(HWND hwnd, int element_id, int min_value, int max_value) {
     if (auto* el = find_typed_element<Slider>(hwnd, element_id)) {
         el->set_range(min_value, max_value);
@@ -4193,6 +4246,19 @@ void __stdcall EU_SetInputNumberValueCallback(HWND hwnd, int element_id, Element
     if (auto* el = find_typed_element<InputNumber>(hwnd, element_id)) {
         el->value_cb = cb;
     }
+}
+
+void __stdcall EU_SetInputNumberStepStrictly(HWND hwnd, int element_id, int strict) {
+    if (auto* el = find_typed_element<InputNumber>(hwnd, element_id)) {
+        el->set_step_strictly(strict != 0);
+    }
+}
+
+int __stdcall EU_GetInputNumberStepStrictly(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<InputNumber>(hwnd, element_id)) {
+        return el->step_strictly ? 1 : 0;
+    }
+    return 0;
 }
 
 static InputGroup* find_input_group(HWND hwnd, int element_id) {
@@ -6667,6 +6733,186 @@ int __stdcall EU_GetDatePickerSelectionRange(HWND hwnd, int element_id,
     if (enabled) *enabled = range_enabled ? 1 : 0;
     return 1;
 }
+void __stdcall EU_SetDatePickerPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->end_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerFormat(HWND hwnd, int element_id,
+                                       const unsigned char* fmt_bytes, int fmt_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->date_format_str = utf8_to_wide(fmt_bytes, fmt_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerAlign(HWND hwnd, int element_id, int align) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        if (align < 0) align = 0; else if (align > 2) align = 2;
+        el->text_align = align;
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerMode(HWND hwnd, int element_id, int mode) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->set_mode(mode);
+}
+int __stdcall EU_GetDatePickerMode(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) return el->mode();
+    return 0;
+}
+void __stdcall EU_SetDatePickerMultiSelect(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->set_multi_select(enabled != 0);
+}
+int __stdcall EU_GetDatePickerSelectedDates(HWND hwnd, int element_id, unsigned char* buffer, int buf_size) {
+    auto* el = find_typed_element<DatePicker>(hwnd, element_id);
+    if (!el || el->selected_dates.empty()) return 0;
+    std::wstring result;
+    for (size_t i = 0; i < el->selected_dates.size(); ++i) {
+        if (i > 0) result += L",";
+        result += std::to_wstring(el->selected_dates[i]);
+    }
+    std::string utf8 = wide_to_utf8(result);
+    int needed = (int)utf8.size();
+    if (buffer && buf_size > needed) { memcpy(buffer, utf8.data(), needed + 1); }
+    return needed;
+}
+void __stdcall EU_SetDatePickerShortcuts(HWND hwnd, int element_id,
+                                          const unsigned char* sc_bytes, int sc_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        std::wstring text = utf8_to_wide(sc_bytes, sc_len);
+        std::vector<DatePicker::DateShortcut> items;
+        size_t pos = 0;
+        while (pos < text.size()) {
+            size_t nl = text.find(L'\n', pos);
+            if (nl == std::wstring::npos) nl = text.size();
+            std::wstring line = text.substr(pos, nl - pos);
+            size_t p1 = line.find(L'|');
+            if (p1 != std::wstring::npos) {
+                DatePicker::DateShortcut s;
+                s.text = line.substr(0, p1);
+                size_t p2 = line.find(L'|', p1 + 1);
+                std::wstring val1 = (p1 + 1 < line.size()) ? line.substr(p1 + 1, p2 != std::wstring::npos ? p2 - p1 - 1 : std::wstring::npos) : L"";
+                s.yyyymmdd = _wtoi(val1.c_str());
+                s.yyyymmdd_end = (p2 != std::wstring::npos && p2 + 1 < line.size()) ? _wtoi(line.substr(p2 + 1).c_str()) : 0;
+                items.push_back(s);
+            }
+            pos = nl + 1;
+        }
+        el->set_shortcuts(items);
+    }
+}
+void __stdcall EU_SetDatePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                     int (*cb)(int id, int yyyymmdd)) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->disabled_date_cb = cb;
+}
+
+int __stdcall EU_CreateDateRangePicker(HWND hwnd, int parent_id,
+                                        int start_yyyymmdd, int end_yyyymmdd,
+                                        int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<DateRangePicker>();
+    el->set_logical_bounds({ x, y, w, h });
+    if (start_yyyymmdd > 0 || end_yyyymmdd > 0) el->set_value(start_yyyymmdd, end_yyyymmdd);
+    ElementStyle ls = el->style;
+    ls.bg_color = 0; ls.border_color = 0; ls.fg_color = 0;
+    ls.corner_radius = 4.0f; ls.font_size = 14.0f;
+    ls.pad_left = 10; ls.pad_top = 4; ls.pad_right = 10; ls.pad_bottom = 4;
+    el->set_logical_style(ls);
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+void __stdcall EU_SetDateRangePickerValue(HWND hwnd, int element_id, int start, int end) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->set_value(start, end);
+}
+int __stdcall EU_GetDateRangePickerValue(HWND hwnd, int element_id, int* start, int* end) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        if (start) *start = el->range_start; if (end) *end = el->range_end; return 1;
+    } return 0;
+}
+void __stdcall EU_SetDateRangePickerRange(HWND hwnd, int element_id, int min, int max) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->set_range(min, max);
+}
+void __stdcall EU_SetDateRangePickerPlaceholders(HWND hwnd, int element_id,
+                                                  const unsigned char* start_bytes, int start_len,
+                                                  const unsigned char* end_bytes, int end_len) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(start_bytes, start_len);
+        el->end_placeholder = utf8_to_wide(end_bytes, end_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateRangePickerSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len); el->invalidate();
+    }
+}
+void __stdcall EU_SetDateRangePickerFormat(HWND hwnd, int element_id, int fmt) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) { el->date_format = fmt; el->invalidate(); }
+}
+void __stdcall EU_SetDateRangePickerAlign(HWND hwnd, int element_id, int align) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) { el->text_align = align; el->invalidate(); }
+}
+void __stdcall EU_SetDateRangePickerShortcuts(HWND hwnd, int element_id,
+                                               const unsigned char* sc_bytes, int sc_len) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        std::wstring text = utf8_to_wide(sc_bytes, sc_len);
+        std::vector<DateRangePicker::Shortcut> items;
+        size_t pos = 0;
+        while (pos < text.size()) {
+            size_t nl = text.find(L'\n', pos); if (nl == std::wstring::npos) nl = text.size();
+            std::wstring line = text.substr(pos, nl - pos);
+            size_t p1 = line.find(L'|');
+            if (p1 != std::wstring::npos) {
+                DateRangePicker::Shortcut s; s.text = line.substr(0, p1);
+                size_t p2 = line.find(L'|', p1 + 1);
+                s.yyyymmdd = _wtoi(line.substr(p1 + 1, p2 != std::wstring::npos ? p2 - p1 - 1 : std::wstring::npos).c_str());
+                s.yyyymmdd_end = (p2 != std::wstring::npos) ? _wtoi(line.substr(p2 + 1).c_str()) : 0;
+                items.push_back(s);
+            } pos = nl + 1;
+        }
+        el->shortcuts = items; el->invalidate();
+    }
+}
+void __stdcall EU_SetDateRangePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                          int (*cb)(int id, int yyyymmdd)) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->disabled_date_cb = cb;
+}
+void __stdcall EU_SetDateRangePickerOpen(HWND hwnd, int element_id, int open) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->set_open(open != 0);
+}
+int __stdcall EU_GetDateRangePickerOpen(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) return el->open ? 1 : 0; return 0;
+}
+void __stdcall EU_DateRangePickerClear(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->clear_value();
+}
 
 void __stdcall EU_SetTimePickerTime(HWND hwnd, int element_id, int hour, int minute) {
     if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
@@ -6844,6 +7090,143 @@ int __stdcall EU_GetDateTimePickerScroll(HWND hwnd, int element_id,
     if (hour_scroll) *hour_scroll = h;
     if (minute_scroll) *minute_scroll = m;
     return 1;
+}
+
+void __stdcall EU_SetDateTimePickerShortcuts(HWND hwnd, int element_id,
+                                              const unsigned char* sc_bytes, int sc_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        std::wstring text = utf8_to_wide(sc_bytes, sc_len);
+        std::vector<DateTimePicker::DateShortcut> items;
+        size_t pos = 0;
+        while (pos < text.size()) {
+            size_t nl = text.find(L'\n', pos);
+            if (nl == std::wstring::npos) nl = text.size();
+            std::wstring line = text.substr(pos, nl - pos);
+            size_t p1 = line.find(L'|');
+            if (p1 != std::wstring::npos) {
+                DateTimePicker::DateShortcut s;
+                s.text = line.substr(0, p1);
+                size_t p2 = line.find(L'|', p1 + 1);
+                std::wstring val1 = (p1 + 1 < line.size()) ? line.substr(p1 + 1, p2 != std::wstring::npos ? p2 - p1 - 1 : std::wstring::npos) : L"";
+                s.yyyymmdd = _wtoi(val1.c_str());
+                s.yyyymmdd_end = (p2 != std::wstring::npos && p2 + 1 < line.size()) ? _wtoi(line.substr(p2 + 1).c_str()) : 0;
+                items.push_back(s);
+            }
+            pos = nl + 1;
+        }
+        el->set_shortcuts(items);
+    }
+}
+void __stdcall EU_SetDateTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                     const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                                   const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->end_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateTimePickerDefaultTime(HWND hwnd, int element_id, int hour, int minute) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->set_default_time(hour, minute);
+    }
+}
+void __stdcall EU_SetDateTimePickerRangeDefaultTime(HWND hwnd, int element_id,
+                                                     int start_hour, int start_minute,
+                                                     int end_hour, int end_minute) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->set_range_default_time(start_hour, start_minute, end_hour, end_minute);
+    }
+}
+void __stdcall EU_SetDateTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                                   const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                                int start_date, int start_time,
+                                                int end_date, int end_time) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->set_selection_range(start_date, start_time, end_date, end_time, enabled != 0);
+    }
+}
+int __stdcall EU_GetDateTimePickerRangeValue(HWND hwnd, int element_id,
+                                              int* start_date, int* start_time,
+                                              int* end_date, int* end_time, int* enabled) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        int sd = 0, st = 0, ed = 0, et = 0;
+        bool en = false;
+        el->get_selection_range(sd, st, ed, et, en);
+        if (start_date) *start_date = sd;
+        if (start_time) *start_time = st;
+        if (end_date) *end_date = ed;
+        if (end_time) *end_time = et;
+        if (enabled) *enabled = en ? 1 : 0;
+        return 1;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetTimePickerArrowControl(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->arrow_control = enabled != 0;
+        el->invalidate();
+    }
+}
+int __stdcall EU_GetTimePickerArrowControl(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) return el->arrow_control ? 1 : 0;
+    return 0;
+}
+void __stdcall EU_SetTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                            int start_hhmm, int end_hhmm) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->set_selection_range(start_hhmm, end_hhmm, enabled != 0);
+    }
+}
+int __stdcall EU_GetTimePickerRangeValue(HWND hwnd, int element_id,
+                                          int* start_hhmm, int* end_hhmm, int* enabled) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        if (start_hhmm) *start_hhmm = el->range_start_has_value ? el->range_start : 0;
+        if (end_hhmm) *end_hhmm = el->range_end_has_value ? el->range_end : 0;
+        if (enabled) *enabled = el->range_select ? 1 : 0;
+        return 1;
+    }
+    return 0;
+}
+void __stdcall EU_SetTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->end_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetTimeSelectPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<TimeSelect>(hwnd, element_id)) {
+        el->placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
 }
 
 void __stdcall EU_SetTimeSelectTime(HWND hwnd, int element_id, int hour, int minute) {

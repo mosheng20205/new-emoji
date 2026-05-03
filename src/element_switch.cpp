@@ -34,14 +34,20 @@ void Switch::paint(RenderContext& ctx) {
 
     float track_h = (std::max)(14.0f, style.font_size * 1.1f);
     track_h = (std::min)(track_h, 22.0f);
+    if (size == 1) { track_h -= 3.0f; } else if (size == 2) { track_h -= 6.0f; }
     float track_w = (std::max)(34.0f, track_h * 1.9f);
+    if (size == 1) track_w -= 4.0f; else if (size == 2) track_w -= 8.0f;
     float track_x = (float)style.pad_left;
     float track_y = ((float)bounds.h - track_h) * 0.5f;
     if (track_y < (float)style.pad_top) track_y = (float)style.pad_top;
 
     float radius = track_h * 0.5f;
-    Color track_fill = loading ? 0xFFE6A23C : (checked ? t->accent : (hovered ? t->button_hover : t->button_bg));
-    Color track_border = loading ? 0xFFE6A23C : (checked ? t->accent : (style.border_color ? style.border_color : t->border_default));
+    Color track_fill = loading ? 0xFFE6A23C
+        : (checked ? (active_color ? active_color : t->accent)
+                   : (inactive_color ? inactive_color : (hovered ? t->button_hover : t->button_bg)));
+    Color track_border = loading ? 0xFFE6A23C
+        : (checked ? (active_color ? active_color : t->accent)
+                   : (inactive_color ? inactive_color : (style.border_color ? style.border_color : t->border_default)));
     if (!enabled) {
         track_fill = t->button_bg;
         track_border = t->border_default;
@@ -117,13 +123,43 @@ void Switch::on_key_up(int vk, int) {
     }
 }
 
-void Switch::set_checked(bool value) {
-    checked = value;
+void Switch::set_checked(bool val) {
+    checked = val;
+    value = checked ? active_value : inactive_value;
     invalidate();
 }
 
-void Switch::set_loading(bool value) {
-    loading = value;
+void Switch::set_loading(bool val) {
+    loading = val;
+    invalidate();
+}
+
+void Switch::set_value(int v) {
+    value = v;
+    if (v == active_value) checked = true;
+    else if (v == inactive_value) checked = false;
+    else checked = (std::abs)(v - active_value) <= (std::abs)(v - inactive_value);
+    value = checked ? active_value : inactive_value;
+    invalidate();
+}
+
+int Switch::get_value() const {
+    return checked ? active_value : inactive_value;
+}
+
+void Switch::set_active_color(Color c) {
+    active_color = c;
+    invalidate();
+}
+
+void Switch::set_inactive_color(Color c) {
+    inactive_color = c;
+    invalidate();
+}
+
+void Switch::set_size(int sz) {
+    if (sz < 0) sz = 0; else if (sz > 2) sz = 2;
+    size = sz;
     invalidate();
 }
 

@@ -224,6 +224,7 @@
     <ClInclude Include="src\element_mentions.h" />
     <ClInclude Include="src\element_cascader.h" />
     <ClInclude Include="src\element_datepicker.h" />
+    <ClInclude Include="src\element_daterangepicker.h" />
     <ClInclude Include="src\element_timepicker.h" />
     <ClInclude Include="src\element_datetimepicker.h" />
     <ClInclude Include="src\element_timeselect.h" />
@@ -314,6 +315,7 @@
     <ClCompile Include="src\element_mentions.cpp" />
     <ClCompile Include="src\element_cascader.cpp" />
     <ClCompile Include="src\element_datepicker.cpp" />
+    <ClCompile Include="src\element_daterangepicker.cpp" />
     <ClCompile Include="src\element_timepicker.cpp" />
     <ClCompile Include="src\element_datetimepicker.cpp" />
     <ClCompile Include="src\element_timeselect.cpp" />

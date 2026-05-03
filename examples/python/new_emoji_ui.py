@@ -893,6 +893,18 @@ dll.EU_GetSwitchOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetSwitchOptions.restype = ctypes.c_int
+dll.EU_SetSwitchActiveColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetSwitchActiveColor.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchActiveColor.restype = ctypes.c_uint32
+dll.EU_SetSwitchInactiveColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetSwitchInactiveColor.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchInactiveColor.restype = ctypes.c_uint32
+dll.EU_SetSwitchValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSwitchValue.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchValue.restype = ctypes.c_int
+dll.EU_SetSwitchSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSwitchSize.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchSize.restype = ctypes.c_int
 dll.EU_SetSliderRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSliderValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetSliderValue.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -940,6 +952,9 @@ dll.EU_GetInputNumberState.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetInputNumberState.restype = ctypes.c_int
 dll.EU_SetInputNumberValueCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_SetInputNumberStepStrictly.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputNumberStepStrictly.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputNumberStepStrictly.restype = ctypes.c_int
 dll.EU_SetInputValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetInputValue.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1599,6 +1614,34 @@ dll.EU_GetDatePickerSelectionRange.argtypes = [wintypes.HWND, ctypes.c_int,
                                                ctypes.POINTER(ctypes.c_int),
                                                ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDatePickerSelectionRange.restype = ctypes.c_int
+dll.EU_SetDatePickerPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerFormat.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDatePickerMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDatePickerMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDatePickerMode.restype = ctypes.c_int
+dll.EU_SetDatePickerMultiSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDatePickerSelectedDates.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDatePickerSelectedDates.restype = ctypes.c_int
+dll.EU_SetDatePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_CreateDateRangePicker.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateDateRangePicker.restype = ctypes.c_int
+dll.EU_SetDateRangePickerValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateRangePickerValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDateRangePickerValue.restype = ctypes.c_int
+dll.EU_SetDateRangePickerRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateRangePickerPlaceholders.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateRangePickerSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateRangePickerFormat.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateRangePickerAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateRangePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateRangePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_SetDateRangePickerOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateRangePickerOpen.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDateRangePickerOpen.restype = ctypes.c_int
+dll.EU_DateRangePickerClear.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_SetTimePickerTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int]
 dll.EU_SetTimePickerRange.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1620,6 +1663,15 @@ dll.EU_GetTimePickerOptions.restype = ctypes.c_int
 dll.EU_GetTimePickerScroll.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimePickerScroll.restype = ctypes.c_int
+dll.EU_SetTimePickerArrowControl.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTimePickerArrowControl.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTimePickerArrowControl.restype = ctypes.c_int
+dll.EU_SetTimePickerRangeSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTimePickerStartPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTimePickerEndPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTimePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTimePickerRangeValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTimePickerRangeValue.restype = ctypes.c_int
 dll.EU_SetDateTimePickerDateTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                              ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                              ctypes.c_int, ctypes.c_int]
@@ -1652,6 +1704,15 @@ dll.EU_GetDateTimePickerOptions.restype = ctypes.c_int
 dll.EU_GetDateTimePickerScroll.argtypes = [wintypes.HWND, ctypes.c_int,
                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDateTimePickerScroll.restype = ctypes.c_int
+dll.EU_SetDateTimePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerStartPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerEndPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerDefaultTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateTimePickerRangeDefaultTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateTimePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerRangeSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateTimePickerRangeValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDateTimePickerRangeValue.restype = ctypes.c_int
 dll.EU_SetTimeSelectTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int]
 dll.EU_SetTimeSelectRange.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1674,6 +1735,7 @@ dll.EU_GetTimeSelectState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimeSelectState.restype = ctypes.c_int
+dll.EU_SetTimeSelectPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDropdownItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDropdownSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -3155,6 +3217,30 @@ def get_switch_options(hwnd, element_id):
         return None
     return bool(checked.value), bool(loading.value), bool(has_active.value), bool(has_inactive.value)
 
+def set_switch_active_color(hwnd, element_id, color):
+    dll.EU_SetSwitchActiveColor(hwnd, element_id, color)
+
+def get_switch_active_color(hwnd, element_id):
+    return dll.EU_GetSwitchActiveColor(hwnd, element_id)
+
+def set_switch_inactive_color(hwnd, element_id, color):
+    dll.EU_SetSwitchInactiveColor(hwnd, element_id, color)
+
+def get_switch_inactive_color(hwnd, element_id):
+    return dll.EU_GetSwitchInactiveColor(hwnd, element_id)
+
+def set_switch_value(hwnd, element_id, value):
+    dll.EU_SetSwitchValue(hwnd, element_id, value)
+
+def get_switch_value(hwnd, element_id):
+    return dll.EU_GetSwitchValue(hwnd, element_id)
+
+def set_switch_size(hwnd, element_id, size):
+    dll.EU_SetSwitchSize(hwnd, element_id, size)
+
+def get_switch_size(hwnd, element_id):
+    return dll.EU_GetSwitchSize(hwnd, element_id)
+
 def create_slider(hwnd, parent_id, text="Slider", min_value=0, max_value=100, value=40,
                   x=0, y=0, w=360, h=54, step=None, show_tooltip=None):
     data = make_utf8(text)
@@ -3270,6 +3356,12 @@ def get_input_number_state(hwnd, element_id):
     if not ok:
         return None
     return precision.value, bool(editing.value), bool(valid.value), bool(can_decrease.value), bool(can_increase.value)
+
+def set_input_number_step_strictly(hwnd, element_id, strict=True):
+    dll.EU_SetInputNumberStepStrictly(hwnd, element_id, 1 if strict else 0)
+
+def get_input_number_step_strictly(hwnd, element_id):
+    return bool(dll.EU_GetInputNumberStepStrictly(hwnd, element_id))
 
 def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
                  prefix="", suffix="", clearable=False,
@@ -5421,6 +5513,86 @@ def get_datepicker_selection_range(hwnd, element_id):
     )
     return (start_value.value, end_value.value, bool(enabled.value)) if ok else None
 
+def set_datepicker_placeholder(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetDatePickerPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datepicker_range_separator(hwnd, element_id, sep):
+    data = make_utf8(sep)
+    dll.EU_SetDatePickerRangeSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datepicker_format(hwnd, element_id, fmt):
+    data = make_utf8(fmt)
+    dll.EU_SetDatePickerFormat(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datepicker_align(hwnd, element_id, align=0):
+    dll.EU_SetDatePickerAlign(hwnd, element_id, align)
+
+def set_datepicker_mode(hwnd, element_id, mode=0):
+    dll.EU_SetDatePickerMode(hwnd, element_id, mode)
+
+def get_datepicker_mode(hwnd, element_id):
+    return dll.EU_GetDatePickerMode(hwnd, element_id)
+
+def set_datepicker_multi_select(hwnd, element_id, enabled=True):
+    dll.EU_SetDatePickerMultiSelect(hwnd, element_id, 1 if enabled else 0)
+
+def get_datepicker_selected_dates(hwnd, element_id):
+    needed = dll.EU_GetDatePickerSelectedDates(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return []
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    copied = dll.EU_GetDatePickerSelectedDates(hwnd, element_id, buf, needed + 1)
+    raw = bytes(buf[:min(copied, needed)])
+    return [int(s) for s in raw.decode("utf-8", errors="replace").split(",") if s]
+
+def set_datepicker_shortcuts(hwnd, element_id, shortcuts_text):
+    data = make_utf8(shortcuts_text)
+    dll.EU_SetDatePickerShortcuts(hwnd, element_id, bytes_arg(data), len(data))
+
+def create_date_range_picker(hwnd, parent_id, start=0, end=0,
+                              x=0, y=0, w=360, h=42):
+    return dll.EU_CreateDateRangePicker(hwnd, parent_id, start, end, x, y, w, h)
+
+def set_date_range_picker_value(hwnd, element_id, start, end):
+    dll.EU_SetDateRangePickerValue(hwnd, element_id, start, end)
+
+def get_date_range_picker_value(hwnd, element_id):
+    s = ctypes.c_int(); e = ctypes.c_int()
+    if dll.EU_GetDateRangePickerValue(hwnd, element_id, ctypes.byref(s), ctypes.byref(e)):
+        return (s.value, e.value)
+    return None
+
+def set_date_range_picker_range(hwnd, element_id, min_v, max_v):
+    dll.EU_SetDateRangePickerRange(hwnd, element_id, min_v, max_v)
+
+def set_date_range_picker_placeholders(hwnd, element_id, start_text, end_text):
+    sd = make_utf8(start_text); ed = make_utf8(end_text)
+    dll.EU_SetDateRangePickerPlaceholders(hwnd, element_id, bytes_arg(sd), len(sd), bytes_arg(ed), len(ed))
+
+def set_date_range_picker_separator(hwnd, element_id, sep):
+    data = make_utf8(sep)
+    dll.EU_SetDateRangePickerSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_date_range_picker_format(hwnd, element_id, fmt=0):
+    dll.EU_SetDateRangePickerFormat(hwnd, element_id, fmt)
+
+def set_date_range_picker_align(hwnd, element_id, align=0):
+    dll.EU_SetDateRangePickerAlign(hwnd, element_id, align)
+
+def set_date_range_picker_shortcuts(hwnd, element_id, shortcuts_text):
+    data = make_utf8(shortcuts_text)
+    dll.EU_SetDateRangePickerShortcuts(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_date_range_picker_open(hwnd, element_id, open_state):
+    dll.EU_SetDateRangePickerOpen(hwnd, element_id, 1 if open_state else 0)
+
+def get_date_range_picker_open(hwnd, element_id):
+    return bool(dll.EU_GetDateRangePickerOpen(hwnd, element_id))
+
+def date_range_picker_clear(hwnd, element_id):
+    dll.EU_DateRangePickerClear(hwnd, element_id)
+
 def set_timepicker_time(hwnd, element_id, hour=9, minute=30):
     dll.EU_SetTimePickerTime(hwnd, element_id, hour, minute)
 
@@ -5461,6 +5633,38 @@ def get_timepicker_scroll(hwnd, element_id):
         hwnd, element_id, ctypes.byref(hour_scroll), ctypes.byref(minute_scroll)
     )
     return (hour_scroll.value, minute_scroll.value) if ok else None
+
+def set_timepicker_arrow_control(hwnd, element_id, enabled=True):
+    dll.EU_SetTimePickerArrowControl(hwnd, element_id, 1 if enabled else 0)
+
+def get_timepicker_arrow_control(hwnd, element_id):
+    return bool(dll.EU_GetTimePickerArrowControl(hwnd, element_id))
+
+def set_timepicker_range_select(hwnd, element_id, enabled=True, start_hhmm=0, end_hhmm=2359):
+    dll.EU_SetTimePickerRangeSelect(hwnd, element_id, 1 if enabled else 0, start_hhmm, end_hhmm)
+
+def set_timepicker_start_placeholder(hwnd, element_id, text="开始时间"):
+    data = make_utf8(text)
+    dll.EU_SetTimePickerStartPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_timepicker_end_placeholder(hwnd, element_id, text="结束时间"):
+    data = make_utf8(text)
+    dll.EU_SetTimePickerEndPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_timepicker_range_placeholders(hwnd, element_id, start_text="开始时间", end_text="结束时间"):
+    set_timepicker_start_placeholder(hwnd, element_id, start_text)
+    set_timepicker_end_placeholder(hwnd, element_id, end_text)
+
+def set_timepicker_range_separator(hwnd, element_id, sep=" 至 "):
+    data = make_utf8(sep)
+    dll.EU_SetTimePickerRangeSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_timepicker_range_value(hwnd, element_id):
+    st = ctypes.c_int()
+    en = ctypes.c_int()
+    enabled = ctypes.c_int()
+    ok = dll.EU_GetTimePickerRangeValue(hwnd, element_id, ctypes.byref(st), ctypes.byref(en), ctypes.byref(enabled))
+    return (st.value, en.value, bool(enabled.value)) if ok else None
 
 def set_datetimepicker_datetime(hwnd, element_id, year=2026, month=5, day=2,
                                 hour=9, minute=30):
@@ -5540,6 +5744,48 @@ def get_datetimepicker_scroll(hwnd, element_id):
     )
     return (hour_scroll.value, minute_scroll.value) if ok else None
 
+def set_datetimepicker_shortcuts(hwnd, element_id, shortcuts_text):
+    data = make_utf8(shortcuts_text)
+    dll.EU_SetDateTimePickerShortcuts(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_start_placeholder(hwnd, element_id, text="开始日期时间"):
+    data = make_utf8(text)
+    dll.EU_SetDateTimePickerStartPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_end_placeholder(hwnd, element_id, text="结束日期时间"):
+    data = make_utf8(text)
+    dll.EU_SetDateTimePickerEndPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_range_placeholders(hwnd, element_id,
+                                          start_text="开始日期时间", end_text="结束日期时间"):
+    set_datetimepicker_start_placeholder(hwnd, element_id, start_text)
+    set_datetimepicker_end_placeholder(hwnd, element_id, end_text)
+
+def set_datetimepicker_default_time(hwnd, element_id, hour=9, minute=0):
+    dll.EU_SetDateTimePickerDefaultTime(hwnd, element_id, hour, minute)
+
+def set_datetimepicker_range_default_time(hwnd, element_id,
+                                          start_hour=0, start_minute=0,
+                                          end_hour=0, end_minute=0):
+    dll.EU_SetDateTimePickerRangeDefaultTime(
+        hwnd, element_id, start_hour, start_minute, end_hour, end_minute
+    )
+
+def set_datetimepicker_range_separator(hwnd, element_id, sep=" 至 "):
+    data = make_utf8(sep)
+    dll.EU_SetDateTimePickerRangeSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_range_select(hwnd, element_id, enabled=True,
+                                     start_date=0, start_time=0, end_date=0, end_time=0):
+    dll.EU_SetDateTimePickerRangeSelect(hwnd, element_id, 1 if enabled else 0,
+                                         start_date, start_time, end_date, end_time)
+
+def get_datetimepicker_range_value(hwnd, element_id):
+    sd = ctypes.c_int(); st = ctypes.c_int(); ed = ctypes.c_int(); et = ctypes.c_int(); en = ctypes.c_int()
+    ok = dll.EU_GetDateTimePickerRangeValue(hwnd, element_id,
+        ctypes.byref(sd), ctypes.byref(st), ctypes.byref(ed), ctypes.byref(et), ctypes.byref(en))
+    return (sd.value, st.value, ed.value, et.value, bool(en.value)) if ok else None
+
 def set_time_select_time(hwnd, element_id, hour=9, minute=30):
     dll.EU_SetTimeSelectTime(hwnd, element_id, hour, minute)
 
@@ -5589,6 +5835,10 @@ def get_time_select_state(hwnd, element_id):
         group_count.value,
         active_index.value,
     ) if ok else None
+
+def set_time_select_placeholder(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetTimeSelectPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
 
 def create_dropdown(hwnd, parent_id, text="📂 更多操作", items=None, selected=0,
                     x=0, y=0, w=180, h=36):

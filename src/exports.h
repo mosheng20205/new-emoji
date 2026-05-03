@@ -511,6 +511,14 @@ void __stdcall EU_SetSwitchTexts(HWND hwnd, int element_id,
                                  const unsigned char* inactive_bytes, int inactive_len);
 int  __stdcall EU_GetSwitchOptions(HWND hwnd, int element_id,
                                   int* checked, int* loading, int* has_active_text, int* has_inactive_text);
+void __stdcall EU_SetSwitchActiveColor(HWND hwnd, int element_id, Color color);
+Color __stdcall EU_GetSwitchActiveColor(HWND hwnd, int element_id);
+void __stdcall EU_SetSwitchInactiveColor(HWND hwnd, int element_id, Color color);
+Color __stdcall EU_GetSwitchInactiveColor(HWND hwnd, int element_id);
+void __stdcall EU_SetSwitchValue(HWND hwnd, int element_id, int value);
+int  __stdcall EU_GetSwitchValue(HWND hwnd, int element_id);
+void __stdcall EU_SetSwitchSize(HWND hwnd, int element_id, int size);
+int  __stdcall EU_GetSwitchSize(HWND hwnd, int element_id);
 void __stdcall EU_SetSliderRange(HWND hwnd, int element_id, int min_value, int max_value);
 void __stdcall EU_SetSliderValue(HWND hwnd, int element_id, int value);
 int  __stdcall EU_GetSliderValue(HWND hwnd, int element_id);
@@ -537,6 +545,8 @@ int  __stdcall EU_GetInputNumberState(HWND hwnd, int element_id,
                                       int* precision, int* editing, int* valid,
                                       int* can_decrease, int* can_increase);
 void __stdcall EU_SetInputNumberValueCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+void __stdcall EU_SetInputNumberStepStrictly(HWND hwnd, int element_id, int strict);
+int  __stdcall EU_GetInputNumberStepStrictly(HWND hwnd, int element_id);
 void __stdcall EU_SetInputValue(HWND hwnd, int element_id,
                                 const unsigned char* value_bytes, int value_len);
 int  __stdcall EU_GetInputValue(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
@@ -1068,6 +1078,46 @@ void __stdcall EU_SetDatePickerSelectionRange(HWND hwnd, int element_id,
 int  __stdcall EU_GetDatePickerSelectionRange(HWND hwnd, int element_id,
                                               int* start_yyyymmdd, int* end_yyyymmdd,
                                               int* enabled);
+void __stdcall EU_SetDatePickerPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDatePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len);
+void __stdcall EU_SetDatePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDatePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDatePickerFormat(HWND hwnd, int element_id,
+                                       const unsigned char* fmt_bytes, int fmt_len);
+void __stdcall EU_SetDatePickerAlign(HWND hwnd, int element_id, int align);
+void __stdcall EU_SetDatePickerMode(HWND hwnd, int element_id, int mode);
+int  __stdcall EU_GetDatePickerMode(HWND hwnd, int element_id);
+void __stdcall EU_SetDatePickerMultiSelect(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetDatePickerSelectedDates(HWND hwnd, int element_id, unsigned char* buffer, int buf_size);
+void __stdcall EU_SetDatePickerShortcuts(HWND hwnd, int element_id,
+                                          const unsigned char* shortcuts_bytes, int shortcuts_len);
+void __stdcall EU_SetDatePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                     int (*cb)(int id, int yyyymmdd));
+int  __stdcall EU_CreateDateRangePicker(HWND hwnd, int parent_id,
+                                         int start_yyyymmdd, int end_yyyymmdd,
+                                         int x, int y, int w, int h);
+void __stdcall EU_SetDateRangePickerValue(HWND hwnd, int element_id, int start, int end);
+int  __stdcall EU_GetDateRangePickerValue(HWND hwnd, int element_id, int* start, int* end);
+void __stdcall EU_SetDateRangePickerRange(HWND hwnd, int element_id, int min, int max);
+void __stdcall EU_SetDateRangePickerPlaceholders(HWND hwnd, int element_id,
+                                                  const unsigned char* start_bytes, int start_len,
+                                                  const unsigned char* end_bytes, int end_len);
+void __stdcall EU_SetDateRangePickerSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len);
+void __stdcall EU_SetDateRangePickerFormat(HWND hwnd, int element_id, int fmt);
+void __stdcall EU_SetDateRangePickerAlign(HWND hwnd, int element_id, int align);
+void __stdcall EU_SetDateRangePickerShortcuts(HWND hwnd, int element_id,
+                                               const unsigned char* sc_bytes, int sc_len);
+void __stdcall EU_SetDateRangePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                          int (*cb)(int id, int yyyymmdd));
+void __stdcall EU_SetDateRangePickerOpen(HWND hwnd, int element_id, int open);
+int  __stdcall EU_GetDateRangePickerOpen(HWND hwnd, int element_id);
+void __stdcall EU_DateRangePickerClear(HWND hwnd, int element_id);
+
 void __stdcall EU_SetTimePickerTime(HWND hwnd, int element_id, int hour, int minute);
 void __stdcall EU_SetTimePickerRange(HWND hwnd, int element_id, int min_hhmm, int max_hhmm);
 void __stdcall EU_SetTimePickerOptions(HWND hwnd, int element_id, int step_minutes, int time_format);
@@ -1078,6 +1128,20 @@ int  __stdcall EU_GetTimePickerValue(HWND hwnd, int element_id);
 int  __stdcall EU_GetTimePickerRange(HWND hwnd, int element_id, int* min_hhmm, int* max_hhmm);
 int  __stdcall EU_GetTimePickerOptions(HWND hwnd, int element_id, int* step_minutes, int* time_format);
 int  __stdcall EU_GetTimePickerScroll(HWND hwnd, int element_id, int* hour_scroll, int* minute_scroll);
+void __stdcall EU_SetTimePickerArrowControl(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetTimePickerArrowControl(HWND hwnd, int element_id);
+void __stdcall EU_SetTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                            int start_hhmm, int end_hhmm);
+void __stdcall EU_SetTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len);
+int  __stdcall EU_GetTimePickerRangeValue(HWND hwnd, int element_id,
+                                           int* start_hhmm, int* end_hhmm, int* enabled);
+void __stdcall EU_SetTimeSelectPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len);
 void __stdcall EU_SetDateTimePickerDateTime(HWND hwnd, int element_id,
                                             int year, int month, int day,
                                             int hour, int minute);
@@ -1104,6 +1168,24 @@ int  __stdcall EU_GetDateTimePickerOptions(HWND hwnd, int element_id,
                                            int* minute_step, int* date_format);
 int  __stdcall EU_GetDateTimePickerScroll(HWND hwnd, int element_id,
                                           int* hour_scroll, int* minute_scroll);
+void __stdcall EU_SetDateTimePickerShortcuts(HWND hwnd, int element_id,
+                                              const unsigned char* shortcuts_bytes, int shortcuts_len);
+void __stdcall EU_SetDateTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                     const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDateTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                                   const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDateTimePickerDefaultTime(HWND hwnd, int element_id, int hour, int minute);
+void __stdcall EU_SetDateTimePickerRangeDefaultTime(HWND hwnd, int element_id,
+                                                     int start_hour, int start_minute,
+                                                     int end_hour, int end_minute);
+void __stdcall EU_SetDateTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                                   const unsigned char* sep_bytes, int sep_len);
+void __stdcall EU_SetDateTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                                int start_date, int start_time,
+                                                int end_date, int end_time);
+int  __stdcall EU_GetDateTimePickerRangeValue(HWND hwnd, int element_id,
+                                               int* start_date, int* start_time,
+                                               int* end_date, int* end_time, int* enabled);
 void __stdcall EU_SetTimeSelectTime(HWND hwnd, int element_id, int hour, int minute);
 void __stdcall EU_SetTimeSelectRange(HWND hwnd, int element_id, int min_hhmm, int max_hhmm);
 void __stdcall EU_SetTimeSelectOptions(HWND hwnd, int element_id, int step_minutes, int time_format);

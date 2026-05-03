@@ -123,6 +123,21 @@ def set_click(hwnd, element_id, fn):
     cb = keep_callback(ui.ClickCallback(fn))
     ui.dll.EU_SetElementClickCallback(hwnd, element_id, cb)
 
+def _create_and(element_id, setup):
+    setup(element_id)
+    return element_id
+
+def _make_tr(h, p, x, y, w, hh):
+    tid = ui.create_timepicker(h, p, 9, 0, x, y, min(w, 400), 42)
+    ui.set_timepicker_range_select(h, tid, True, 900, 1800)
+    return tid
+
+def _make_dtr(h, p, x, y, w, hh):
+    did = ui.create_datetimepicker(h, p, 2026, 5, 1, 9, 0, x, y, min(w, 480), 42)
+    ui.set_datetimepicker_range_select(h, did, True, 20260501, 900, 20260510, 1800)
+    ui.set_datetimepicker_default_time(h, did, 9, 0)
+    return did
+
 
 def palette():
     return LIGHT_THEME if current_theme_mode == 0 else DARK_THEME
@@ -639,6 +654,202 @@ def showcase_input_group(hwnd, stage, w, h):
     add_text(hwnd, base, "InputGroup 会暴露内部 element id，外部可以继续用现有 Input / Button / Select 的 Set/Get 和回调。", 36, 212, 900, 24, MUTED)
 
 
+def showcase_inputnumber(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🔢 基础、精度与范围", 28, 30, w - 56, 170)
+    ui.create_input_number(hwnd, basics, "数量 📦", 8, 0, 99, 1, 36, 70, 200, 42)
+    amount_id = ui.create_input_number(hwnd, basics, "金额 💰", 9900, 0, 20000, 25, 280, 70, 220, 42)
+    ui.set_input_number_precision(hwnd, amount_id, 2)
+    ui.create_input_number(hwnd, basics, "百分比 %", 68, 0, 100, 1, 550, 70, 180, 42)
+    ui.create_input_number(hwnd, basics, "温度 🌡️", 25, -20, 60, 5, 36, 120, 200, 42)
+    ui.create_input_number(hwnd, basics, "页码 📄", 1, 1, 500, 1, 280, 120, 160, 42)
+    add_text(hwnd, basics, "支持整数与小数精度、正负范围、步长可配。数值默认居中显示。", 520, 120, 450, 24, MUTED)
+
+    states = add_demo_panel(hwnd, stage, "🚫 禁用与严格步进", 28, 224, w - 56, 140)
+    disabled = ui.create_input_number(hwnd, states, "禁用态 🔒", 5, 0, 10, 1, 36, 66, 200, 42)
+    ui.set_element_enabled(hwnd, disabled, False)
+    strict2 = ui.create_input_number(hwnd, states, "步进×2 🔒", 4, 0, 10, 2, 280, 66, 200, 42)
+    ui.set_input_number_step_strictly(hwnd, strict2, True)
+    strict5 = ui.create_input_number(hwnd, states, "步进×5 🔒", 10, 0, 50, 5, 530, 66, 200, 42)
+    ui.set_input_number_step_strictly(hwnd, strict5, True)
+    add_text(hwnd, states, "禁用后不可交互、视觉灰化；严格步进确保值始终为步长整数倍。", 36, 106, 760, 24, MUTED)
+
+    edit = add_demo_panel(hwnd, stage, "⌨️ 键盘编辑与校验", 28, 388, w - 56, 180)
+    key1 = ui.create_input_number(hwnd, edit, "键盘操作 ⌨️", 5, 1, 20, 1, 36, 66, 220, 42)
+    key2 = ui.create_input_number(hwnd, edit, "小数精度 🎯", 1250, 0, 9999, 50, 300, 66, 240, 42)
+    ui.set_input_number_precision(hwnd, key2, 2)
+    add_text(hwnd, edit, "支持 ↑↓←→ / PageUp / PageDown / Home / End / Enter / Esc / Backspace 全键盘操作。", 36, 126, 900, 24, MUTED)
+    add_text(hwnd, edit, "点击数值区域进入编辑模式，可直接键入数字、小数点、负号；失焦或回车提交，Esc 取消。", 36, 148, 900, 24, MUTED)
+
+
+def showcase_switch(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🎚️ 基础、文字与禁用", 28, 30, w - 56, 160)
+    sw1 = ui.create_switch(hwnd, basics, "通知提醒 🔔", True, 36, 68, 200, 36)
+    ui.set_switch_texts(hwnd, sw1, "开", "关")
+    ui.create_switch(hwnd, basics, "自动更新 ⚡", True, 260, 68, 200, 36)
+    disabled = ui.create_switch(hwnd, basics, "禁用态 🔒", True, 500, 68, 200, 36)
+    ui.set_element_enabled(hwnd, disabled, False)
+    off_disabled = ui.create_switch(hwnd, basics, "禁用关闭 🔒", False, 730, 68, 200, 36)
+    ui.set_element_enabled(hwnd, off_disabled, False)
+    add_text(hwnd, basics, "开关支持自定义文字标签、加载动画和禁用态，点击或 Space/Enter 切换。", 36, 118, 900, 24, MUTED)
+
+    colors = add_demo_panel(hwnd, stage, "🎨 自定义颜色", 28, 214, w - 56, 150)
+    green_on = ui.create_switch(hwnd, colors, "按月付费 💰", True, 36, 68, 220, 36)
+    ui.set_switch_active_color(hwnd, green_on, 0xFF13CE66)
+    ui.set_switch_inactive_color(hwnd, green_on, 0xFFFF4949)
+    ui.set_switch_texts(hwnd, green_on, "月付", "年付")
+    red_off = ui.create_switch(hwnd, colors, "状态监控 🟢", False, 360, 68, 220, 36)
+    ui.set_switch_active_color(hwnd, red_off, 0xFF34D399)
+    ui.set_switch_inactive_color(hwnd, red_off, 0xFF6B7280)
+    yellow_on = ui.create_switch(hwnd, colors, "性能模式 ⚡", True, 690, 68, 220, 36)
+    ui.set_switch_active_color(hwnd, yellow_on, 0xFFF59E0B)
+    ui.set_switch_inactive_color(hwnd, yellow_on, 0xFF4B5563)
+    add_text(hwnd, colors, "自定义选中/未选中颜色覆盖主题默认色，0 值恢复主题色。", 36, 114, 900, 24, MUTED)
+
+    custom = add_demo_panel(hwnd, stage, "🔢 自定义值与尺寸", 28, 388, w - 56, 150)
+    s1 = ui.create_switch(hwnd, custom, "默认尺寸", True, 36, 66, 180, 36)
+    s2 = ui.create_switch(hwnd, custom, "中等尺寸", True, 260, 66, 180, 36)
+    ui.set_switch_size(hwnd, s2, 1)
+    s3 = ui.create_switch(hwnd, custom, "小型尺寸", True, 480, 66, 180, 36)
+    ui.set_switch_size(hwnd, s3, 2)
+    val_switch = ui.create_switch(hwnd, custom, "值=100", True, 700, 66, 180, 36)
+    ui.set_switch_value(hwnd, val_switch, 100)
+    val = ui.get_switch_value(hwnd, val_switch)
+    add_text(hwnd, custom, f"自定义开关值：{'开' if val == 100 else '关'} (value={val}) · 尺寸：默认/中等/小型", 36, 114, 900, 24, MUTED)
+
+
+def showcase_datepicker(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "📆 基础日期、区间与格式", 28, 30, w - 56, 170)
+    ui.create_datepicker(hwnd, basics, 2026, 5, 3, 30, 60, 240, 42)
+    dpr = ui.create_datepicker(hwnd, basics, 2026, 5, 1, 360, 60, 260, 42)
+    ui.dll.EU_SetDatePickerSelectionRange(hwnd, dpr, 20260501, 20260510, 1)
+    ui.set_datepicker_range_separator(hwnd, dpr, " ~ ")
+    ui.create_datepicker(hwnd, basics, 2026, 5, 15, 700, 60, 220, 42)
+    ui.set_datepicker_align(hwnd, dpr, 1)
+    add_text(hwnd, basics, "DatePicker 支持单日、区间选择、自定义分隔符和对齐方式。", 30, 118, w - 116, 24, MUTED)
+
+    modes = add_demo_panel(hwnd, stage, "🔀 月/年模式与多选", 28, 224, w - 56, 150)
+    dm = ui.create_datepicker(hwnd, modes, 2026, 5, 3, 30, 60, 220, 42)
+    ui.set_datepicker_mode(hwnd, dm, 1)
+    dy = ui.create_datepicker(hwnd, modes, 2026, 5, 3, 360, 60, 220, 42)
+    ui.set_datepicker_mode(hwnd, dy, 2)
+    dms = ui.create_datepicker(hwnd, modes, 2026, 5, 3, 660, 60, 220, 42)
+    ui.set_datepicker_multi_select(hwnd, dms, True)
+    add_text(hwnd, modes, "点击标题可切换日期→月→年模式；多选模式下点击日期增删选中项。", 30, 116, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "⚡ 快捷选项与占位符", 28, 398, w - 56, 150)
+    ds = ui.create_datepicker(hwnd, extra, 2026, 5, 3, 30, 60, 260, 42)
+    ui.set_datepicker_shortcuts(hwnd, ds, "📍 今天|20260504\n📆 昨天|20260503\n📅 一周前|20260427")
+    dp = ui.create_datepicker(hwnd, extra, 2026, 5, 3, 390, 60, 240, 42)
+    ui.set_datepicker_placeholder(hwnd, dp, "请选择日期 📅")
+    ui.dll.EU_ClearDatePicker(hwnd, dp)
+    dpf = ui.create_datepicker(hwnd, extra, 2026, 5, 3, 700, 60, 200, 42)
+    ui.set_datepicker_format(hwnd, dpf, "YYYY/MM/DD")
+    add_text(hwnd, extra, "快捷选项替换默认「今天/清空」按钮；占位符在无值时显示；格式支持自定义。", 30, 116, w - 116, 24, MUTED)
+
+
+def showcase_datetimepicker(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🗓️ 基础日期时间与默认时间", 28, 30, w - 56, 160)
+    d1 = ui.create_datetimepicker(hwnd, basics, 2026, 5, 3, 9, 30, 30, 60, 320, 42)
+    d2 = ui.create_datetimepicker(hwnd, basics, 2026, 5, 3, 14, 0, 400, 60, 320, 42)
+    ui.set_datetimepicker_default_time(hwnd, d2, 12, 0)
+    add_text(hwnd, basics, "DateTimePicker 整合日期网格和时间列；default-time 指定选取日期后的默认时刻。", 30, 120, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "⚡ 快捷选项与日期时间区间", 28, 214, w - 56, 160)
+    ds = ui.create_datetimepicker(hwnd, extra, 2026, 5, 3, 10, 0, 30, 60, 320, 42)
+    ui.set_datetimepicker_shortcuts(hwnd, ds, "📍 今天|20260504\n📆 昨天|20260503\n📅 一周前|20260427")
+    dr = ui.create_datetimepicker(hwnd, extra, 2026, 5, 1, 9, 0, 420, 60, 420, 42)
+    ui.set_datetimepicker_range_select(hwnd, dr, True, 20260501, 900, 20260510, 1800)
+    add_text(hwnd, extra, "快捷选项与 DatePicker 格式一致；区间模式支持开始/结束日期时间。", 30, 120, w - 116, 24, MUTED)
+
+
+def showcase_timepicker(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "⏰ 基础时间与箭头控制", 28, 30, w - 56, 160)
+    ui.create_timepicker(hwnd, basics, 9, 30, 30, 60, 220, 42)
+    ui.create_timepicker(hwnd, basics, 14, 0, 300, 60, 220, 42)
+    ta = ui.create_timepicker(hwnd, basics, 18, 45, 580, 60, 220, 42)
+    ui.set_timepicker_arrow_control(hwnd, ta, True)
+    add_text(hwnd, basics, "TimePicker 双列（小时/分钟）滚动选择；arrow-control 模式在列顶部显示箭头按钮。", 30, 120, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "📏 范围约束与时间区间", 28, 214, w - 56, 160)
+    tr1 = ui.create_timepicker(hwnd, extra, 10, 0, 30, 60, 240, 42)
+    ui.set_timepicker_range(hwnd, tr1, 900, 1800)
+    tr2 = ui.create_timepicker(hwnd, extra, 9, 0, 340, 60, 240, 42)
+    ui.set_timepicker_range_select(hwnd, tr2, True, 900, 1800)
+    tr3 = ui.create_timepicker(hwnd, extra, 12, 0, 650, 60, 200, 42)
+    ui.set_timepicker_options(hwnd, tr3, 30, 1)
+    add_text(hwnd, extra, "范围约束仅允许工作时间选择；区间模式支持开始/结束时间；格式切换中文显示。", 30, 120, w - 116, 24, MUTED)
+
+
+def showcase_timeselect(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🕘 基础候选与分组", 28, 30, w - 56, 160)
+    ui.create_time_select(hwnd, basics, 10, 0, 30, 60, 220, 42)
+    ts2 = ui.create_time_select(hwnd, basics, 14, 30, 300, 60, 220, 42)
+    ui.set_time_select_options(hwnd, ts2, 15, 1)
+    ts3 = ui.create_time_select(hwnd, basics, 18, 0, 580, 60, 240, 42)
+    ui.set_time_select_range(hwnd, ts3, 800, 2000)
+    add_text(hwnd, basics, "TimeSelect 下拉候选列表，凌晨/上午/下午/晚上自动分组；步进和范围可配。", 30, 120, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "📝 占位符与格式", 28, 214, w - 56, 140)
+    tsp = ui.create_time_select(hwnd, extra, 9, 0, 30, 60, 280, 42)
+    ui.set_time_select_placeholder(hwnd, tsp, "请选择时间 🕐")
+    tsf = ui.create_time_select(hwnd, extra, 12, 0, 380, 60, 240, 42)
+    ui.set_time_select_options(hwnd, tsf, 30, 1)
+    ui.set_time_select_placeholder(hwnd, tsf, "会议时间 📋")
+    add_text(hwnd, extra, "占位符文本替代默认时间显示；格式切换支持 HH时MM分 中文格式。", 30, 106, w - 116, 24, MUTED)
+
+
+def showcase_daterangepicker(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "📅 双面板日期范围", 28, 30, w - 56, 170)
+    d1 = ui.create_date_range_picker(hwnd, basics, 20260501, 20260510, 30, 60, 400, 42)
+    d2 = ui.create_date_range_picker(hwnd, basics, 20260501, 20260515, 520, 60, 380, 42)
+    ui.set_date_range_picker_format(hwnd, d2, 1)
+    ui.set_date_range_picker_separator(hwnd, d2, " ~ ")
+    add_text(hwnd, basics, "双面板日历：左面板选开始日期、右面板选结束日期，一次操作完成。格式和分隔符可自定义。", 30, 120, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "⚡ 快捷选项与占位符", 28, 224, w - 56, 150)
+    d3 = ui.create_date_range_picker(hwnd, extra, 0, 0, 30, 60, 400, 42)
+    ui.set_date_range_picker_placeholders(hwnd, d3, "入住日期", "离店日期")
+    ui.set_date_range_picker_shortcuts(hwnd, d3, "📍 本月|20260501|20260531\n📅 本周|20260504|20260510")
+    d4 = ui.create_date_range_picker(hwnd, extra, 0, 0, 520, 60, 360, 42)
+    ui.set_date_range_picker_placeholders(hwnd, d4, "开始日期", "结束日期")
+    ui.set_date_range_picker_align(hwnd, d4, 1)
+    add_text(hwnd, extra, "快捷选项支持单日和范围；占位符在未选时分别显示起止提示。", 30, 116, w - 116, 24, MUTED)
+
+
+def showcase_timerange(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🕐 时间范围选择", 28, 30, w - 56, 170)
+    tr1 = ui.create_timepicker(hwnd, basics, 9, 0, 30, 60, 320, 42)
+    ui.set_timepicker_range_select(hwnd, tr1, True, 900, 1200)
+    tr2 = ui.create_timepicker(hwnd, basics, 14, 0, 420, 60, 320, 42)
+    ui.set_timepicker_range_select(hwnd, tr2, True, 1400, 1800)
+    add_text(hwnd, basics, "TimePicker range 模式：点击开始时间 → 点击结束时间，一次性完成时间段选择。", 30, 120, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "📏 约束与格式", 28, 224, w - 56, 150)
+    tr3 = ui.create_timepicker(hwnd, extra, 8, 0, 30, 60, 300, 42)
+    ui.set_timepicker_range_select(hwnd, tr3, True, 800, 1200)
+    ui.set_timepicker_range(hwnd, tr3, 800, 2000)
+    tr4 = ui.create_timepicker(hwnd, extra, 13, 0, 430, 60, 300, 42)
+    ui.set_timepicker_range_select(hwnd, tr4, True, 1300, 1700)
+    ui.set_timepicker_options(hwnd, tr4, 30, 1)
+    add_text(hwnd, extra, "结合 min/max 约束和步进，可限定工作时间段选择；格式支持 HH时MM分。", 30, 116, w - 116, 24, MUTED)
+
+
+def showcase_datetimerange(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🗓️ 日期时间范围", 28, 30, w - 56, 170)
+    dr1 = ui.create_datetimepicker(hwnd, basics, 2026, 5, 1, 9, 0, 30, 60, 480, 42)
+    ui.set_datetimepicker_range_select(hwnd, dr1, True, 20260501, 900, 20260510, 1800)
+    dr2 = ui.create_datetimepicker(hwnd, basics, 2026, 5, 5, 14, 0, 580, 60, 360, 42)
+    ui.set_datetimepicker_range_select(hwnd, dr2, True, 20260505, 1400, 20260515, 1700)
+    ui.set_datetimepicker_default_time(hwnd, dr2, 14, 0)
+    add_text(hwnd, basics, "DateTimePicker range 模式：日期网格 + 时间列，起止各独立选择日期和时间。", 30, 120, w - 116, 24, MUTED)
+
+    extra = add_demo_panel(hwnd, stage, "⚡ 快捷选项与示例", 28, 224, w - 56, 150)
+    dr3 = ui.create_datetimepicker(hwnd, extra, 2026, 5, 3, 10, 0, 30, 60, 480, 42)
+    ui.set_datetimepicker_range_select(hwnd, dr3, True, 20260503, 1000, 20260510, 1600)
+    ui.set_datetimepicker_shortcuts(hwnd, dr3, "📍 今天全天|20260504|20260504\n📅 本周工作日|20260504|20260508")
+    add_text(hwnd, extra, "快捷选项复用 DatePicker 格式；default-time 设置日期的默认时间。", 30, 116, w - 116, 24, MUTED)
+
+
 def showcase_autocomplete(hwnd, stage, w, h):
     basics = add_demo_panel(hwnd, stage, "🔎 激活即列出 / 输入后匹配", 28, 30, w - 56, 220)
     ui.create_autocomplete(hwnd, basics, value="", placeholder="激活即列出建议",
@@ -733,6 +944,15 @@ SPECIAL_SHOWCASES = {
     "Checkbox": showcase_checkbox,
     "Input": showcase_input,
     "InputGroup": showcase_input_group,
+    "InputNumber": showcase_inputnumber,
+    "Switch": showcase_switch,
+    "DatePicker": showcase_datepicker,
+    "DateRangePicker": showcase_daterangepicker,
+    "TimeRange": showcase_timerange,
+    "DateTimeRange": showcase_datetimerange,
+    "DateTimePicker": showcase_datetimepicker,
+    "TimePicker": showcase_timepicker,
+    "TimeSelect": showcase_timeselect,
     "Autocomplete": showcase_autocomplete,
     "Tag": showcase_tag,
     "Gauge": showcase_gauge,
@@ -742,7 +962,7 @@ SPECIAL_SHOWCASES = {
 
 COMPACT_SHOWCASE = {
     "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
-    "Slider", "InputNumber", "Input", "InputGroup", "Rate", "Tag", "Badge", "Progress", "Avatar", "Statistic",
+    "Slider", "Input", "InputGroup", "Rate", "Tag", "Badge", "Progress", "Avatar", "Statistic",
     "StatusDot", "Backtop", "Segmented", "Scrollbar", "Breadcrumb", "Tabs", "Alert", "Loading",
     "Tooltip", "Popover", "Popconfirm",
 }
@@ -856,6 +1076,9 @@ def make_media_page(hwnd, root):
         ("TreeSelect", "🌲", "树选择", lambda h, p, x, y, w, hh: ui.create_tree_select(h, p, [("部门", 0, True), ("研发", 1, True), ("设计", 1, True)], 1, x, y, min(w, 620), 42), True),
         ("Transfer", "🔁", "穿梭框", lambda h, p, x, y, w, hh: ui.create_transfer(h, p, ["按钮", "输入框"], ["表格"], x, y, min(w, 900), min(hh, 320))),
         ("DatePicker", "📆", "日期选择", lambda h, p, x, y, w, hh: ui.create_datepicker(h, p, 2026, 5, 3, x, y, min(w, 520), 42), True),
+        ("DateRangePicker", "📅", "日期范围", lambda h, p, x, y, w, hh: ui.create_date_range_picker(h, p, 20260501, 20260510, x, y, min(w, 520), 42), True),
+        ("TimeRange", "🕐", "时间范围", lambda h, p, x, y, w, hh: _make_tr(h, p, x, y, w, hh), True),
+        ("DateTimeRange", "🗓️", "日期时间范围", lambda h, p, x, y, w, hh: _make_dtr(h, p, x, y, w, hh), True),
         ("TimePicker", "⏰", "时间选择", lambda h, p, x, y, w, hh: ui.create_timepicker(h, p, 9, 30, x, y, min(w, 520), 42), True),
         ("DateTimePicker", "🗓️", "日期时间", lambda h, p, x, y, w, hh: ui.create_datetimepicker(h, p, 2026, 5, 3, 9, 30, x, y, min(w, 560), 42), True),
         ("TimeSelect", "🕘", "时间候选", lambda h, p, x, y, w, hh: ui.create_time_select(h, p, 10, 0, x, y, min(w, 520), 42), True),

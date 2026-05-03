@@ -888,6 +888,18 @@ dll.EU_GetSwitchOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetSwitchOptions.restype = ctypes.c_int
+dll.EU_SetSwitchActiveColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetSwitchActiveColor.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchActiveColor.restype = ctypes.c_uint32
+dll.EU_SetSwitchInactiveColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetSwitchInactiveColor.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchInactiveColor.restype = ctypes.c_uint32
+dll.EU_SetSwitchValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSwitchValue.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchValue.restype = ctypes.c_int
+dll.EU_SetSwitchSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSwitchSize.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchSize.restype = ctypes.c_int
 dll.EU_SetSliderRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSliderValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetSliderValue.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -935,6 +947,9 @@ dll.EU_GetInputNumberState.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetInputNumberState.restype = ctypes.c_int
 dll.EU_SetInputNumberValueCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_SetInputNumberStepStrictly.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputNumberStepStrictly.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputNumberStepStrictly.restype = ctypes.c_int
 dll.EU_SetInputValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetInputValue.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1594,6 +1609,18 @@ dll.EU_GetDatePickerSelectionRange.argtypes = [wintypes.HWND, ctypes.c_int,
                                                ctypes.POINTER(ctypes.c_int),
                                                ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDatePickerSelectionRange.restype = ctypes.c_int
+dll.EU_SetDatePickerPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerFormat.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDatePickerMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDatePickerMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDatePickerMode.restype = ctypes.c_int
+dll.EU_SetDatePickerMultiSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDatePickerSelectedDates.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDatePickerSelectedDates.restype = ctypes.c_int
+dll.EU_SetDatePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
 dll.EU_SetTimePickerTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int]
 dll.EU_SetTimePickerRange.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1615,6 +1642,15 @@ dll.EU_GetTimePickerOptions.restype = ctypes.c_int
 dll.EU_GetTimePickerScroll.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimePickerScroll.restype = ctypes.c_int
+dll.EU_SetTimePickerArrowControl.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTimePickerArrowControl.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTimePickerArrowControl.restype = ctypes.c_int
+dll.EU_SetTimePickerRangeSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTimePickerStartPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTimePickerEndPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTimePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTimePickerRangeValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTimePickerRangeValue.restype = ctypes.c_int
 dll.EU_SetDateTimePickerDateTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                              ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                              ctypes.c_int, ctypes.c_int]
@@ -1647,6 +1683,15 @@ dll.EU_GetDateTimePickerOptions.restype = ctypes.c_int
 dll.EU_GetDateTimePickerScroll.argtypes = [wintypes.HWND, ctypes.c_int,
                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDateTimePickerScroll.restype = ctypes.c_int
+dll.EU_SetDateTimePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerStartPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerEndPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerDefaultTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateTimePickerRangeDefaultTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateTimePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerRangeSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateTimePickerRangeValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDateTimePickerRangeValue.restype = ctypes.c_int
 dll.EU_SetTimeSelectTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int]
 dll.EU_SetTimeSelectRange.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1669,6 +1714,7 @@ dll.EU_GetTimeSelectState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimeSelectState.restype = ctypes.c_int
+dll.EU_SetTimeSelectPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDropdownItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDropdownSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -3152,6 +3198,30 @@ def get_switch_options(hwnd, element_id):
         return None
     return bool(checked.value), bool(loading.value), bool(has_active.value), bool(has_inactive.value)
 
+def set_switch_active_color(hwnd, element_id, color):
+    dll.EU_SetSwitchActiveColor(hwnd, element_id, color)
+
+def get_switch_active_color(hwnd, element_id):
+    return dll.EU_GetSwitchActiveColor(hwnd, element_id)
+
+def set_switch_inactive_color(hwnd, element_id, color):
+    dll.EU_SetSwitchInactiveColor(hwnd, element_id, color)
+
+def get_switch_inactive_color(hwnd, element_id):
+    return dll.EU_GetSwitchInactiveColor(hwnd, element_id)
+
+def set_switch_value(hwnd, element_id, value):
+    dll.EU_SetSwitchValue(hwnd, element_id, value)
+
+def get_switch_value(hwnd, element_id):
+    return dll.EU_GetSwitchValue(hwnd, element_id)
+
+def set_switch_size(hwnd, element_id, size):
+    dll.EU_SetSwitchSize(hwnd, element_id, size)
+
+def get_switch_size(hwnd, element_id):
+    return dll.EU_GetSwitchSize(hwnd, element_id)
+
 def create_slider(hwnd, parent_id, text="Slider", min_value=0, max_value=100, value=40,
                   x=0, y=0, w=360, h=54, step=None, show_tooltip=None):
     data = make_utf8(text)
@@ -3258,6 +3328,12 @@ def get_input_number_state(hwnd, element_id):
     if not ok:
         return None
     return precision.value, bool(editing.value), bool(valid.value), bool(can_decrease.value), bool(can_increase.value)
+
+def set_input_number_step_strictly(hwnd, element_id, strict=True):
+    dll.EU_SetInputNumberStepStrictly(hwnd, element_id, 1 if strict else 0)
+
+def get_input_number_step_strictly(hwnd, element_id):
+    return bool(dll.EU_GetInputNumberStepStrictly(hwnd, element_id))
 
 def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
                  prefix="", suffix="", clearable=False,

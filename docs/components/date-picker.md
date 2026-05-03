@@ -4,7 +4,7 @@
 
 `DatePicker` 是 new_emoji 的 日期时间 组件。当前状态：**已完成**。
 
-已补弹层开关、状态读取、月份切换、范围夹取、中文格式、禁用日期、清空、快捷今天、区间模式、Set/Get、Python 封装和独立中文 emoji 验证
+已补弹层切换、月份切换、范围夹取、多选、月/年模式、占位符、区间分隔符、格式字符串、对齐、快捷选项、disabledDate 回调、Set/Get、Python 封装和独立中文 emoji 验证
 
 ## 创建
 
@@ -28,8 +28,18 @@
 | `EU_SetDatePickerDate` | 当前组件相关导出 |
 | `EU_SetDatePickerOpen` | 当前组件相关导出 |
 | `EU_SetDatePickerOptions` | 当前组件相关导出 |
-| `EU_SetDatePickerRange` | 当前组件相关导出 |
-| `EU_SetDatePickerSelectionRange` | 当前组件相关导出 |
+| `EU_SetDatePickerRange` | 设置日期可选范围（min/max YYYYMMDD） |
+| `EU_SetDatePickerSelectionRange` | 设置日期区间选择 |
+| `EU_SetDatePickerPlaceholder` | 设置占位符文本 |
+| `EU_SetDatePickerRangeSeparator` | 设置区间分隔符 |
+| `EU_SetDatePickerFormat` | 设置自定义格式字符串 |
+| `EU_SetDatePickerAlign` | 设置文本对齐（0/1/2） |
+| `EU_SetDatePickerMode` | 设置选择模式（0=日期 1=月 2=年） |
+| `EU_GetDatePickerMode` | 获取当前选择模式 |
+| `EU_SetDatePickerMultiSelect` | 启用多日期选择 |
+| `EU_GetDatePickerSelectedDates` | 获取多选日期列表 |
+| `EU_SetDatePickerShortcuts` | 设置弹层快捷选项 |
+| `EU_SetDatePickerDisabledDateCallback` | 设置禁用日期回调 |
 
 ## Python 使用
 

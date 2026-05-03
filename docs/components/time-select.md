@@ -4,7 +4,7 @@
 
 `TimeSelect` 是 new_emoji 的 日期时间 组件。当前状态：**已完成**。
 
-已补固定高度候选列表、凌晨/上午/下午/晚上分组、滚动候选、步进、范围、禁用项、键盘/滚轮选择、状态读回、Python 封装和独立中文 emoji 验证
+已补候选列表、分组、步进、范围、占位符、键盘选择、Python 封装和独立中文 emoji 验证
 
 ## 创建
 
@@ -29,7 +29,8 @@
 | `EU_SetTimeSelectOptions` | 当前组件相关导出 |
 | `EU_SetTimeSelectRange` | 当前组件相关导出 |
 | `EU_SetTimeSelectScroll` | 当前组件相关导出 |
-| `EU_SetTimeSelectTime` | 当前组件相关导出 |
+| `EU_SetTimeSelectTime` | 设置当前时间（小时/分钟） |
+| `EU_SetTimeSelectPlaceholder` | 设置占位符文本 |
 
 ## Python 使用
 

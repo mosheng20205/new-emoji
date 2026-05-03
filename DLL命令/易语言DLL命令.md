@@ -1732,6 +1732,42 @@
     .参数 是否有开启文本指针, 整数型, , 输出整数指针
     .参数 是否有关闭文本指针, 整数型, , 输出整数指针
 
+.DLL命令 设置开关选中颜色, , "new_emoji.dll", "EU_SetSwitchActiveColor", , 对应 C++ 导出命令 EU_SetSwitchActiveColor
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 颜色值, 整数型, , ARGB 格式，0 表示使用主题默认
+
+.DLL命令 取开关选中颜色, 整数型, "new_emoji.dll", "EU_GetSwitchActiveColor", , 对应 C++ 导出命令 EU_GetSwitchActiveColor
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置开关未选中颜色, , "new_emoji.dll", "EU_SetSwitchInactiveColor", , 对应 C++ 导出命令 EU_SetSwitchInactiveColor
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 颜色值, 整数型, , ARGB 格式，0 表示使用主题默认
+
+.DLL命令 取开关未选中颜色, 整数型, "new_emoji.dll", "EU_GetSwitchInactiveColor", , 对应 C++ 导出命令 EU_GetSwitchInactiveColor
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置开关值, , "new_emoji.dll", "EU_SetSwitchValue", , 对应 C++ 导出命令 EU_SetSwitchValue，支持自定义开关值
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开关值, 整数型
+
+.DLL命令 取开关值, 整数型, "new_emoji.dll", "EU_GetSwitchValue", , 对应 C++ 导出命令 EU_GetSwitchValue
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置开关尺寸, , "new_emoji.dll", "EU_SetSwitchSize", , 对应 C++ 导出命令 EU_SetSwitchSize；0=默认 1=中等 2=小型
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 尺寸, 整数型, , 0=默认 1=中等 2=小型
+
+.DLL命令 取开关尺寸, 整数型, "new_emoji.dll", "EU_GetSwitchSize", , 对应 C++ 导出命令 EU_GetSwitchSize
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 设置滑块范围, , "new_emoji.dll", "EU_SetSliderRange", , 对应 C++ 导出命令 EU_SetSliderRange
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -1862,6 +1898,15 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数, 整数型, , 回调签名：子程序(元素ID, 当前值, 最小值, 最大值)
+
+.DLL命令 设置数字输入框严格步进, , "new_emoji.dll", "EU_SetInputNumberStepStrictly", , 对应 C++ 导出命令 EU_SetInputNumberStepStrictly，启用后值必须为步长的整数倍
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否严格, 整数型, , 0=关闭 1=开启
+
+.DLL命令 取数字输入框严格步进, 整数型, "new_emoji.dll", "EU_GetInputNumberStepStrictly", , 对应 C++ 导出命令 EU_GetInputNumberStepStrictly，返回是否启用严格步进
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 设置输入框值, , "new_emoji.dll", "EU_SetInputValue", , 对应 C++ 导出命令 EU_SetInputValue
     .参数 窗口句柄, 整数型
@@ -3769,6 +3814,136 @@
     .参数 结束日期指针, 整数型, , 输出整数指针，YYYYMMDD
     .参数 是否启用指针, 整数型, , 输出整数指针
 
+.DLL命令 设置日期选择器占位符, , "new_emoji.dll", "EU_SetDatePickerPlaceholder", , 对应 C++ 导出命令 EU_SetDatePickerPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 设置日期选择器区间分隔符, , "new_emoji.dll", "EU_SetDatePickerRangeSeparator", , 对应 C++ 导出命令 EU_SetDatePickerRangeSeparator
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 分隔符字节集指针, 整数型, , UTF-8
+    .参数 分隔符长度, 整数型
+
+.DLL命令 设置日期选择器格式, , "new_emoji.dll", "EU_SetDatePickerFormat", , 对应 C++ 导出命令 EU_SetDatePickerFormat
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 格式字节集指针, 整数型, , UTF-8 格式字符串
+    .参数 格式长度, 整数型
+
+.DLL命令 设置日期选择器对齐, , "new_emoji.dll", "EU_SetDatePickerAlign", , 对应 C++ 导出命令 EU_SetDatePickerAlign；0=左 1=中 2=右
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0=左 1=中 2=右
+
+.DLL命令 设置日期选择器模式, , "new_emoji.dll", "EU_SetDatePickerMode", , 对应 C++ 导出命令 EU_SetDatePickerMode；0=日期 1=月 2=年
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 模式, 整数型, , 0=日期网格 1=月网格 2=年网格
+
+.DLL命令 取日期选择器模式, 整数型, "new_emoji.dll", "EU_GetDatePickerMode", , 对应 C++ 导出命令 EU_GetDatePickerMode
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置日期选择器多选, , "new_emoji.dll", "EU_SetDatePickerMultiSelect", , 对应 C++ 导出命令 EU_SetDatePickerMultiSelect
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用, 整数型, , 0=关闭 1=开启
+
+.DLL命令 取日期选择器多选日期, 整数型, "new_emoji.dll", "EU_GetDatePickerSelectedDates", , 对应 C++ 导出命令 EU_GetDatePickerSelectedDates；返回所需字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置日期选择器快捷选项, , "new_emoji.dll", "EU_SetDatePickerShortcuts", , 对应 C++ 导出命令 EU_SetDatePickerShortcuts；格式：文本|日期值|结束日期值\n...
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 快捷选项字节集指针, 整数型, , UTF-8
+    .参数 快捷选项长度, 整数型
+
+.DLL命令 设置日期选择器禁用日期回调, , "new_emoji.dll", "EU_SetDatePickerDisabledDateCallback", , 对应 C++ 导出命令 EU_SetDatePickerDisabledDateCallback；回调签名：整数型 回调(元素ID, YYYYMMDD)
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数, 整数型
+
+.DLL命令 创建日期范围选择器, 整数型, "new_emoji.dll", "EU_CreateDateRangePicker", , 对应 C++ 导出命令 EU_CreateDateRangePicker；双面板起止日期选择
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 开始日期, 整数型, , YYYYMMDD
+    .参数 结束日期, 整数型, , YYYYMMDD
+    .参数 X坐标, 整数型
+    .参数 Y坐标, 整数型
+    .参数 宽度, 整数型
+    .参数 高度, 整数型
+
+.DLL命令 设置日期范围选择器值, , "new_emoji.dll", "EU_SetDateRangePickerValue", , 对应 C++ 导出命令 EU_SetDateRangePickerValue
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开始日期, 整数型, , YYYYMMDD
+    .参数 结束日期, 整数型, , YYYYMMDD
+
+.DLL命令 取日期范围选择器值, 整数型, "new_emoji.dll", "EU_GetDateRangePickerValue", , 对应 C++ 导出命令 EU_GetDateRangePickerValue；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开始日期指针, 整数型, , 输出
+    .参数 结束日期指针, 整数型, , 输出
+
+.DLL命令 设置日期范围选择器可选范围, , "new_emoji.dll", "EU_SetDateRangePickerRange", , 对应 C++ 导出命令 EU_SetDateRangePickerRange
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 最小日期, 整数型, , YYYYMMDD
+    .参数 最大日期, 整数型, , YYYYMMDD
+
+.DLL命令 设置日期范围选择器占位符, , "new_emoji.dll", "EU_SetDateRangePickerPlaceholders", , 对应 C++ 导出命令 EU_SetDateRangePickerPlaceholders
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开始占位符指针, 整数型, , UTF-8
+    .参数 开始占位符长度, 整数型
+    .参数 结束占位符指针, 整数型, , UTF-8
+    .参数 结束占位符长度, 整数型
+
+.DLL命令 设置日期范围选择器分隔符, , "new_emoji.dll", "EU_SetDateRangePickerSeparator", , 对应 C++ 导出命令 EU_SetDateRangePickerSeparator
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 分隔符指针, 整数型, , UTF-8
+    .参数 分隔符长度, 整数型
+
+.DLL命令 设置日期范围选择器格式, , "new_emoji.dll", "EU_SetDateRangePickerFormat", , 对应 C++ 导出命令 EU_SetDateRangePickerFormat；0=YYYY-MM-DD 1=中文
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 格式, 整数型
+
+.DLL命令 设置日期范围选择器对齐, , "new_emoji.dll", "EU_SetDateRangePickerAlign", , 对应 C++ 导出命令 EU_SetDateRangePickerAlign；0=左 1=中 2=右
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐, 整数型
+
+.DLL命令 设置日期范围选择器快捷选项, , "new_emoji.dll", "EU_SetDateRangePickerShortcuts", , 对应 C++ 导出命令 EU_SetDateRangePickerShortcuts
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 快捷选项指针, 整数型, , UTF-8
+    .参数 快捷选项长度, 整数型
+
+.DLL命令 设置日期范围选择器禁用日期回调, , "new_emoji.dll", "EU_SetDateRangePickerDisabledDateCallback", , 对应 C++ 导出命令 EU_SetDateRangePickerDisabledDateCallback
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数, 整数型
+
+.DLL命令 设置日期范围选择器打开, , "new_emoji.dll", "EU_SetDateRangePickerOpen", , 对应 C++ 导出命令 EU_SetDateRangePickerOpen
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否打开, 整数型
+
+.DLL命令 取日期范围选择器打开, 整数型, "new_emoji.dll", "EU_GetDateRangePickerOpen", , 对应 C++ 导出命令 EU_GetDateRangePickerOpen
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 清空日期范围选择器, , "new_emoji.dll", "EU_DateRangePickerClear", , 对应 C++ 导出命令 EU_DateRangePickerClear
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 设置时间选择器时间, , "new_emoji.dll", "EU_SetTimePickerTime", , 对应 C++ 导出命令 EU_SetTimePickerTime
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3823,6 +3998,41 @@
     .参数 元素ID, 整数型
     .参数 小时滚动行指针, 整数型, , 输出整数指针
     .参数 分钟滚动行指针, 整数型, , 输出整数指针
+
+.DLL命令 设置时间选择器箭头控制, , "new_emoji.dll", "EU_SetTimePickerArrowControl", , 对应 C++ 导出命令 EU_SetTimePickerArrowControl
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用, 整数型, , 0=关闭 1=开启
+
+.DLL命令 取时间选择器箭头控制, 整数型, "new_emoji.dll", "EU_GetTimePickerArrowControl", , 对应 C++ 导出命令 EU_GetTimePickerArrowControl
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置时间选择器区间选择, , "new_emoji.dll", "EU_SetTimePickerRangeSelect", , 对应 C++ 导出命令 EU_SetTimePickerRangeSelect
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用, 整数型, , 0=关闭 1=开启
+    .参数 开始时间, 整数型, , HHMM 格式
+    .参数 结束时间, 整数型, , HHMM 格式
+
+.DLL命令 设置时间选择器开始占位符, , "new_emoji.dll", "EU_SetTimePickerStartPlaceholder", , 对应 C++ 导出命令 EU_SetTimePickerStartPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 占位符字节集指针, 整数型, , UTF-8
+    .参数 占位符长度, 整数型
+
+.DLL命令 设置时间选择器结束占位符, , "new_emoji.dll", "EU_SetTimePickerEndPlaceholder", , 对应 C++ 导出命令 EU_SetTimePickerEndPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 占位符字节集指针, 整数型, , UTF-8
+    .参数 占位符长度, 整数型
+
+.DLL命令 取时间选择器区间值, 整数型, "new_emoji.dll", "EU_GetTimePickerRangeValue", , 对应 C++ 导出命令 EU_GetTimePickerRangeValue；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开始时间指针, 整数型, , 输出整数指针
+    .参数 结束时间指针, 整数型, , 输出整数指针
+    .参数 是否启用指针, 整数型, , 输出整数指针
 
 .DLL命令 设置日期时间选择器日期时间, , "new_emoji.dll", "EU_SetDateTimePickerDateTime", , 对应 C++ 导出命令 EU_SetDateTimePickerDateTime
     .参数 窗口句柄, 整数型
@@ -3911,6 +4121,48 @@
     .参数 小时滚动行指针, 整数型, , 输出整数指针
     .参数 分钟滚动行指针, 整数型, , 输出整数指针
 
+.DLL命令 设置日期时间选择器快捷选项, , "new_emoji.dll", "EU_SetDateTimePickerShortcuts", , 对应 C++ 导出命令 EU_SetDateTimePickerShortcuts；格式同日期选择器
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 快捷选项字节集指针, 整数型, , UTF-8
+    .参数 快捷选项长度, 整数型
+
+.DLL命令 设置日期时间选择器开始占位符, , "new_emoji.dll", "EU_SetDateTimePickerStartPlaceholder", , 对应 C++ 导出命令 EU_SetDateTimePickerStartPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 占位符字节集指针, 整数型, , UTF-8
+    .参数 占位符长度, 整数型
+
+.DLL命令 设置日期时间选择器结束占位符, , "new_emoji.dll", "EU_SetDateTimePickerEndPlaceholder", , 对应 C++ 导出命令 EU_SetDateTimePickerEndPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 占位符字节集指针, 整数型, , UTF-8
+    .参数 占位符长度, 整数型
+
+.DLL命令 设置日期时间选择器默认时间, , "new_emoji.dll", "EU_SetDateTimePickerDefaultTime", , 对应 C++ 导出命令 EU_SetDateTimePickerDefaultTime；选取日期后默认使用此时刻
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 小时, 整数型
+    .参数 分钟, 整数型
+
+.DLL命令 设置日期时间选择器区间选择, , "new_emoji.dll", "EU_SetDateTimePickerRangeSelect", , 对应 C++ 导出命令 EU_SetDateTimePickerRangeSelect
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用, 整数型, , 0=关闭 1=开启
+    .参数 开始日期, 整数型, , YYYYMMDD
+    .参数 开始时间, 整数型, , HHMM
+    .参数 结束日期, 整数型, , YYYYMMDD
+    .参数 结束时间, 整数型, , HHMM
+
+.DLL命令 取日期时间选择器区间值, 整数型, "new_emoji.dll", "EU_GetDateTimePickerRangeValue", , 对应 C++ 导出命令 EU_GetDateTimePickerRangeValue；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开始日期指针, 整数型, , 输出整数指针
+    .参数 开始时间指针, 整数型, , 输出整数指针
+    .参数 结束日期指针, 整数型, , 输出整数指针
+    .参数 结束时间指针, 整数型, , 输出整数指针
+    .参数 是否启用指针, 整数型, , 输出整数指针
+
 .DLL命令 设置时间选择时间, , "new_emoji.dll", "EU_SetTimeSelectTime", , 对应 C++ 导出命令 EU_SetTimeSelectTime
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3966,6 +4218,12 @@
     .参数 候选数量指针, 整数型, , 输出整数指针
     .参数 分组数量指针, 整数型, , 输出整数指针
     .参数 当前候选索引指针, 整数型, , 输出整数指针，从0开始
+
+.DLL命令 设置时间选择占位符, , "new_emoji.dll", "EU_SetTimeSelectPlaceholder", , 对应 C++ 导出命令 EU_SetTimeSelectPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
 
 .DLL命令 设置下拉菜单项目, , "new_emoji.dll", "EU_SetDropdownItems", , 对应 C++ 导出命令 EU_SetDropdownItems
     .参数 窗口句柄, 整数型
@@ -5729,6 +5987,28 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数指针, 整数型
+
+## TimePicker / DateTimePicker range 补充命令
+
+.DLL命令 设置时间选择器区间分隔符, , "new_emoji.dll", "EU_SetTimePickerRangeSeparator", , 对应 C++ 导出命令 EU_SetTimePickerRangeSeparator；设置开始时间和结束时间之间显示的 UTF-8 分隔符
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 分隔符字节集指针, 整数型, , UTF-8
+    .参数 分隔符长度, 整数型
+
+.DLL命令 设置日期时间选择器区间默认时间, , "new_emoji.dll", "EU_SetDateTimePickerRangeDefaultTime", , 对应 C++ 导出命令 EU_SetDateTimePickerRangeDefaultTime；设置 datetimerange 开始/结束日期各自的默认时间
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 开始小时, 整数型
+    .参数 开始分钟, 整数型
+    .参数 结束小时, 整数型
+    .参数 结束分钟, 整数型
+
+.DLL命令 设置日期时间选择器区间分隔符, , "new_emoji.dll", "EU_SetDateTimePickerRangeSeparator", , 对应 C++ 导出命令 EU_SetDateTimePickerRangeSeparator；设置开始日期时间和结束日期时间之间显示的 UTF-8 分隔符
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 分隔符字节集指针, 整数型, , UTF-8
+    .参数 分隔符长度, 整数型
 
 
 ## 回调命令

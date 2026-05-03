@@ -8,11 +8,13 @@ public:
     int step = 1;
     int value = 0;
     int precision = 0;
+    bool step_strictly = false;
     bool last_input_valid = true;
     ElementValueCallback value_cb = nullptr;
 
     ~InputNumber() override;
     const wchar_t* type_name() const override { return L"InputNumber"; }
+    bool accepts_input() const override { return enabled; }
     void paint(RenderContext& ctx) override;
     void on_mouse_move(int x, int y) override;
     void on_mouse_down(int x, int y, MouseButton btn) override;
@@ -26,6 +28,7 @@ public:
     void set_step(int new_step);
     void set_value(int new_value);
     void set_precision(int new_precision);
+    void set_step_strictly(bool strict);
     bool set_value_from_text(const std::wstring& value_text);
     bool can_step(int delta) const;
     std::wstring display_value() const;

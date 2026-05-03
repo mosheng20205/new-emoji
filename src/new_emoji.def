@@ -183,6 +183,14 @@ EXPORTS
     EU_GetSwitchLoading
     EU_SetSwitchTexts
     EU_GetSwitchOptions
+    EU_SetSwitchActiveColor
+    EU_GetSwitchActiveColor
+    EU_SetSwitchInactiveColor
+    EU_GetSwitchInactiveColor
+    EU_SetSwitchValue
+    EU_GetSwitchValue
+    EU_SetSwitchSize
+    EU_GetSwitchSize
     EU_SetSliderRange
     EU_SetSliderValue
     EU_GetSliderValue
@@ -206,6 +214,8 @@ EXPORTS
     EU_GetInputNumberText
     EU_GetInputNumberState
     EU_SetInputNumberValueCallback
+    EU_SetInputNumberStepStrictly
+    EU_GetInputNumberStepStrictly
     EU_SetInputValue
     EU_GetInputValue
     EU_SetInputPlaceholder
@@ -537,6 +547,31 @@ EXPORTS
     EU_GetDatePickerOptions
     EU_SetDatePickerSelectionRange
     EU_GetDatePickerSelectionRange
+    EU_SetDatePickerPlaceholder
+    EU_SetDatePickerRangeSeparator
+    EU_SetDatePickerStartPlaceholder
+    EU_SetDatePickerEndPlaceholder
+    EU_SetDatePickerFormat
+    EU_SetDatePickerAlign
+    EU_SetDatePickerMode
+    EU_GetDatePickerMode
+    EU_SetDatePickerMultiSelect
+    EU_GetDatePickerSelectedDates
+    EU_SetDatePickerShortcuts
+    EU_SetDatePickerDisabledDateCallback
+    EU_CreateDateRangePicker
+    EU_SetDateRangePickerValue
+    EU_GetDateRangePickerValue
+    EU_SetDateRangePickerRange
+    EU_SetDateRangePickerPlaceholders
+    EU_SetDateRangePickerSeparator
+    EU_SetDateRangePickerFormat
+    EU_SetDateRangePickerAlign
+    EU_SetDateRangePickerShortcuts
+    EU_SetDateRangePickerDisabledDateCallback
+    EU_SetDateRangePickerOpen
+    EU_GetDateRangePickerOpen
+    EU_DateRangePickerClear
     EU_SetTimePickerTime
     EU_SetTimePickerRange
     EU_SetTimePickerOptions
@@ -547,6 +582,14 @@ EXPORTS
     EU_GetTimePickerRange
     EU_GetTimePickerOptions
     EU_GetTimePickerScroll
+    EU_SetTimePickerArrowControl
+    EU_GetTimePickerArrowControl
+    EU_SetTimePickerRangeSelect
+    EU_SetTimePickerStartPlaceholder
+    EU_SetTimePickerEndPlaceholder
+    EU_SetTimePickerRangeSeparator
+    EU_GetTimePickerRangeValue
+    EU_SetTimeSelectPlaceholder
     EU_SetDateTimePickerDateTime
     EU_SetDateTimePickerRange
     EU_SetDateTimePickerOptions
@@ -562,6 +605,14 @@ EXPORTS
     EU_GetDateTimePickerRange
     EU_GetDateTimePickerOptions
     EU_GetDateTimePickerScroll
+    EU_SetDateTimePickerShortcuts
+    EU_SetDateTimePickerStartPlaceholder
+    EU_SetDateTimePickerEndPlaceholder
+    EU_SetDateTimePickerDefaultTime
+    EU_SetDateTimePickerRangeDefaultTime
+    EU_SetDateTimePickerRangeSeparator
+    EU_SetDateTimePickerRangeSelect
+    EU_GetDateTimePickerRangeValue
     EU_SetTimeSelectTime
     EU_SetTimeSelectRange
     EU_SetTimeSelectOptions
