@@ -1,0 +1,42 @@
+# Internal agent/project management notes
+AGENTS.md
+组件封装计划.md
+组件封装进度.md
+
+# Visual Studio user/local state
+.vs/
+*.user
+*.suo
+*.VC.db
+*.VC.VC.opendb
+*.opensdf
+*.sdf
+*.ipch
+
+# Build outputs
+bin/
+obj/
+Debug/
+Release/
+x64/
+Win32/
+*.pdb
+*.ilk
+*.exp
+*.lib
+*.obj
+*.tlog
+*.lastbuildstate
+
+# Python caches
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Local logs and temporary files
+*.log
+*.tmp
+*.bak
+*.~*
+Thumbs.db
+desktop.ini

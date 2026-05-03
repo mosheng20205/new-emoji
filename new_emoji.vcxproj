@@ -1,0 +1,357 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>16.0</VCProjectVersion>
+    <ProjectGuid>{A1B2C3D4-E5F6-7890-ABCD-EF1234567890}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>newemoji</RootNamespace>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v143</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="Shared" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\Win32\Debug\</OutDir>
+    <IntDir>$(SolutionDir)obj\Win32\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\Win32\Release\</OutDir>
+    <IntDir>$(SolutionDir)obj\Win32\Release\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\x64\Debug\</OutDir>
+    <IntDir>$(SolutionDir)obj\x64\Debug\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <OutDir>$(SolutionDir)bin\x64\Release\</OutDir>
+    <IntDir>$(SolutionDir)obj\x64\Release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;_DEBUG;NEWEMOJI_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>WIN32;NDEBUG;NEWEMOJI_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>_DEBUG;NEWEMOJI_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <SDLCheck>true</SDLCheck>
+      <PreprocessorDefinitions>NDEBUG;NEWEMOJI_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableUAC>false</EnableUAC>
+      <ModuleDefinitionFile>new_emoji.def</ModuleDefinitionFile>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="element_types.h" />
+    <ClInclude Include="utf8_helpers.h" />
+    <ClInclude Include="factory.h" />
+    <ClInclude Include="exports.h" />
+    <ClInclude Include="render_context.h" />
+    <ClInclude Include="theme.h" />
+    <ClInclude Include="element_base.h" />
+    <ClInclude Include="element_panel.h" />
+    <ClInclude Include="element_button.h" />
+    <ClInclude Include="element_editbox.h" />
+    <ClInclude Include="element_infobox.h" />
+    <ClInclude Include="element_messagebox.h" />
+    <ClInclude Include="element_text.h" />
+    <ClInclude Include="element_link.h" />
+    <ClInclude Include="element_icon.h" />
+    <ClInclude Include="element_space.h" />
+    <ClInclude Include="element_container.h" />
+    <ClInclude Include="element_layout.h" />
+    <ClInclude Include="element_border.h" />
+    <ClInclude Include="element_checkbox.h" />
+    <ClInclude Include="element_radio.h" />
+    <ClInclude Include="element_switch.h" />
+    <ClInclude Include="element_slider.h" />
+    <ClInclude Include="element_inputnumber.h" />
+    <ClInclude Include="element_input.h" />
+    <ClInclude Include="element_inputtag.h" />
+    <ClInclude Include="element_select.h" />
+    <ClInclude Include="element_rate.h" />
+    <ClInclude Include="element_colorpicker.h" />
+    <ClInclude Include="element_tag.h" />
+    <ClInclude Include="element_badge.h" />
+    <ClInclude Include="element_progress.h" />
+    <ClInclude Include="element_avatar.h" />
+    <ClInclude Include="element_empty.h" />
+    <ClInclude Include="element_skeleton.h" />
+    <ClInclude Include="element_descriptions.h" />
+    <ClInclude Include="element_table.h" />
+    <ClInclude Include="element_card.h" />
+    <ClInclude Include="element_collapse.h" />
+    <ClInclude Include="element_timeline.h" />
+    <ClInclude Include="element_statistic.h" />
+    <ClInclude Include="element_metrics.h" />
+    <ClInclude Include="element_dashboard.h" />
+    <ClInclude Include="element_charts.h" />
+    <ClInclude Include="element_divider.h" />
+    <ClInclude Include="element_calendar.h" />
+    <ClInclude Include="element_treeview.h" />
+    <ClInclude Include="element_transfer.h" />
+    <ClInclude Include="element_autocomplete.h" />
+    <ClInclude Include="element_mentions.h" />
+    <ClInclude Include="element_cascader.h" />
+    <ClInclude Include="element_datepicker.h" />
+    <ClInclude Include="element_timepicker.h" />
+    <ClInclude Include="element_datetimepicker.h" />
+    <ClInclude Include="element_timeselect.h" />
+    <ClInclude Include="element_treeselect.h" />
+    <ClInclude Include="element_selectv2.h" />
+    <ClInclude Include="element_dropdown.h" />
+    <ClInclude Include="element_menu.h" />
+    <ClInclude Include="element_anchor.h" />
+    <ClInclude Include="element_backtop.h" />
+    <ClInclude Include="element_segmented.h" />
+    <ClInclude Include="element_pageheader.h" />
+    <ClInclude Include="element_affix.h" />
+    <ClInclude Include="element_watermark.h" />
+    <ClInclude Include="element_image.h" />
+    <ClInclude Include="element_carousel.h" />
+    <ClInclude Include="element_upload.h" />
+    <ClInclude Include="element_scrollbar.h" />
+    <ClInclude Include="element_breadcrumb.h" />
+    <ClInclude Include="element_tabs.h" />
+    <ClInclude Include="element_pagination.h" />
+    <ClInclude Include="element_steps.h" />
+    <ClInclude Include="element_alert.h" />
+    <ClInclude Include="element_result.h" />
+    <ClInclude Include="element_notification.h" />
+    <ClInclude Include="element_loading.h" />
+    <ClInclude Include="element_dialog.h" />
+    <ClInclude Include="element_drawer.h" />
+    <ClInclude Include="element_tooltip.h" />
+    <ClInclude Include="element_popover.h" />
+    <ClInclude Include="element_popconfirm.h" />
+    <ClInclude Include="element_tour.h" />
+    <ClInclude Include="emoji_fallback.h" />
+    <ClInclude Include="element_tree.h" />
+    <ClInclude Include="element_titlebar.h" />
+    <ClInclude Include="dpi_context.h" />
+    <ClInclude Include="window_state.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="utf8_helpers.cpp" />
+    <ClCompile Include="factory.cpp" />
+    <ClCompile Include="render_context.cpp" />
+    <ClCompile Include="theme.cpp" />
+    <ClCompile Include="element_base.cpp" />
+    <ClCompile Include="element_panel.cpp" />
+    <ClCompile Include="element_button.cpp" />
+    <ClCompile Include="element_editbox.cpp" />
+    <ClCompile Include="element_infobox.cpp" />
+    <ClCompile Include="element_messagebox.cpp" />
+    <ClCompile Include="element_text.cpp" />
+    <ClCompile Include="element_link.cpp" />
+    <ClCompile Include="element_icon.cpp" />
+    <ClCompile Include="element_space.cpp" />
+    <ClCompile Include="element_container.cpp" />
+    <ClCompile Include="element_layout.cpp" />
+    <ClCompile Include="element_border.cpp" />
+    <ClCompile Include="element_checkbox.cpp" />
+    <ClCompile Include="element_radio.cpp" />
+    <ClCompile Include="element_switch.cpp" />
+    <ClCompile Include="element_slider.cpp" />
+    <ClCompile Include="element_inputnumber.cpp" />
+    <ClCompile Include="element_input.cpp" />
+    <ClCompile Include="element_inputtag.cpp" />
+    <ClCompile Include="element_select.cpp" />
+    <ClCompile Include="element_rate.cpp" />
+    <ClCompile Include="element_colorpicker.cpp" />
+    <ClCompile Include="element_tag.cpp" />
+    <ClCompile Include="element_badge.cpp" />
+    <ClCompile Include="element_progress.cpp" />
+    <ClCompile Include="element_avatar.cpp" />
+    <ClCompile Include="element_empty.cpp" />
+    <ClCompile Include="element_skeleton.cpp" />
+    <ClCompile Include="element_descriptions.cpp" />
+    <ClCompile Include="element_table.cpp" />
+    <ClCompile Include="element_card.cpp" />
+    <ClCompile Include="element_collapse.cpp" />
+    <ClCompile Include="element_timeline.cpp" />
+    <ClCompile Include="element_statistic.cpp" />
+    <ClCompile Include="element_metrics.cpp" />
+    <ClCompile Include="element_dashboard.cpp" />
+    <ClCompile Include="element_charts.cpp" />
+    <ClCompile Include="element_divider.cpp" />
+    <ClCompile Include="element_calendar.cpp" />
+    <ClCompile Include="element_treeview.cpp" />
+    <ClCompile Include="element_transfer.cpp" />
+    <ClCompile Include="element_autocomplete.cpp" />
+    <ClCompile Include="element_mentions.cpp" />
+    <ClCompile Include="element_cascader.cpp" />
+    <ClCompile Include="element_datepicker.cpp" />
+    <ClCompile Include="element_timepicker.cpp" />
+    <ClCompile Include="element_datetimepicker.cpp" />
+    <ClCompile Include="element_timeselect.cpp" />
+    <ClCompile Include="element_treeselect.cpp" />
+    <ClCompile Include="element_selectv2.cpp" />
+    <ClCompile Include="element_dropdown.cpp" />
+    <ClCompile Include="element_menu.cpp" />
+    <ClCompile Include="element_anchor.cpp" />
+    <ClCompile Include="element_backtop.cpp" />
+    <ClCompile Include="element_segmented.cpp" />
+    <ClCompile Include="element_pageheader.cpp" />
+    <ClCompile Include="element_affix.cpp" />
+    <ClCompile Include="element_watermark.cpp" />
+    <ClCompile Include="element_image.cpp" />
+    <ClCompile Include="element_carousel.cpp" />
+    <ClCompile Include="element_upload.cpp" />
+    <ClCompile Include="element_scrollbar.cpp" />
+    <ClCompile Include="element_breadcrumb.cpp" />
+    <ClCompile Include="element_tabs.cpp" />
+    <ClCompile Include="element_pagination.cpp" />
+    <ClCompile Include="element_steps.cpp" />
+    <ClCompile Include="element_alert.cpp" />
+    <ClCompile Include="element_result.cpp" />
+    <ClCompile Include="element_notification.cpp" />
+    <ClCompile Include="element_loading.cpp" />
+    <ClCompile Include="element_dialog.cpp" />
+    <ClCompile Include="element_drawer.cpp" />
+    <ClCompile Include="element_tooltip.cpp" />
+    <ClCompile Include="element_popover.cpp" />
+    <ClCompile Include="element_popconfirm.cpp" />
+    <ClCompile Include="element_tour.cpp" />
+    <ClCompile Include="emoji_fallback.cpp" />
+    <ClCompile Include="element_titlebar.cpp" />
+    <ClCompile Include="element_tree.cpp" />
+    <ClCompile Include="exports.cpp" />
+    <ClCompile Include="window_proc.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="new_emoji.def" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

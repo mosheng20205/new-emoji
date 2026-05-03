@@ -1,0 +1,812 @@
+[
+  {
+    "index": "1",
+    "name": "Panel",
+    "zh": "面板",
+    "create": "EU_CreatePanel",
+    "status": "已完成",
+    "summary": "已补容器背景、圆角、边框、内边距、裁剪验证、填充父内容区、子元素内容区布局、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "panel"
+  },
+  {
+    "index": "2",
+    "name": "Button",
+    "zh": "按钮",
+    "create": "EU_CreateButton",
+    "status": "已完成",
+    "summary": "已补禁用态、焦点态、Space/Enter 键盘触发点击回调、emoji 对齐、主次/成功/警告/危险/文本样式、状态读回和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "button"
+  },
+  {
+    "index": "3",
+    "name": "EditBox",
+    "zh": "编辑框",
+    "create": "EU_CreateEditBox",
+    "status": "已完成",
+    "summary": "已补 IME 组合/提交、选区、复制粘贴、占位、密码/多行、只读、文本变化回调、状态读回和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "edit-box"
+  },
+  {
+    "index": "4",
+    "name": "InfoBox",
+    "zh": "信息框",
+    "create": "EU_CreateInfoBox",
+    "status": "已完成",
+    "summary": "已补信息类型、emoji 图标、关闭、内容换行、文本更新、建议高度、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "info-box"
+  },
+  {
+    "index": "5",
+    "name": "Text",
+    "zh": "文本",
+    "create": "EU_CreateText",
+    "status": "已完成",
+    "summary": "已补中文 emoji 渲染、emoji 字体回退、对齐、换行、省略、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "text"
+  },
+  {
+    "index": "6",
+    "name": "Link",
+    "zh": "链接",
+    "create": "EU_CreateLink",
+    "status": "已完成",
+    "summary": "已补 hover/禁用/访问态、鼠标和键盘点击回调、访问态读回、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "link"
+  },
+  {
+    "index": "7",
+    "name": "Icon",
+    "zh": "图标",
+    "create": "EU_CreateIcon",
+    "status": "已完成",
+    "summary": "已补图标/emoji 缩放、居中、旋转、主题色、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "icon"
+  },
+  {
+    "index": "8",
+    "name": "Space",
+    "zh": "间距",
+    "create": "EU_CreateSpace",
+    "status": "已完成",
+    "summary": "已补运行时尺寸策略、Layout 方向集成、尺寸读回、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "space"
+  },
+  {
+    "index": "9",
+    "name": "Container",
+    "zh": "容器",
+    "create": "EU_CreateContainer",
+    "status": "已完成",
+    "summary": "已补填充父内容区、统一样式、裁剪、Panel 布局选项复用、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "container"
+  },
+  {
+    "index": "10",
+    "name": "Layout",
+    "zh": "布局",
+    "create": "EU_CreateLayout",
+    "status": "已完成",
+    "summary": "已补水平/垂直布局、间距、交叉轴伸缩、对齐、自动换行、子项权重布局、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "layout"
+  },
+  {
+    "index": "11",
+    "name": "Border",
+    "zh": "边框",
+    "create": "EU_CreateBorder",
+    "status": "已完成",
+    "summary": "已补边框方向、颜色、标题插槽、虚线、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "border"
+  },
+  {
+    "index": "12",
+    "name": "Checkbox",
+    "zh": "复选框",
+    "create": "EU_CreateCheckbox",
+    "status": "已完成",
+    "summary": "已补半选态、键盘切换点击回调、焦点态、禁用态、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "checkbox"
+  },
+  {
+    "index": "13",
+    "name": "Radio",
+    "zh": "单选框",
+    "create": "EU_CreateRadio",
+    "status": "已完成",
+    "summary": "已补分组互斥、方向键组内导航、键盘点击回调、禁用态、分组读回、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "radio"
+  },
+  {
+    "index": "14",
+    "name": "Switch",
+    "zh": "开关",
+    "create": "EU_CreateSwitch",
+    "status": "已完成",
+    "summary": "已补加载态、状态文本插槽、键盘点击回调、禁用态、完整选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "switch"
+  },
+  {
+    "index": "15",
+    "name": "Slider",
+    "zh": "滑块",
+    "create": "EU_CreateSlider",
+    "status": "已完成",
+    "summary": "已补拖拽、步进吸附、tooltip、双滑块范围选择、键盘操作、数值变化回调、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "slider"
+  },
+  {
+    "index": "16",
+    "name": "InputNumber",
+    "zh": "数字输入框",
+    "create": "EU_CreateInputNumber",
+    "status": "已完成",
+    "summary": "已补按钮长按、固定小数精度、文本输入校验、边界校验、键盘操作、值变化回调、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "input-number"
+  },
+  {
+    "index": "17",
+    "name": "Input",
+    "zh": "输入框",
+    "create": "EU_CreateInput",
+    "status": "已完成",
+    "summary": "已补 clear、prefix/suffix、校验态、密码/只读、多行绘制与换行输入、最大长度、输入事件回调、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "input"
+  },
+  {
+    "index": "18",
+    "name": "InputTag",
+    "zh": "标签输入",
+    "create": "EU_CreateInputTag",
+    "status": "已完成",
+    "summary": "已补增删标签、键盘编辑、最大数量、重复校验、输入缓冲读写、单项读回、变化回调、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "input-tag"
+  },
+  {
+    "index": "19",
+    "name": "Select",
+    "zh": "选择器",
+    "create": "EU_CreateSelect",
+    "status": "已完成",
+    "summary": "已补弹层、键盘导航、搜索、禁用项、空状态、多选模式、选中项读回、变化回调、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "select"
+  },
+  {
+    "index": "20",
+    "name": "SelectV2",
+    "zh": "虚拟选择器",
+    "create": "EU_CreateSelectV2",
+    "status": "已完成",
+    "summary": "已补虚拟列表、搜索、大数据滚动、滚轮派发、键盘选择、滚动索引读回、变化回调、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "selectv2"
+  },
+  {
+    "index": "21",
+    "name": "Rate",
+    "zh": "评分",
+    "create": "EU_CreateRate",
+    "status": "已完成",
+    "summary": "已补半星、清除、hover 预览、只读/禁用、评分文案、变化回调、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "rate"
+  },
+  {
+    "index": "22",
+    "name": "ColorPicker",
+    "zh": "颜色选择器",
+    "create": "EU_CreateColorPicker",
+    "status": "已完成",
+    "summary": "已补面板、透明度、预设色、十六进制输入校验、读回、变化回调、Python 封装和独立中文 emoji 验证",
+    "category": "表单/选择",
+    "slug": "color-picker"
+  },
+  {
+    "index": "23",
+    "name": "Tag",
+    "zh": "标签",
+    "create": "EU_CreateTag",
+    "status": "已完成",
+    "summary": "已补关闭命中、关闭专用回调、尺寸预设、主题色、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "tag"
+  },
+  {
+    "index": "24",
+    "name": "Badge",
+    "zh": "徽标",
+    "create": "EU_CreateBadge",
+    "status": "已完成",
+    "summary": "已补最大值、dot、偏移、隐藏零值、四角定位、独立角标布局、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "badge"
+  },
+  {
+    "index": "25",
+    "name": "Progress",
+    "zh": "进度条",
+    "create": "EU_CreateProgress",
+    "status": "已完成",
+    "summary": "已补条形/环形统一、状态色、线宽、中文文本格式、条纹进度、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "progress"
+  },
+  {
+    "index": "26",
+    "name": "Avatar",
+    "zh": "头像",
+    "create": "EU_CreateAvatar",
+    "status": "已完成",
+    "summary": "已补本地图片源、失败回退、contain/cover/fill、圆形/圆角形状、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "avatar"
+  },
+  {
+    "index": "27",
+    "name": "Empty",
+    "zh": "空状态",
+    "create": "EU_CreateEmpty",
+    "status": "已完成",
+    "summary": "已补自定义图标、描述、操作按钮、操作专用回调、点击状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "empty"
+  },
+  {
+    "index": "28",
+    "name": "Skeleton",
+    "zh": "骨架屏",
+    "create": "EU_CreateSkeleton",
+    "status": "已完成",
+    "summary": "已补骨架行数、头像模板、加载切换、节流闪动动画、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "skeleton"
+  },
+  {
+    "index": "29",
+    "name": "Descriptions",
+    "zh": "描述列表",
+    "create": "EU_CreateDescriptions",
+    "status": "已完成",
+    "summary": "已补跨列、响应式列、边框、长文本换行、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "descriptions"
+  },
+  {
+    "index": "30",
+    "name": "Table",
+    "zh": "表格",
+    "create": "EU_CreateTable",
+    "status": "已完成",
+    "summary": "已补选择、排序、列宽、滚动、空状态、键盘选择、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "table"
+  },
+  {
+    "index": "31",
+    "name": "Card",
+    "zh": "卡片",
+    "create": "EU_CreateCard",
+    "status": "已完成",
+    "summary": "已补 header/body/footer、悬停阴影、操作区点击、操作索引读回、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "card"
+  },
+  {
+    "index": "32",
+    "name": "Collapse",
+    "zh": "折叠面板",
+    "create": "EU_CreateCollapse",
+    "status": "已完成",
+    "summary": "已补展开动画、手风琴、禁用项、键盘操作、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "collapse"
+  },
+  {
+    "index": "33",
+    "name": "Timeline",
+    "zh": "时间线",
+    "create": "EU_CreateTimeline",
+    "status": "已完成",
+    "summary": "已补节点类型、位置、emoji 图标、长内容换行、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "timeline"
+  },
+  {
+    "index": "34",
+    "name": "Statistic",
+    "zh": "统计数值",
+    "create": "EU_CreateStatistic",
+    "status": "已完成",
+    "summary": "已补前后缀、精度格式化、动画数字、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "数据展示",
+    "slug": "statistic"
+  },
+  {
+    "index": "35",
+    "name": "KpiCard",
+    "zh": "指标卡",
+    "create": "EU_CreateKpiCard",
+    "status": "已完成",
+    "summary": "已补趋势色、辅助指标、点击回调路径、加载态、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "kpi-card"
+  },
+  {
+    "index": "36",
+    "name": "Trend",
+    "zh": "趋势",
+    "create": "EU_CreateTrend",
+    "status": "已完成",
+    "summary": "已补趋势方向、反向好坏语义、图标开关、颜色语义、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "trend"
+  },
+  {
+    "index": "37",
+    "name": "StatusDot",
+    "zh": "状态点",
+    "create": "EU_CreateStatusDot",
+    "status": "已完成",
+    "summary": "已补状态语义、定时器驱动脉冲动画、紧凑布局、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "status-dot"
+  },
+  {
+    "index": "38",
+    "name": "Gauge",
+    "zh": "仪表盘",
+    "create": "EU_CreateGauge",
+    "status": "已完成",
+    "summary": "已补阈值区间、定时器驱动数值动画、刻度、状态色、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "gauge"
+  },
+  {
+    "index": "39",
+    "name": "RingProgress",
+    "zh": "环形进度",
+    "create": "EU_CreateRingProgress",
+    "status": "已完成",
+    "summary": "已补数值动画、厚度、状态色、中心内容开关、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "ring-progress"
+  },
+  {
+    "index": "40",
+    "name": "BulletProgress",
+    "zh": "子弹进度",
+    "create": "EU_CreateBulletProgress",
+    "status": "已完成",
+    "summary": "已补数值动画、目标线、区间色、说明文本、选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "bullet-progress"
+  },
+  {
+    "index": "41",
+    "name": "LineChart",
+    "zh": "折线图",
+    "create": "EU_CreateLineChart",
+    "status": "已完成",
+    "summary": "已补坐标轴、tooltip、面积、选中点、多序列、空数据、读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "line-chart"
+  },
+  {
+    "index": "42",
+    "name": "BarChart",
+    "zh": "柱状图",
+    "create": "EU_CreateBarChart",
+    "status": "已完成",
+    "summary": "已补横向/纵向、分组多序列、数值、选中态、坐标轴、读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "bar-chart"
+  },
+  {
+    "index": "43",
+    "name": "DonutChart",
+    "zh": "环形图",
+    "create": "EU_CreateDonutChart",
+    "status": "已完成",
+    "summary": "已补 legend、外部百分比标签、选中态、空数据、高级选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "指标/图表",
+    "slug": "donut-chart"
+  },
+  {
+    "index": "44",
+    "name": "Divider",
+    "zh": "分割线",
+    "create": "EU_CreateDivider",
+    "status": "已完成",
+    "summary": "已补文本位置、方向、虚线、颜色、线宽、动态文本、间距语义、读回、Python 封装和独立中文 emoji 验证",
+    "category": "基础/布局",
+    "slug": "divider"
+  },
+  {
+    "index": "45",
+    "name": "Calendar",
+    "zh": "日历",
+    "create": "EU_CreateCalendar",
+    "status": "已完成",
+    "summary": "已补月份切换、日期值读取、限制范围、区间选择、禁用日期、今天高亮、键盘导航、Python 封装和独立中文 emoji 验证",
+    "category": "日期时间",
+    "slug": "calendar"
+  },
+  {
+    "index": "46",
+    "name": "Tree",
+    "zh": "树",
+    "create": "EU_CreateTree",
+    "status": "已完成",
+    "summary": "已补节点展开、复选框、勾选状态读写、懒加载请求状态、可见数量、键盘导航、Python 封装和独立中文 emoji 验证",
+    "category": "复杂选择",
+    "slug": "tree"
+  },
+  {
+    "index": "47",
+    "name": "TreeSelect",
+    "zh": "树选择",
+    "create": "EU_CreateTreeSelect",
+    "status": "已完成",
+    "summary": "已补弹层搜索、多选勾选、清空选择、选项/匹配/多选集合读回、Python 封装和独立中文 emoji 验证",
+    "category": "复杂选择",
+    "slug": "tree-select"
+  },
+  {
+    "index": "48",
+    "name": "Transfer",
+    "zh": "穿梭框",
+    "create": "EU_CreateTransfer",
+    "status": "已完成",
+    "summary": "已补过滤、禁用项、匹配/禁用数量读回、单项和批量左右移动、Python 封装和独立中文 emoji 验证",
+    "category": "复杂选择",
+    "slug": "transfer"
+  },
+  {
+    "index": "49",
+    "name": "Autocomplete",
+    "zh": "自动补全",
+    "create": "EU_CreateAutocomplete",
+    "status": "已完成",
+    "summary": "已补异步加载状态、请求ID、空状态、值/选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "复杂选择",
+    "slug": "autocomplete"
+  },
+  {
+    "index": "50",
+    "name": "Mentions",
+    "zh": "提及",
+    "create": "EU_CreateMentions",
+    "status": "已完成",
+    "summary": "已补触发字符、过滤、选中插入、值/选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "复杂选择",
+    "slug": "mentions"
+  },
+  {
+    "index": "51",
+    "name": "Cascader",
+    "zh": "级联选择",
+    "create": "EU_CreateCascader",
+    "status": "已完成",
+    "summary": "已补完整路径搜索、懒加载请求层级、匹配/高级选项读回、Python 封装和独立中文 emoji 验证",
+    "category": "复杂选择",
+    "slug": "cascader"
+  },
+  {
+    "index": "52",
+    "name": "DatePicker",
+    "zh": "日期选择器",
+    "create": "EU_CreateDatePicker",
+    "status": "已完成",
+    "summary": "已补弹层开关、状态读取、月份切换、范围夹取、中文格式、禁用日期、清空、快捷今天、区间模式、Set/Get、Python 封装和独立中文 emoji 验证",
+    "category": "日期时间",
+    "slug": "date-picker"
+  },
+  {
+    "index": "53",
+    "name": "TimePicker",
+    "zh": "时间选择器",
+    "create": "EU_CreateTimePicker",
+    "status": "已完成",
+    "summary": "已补弹层开关、状态读取、时间值读取、步进、范围、格式、固定高度长列表滚动、滚轮、键盘列选择、滚动位置读写、Python 封装和独立中文 emoji 验证",
+    "category": "日期时间",
+    "slug": "time-picker"
+  },
+  {
+    "index": "54",
+    "name": "DateTimePicker",
+    "zh": "日期时间选择器",
+    "create": "EU_CreateDateTimePicker",
+    "status": "已完成",
+    "summary": "已补固定高度弹层、小时 0-23 全量列表、分钟长列表滚动、清空、快捷今天、快捷当前时间、日期时间范围夹取、键盘选择、滚动位置读写、Python 封装和独立中文 emoji 验证",
+    "category": "日期时间",
+    "slug": "date-time-picker"
+  },
+  {
+    "index": "55",
+    "name": "TimeSelect",
+    "zh": "时间选择",
+    "create": "EU_CreateTimeSelect",
+    "status": "已完成",
+    "summary": "已补固定高度候选列表、凌晨/上午/下午/晚上分组、滚动候选、步进、范围、禁用项、键盘/滚轮选择、状态读回、Python 封装和独立中文 emoji 验证",
+    "category": "日期时间",
+    "slug": "time-select"
+  },
+  {
+    "index": "56",
+    "name": "Dropdown",
+    "zh": "下拉菜单",
+    "create": "EU_CreateDropdown",
+    "status": "已完成",
+    "summary": "已补多级层级缩进、禁用项绘制与交互拦截、键盘/鼠标/滚轮选择、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "dropdown"
+  },
+  {
+    "index": "57",
+    "name": "Menu",
+    "zh": "菜单",
+    "create": "EU_CreateMenu",
+    "status": "已完成",
+    "summary": "已补多级子菜单、展开/折叠、禁用项跳过、水平/垂直方向切换、激活路径读回、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "menu"
+  },
+  {
+    "index": "58",
+    "name": "Anchor",
+    "zh": "锚点",
+    "create": "EU_CreateAnchor",
+    "status": "已完成",
+    "summary": "已补滚动位置绑定、目标位置数组、偏移、容器ID状态、键盘/鼠标选择、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "anchor"
+  },
+  {
+    "index": "59",
+    "name": "Backtop",
+    "zh": "回到顶部",
+    "create": "EU_CreateBacktop",
+    "status": "已完成",
+    "summary": "已补滚动容器绑定、显示阈值、目标位置跳转、鼠标/键盘触发、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "backtop"
+  },
+  {
+    "index": "60",
+    "name": "Segmented",
+    "zh": "分段控制器",
+    "create": "EU_CreateSegmented",
+    "status": "已完成",
+    "summary": "已补选中滑块视觉、禁用项绘制与交互拦截、emoji 图标项、键盘左右/Home/End 选择、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "segmented"
+  },
+  {
+    "index": "61",
+    "name": "PageHeader",
+    "zh": "页头",
+    "create": "EU_CreatePageHeader",
+    "status": "已完成",
+    "summary": "已补返回事件语义、返回计数读回、面包屑激活与交互、操作区激活、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "page-header"
+  },
+  {
+    "index": "62",
+    "name": "Affix",
+    "zh": "固钉",
+    "create": "EU_CreateAffix",
+    "status": "已完成",
+    "summary": "已补滚动容器绑定、固定阈值、占位高度、固定顶部、层级状态、完整 Set/Get、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "导航",
+    "slug": "affix"
+  },
+  {
+    "index": "63",
+    "name": "Watermark",
+    "zh": "水印",
+    "create": "EU_CreateWatermark",
+    "status": "已完成",
+    "summary": "已补重复平铺、旋转、透明度、覆盖层绑定、鼠标穿透、层级、平铺数量读回、完整 Set/Get、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "媒体/工具",
+    "slug": "watermark"
+  },
+  {
+    "index": "64",
+    "name": "Tour",
+    "zh": "漫游引导",
+    "create": "EU_CreateTour",
+    "status": "已完成",
+    "summary": "已补目标元素绑定、遮罩定位、遮罩穿透/点击关闭策略、键盘步骤切换、关闭语义、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "媒体/工具",
+    "slug": "tour"
+  },
+  {
+    "index": "65",
+    "name": "Image",
+    "zh": "图片",
+    "create": "EU_CreateImage",
+    "status": "已完成",
+    "summary": "已补本地图片加载、失败占位、contain/cover/fill、预览打开/关闭、缩放偏移、缓存开关、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "媒体/工具",
+    "slug": "image"
+  },
+  {
+    "index": "66",
+    "name": "Carousel",
+    "zh": "轮播",
+    "create": "EU_CreateCarousel",
+    "status": "已完成",
+    "summary": "已补真实内部定时器、自动播放推进、切换动画、循环/非循环边界、箭头/指示器交互、主动 tick、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "媒体/工具",
+    "slug": "carousel"
+  },
+  {
+    "index": "67",
+    "name": "Upload",
+    "zh": "上传",
+    "create": "EU_CreateUpload",
+    "status": "已完成",
+    "summary": "已补真实文件选择入口、选择结果写入文件列表、多选/自动上传选项、选择回调、上传动作回调、开始上传、重试、删除、清空、文件名/路径/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "媒体/工具",
+    "slug": "upload"
+  },
+  {
+    "index": "68",
+    "name": "Scrollbar",
+    "zh": "滚动条",
+    "create": "EU_CreateScrollbar",
+    "status": "已完成",
+    "summary": "已补真实 WM_MOUSEWHEEL 派发、内容元素绑定、滚动偏移同步、自动隐藏、拖动/API/键盘/滚轮滚动、变化回调、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "媒体/工具",
+    "slug": "scrollbar"
+  },
+  {
+    "index": "69",
+    "name": "Breadcrumb",
+    "zh": "面包屑",
+    "create": "EU_CreateBreadcrumb",
+    "status": "已完成",
+    "summary": "已补分隔符更新、点击/键盘/程序触发选择、专用选择回调、项目文本读回、hover/press/最近点击/点击次数/最近动作完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "category": "导航",
+    "slug": "breadcrumb"
+  },
+  {
+    "index": "70",
+    "name": "Tabs",
+    "zh": "标签页",
+    "create": "EU_CreateTabs",
+    "status": "已完成",
+    "summary": "已补关闭标签、新增标签、溢出横向滚动、滚轮/Page 键滚动、方向键/Home/End 键盘导航、Delete/Insert 快捷操作、选择/关闭/新增回调、项目文本读回、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "tabs"
+  },
+  {
+    "index": "71",
+    "name": "Pagination",
+    "zh": "分页",
+    "create": "EU_CreatePagination",
+    "status": "已完成",
+    "summary": "已补省略页码、上一页/下一页、每页数量切换、每页数量选项、跳转页、方向键/Home/End/Page 键/数字键/回车键盘操作、变化回调、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "pagination"
+  },
+  {
+    "index": "72",
+    "name": "Steps",
+    "zh": "步骤条",
+    "create": "EU_CreateSteps",
+    "status": "已完成",
+    "summary": "已补等待/进行中/完成/失败状态、横向/纵向方向、点击/键盘/程序触发切换、描述文本、变化回调、项目标题/描述读回、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "导航",
+    "slug": "steps"
+  },
+  {
+    "index": "73",
+    "name": "Alert",
+    "zh": "警告提示",
+    "create": "EU_CreateAlert",
+    "status": "已完成",
+    "summary": "已补类型/效果/描述/可关闭状态、关闭按钮、鼠标/键盘/程序触发关闭、关闭回调、关闭次数与最近动作完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "alert"
+  },
+  {
+    "index": "74",
+    "name": "Result",
+    "zh": "结果页",
+    "create": "EU_CreateResult",
+    "status": "已完成",
+    "summary": "已补完整操作区交互、自定义内容/类型状态、鼠标/键盘/程序触发、操作回调、文本/操作项/完整状态读回、Python 封装、易语言 DLL 命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "result"
+  },
+  {
+    "index": "75",
+    "name": "Notification",
+    "zh": "通知",
+    "create": "EU_CreateNotification",
+    "status": "已完成",
+    "summary": "已补真实自动关闭定时器、堆叠布局、倒计时进度条、鼠标/键盘/程序/定时器关闭、关闭回调、文本/完整状态读回、Python 封装、易语言 DLL 命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "notification"
+  },
+  {
+    "index": "76",
+    "name": "Loading",
+    "zh": "加载",
+    "create": "EU_CreateLoading",
+    "status": "已完成",
+    "summary": "已补目标绑定遮罩、真实旋转动画定时器、激活/全屏/进度/文本/目标/动画完整状态读回、Python 封装、易语言 DLL 命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "loading"
+  },
+  {
+    "index": "77",
+    "name": "Dialog",
+    "zh": "对话框",
+    "create": "EU_CreateDialog",
+    "status": "已完成",
+    "summary": "已补拖拽、遮罩关闭、打开状态、模态/关闭/尺寸选项、按钮区、焦点循环、键盘/程序按钮触发、按钮回调、文本/完整状态读回和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "dialog"
+  },
+  {
+    "index": "78",
+    "name": "Drawer",
+    "zh": "抽屉",
+    "create": "EU_CreateDrawer",
+    "status": "已完成",
+    "summary": "已补方向、遮罩关闭、打开动画计时器、尺寸变化、鼠标/键盘/程序关闭、关闭回调、标题/正文/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "drawer"
+  },
+  {
+    "index": "79",
+    "name": "Tooltip",
+    "zh": "文字提示",
+    "create": "EU_CreateTooltip",
+    "status": "已完成",
+    "summary": "已补运行时定位、箭头绘制、显示/隐藏延迟、悬停/focus/键盘/手动触发、最大宽度、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "tooltip"
+  },
+  {
+    "index": "80",
+    "name": "Popover",
+    "zh": "弹出框",
+    "create": "EU_CreatePopover",
+    "status": "已完成",
+    "summary": "已补触发方式、定位、外部关闭、标题/正文、尺寸、焦点管理、Tab/Enter/Escape 键盘操作、动作回调、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "popover"
+  },
+  {
+    "index": "81",
+    "name": "Popconfirm",
+    "zh": "气泡确认框",
+    "create": "EU_CreatePopconfirm",
+    "status": "已完成",
+    "summary": "已补确认/取消按钮、结果读取/重置、定位和内容更新、键盘确认/取消、程序触发结果、结果回调、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "category": "反馈/浮层",
+    "slug": "popconfirm"
+  }
+]

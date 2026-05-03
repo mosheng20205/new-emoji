@@ -1,0 +1,52 @@
+#pragma once
+#include "element_base.h"
+
+class Notification : public Element {
+public:
+    std::wstring body;
+    int notify_type = 0;
+    bool closable = true;
+    bool closed = false;
+    int duration_ms = 0;
+    int timer_elapsed_ms = 0;
+    int close_count = 0;
+    int last_action = 0; // 0 none, 1 set, 2 mouse, 3 keyboard, 4 trigger, 5 timer
+    int stack_index = 0;
+    int stack_gap = 12;
+    ElementValueCallback close_cb = nullptr;
+
+    ~Notification() override;
+
+    const wchar_t* type_name() const override { return L"Notification"; }
+    void paint(RenderContext& ctx) override;
+    void on_mouse_move(int x, int y) override;
+    void on_mouse_leave() override;
+    void on_mouse_down(int x, int y, MouseButton btn) override;
+    void on_mouse_up(int x, int y, MouseButton btn) override;
+    void on_key_down(int vk, int mods) override;
+
+    void set_body(const std::wstring& value);
+    void set_type(int value);
+    void set_closable(bool value);
+    void set_closed(bool value);
+    void set_options(int type, bool closeable, int duration);
+    void set_stack(int index, int gap);
+    void close_notification(int action);
+    void reset_timer();
+    void tick(int elapsed_ms);
+    bool close_hover() const { return m_close_hover; }
+    bool close_down() const { return m_close_down; }
+    bool timer_running() const { return m_timer_id != 0; }
+
+private:
+    bool m_close_hover = false;
+    bool m_close_down = false;
+    int m_base_y = 0;
+    bool m_has_base_y = false;
+    UINT_PTR m_timer_id = 0;
+
+    Rect close_rect() const;
+    bool close_hit(int x, int y) const;
+    void ensure_timer();
+    void stop_timer();
+};
