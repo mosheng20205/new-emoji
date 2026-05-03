@@ -26,6 +26,7 @@ extern HMODULE g_module;
 #include "element_slider.h"
 #include "element_inputnumber.h"
 #include "element_input.h"
+#include "element_inputgroup.h"
 #include "element_inputtag.h"
 #include "element_select.h"
 #include "element_rate.h"
@@ -416,6 +417,41 @@ static std::vector<std::wstring> parse_checkbox_checked_values(const unsigned ch
         if (!value.empty()) values.push_back(value);
     }
     return values;
+}
+
+static std::vector<AutocompleteSuggestion> parse_autocomplete_suggestions(const unsigned char* bytes, int len) {
+    std::vector<AutocompleteSuggestion> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    if (full.find(L'\t') == std::wstring::npos) {
+        for (const auto& value : split_option_list(bytes, len)) {
+            if (value.empty()) continue;
+            items.push_back({ value, L"", value });
+        }
+        return items;
+    }
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        AutocompleteSuggestion item;
+        item.title = fields.empty() ? row : fields[0];
+        item.subtitle = fields.size() >= 2 ? fields[1] : L"";
+        item.value = fields.size() >= 3 ? fields[2] : item.title;
+        if (!item.title.empty()) items.push_back(item);
+    }
+    return items;
+}
+
+static std::vector<std::pair<std::wstring, std::wstring>> parse_select_pairs(const unsigned char* bytes, int len) {
+    std::vector<std::pair<std::wstring, std::wstring>> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        std::wstring label = fields.empty() ? row : fields[0];
+        std::wstring value = fields.size() >= 2 ? fields[1] : label;
+        if (!label.empty()) items.push_back({ label, value });
+    }
+    return items;
 }
 
 static std::vector<std::pair<std::wstring, std::wstring>>
@@ -947,6 +983,52 @@ int __stdcall EU_CreateInputNumber(HWND hwnd, int parent_id,
     return raw->id;
 }
 
+static void init_default_input_style(Input* el) {
+    if (!el) return;
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 4.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 12;
+    logical_style.pad_top = 0;
+    logical_style.pad_right = 12;
+    logical_style.pad_bottom = 0;
+    el->set_logical_style(logical_style);
+    el->set_visual_options(0, false, false, false, 0, 0);
+}
+
+static void init_default_button_style(Button* el) {
+    if (!el) return;
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 4.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 10;
+    logical_style.pad_top = 0;
+    logical_style.pad_right = 10;
+    logical_style.pad_bottom = 0;
+    el->set_logical_style(logical_style);
+}
+
+static void init_default_select_style(Select* el) {
+    if (!el) return;
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 4.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 10;
+    logical_style.pad_top = 4;
+    logical_style.pad_right = 10;
+    logical_style.pad_bottom = 4;
+    el->set_logical_style(logical_style);
+}
+
 int __stdcall EU_CreateInput(HWND hwnd, int parent_id,
                              const unsigned char* text_bytes, int text_len,
                              const unsigned char* placeholder_bytes, int placeholder_len,
@@ -964,23 +1046,48 @@ int __stdcall EU_CreateInput(HWND hwnd, int parent_id,
     el->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
     el->set_affixes(utf8_to_wide(prefix_bytes, prefix_len), utf8_to_wide(suffix_bytes, suffix_len));
     el->set_clearable(clearable != 0);
-
-    ElementStyle logical_style = el->style;
-    logical_style.bg_color = 0;
-    logical_style.border_color = 0;
-    logical_style.fg_color = 0;
-    logical_style.corner_radius = 4.0f;
-    logical_style.font_size = 14.0f;
-    logical_style.pad_left = 8;
-    logical_style.pad_top = 0;
-    logical_style.pad_right = 8;
-    logical_style.pad_bottom = 0;
-    el->set_logical_style(logical_style);
+    init_default_input_style(el.get());
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
+}
+
+int __stdcall EU_CreateInputGroup(HWND hwnd, int parent_id,
+                                  const unsigned char* value_bytes, int value_len,
+                                  const unsigned char* placeholder_bytes, int placeholder_len,
+                                  int size, int clearable, int password,
+                                  int show_word_limit, int autosize,
+                                  int min_rows, int max_rows,
+                                  int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto group = std::make_unique<InputGroup>();
+    group->set_logical_bounds({ x, y, w, h });
+    group->mouse_passthrough = true;
+    group->set_options(size, clearable != 0, password != 0,
+                       show_word_limit != 0, autosize != 0,
+                       min_rows, max_rows);
+
+    InputGroup* group_ptr = group.get();
+    Element* raw_group = st->element_tree->add_child(parent, std::move(group));
+
+    auto input = std::make_unique<Input>();
+    input->set_value(utf8_to_wide(value_bytes, value_len));
+    input->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
+    init_default_input_style(input.get());
+    input->set_clearable(clearable != 0);
+    input->set_options(false, password != 0, false, 0);
+    input->set_visual_options(size, password != 0, show_word_limit != 0, autosize != 0, min_rows, max_rows);
+    Element* raw_input = st->element_tree->add_child(group_ptr, std::move(input));
+    group_ptr->set_input_element_id(raw_input->id);
+
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw_group->id;
 }
 
 int __stdcall EU_CreateInputTag(HWND hwnd, int parent_id,
@@ -2040,7 +2147,7 @@ int __stdcall EU_CreateAutocomplete(HWND hwnd, int parent_id,
     Element* parent = find_parent_or_root(st, parent_id);
     auto el = std::make_unique<Autocomplete>();
     el->set_logical_bounds({ x, y, w, h });
-    el->set_suggestions(split_option_list(suggestions_bytes, suggestions_len));
+    el->set_suggestions(parse_autocomplete_suggestions(suggestions_bytes, suggestions_len));
     el->set_value(utf8_to_wide(value_bytes, value_len));
 
     ElementStyle logical_style = el->style;
@@ -4088,6 +4195,26 @@ void __stdcall EU_SetInputNumberValueCallback(HWND hwnd, int element_id, Element
     }
 }
 
+static InputGroup* find_input_group(HWND hwnd, int element_id) {
+    return find_typed_element<InputGroup>(hwnd, element_id);
+}
+
+static Input* find_input_group_child(HWND hwnd, int element_id) {
+    auto* group = find_input_group(hwnd, element_id);
+    return group ? group->input_child() : nullptr;
+}
+
+static void remove_input_group_addon(WindowState* st, InputGroup* group, int side) {
+    if (!st || !st->element_tree || !group) return;
+    int addon_id = group->addon_element_id(side);
+    if (addon_id != 0) {
+        if (Element* addon = st->element_tree->find_by_id(addon_id)) {
+            st->element_tree->remove_child(addon);
+        }
+    }
+    group->clear_addon_spec(side);
+}
+
 void __stdcall EU_SetInputValue(HWND hwnd, int element_id,
                                 const unsigned char* value_bytes, int value_len) {
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
@@ -4122,6 +4249,25 @@ void __stdcall EU_SetInputAffixes(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetInputIcons(HWND hwnd, int element_id,
+                                const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                const unsigned char* suffix_icon_bytes, int suffix_icon_len) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_icons(utf8_to_wide(prefix_icon_bytes, prefix_icon_len),
+                      utf8_to_wide(suffix_icon_bytes, suffix_icon_len));
+    }
+}
+
+int __stdcall EU_GetInputIcons(HWND hwnd, int element_id,
+                               unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                               unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->prefix_icon, prefix_icon_buffer, prefix_icon_buffer_size);
+    copy_wide_as_utf8(el->suffix_icon, suffix_icon_buffer, suffix_icon_buffer_size);
+    return 1;
+}
+
 void __stdcall EU_SetInputClearable(HWND hwnd, int element_id, int clearable) {
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
         el->set_clearable(clearable != 0);
@@ -4132,6 +4278,36 @@ void __stdcall EU_SetInputOptions(HWND hwnd, int element_id, int readonly, int p
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
         el->set_options(readonly != 0, password != 0, multiline != 0, validate_state);
     }
+}
+
+void __stdcall EU_SetInputVisualOptions(HWND hwnd, int element_id,
+                                        int size, int show_password_toggle,
+                                        int show_word_limit, int autosize,
+                                        int min_rows, int max_rows) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_visual_options(size, show_password_toggle != 0,
+                               show_word_limit != 0, autosize != 0,
+                               min_rows, max_rows);
+        if (WindowState* st = window_state(hwnd)) {
+            if (st->element_tree) st->element_tree->layout();
+        }
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetInputVisualOptions(HWND hwnd, int element_id,
+                                       int* size, int* show_password_toggle,
+                                       int* show_word_limit, int* autosize,
+                                       int* min_rows, int* max_rows) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    if (size) *size = el->size;
+    if (show_password_toggle) *show_password_toggle = el->show_password_toggle ? 1 : 0;
+    if (show_word_limit) *show_word_limit = el->show_word_limit ? 1 : 0;
+    if (autosize) *autosize = el->autosize ? 1 : 0;
+    if (min_rows) *min_rows = el->min_rows;
+    if (max_rows) *max_rows = el->max_rows;
+    return 1;
 }
 
 int __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable,
@@ -4166,6 +4342,157 @@ void __stdcall EU_SetInputTextCallback(HWND hwnd, int element_id, ElementTextCal
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
         el->text_cb = cb;
     }
+}
+
+void __stdcall EU_SetInputGroupValue(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len) {
+    if (auto* input = find_input_group_child(hwnd, element_id)) {
+        input->set_value(utf8_to_wide(value_bytes, value_len));
+        if (WindowState* st = window_state(hwnd)) {
+            if (st->element_tree) st->element_tree->layout();
+        }
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetInputGroupValue(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* input = find_input_group_child(hwnd, element_id);
+    if (!input) return 0;
+    return copy_wide_as_utf8(input->value, buffer, buffer_size);
+}
+
+void __stdcall EU_SetInputGroupOptions(HWND hwnd, int element_id,
+                                       int size, int clearable, int password,
+                                       int show_word_limit, int autosize,
+                                       int min_rows, int max_rows) {
+    auto* group = find_input_group(hwnd, element_id);
+    if (!group) return;
+    group->set_options(size, clearable != 0, password != 0,
+                       show_word_limit != 0, autosize != 0,
+                       min_rows, max_rows);
+    if (WindowState* st = window_state(hwnd)) {
+        if (st->element_tree) st->element_tree->layout();
+    }
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+int __stdcall EU_GetInputGroupOptions(HWND hwnd, int element_id,
+                                      int* size, int* clearable, int* password,
+                                      int* show_word_limit, int* autosize,
+                                      int* min_rows, int* max_rows) {
+    auto* group = find_input_group(hwnd, element_id);
+    if (!group) return 0;
+    if (size) *size = group->size;
+    if (clearable) *clearable = group->clearable ? 1 : 0;
+    if (password) *password = group->password ? 1 : 0;
+    if (show_word_limit) *show_word_limit = group->show_word_limit ? 1 : 0;
+    if (autosize) *autosize = group->autosize ? 1 : 0;
+    if (min_rows) *min_rows = group->min_rows;
+    if (max_rows) *max_rows = group->max_rows;
+    return 1;
+}
+
+void __stdcall EU_SetInputGroupTextAddon(HWND hwnd, int element_id, int side,
+                                         const unsigned char* text_bytes, int text_len) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+
+    auto addon = std::make_unique<Button>();
+    addon->text = utf8_to_wide(text_bytes, text_len);
+    addon->emoji.clear();
+    addon->set_options(0, 1, 0, 0, 0, group->size);
+    init_default_button_style(addon.get());
+    Element* raw = st->element_tree->add_child(group, std::move(addon));
+
+    InputGroup::AddonSpec spec;
+    spec.type = InputGroup::AddonText;
+    spec.element_id = raw->id;
+    spec.text = utf8_to_wide(text_bytes, text_len);
+    group->set_addon_spec(side, spec);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_SetInputGroupButtonAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* emoji_bytes, int emoji_len,
+                                           const unsigned char* text_bytes, int text_len,
+                                           int variant) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+
+    auto addon = std::make_unique<Button>();
+    addon->text = utf8_to_wide(text_bytes, text_len);
+    addon->emoji = utf8_to_wide(emoji_bytes, emoji_len);
+    addon->set_options(variant, 0, 0, 0, 0, group->size);
+    init_default_button_style(addon.get());
+    Element* raw = st->element_tree->add_child(group, std::move(addon));
+
+    InputGroup::AddonSpec spec;
+    spec.type = InputGroup::AddonButton;
+    spec.element_id = raw->id;
+    spec.text = utf8_to_wide(text_bytes, text_len);
+    spec.emoji = utf8_to_wide(emoji_bytes, emoji_len);
+    spec.variant = variant;
+    group->set_addon_spec(side, spec);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_SetInputGroupSelectAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* items_bytes, int items_len,
+                                           int selected_index,
+                                           const unsigned char* placeholder_bytes, int placeholder_len) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+
+    auto parsed = parse_select_pairs(items_bytes, items_len);
+    std::vector<std::wstring> labels;
+    labels.reserve(parsed.size());
+    for (const auto& pair : parsed) labels.push_back(pair.first);
+
+    auto addon = std::make_unique<Select>();
+    addon->set_options(labels);
+    addon->set_selected_index(selected_index);
+    addon->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
+    init_default_select_style(addon.get());
+    Element* raw = st->element_tree->add_child(group, std::move(addon));
+
+    InputGroup::AddonSpec spec;
+    spec.type = InputGroup::AddonSelect;
+    spec.element_id = raw->id;
+    spec.select_items = labels;
+    spec.select_placeholder = utf8_to_wide(placeholder_bytes, placeholder_len);
+    if (spec.select_placeholder.empty()) spec.select_placeholder = L"请选择";
+    spec.selected_index = selected_index;
+    group->set_addon_spec(side, spec);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_ClearInputGroupAddon(HWND hwnd, int element_id, int side) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+int __stdcall EU_GetInputGroupInputElementId(HWND hwnd, int element_id) {
+    auto* group = find_input_group(hwnd, element_id);
+    return group ? group->input_element_id : 0;
+}
+
+int __stdcall EU_GetInputGroupAddonElementId(HWND hwnd, int element_id, int side) {
+    auto* group = find_input_group(hwnd, element_id);
+    return group ? group->addon_element_id(side) : 0;
 }
 
 void __stdcall EU_SetInputTagTags(HWND hwnd, int element_id,
@@ -5939,7 +6266,7 @@ int __stdcall EU_GetTransferDisabledCount(HWND hwnd, int element_id, int side) {
 void __stdcall EU_SetAutocompleteSuggestions(HWND hwnd, int element_id,
                                              const unsigned char* suggestions_bytes, int suggestions_len) {
     if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
-        el->set_suggestions(split_option_list(suggestions_bytes, suggestions_len));
+        el->set_suggestions(parse_autocomplete_suggestions(suggestions_bytes, suggestions_len));
     }
 }
 
@@ -5973,6 +6300,52 @@ void __stdcall EU_SetAutocompleteEmptyText(HWND hwnd, int element_id,
     if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
         el->set_empty_text(utf8_to_wide(text_bytes, text_len));
     }
+}
+
+void __stdcall EU_SetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                             const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
+        el->set_placeholder(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+int __stdcall EU_GetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                            unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Autocomplete>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->placeholder, buffer, buffer_size);
+}
+
+void __stdcall EU_SetAutocompleteIcons(HWND hwnd, int element_id,
+                                       const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                       const unsigned char* suffix_icon_bytes, int suffix_icon_len) {
+    if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
+        el->set_icons(utf8_to_wide(prefix_icon_bytes, prefix_icon_len),
+                      utf8_to_wide(suffix_icon_bytes, suffix_icon_len));
+    }
+}
+
+int __stdcall EU_GetAutocompleteIcons(HWND hwnd, int element_id,
+                                      unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                                      unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size) {
+    auto* el = find_typed_element<Autocomplete>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->prefix_icon, prefix_icon_buffer, prefix_icon_buffer_size);
+    copy_wide_as_utf8(el->suffix_icon, suffix_icon_buffer, suffix_icon_buffer_size);
+    return 1;
+}
+
+void __stdcall EU_SetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int trigger_on_focus) {
+    if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
+        el->set_behavior(trigger_on_focus != 0);
+    }
+}
+
+int __stdcall EU_GetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int* trigger_on_focus) {
+    auto* el = find_typed_element<Autocomplete>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_on_focus) *trigger_on_focus = el->trigger_on_focus ? 1 : 0;
+    return 1;
 }
 
 int __stdcall EU_GetAutocompleteValue(HWND hwnd, int element_id,

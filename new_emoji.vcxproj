@@ -196,6 +196,7 @@
     <ClInclude Include="src\element_slider.h" />
     <ClInclude Include="src\element_inputnumber.h" />
     <ClInclude Include="src\element_input.h" />
+    <ClInclude Include="src\element_inputgroup.h" />
     <ClInclude Include="src\element_inputtag.h" />
     <ClInclude Include="src\element_select.h" />
     <ClInclude Include="src\element_rate.h" />
@@ -285,6 +286,7 @@
     <ClCompile Include="src\element_slider.cpp" />
     <ClCompile Include="src\element_inputnumber.cpp" />
     <ClCompile Include="src\element_input.cpp" />
+    <ClCompile Include="src\element_inputgroup.cpp" />
     <ClCompile Include="src\element_inputtag.cpp" />
     <ClCompile Include="src\element_select.cpp" />
     <ClCompile Include="src\element_rate.cpp" />

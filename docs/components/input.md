@@ -2,68 +2,127 @@
 
 ## 简介
 
-`Input` 是 new_emoji 的 表单/选择 组件。当前状态：**已完成**。
+`Input` 是 `new_emoji` 的原生输入组件，当前已补齐 Element 风格常用能力：
 
-已补 clear、prefix/suffix、校验态、密码/只读、多行绘制与换行输入、最大长度、输入事件回调、Set/Get、Python 封装和独立中文 emoji 验证
+- 单行 / 多行输入
+- `placeholder`
+- `prefix` / `suffix` 文本
+- `prefix_icon` / `suffix_icon`
+- `clearable`
+- `password` + 密码显隐按钮
+- `show_word_limit`
+- `maxlength`
+- `size`：`0默认 / 1中等 / 2小型 / 3超小`
+- `autosize`、`min_rows`、`max_rows`
+- `readonly`、校验态、文本变化回调
 
 ## 创建
 
 | 项目 | 值 |
 |---|---|
 | 创建导出 | `EU_CreateInput` |
-| 组件分类 | 表单/选择 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_input` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
+| Python helper | `create_input(...)` |
+| 组件分类 | 表单输入 |
+| 当前状态 | 已完成 |
 
-## 相关 API
+## 相关导出
 
-| API | 说明 |
-|---|---|
-| `EU_CreateInput` | 当前组件相关导出 |
-| `EU_GetInputMaxLength` | 当前组件相关导出 |
-| `EU_GetInputState` | 当前组件相关导出 |
-| `EU_GetInputValue` | 当前组件相关导出 |
-| `EU_SetInputAffixes` | 当前组件相关导出 |
-| `EU_SetInputClearable` | 当前组件相关导出 |
-| `EU_SetInputMaxLength` | 当前组件相关导出 |
-| `EU_SetInputOptions` | 当前组件相关导出 |
-| `EU_SetInputPlaceholder` | 当前组件相关导出 |
-| `EU_SetInputTextCallback` | 当前组件相关导出 |
-| `EU_SetInputValue` | 当前组件相关导出 |
+### 创建
 
-## Python 使用
+- `EU_CreateInput`
+
+### 基础值与状态
+
+- `EU_SetInputValue`
+- `EU_GetInputValue`
+- `EU_SetInputPlaceholder`
+- `EU_SetInputClearable`
+- `EU_SetInputOptions`
+- `EU_GetInputState`
+- `EU_SetInputMaxLength`
+- `EU_GetInputMaxLength`
+- `EU_SetInputTextCallback`
+
+### 前后缀与视觉扩展
+
+- `EU_SetInputAffixes`
+- `EU_SetInputIcons`
+- `EU_GetInputIcons`
+- `EU_SetInputVisualOptions`
+- `EU_GetInputVisualOptions`
+
+## 视觉选项
+
+`EU_SetInputVisualOptions(hwnd, id, size, show_password_toggle, show_word_limit, autosize, min_rows, max_rows)`
+
+- `size`
+  - `0` 默认
+  - `1` medium
+  - `2` small
+  - `3` mini
+- `show_password_toggle`
+  - 仅在 `password=1` 时显示眼睛按钮
+- `show_word_limit`
+  - 显示 `当前长度/最大长度`
+- `autosize`
+  - 仅对 `multiline=1` 生效
+- `min_rows` / `max_rows`
+  - 仅对 `multiline=1` + `autosize=1` 生效
+
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
 import new_emoji_ui as ui
 
-hwnd = ui.create_window("✨ 输入框 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Input`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+hwnd = ui.create_window("⌨️ Input 示例", 200, 120, 900, 620)
+root = ui.create_container(hwnd, 0, 0, 0, 860, 560)
+
+ui.create_input(
+    hwnd,
+    root,
+    value="",
+    placeholder="请输入内容 👋",
+    prefix_icon="🔎",
+    suffix_icon="📅",
+    clearable=True,
+    x=40, y=60, w=320, h=40,
+)
+
+ui.create_input(
+    hwnd,
+    root,
+    value="secret-emoji",
+    placeholder="请输入密码 🔐",
+    show_password=True,
+    x=40, y=120, w=320, h=40,
+)
+
+ui.create_input(
+    hwnd,
+    root,
+    value="第一行\n第二行",
+    placeholder="多行说明 📝",
+    multiline=True,
+    autosize=True,
+    min_rows=2,
+    max_rows=4,
+    show_word_limit=True,
+    max_length=30,
+    x=40, y=190, w=420, h=120,
+)
 ```
 
-## 易语言调用
+## 说明
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
+- `disabled` 继续使用通用 `EU_SetElementEnabled`
+- 多行模式仍沿用当前 `Input` 文本引擎，不单独切回 `EditBox`
+- `suffix` 区从左到右布局为：
+  `suffix文本/图标 -> 密码显隐 -> clear -> 字数统计`
 
-## 状态与交互
+## 对应示例与测试
 
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
-
-## 测试
-
-优先运行对应完整测试文件，例如 `tests/python/test_input_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Input` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+- 图库：`examples/python/component_gallery.py` 的 `Input` 专页
+- 测试：
+  - `tests/python/test_input_complete_components.py`
+  - `tests/python/test_form_input_enhanced_state_components.py`
+  - `tests/python/test_foundation_input_complete_components.py`

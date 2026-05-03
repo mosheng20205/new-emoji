@@ -145,6 +145,60 @@ dll.EU_CreateInput.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateInput.restype = ctypes.c_int
 
+dll.EU_CreateInputGroup.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateInputGroup.restype = ctypes.c_int
+
+dll.EU_SetInputIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputIcons.restype = ctypes.c_int
+dll.EU_SetInputVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputVisualOptions.restype = ctypes.c_int
+dll.EU_SetInputGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputGroupValue.restype = ctypes.c_int
+dll.EU_SetInputGroupOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputGroupOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputGroupOptions.restype = ctypes.c_int
+dll.EU_SetInputGroupTextAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetInputGroupButtonAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.c_int]
+dll.EU_SetInputGroupSelectAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_ClearInputGroupAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputGroupInputElementId.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputGroupInputElementId.restype = ctypes.c_int
+dll.EU_GetInputGroupAddonElementId.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputGroupAddonElementId.restype = ctypes.c_int
+
 dll.EU_CreateInputTag.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -356,6 +410,23 @@ dll.EU_CreateAutocomplete.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateAutocomplete.restype = ctypes.c_int
+
+dll.EU_SetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.restype = ctypes.c_int
+dll.EU_SetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.restype = ctypes.c_int
+dll.EU_SetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                  ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetAutocompleteBehaviorOptions.restype = ctypes.c_int
 
 dll.EU_CreateMentions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -1410,6 +1481,22 @@ dll.EU_SetAutocompleteSuggestions.argtypes = [wintypes.HWND, ctypes.c_int,
                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAutocompleteValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.restype = ctypes.c_int
+dll.EU_SetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.restype = ctypes.c_int
+dll.EU_SetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                  ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetAutocompleteBehaviorOptions.restype = ctypes.c_int
 dll.EU_SetAutocompleteOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAutocompleteSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAutocompleteAsyncState.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2269,6 +2356,35 @@ def make_utf8(text: str) -> bytes:
 
 def bytes_arg(data: bytes):
     return (ctypes.c_ubyte * len(data))(*data)
+
+def _autocomplete_suggestions_data(suggestions):
+    if suggestions is None:
+        suggestions = ["北京", "上海", "广州", "深圳"]
+    rows = []
+    for item in suggestions:
+        if isinstance(item, (list, tuple)):
+            if not item:
+                continue
+            title = str(item[0])
+            subtitle = str(item[1]) if len(item) >= 2 else ""
+            write_value = str(item[2]) if len(item) >= 3 else title
+            rows.append("\t".join([title, subtitle, write_value]))
+        else:
+            rows.append(str(item))
+    return make_utf8("\n".join(rows))
+
+def _input_group_select_items_data(items):
+    rows = []
+    for item in items or []:
+        if isinstance(item, (list, tuple)):
+            label = str(item[0]) if len(item) >= 1 else ""
+            value = str(item[1]) if len(item) >= 2 else label
+        else:
+            label = str(item)
+            value = label
+        if label:
+            rows.append(f"{label}\t{value}")
+    return make_utf8("\n".join(rows))
 
 def create_window(title="New Emoji Test", x=300, y=200, w=800, h=600):
     data = make_utf8(title)
@@ -3211,6 +3327,211 @@ def get_input_state(hwnd, element_id):
         cursor.value, length.value, bool(clearable.value), bool(readonly.value),
         bool(password.value), bool(multiline.value), validate_state.value,
     )
+
+def set_input_icons(hwnd, element_id, prefix_icon="", suffix_icon=""):
+    prefix_data = make_utf8(prefix_icon)
+    suffix_data = make_utf8(suffix_icon)
+    dll.EU_SetInputIcons(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+    )
+
+def get_input_icons(hwnd, element_id, buffer_size=512):
+    prefix = (ctypes.c_ubyte * buffer_size)()
+    suffix = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetInputIcons(hwnd, element_id, prefix, buffer_size, suffix, buffer_size)
+    if not ok:
+        return None
+    return (
+        bytes(prefix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+        bytes(suffix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+    )
+
+def set_input_visual_options(hwnd, element_id, size=0, show_password_toggle=False,
+                             show_word_limit=False, autosize=False,
+                             min_rows=0, max_rows=0):
+    dll.EU_SetInputVisualOptions(
+        hwnd, element_id,
+        size, 1 if show_password_toggle else 0,
+        1 if show_word_limit else 0, 1 if autosize else 0,
+        min_rows, max_rows,
+    )
+
+def get_input_visual_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetInputVisualOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = ["size", "show_password_toggle", "show_word_limit", "autosize", "min_rows", "max_rows"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("show_password_toggle", "show_word_limit", "autosize"):
+        state[key] = bool(state[key])
+    return state
+
+def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
+                 prefix="", suffix="", clearable=False,
+                 size=0, prefix_icon="", suffix_icon="",
+                 password=False, show_password=False,
+                 show_word_limit=False, multiline=False, autosize=False,
+                 min_rows=0, max_rows=0, readonly=False, validate_state=0,
+                 max_length=0,
+                 x=0, y=0, w=260, h=36):
+    if (
+        type(size) is int and
+        type(prefix_icon) is int and
+        type(suffix_icon) is int and
+        type(password) is int and
+        show_password is False and
+        show_word_limit is False and
+        multiline is False and
+        autosize is False and
+        min_rows == 0 and max_rows == 0 and
+        readonly is False and validate_state == 0 and max_length == 0
+    ):
+        x, y, w, h = size, prefix_icon, suffix_icon, password
+        size = 0
+        prefix_icon = ""
+        suffix_icon = ""
+        password = False
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    prefix_data = make_utf8(prefix)
+    suffix_data = make_utf8(suffix)
+    element_id = dll.EU_CreateInput(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+        1 if clearable else 0,
+        x, y, w, h
+    )
+    if not element_id:
+        return 0
+    password_mode = bool(password or show_password)
+    if prefix_icon or suffix_icon:
+        set_input_icons(hwnd, element_id, prefix_icon, suffix_icon)
+    if readonly or password_mode or multiline or validate_state:
+        set_input_options(hwnd, element_id, readonly=readonly, password=password_mode,
+                          multiline=multiline, validate_state=validate_state)
+    if size or show_password or show_word_limit or autosize or min_rows or max_rows:
+        set_input_visual_options(hwnd, element_id, size=size,
+                                 show_password_toggle=show_password,
+                                 show_word_limit=show_word_limit,
+                                 autosize=autosize, min_rows=min_rows, max_rows=max_rows)
+    if max_length:
+        set_input_max_length(hwnd, element_id, max_length)
+    return element_id
+
+def _apply_input_group_addon(hwnd, element_id, side, addon):
+    addon_type = (addon or {}).get("type", "")
+    if addon_type == "text":
+        set_input_group_text_addon(hwnd, element_id, side, addon.get("text", ""))
+    elif addon_type == "button":
+        set_input_group_button_addon(
+            hwnd, element_id, side,
+            emoji=addon.get("emoji", ""), text=addon.get("text", ""),
+            variant=addon.get("variant", 1),
+        )
+    elif addon_type == "select":
+        set_input_group_select_addon(
+            hwnd, element_id, side,
+            items=addon.get("items", []),
+            selected=addon.get("selected", -1),
+            placeholder=addon.get("placeholder", "请选择"),
+        )
+
+def create_input_group(hwnd, parent_id, value="", placeholder="请输入内容",
+                       prepend=None, append=None,
+                       size=0, clearable=False, password=False,
+                       show_word_limit=False, autosize=False,
+                       min_rows=0, max_rows=0,
+                       x=0, y=0, w=360, h=36):
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    element_id = dll.EU_CreateInputGroup(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        size, 1 if clearable else 0, 1 if password else 0,
+        1 if show_word_limit else 0, 1 if autosize else 0,
+        min_rows, max_rows,
+        x, y, w, h,
+    )
+    if not element_id:
+        return 0
+    if prepend:
+        _apply_input_group_addon(hwnd, element_id, 0, prepend)
+    if append:
+        _apply_input_group_addon(hwnd, element_id, 1, append)
+    return element_id
+
+def set_input_group_value(hwnd, element_id, value=""):
+    data = make_utf8(value)
+    dll.EU_SetInputGroupValue(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_input_group_value(hwnd, element_id):
+    needed = dll.EU_GetInputGroupValue(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetInputGroupValue(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def set_input_group_options(hwnd, element_id, size=0, clearable=False, password=False,
+                            show_word_limit=False, autosize=False,
+                            min_rows=0, max_rows=0):
+    dll.EU_SetInputGroupOptions(
+        hwnd, element_id,
+        size, 1 if clearable else 0, 1 if password else 0,
+        1 if show_word_limit else 0, 1 if autosize else 0,
+        min_rows, max_rows,
+    )
+
+def get_input_group_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(7)]
+    ok = dll.EU_GetInputGroupOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = ["size", "clearable", "password", "show_word_limit", "autosize", "min_rows", "max_rows"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("clearable", "password", "show_word_limit", "autosize"):
+        state[key] = bool(state[key])
+    return state
+
+def set_input_group_text_addon(hwnd, element_id, side, text=""):
+    data = make_utf8(text)
+    dll.EU_SetInputGroupTextAddon(hwnd, element_id, side, bytes_arg(data), len(data))
+
+def set_input_group_button_addon(hwnd, element_id, side, emoji="", text="", variant=1):
+    emoji_data = make_utf8(emoji)
+    text_data = make_utf8(text)
+    dll.EU_SetInputGroupButtonAddon(
+        hwnd, element_id, side,
+        bytes_arg(emoji_data), len(emoji_data),
+        bytes_arg(text_data), len(text_data),
+        variant,
+    )
+
+def set_input_group_select_addon(hwnd, element_id, side, items=None, selected=-1, placeholder="请选择"):
+    items_data = _input_group_select_items_data(items or [])
+    placeholder_data = make_utf8(placeholder)
+    dll.EU_SetInputGroupSelectAddon(
+        hwnd, element_id, side,
+        bytes_arg(items_data), len(items_data),
+        selected,
+        bytes_arg(placeholder_data), len(placeholder_data),
+    )
+
+def clear_input_group_addon(hwnd, element_id, side):
+    dll.EU_ClearInputGroupAddon(hwnd, element_id, side)
+
+def get_input_group_input_element_id(hwnd, element_id):
+    return dll.EU_GetInputGroupInputElementId(hwnd, element_id)
+
+def get_input_group_addon_element_id(hwnd, element_id, side):
+    return dll.EU_GetInputGroupAddonElementId(hwnd, element_id, side)
 
 def create_input_tag(hwnd, parent_id, tags=None, placeholder="输入标签，回车提交",
                      x=0, y=0, w=360, h=84):
@@ -4740,6 +5061,86 @@ def get_autocomplete_options(hwnd, element_id):
         "loading": loading.value,
         "request_id": request_id.value,
     }
+
+def set_autocomplete_placeholder(hwnd, element_id, text="请输入内容"):
+    data = make_utf8(text)
+    dll.EU_SetAutocompletePlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_autocomplete_placeholder(hwnd, element_id):
+    needed = dll.EU_GetAutocompletePlaceholder(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetAutocompletePlaceholder(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def set_autocomplete_icons(hwnd, element_id, prefix_icon="", suffix_icon=""):
+    prefix_data = make_utf8(prefix_icon)
+    suffix_data = make_utf8(suffix_icon)
+    dll.EU_SetAutocompleteIcons(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+    )
+
+def get_autocomplete_icons(hwnd, element_id, buffer_size=512):
+    prefix = (ctypes.c_ubyte * buffer_size)()
+    suffix = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetAutocompleteIcons(hwnd, element_id, prefix, buffer_size, suffix, buffer_size)
+    if not ok:
+        return None
+    return (
+        bytes(prefix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+        bytes(suffix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+    )
+
+def set_autocomplete_behavior_options(hwnd, element_id, trigger_on_focus=True):
+    dll.EU_SetAutocompleteBehaviorOptions(hwnd, element_id, 1 if trigger_on_focus else 0)
+
+def get_autocomplete_behavior_options(hwnd, element_id):
+    trigger = ctypes.c_int()
+    ok = dll.EU_GetAutocompleteBehaviorOptions(hwnd, element_id, ctypes.byref(trigger))
+    if not ok:
+        return None
+    return {"trigger_on_focus": bool(trigger.value)}
+
+def create_autocomplete(hwnd, parent_id, value="", suggestions=None,
+                        placeholder="请输入内容", trigger_on_focus=True,
+                        prefix_icon="", suffix_icon="",
+                        x=0, y=0, w=260, h=36):
+    if (
+        type(placeholder) is int and
+        type(trigger_on_focus) is int and
+        type(prefix_icon) is int and
+        type(suffix_icon) is int and
+        x == 0 and y == 0 and w == 260 and h == 36
+    ):
+        x, y, w, h = placeholder, trigger_on_focus, prefix_icon, suffix_icon
+        placeholder = "请输入内容"
+        trigger_on_focus = True
+        prefix_icon = ""
+        suffix_icon = ""
+    value_data = make_utf8(value)
+    suggestion_data = _autocomplete_suggestions_data(suggestions)
+    element_id = dll.EU_CreateAutocomplete(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(suggestion_data), len(suggestion_data),
+        x, y, w, h
+    )
+    if not element_id:
+        return 0
+    if placeholder:
+        set_autocomplete_placeholder(hwnd, element_id, placeholder)
+    if prefix_icon or suffix_icon:
+        set_autocomplete_icons(hwnd, element_id, prefix_icon, suffix_icon)
+    if not trigger_on_focus:
+        set_autocomplete_behavior_options(hwnd, element_id, trigger_on_focus=False)
+    return element_id
+
+def set_autocomplete_suggestions(hwnd, element_id, suggestions=None):
+    data = _autocomplete_suggestions_data(suggestions)
+    dll.EU_SetAutocompleteSuggestions(hwnd, element_id, bytes_arg(data), len(data))
 
 def set_mentions_value(hwnd, element_id, value=""):
     data = make_utf8(value)

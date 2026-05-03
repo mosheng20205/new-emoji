@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：444。
+当前导出命令数量：844。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -1367,6 +1367,25 @@
     .参数 宽度, 整数型, , 逻辑尺寸
     .参数 高度, 整数型, , 逻辑尺寸
 
+.DLL命令 创建输入组, 整数型, "new_emoji.dll", "EU_CreateInputGroup", , 对应 C++ 导出命令 EU_CreateInputGroup；返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 数值字节集指针, 整数型, , UTF-8
+    .参数 数值长度, 整数型
+    .参数 占位文本字节集指针, 整数型, , UTF-8
+    .参数 占位文本长度, 整数型
+    .参数 尺寸, 整数型, , 0默认 1中等 2小型 3超小
+    .参数 是否可清除, 整数型
+    .参数 是否密码, 整数型
+    .参数 是否显示字数统计, 整数型
+    .参数 是否自动高度, 整数型
+    .参数 最小行数, 整数型
+    .参数 最大行数, 整数型
+    .参数 X坐标, 整数型, , 逻辑坐标
+    .参数 Y坐标, 整数型, , 逻辑坐标
+    .参数 宽度, 整数型, , 逻辑尺寸
+    .参数 高度, 整数型, , 逻辑尺寸
+
 .DLL命令 取占位尺寸, 整数型, "new_emoji.dll", "EU_GetSpaceSize", , 对应 C++ 导出命令 EU_GetSpaceSize；返回 1 表示成功
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -1870,6 +1889,22 @@
     .参数 后缀字节集指针, 整数型, , UTF-8
     .参数 后缀长度, 整数型
 
+.DLL命令 设置输入框图标, , "new_emoji.dll", "EU_SetInputIcons", , 对应 C++ 导出命令 EU_SetInputIcons
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 前图标字节集指针, 整数型, , UTF-8
+    .参数 前图标长度, 整数型
+    .参数 后图标字节集指针, 整数型, , UTF-8
+    .参数 后图标长度, 整数型
+
+.DLL命令 取输入框图标, 整数型, "new_emoji.dll", "EU_GetInputIcons", , 对应 C++ 导出命令 EU_GetInputIcons；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 前图标缓冲区指针, 整数型
+    .参数 前图标缓冲区大小, 整数型
+    .参数 后图标缓冲区指针, 整数型
+    .参数 后图标缓冲区大小, 整数型
+
 .DLL命令 设置输入框可清除状态, , "new_emoji.dll", "EU_SetInputClearable", , 对应 C++ 导出命令 EU_SetInputClearable
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -1882,6 +1917,26 @@
     .参数 是否密码, 整数型
     .参数 是否多行, 整数型
     .参数 校验状态, 整数型, , 0普通 1成功 2警告 3错误
+
+.DLL命令 设置输入框视觉选项, , "new_emoji.dll", "EU_SetInputVisualOptions", , 对应 C++ 导出命令 EU_SetInputVisualOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 尺寸, 整数型, , 0默认 1中等 2小型 3超小
+    .参数 是否显示密码切换按钮, 整数型
+    .参数 是否显示字数统计, 整数型
+    .参数 是否自动高度, 整数型
+    .参数 最小行数, 整数型
+    .参数 最大行数, 整数型
+
+.DLL命令 取输入框视觉选项, 整数型, "new_emoji.dll", "EU_GetInputVisualOptions", , 对应 C++ 导出命令 EU_GetInputVisualOptions；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 尺寸指针, 整数型, 传址
+    .参数 是否显示密码切换按钮指针, 整数型, 传址
+    .参数 是否显示字数统计指针, 整数型, 传址
+    .参数 是否自动高度指针, 整数型, 传址
+    .参数 最小行数指针, 整数型, 传址
+    .参数 最大行数指针, 整数型, 传址
 
 .DLL命令 取输入框状态, 整数型, "new_emoji.dll", "EU_GetInputState", , 对应 C++ 导出命令 EU_GetInputState；返回 1 表示成功
     .参数 窗口句柄, 整数型
@@ -1907,6 +1962,81 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数, 整数型, , 回调签名：子程序(元素ID, UTF8字节集指针, UTF8长度)
+
+.DLL命令 设置输入组值, , "new_emoji.dll", "EU_SetInputGroupValue", , 对应 C++ 导出命令 EU_SetInputGroupValue
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 数值字节集指针, 整数型, , UTF-8
+    .参数 数值长度, 整数型
+
+.DLL命令 取输入组值, 整数型, "new_emoji.dll", "EU_GetInputGroupValue", , 对应 C++ 导出命令 EU_GetInputGroupValue；返回写入字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 输出缓冲区指针, 整数型
+    .参数 输出缓冲区大小, 整数型
+
+.DLL命令 设置输入组选项, , "new_emoji.dll", "EU_SetInputGroupOptions", , 对应 C++ 导出命令 EU_SetInputGroupOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 尺寸, 整数型, , 0默认 1中等 2小型 3超小
+    .参数 是否可清除, 整数型
+    .参数 是否密码, 整数型
+    .参数 是否显示字数统计, 整数型
+    .参数 是否自动高度, 整数型
+    .参数 最小行数, 整数型
+    .参数 最大行数, 整数型
+
+.DLL命令 取输入组选项, 整数型, "new_emoji.dll", "EU_GetInputGroupOptions", , 对应 C++ 导出命令 EU_GetInputGroupOptions；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 尺寸指针, 整数型, 传址
+    .参数 是否可清除指针, 整数型, 传址
+    .参数 是否密码指针, 整数型, 传址
+    .参数 是否显示字数统计指针, 整数型, 传址
+    .参数 是否自动高度指针, 整数型, 传址
+    .参数 最小行数指针, 整数型, 传址
+    .参数 最大行数指针, 整数型, 传址
+
+.DLL命令 设置输入组文本附加项, , "new_emoji.dll", "EU_SetInputGroupTextAddon", , 对应 C++ 导出命令 EU_SetInputGroupTextAddon
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0前置 1后置
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 设置输入组按钮附加项, , "new_emoji.dll", "EU_SetInputGroupButtonAddon", , 对应 C++ 导出命令 EU_SetInputGroupButtonAddon
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0前置 1后置
+    .参数 表情字节集指针, 整数型, , UTF-8
+    .参数 表情长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 按钮样式, 整数型
+
+.DLL命令 设置输入组选择附加项, , "new_emoji.dll", "EU_SetInputGroupSelectAddon", , 对应 C++ 导出命令 EU_SetInputGroupSelectAddon
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0前置 1后置
+    .参数 项目字节集指针, 整数型, , UTF-8，逐行“显示文本<Tab>值”
+    .参数 项目长度, 整数型
+    .参数 当前选中索引, 整数型
+    .参数 占位文本字节集指针, 整数型, , UTF-8
+    .参数 占位文本长度, 整数型
+
+.DLL命令 清空输入组附加项, , "new_emoji.dll", "EU_ClearInputGroupAddon", , 对应 C++ 导出命令 EU_ClearInputGroupAddon
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0前置 1后置
+
+.DLL命令 取输入组输入框ID, 整数型, "new_emoji.dll", "EU_GetInputGroupInputElementId", , 对应 C++ 导出命令 EU_GetInputGroupInputElementId；返回内部 Input 元素ID
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取输入组附加项ID, 整数型, "new_emoji.dll", "EU_GetInputGroupAddonElementId", , 对应 C++ 导出命令 EU_GetInputGroupAddonElementId；返回指定侧边附加项元素ID
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0前置 1后置
 
 .DLL命令 设置标签输入框标签列表, , "new_emoji.dll", "EU_SetInputTagTags", , 对应 C++ 导出命令 EU_SetInputTagTags
     .参数 窗口句柄, 整数型
@@ -3337,6 +3467,44 @@
     .参数 元素ID, 整数型
     .参数 数值字节集指针, 整数型, , UTF-8
     .参数 数值长度, 整数型
+
+.DLL命令 设置自动补全占位文本, , "new_emoji.dll", "EU_SetAutocompletePlaceholder", , 对应 C++ 导出命令 EU_SetAutocompletePlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 取自动补全占位文本, 整数型, "new_emoji.dll", "EU_GetAutocompletePlaceholder", , 对应 C++ 导出命令 EU_GetAutocompletePlaceholder；返回写入字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置自动补全图标, , "new_emoji.dll", "EU_SetAutocompleteIcons", , 对应 C++ 导出命令 EU_SetAutocompleteIcons
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 前图标字节集指针, 整数型, , UTF-8
+    .参数 前图标长度, 整数型
+    .参数 后图标字节集指针, 整数型, , UTF-8
+    .参数 后图标长度, 整数型
+
+.DLL命令 取自动补全图标, 整数型, "new_emoji.dll", "EU_GetAutocompleteIcons", , 对应 C++ 导出命令 EU_GetAutocompleteIcons；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 前图标缓冲区指针, 整数型
+    .参数 前图标缓冲区大小, 整数型
+    .参数 后图标缓冲区指针, 整数型
+    .参数 后图标缓冲区大小, 整数型
+
+.DLL命令 设置自动补全行为选项, , "new_emoji.dll", "EU_SetAutocompleteBehaviorOptions", , 对应 C++ 导出命令 EU_SetAutocompleteBehaviorOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否聚焦即展开, 整数型, , 0否 1是
+
+.DLL命令 取自动补全行为选项, 整数型, "new_emoji.dll", "EU_GetAutocompleteBehaviorOptions", , 对应 C++ 导出命令 EU_GetAutocompleteBehaviorOptions；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否聚焦即展开指针, 整数型, 传址
 
 .DLL命令 设置自动补全打开状态, , "new_emoji.dll", "EU_SetAutocompleteOpen", , 对应 C++ 导出命令 EU_SetAutocompleteOpen
     .参数 窗口句柄, 整数型

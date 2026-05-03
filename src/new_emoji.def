@@ -26,6 +26,7 @@ EXPORTS
     EU_CreateSlider
     EU_CreateInputNumber
     EU_CreateInput
+    EU_CreateInputGroup
     EU_CreateInputTag
     EU_CreateSelect
     EU_CreateSelectV2
@@ -209,12 +210,26 @@ EXPORTS
     EU_GetInputValue
     EU_SetInputPlaceholder
     EU_SetInputAffixes
+    EU_SetInputIcons
+    EU_GetInputIcons
     EU_SetInputClearable
     EU_SetInputOptions
+    EU_SetInputVisualOptions
+    EU_GetInputVisualOptions
     EU_GetInputState
     EU_SetInputMaxLength
     EU_GetInputMaxLength
     EU_SetInputTextCallback
+    EU_SetInputGroupValue
+    EU_GetInputGroupValue
+    EU_SetInputGroupOptions
+    EU_GetInputGroupOptions
+    EU_SetInputGroupTextAddon
+    EU_SetInputGroupButtonAddon
+    EU_SetInputGroupSelectAddon
+    EU_ClearInputGroupAddon
+    EU_GetInputGroupInputElementId
+    EU_GetInputGroupAddonElementId
     EU_SetInputTagTags
     EU_SetInputTagPlaceholder
     EU_SetInputTagOptions
@@ -468,6 +483,12 @@ EXPORTS
     EU_GetTransferDisabledCount
     EU_SetAutocompleteSuggestions
     EU_SetAutocompleteValue
+    EU_SetAutocompletePlaceholder
+    EU_GetAutocompletePlaceholder
+    EU_SetAutocompleteIcons
+    EU_GetAutocompleteIcons
+    EU_SetAutocompleteBehaviorOptions
+    EU_GetAutocompleteBehaviorOptions
     EU_SetAutocompleteOpen
     EU_SetAutocompleteSelected
     EU_SetAutocompleteAsyncState

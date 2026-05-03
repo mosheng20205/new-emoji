@@ -7,15 +7,24 @@ public:
     std::wstring placeholder;
     std::wstring prefix;
     std::wstring suffix;
+    std::wstring prefix_icon;
+    std::wstring suffix_icon;
     bool clearable = false;
     bool readonly = false;
     bool password = false;
     bool multiline = false;
+    bool show_password_toggle = false;
+    bool show_word_limit = false;
+    bool autosize = false;
+    int min_rows = 0;
+    int max_rows = 0;
+    int size = 0; // 0 default, 1 medium, 2 small, 3 mini
     int validate_state = 0; // 0 normal, 1 success, 2 warning, 3 error
     int max_length = 0; // 0 unlimited
     ElementTextCallback text_cb = nullptr;
 
     const wchar_t* type_name() const override { return L"Input"; }
+    void layout(const Rect& available) override;
     void paint(RenderContext& ctx) override;
     void on_mouse_down(int x, int y, MouseButton btn) override;
     void on_mouse_up(int x, int y, MouseButton btn) override;
@@ -27,16 +36,52 @@ public:
     void set_value(const std::wstring& next_value);
     void set_placeholder(const std::wstring& next_placeholder);
     void set_affixes(const std::wstring& next_prefix, const std::wstring& next_suffix);
+    void set_icons(const std::wstring& next_prefix_icon, const std::wstring& next_suffix_icon);
     void set_clearable(bool next_clearable);
     void set_options(bool next_readonly, bool next_password, bool next_multiline, int next_validate_state);
+    void set_visual_options(int next_size, bool next_show_password_toggle,
+                            bool next_show_word_limit, bool next_autosize,
+                            int next_min_rows, int next_max_rows);
     void set_max_length(int next_max_length);
     void get_state(int& cursor, int& length) const;
 
 private:
     int m_cursor_pos = 0;
     bool m_press_clear = false;
+    bool m_press_password_toggle = false;
+    bool m_password_visible = false;
 
-    Rect clear_rect() const;
+    struct LayoutMetrics {
+        float text_x = 0.0f;
+        float text_y = 0.0f;
+        float text_w = 0.0f;
+        float text_h = 0.0f;
+        float prefix_icon_x = 0.0f;
+        float prefix_icon_w = 0.0f;
+        float prefix_text_x = 0.0f;
+        float prefix_text_w = 0.0f;
+        float suffix_text_x = 0.0f;
+        float suffix_text_w = 0.0f;
+        float suffix_icon_x = 0.0f;
+        float suffix_icon_w = 0.0f;
+        float word_limit_x = 0.0f;
+        float word_limit_w = 0.0f;
+        Rect clear_rect{};
+        Rect password_rect{};
+        Rect suffix_icon_rect{};
+        bool show_clear = false;
+        bool show_password_toggle = false;
+        bool show_suffix_icon = false;
+        bool show_word_limit = false;
+    };
+
+    LayoutMetrics compute_metrics() const;
+    std::wstring display_text() const;
+    std::wstring word_limit_text() const;
+    int effective_rows() const;
+    int autosize_height_for_width(int width) const;
+    void apply_size_preset();
+    void update_autosize_height();
     int char_width() const;
     int xpos_to_char(int x) const;
     int char_to_xpos(int index) const;

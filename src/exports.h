@@ -75,6 +75,13 @@ int __stdcall EU_CreateInput(HWND hwnd, int parent_id,
                              const unsigned char* suffix_bytes, int suffix_len,
                              int clearable,
                              int x, int y, int w, int h);
+int __stdcall EU_CreateInputGroup(HWND hwnd, int parent_id,
+                                  const unsigned char* value_bytes, int value_len,
+                                  const unsigned char* placeholder_bytes, int placeholder_len,
+                                  int size, int clearable, int password,
+                                  int show_word_limit, int autosize,
+                                  int min_rows, int max_rows,
+                                  int x, int y, int w, int h);
 int __stdcall EU_CreateInputTag(HWND hwnd, int parent_id,
                                 const unsigned char* tags_bytes, int tags_len,
                                 const unsigned char* placeholder_bytes, int placeholder_len,
@@ -538,12 +545,51 @@ void __stdcall EU_SetInputPlaceholder(HWND hwnd, int element_id,
 void __stdcall EU_SetInputAffixes(HWND hwnd, int element_id,
                                   const unsigned char* prefix_bytes, int prefix_len,
                                   const unsigned char* suffix_bytes, int suffix_len);
+void __stdcall EU_SetInputIcons(HWND hwnd, int element_id,
+                                const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                const unsigned char* suffix_icon_bytes, int suffix_icon_len);
+int  __stdcall EU_GetInputIcons(HWND hwnd, int element_id,
+                                unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                                unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size);
 void __stdcall EU_SetInputClearable(HWND hwnd, int element_id, int clearable);
 void __stdcall EU_SetInputOptions(HWND hwnd, int element_id, int readonly, int password, int multiline, int validate_state);
+void __stdcall EU_SetInputVisualOptions(HWND hwnd, int element_id,
+                                        int size, int show_password_toggle,
+                                        int show_word_limit, int autosize,
+                                        int min_rows, int max_rows);
+int  __stdcall EU_GetInputVisualOptions(HWND hwnd, int element_id,
+                                        int* size, int* show_password_toggle,
+                                        int* show_word_limit, int* autosize,
+                                        int* min_rows, int* max_rows);
 int  __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable, int* readonly, int* password, int* multiline, int* validate_state);
 void __stdcall EU_SetInputMaxLength(HWND hwnd, int element_id, int max_length);
 int  __stdcall EU_GetInputMaxLength(HWND hwnd, int element_id);
 void __stdcall EU_SetInputTextCallback(HWND hwnd, int element_id, ElementTextCallback cb);
+void __stdcall EU_SetInputGroupValue(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len);
+int  __stdcall EU_GetInputGroupValue(HWND hwnd, int element_id,
+                                     unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetInputGroupOptions(HWND hwnd, int element_id,
+                                       int size, int clearable, int password,
+                                       int show_word_limit, int autosize,
+                                       int min_rows, int max_rows);
+int  __stdcall EU_GetInputGroupOptions(HWND hwnd, int element_id,
+                                       int* size, int* clearable, int* password,
+                                       int* show_word_limit, int* autosize,
+                                       int* min_rows, int* max_rows);
+void __stdcall EU_SetInputGroupTextAddon(HWND hwnd, int element_id, int side,
+                                         const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetInputGroupButtonAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* emoji_bytes, int emoji_len,
+                                           const unsigned char* text_bytes, int text_len,
+                                           int variant);
+void __stdcall EU_SetInputGroupSelectAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* items_bytes, int items_len,
+                                           int selected_index,
+                                           const unsigned char* placeholder_bytes, int placeholder_len);
+void __stdcall EU_ClearInputGroupAddon(HWND hwnd, int element_id, int side);
+int  __stdcall EU_GetInputGroupInputElementId(HWND hwnd, int element_id);
+int  __stdcall EU_GetInputGroupAddonElementId(HWND hwnd, int element_id, int side);
 void __stdcall EU_SetInputTagTags(HWND hwnd, int element_id,
                                   const unsigned char* tags_bytes, int tags_len);
 void __stdcall EU_SetInputTagPlaceholder(HWND hwnd, int element_id,
@@ -942,6 +988,18 @@ void __stdcall EU_SetAutocompleteSelected(HWND hwnd, int element_id, int selecte
 void __stdcall EU_SetAutocompleteAsyncState(HWND hwnd, int element_id, int loading, int request_id);
 void __stdcall EU_SetAutocompleteEmptyText(HWND hwnd, int element_id,
                                            const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                             const unsigned char* text_bytes, int text_len);
+int  __stdcall EU_GetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                             unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetAutocompleteIcons(HWND hwnd, int element_id,
+                                       const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                       const unsigned char* suffix_icon_bytes, int suffix_icon_len);
+int  __stdcall EU_GetAutocompleteIcons(HWND hwnd, int element_id,
+                                       unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                                       unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size);
+void __stdcall EU_SetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int trigger_on_focus);
+int  __stdcall EU_GetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int* trigger_on_focus);
 int  __stdcall EU_GetAutocompleteValue(HWND hwnd, int element_id,
                                        unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetAutocompleteOpen(HWND hwnd, int element_id);

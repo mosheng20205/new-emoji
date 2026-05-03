@@ -1,6 +1,6 @@
 # 组件文档导航
 
-计划内 81 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
+计划内 82 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
 
 ## 🧱 基础/布局
 `Button` 已补齐 Element 风格常用按钮样式，包括语义变体、朴素、圆角、圆形、加载中和尺寸选项。
@@ -29,6 +29,7 @@
 | `Slider` | 滑块 | `EU_CreateSlider` | 已完成 | [滑块](./slider.md) |
 | `InputNumber` | 数字输入框 | `EU_CreateInputNumber` | 已完成 | [数字输入框](./input-number.md) |
 | `Input` | 输入框 | `EU_CreateInput` | 已完成 | [输入框](./input.md) |
+| `InputGroup` | 组合输入 | `EU_CreateInputGroup` | 已完成 | [组合输入](./input-group.md) |
 | `InputTag` | 标签输入 | `EU_CreateInputTag` | 已完成 | [标签输入](./input-tag.md) |
 | `Select` | 选择器 | `EU_CreateSelect` | 已完成 | [选择器](./select.md) |
 | `SelectV2` | 虚拟选择器 | `EU_CreateSelectV2` | 已完成 | [虚拟选择器](./selectv2.md) |
@@ -79,7 +80,7 @@
 | `Tree` | 树 | `EU_CreateTree` | 已完成 | [树](./tree.md) |
 | `TreeSelect` | 树选择 | `EU_CreateTreeSelect` | 已完成 | [树选择](./tree-select.md) |
 | `Transfer` | 穿梭框 | `EU_CreateTransfer` | 已完成 | [穿梭框](./transfer.md) |
-| `Autocomplete` | 自动补全 | `EU_CreateAutocomplete` | 已完成 | [自动补全](./autocomplete.md) |
+| `Autocomplete` | 自动补全 | `EU_CreateAutocomplete` | 已完成，支持 placeholder / trigger_on_focus / 图标 / 双行建议项 | [自动补全](./autocomplete.md) |
 | `Mentions` | 提及 | `EU_CreateMentions` | 已完成 | [提及](./mentions.md) |
 | `Cascader` | 级联选择 | `EU_CreateCascader` | 已完成 | [级联选择](./cascader.md) |
 

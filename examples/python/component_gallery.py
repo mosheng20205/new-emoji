@@ -1,5 +1,5 @@
 """
-new_emoji 81 component gallery.
+new_emoji 82 component gallery.
 
 Run from the repository root:
     python examples/python/component_gallery.py
@@ -168,7 +168,7 @@ def show_component(hwnd, category_name, component_name):
             elif category == category_name:
                 ui.set_element_color(hwnd, button_id, colors["nav_item"], colors["muted"])
     if status_text_id:
-        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 81 个组件 · 左侧二级菜单切换演示")
+        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 82 个组件 · 左侧二级菜单切换演示")
         ui.set_element_color(hwnd, status_text_id, 0, colors["muted"])
 
 
@@ -573,6 +573,114 @@ def showcase_radio(hwnd, stage, w, h):
     add_text(hwnd, bordered, "边框样式覆盖独立 Radio 和原生 RadioGroup，单项禁用与整组禁用语义分离。", 600, 148, 640, 28, MUTED)
 
 
+def showcase_input(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "⌨️ 基础、禁用、清空与密码", 28, 30, w - 56, 210)
+    ui.create_input(hwnd, basics, value="", placeholder="请输入昵称 👋", clearable=False, x=36, y=72, w=260, h=40)
+    disabled = ui.create_input(hwnd, basics, value="已禁用", placeholder="请输入内容", x=320, y=72, w=240, h=40)
+    ui.set_element_enabled(hwnd, disabled, False)
+    ui.create_input(hwnd, basics, value="可清空的输入", placeholder="支持 clearable", clearable=True, x=584, y=72, w=260, h=40)
+    ui.create_input(hwnd, basics, value="secret-emoji", placeholder="请输入密码", show_password=True, x=868, y=72, w=260, h=40)
+    ui.create_input(hwnd, basics, value="前后缀", placeholder="带图标与文案", prefix="Http://", suffix=".com",
+                    prefix_icon="🌐", suffix_icon="🔎", x=36, y=132, w=430, h=40)
+    ui.create_input(hwnd, basics, value="计数字段", placeholder="最多 20 字", clearable=True,
+                    show_word_limit=True, max_length=20, x=492, y=132, w=300, h=40)
+    add_text(hwnd, basics, "Input 已补齐 prefix/suffix 文案、prefix/suffix icon、clearable、密码显隐和字数统计。", 820, 136, 360, 28, MUTED)
+
+    textarea = add_demo_panel(hwnd, stage, "📝 多行、autosize 与字数限制", 28, 264, w - 56, 230)
+    ui.create_input(hwnd, textarea, value="第一行：支持中文和 emoji ✨\n第二行：保留 Element 风格边框。",
+                    placeholder="请输入多行内容", multiline=True, x=36, y=72, w=420, h=110)
+    ui.create_input(hwnd, textarea, value="自动高度会随内容增长。\n继续输入第三行。\n第四行也会被容纳。",
+                    placeholder="autosize 文本域", multiline=True, autosize=True,
+                    min_rows=2, max_rows=4, x=486, y=72, w=420, h=110)
+    ui.create_input(hwnd, textarea, value="带字数统计的说明文本。", placeholder="最多 30 字",
+                    multiline=True, show_word_limit=True, max_length=30, x=936, y=72, w=250, h=110)
+    add_text(hwnd, textarea, "autosize 只对 multiline 生效，min_rows / max_rows 会限制自动增长范围。", 36, 194, 760, 24, MUTED)
+
+    sizes = add_demo_panel(hwnd, stage, "📏 四尺寸与 InputGroup", 28, 520, w - 56, 320)
+    ui.create_input(hwnd, sizes, placeholder="默认尺寸", suffix_icon="📅", x=36, y=70, w=240, h=40)
+    ui.create_input(hwnd, sizes, placeholder="medium", size=1, suffix_icon="📅", x=302, y=70, w=240, h=40)
+    ui.create_input(hwnd, sizes, placeholder="small", size=2, suffix_icon="📅", x=568, y=74, w=240, h=34)
+    ui.create_input(hwnd, sizes, placeholder="mini", size=3, suffix_icon="📅", x=834, y=76, w=240, h=30)
+    add_text(hwnd, sizes, "InputGroup", 36, 146, 180, 24, TEXT)
+    ui.create_input_group(hwnd, sizes, value="", placeholder="请输入地址",
+                          prepend={"type": "text", "text": "Http://"},
+                          append={"type": "text", "text": ".com"},
+                          x=36, y=178, w=420, h=40)
+    ui.create_input_group(hwnd, sizes, value="", placeholder="选择检索范围",
+                          prepend={"type": "select", "items": [("餐厅名", "1"), ("订单号", "2"), ("用户电话", "3")], "selected": 0, "placeholder": "请选择"},
+                          append={"type": "button", "emoji": "🔎", "text": "", "variant": 1},
+                          x=490, y=178, w=520, h=40)
+    ui.create_input_group(hwnd, sizes, value="emoji-ui", placeholder="账号",
+                          prepend={"type": "text", "text": "账号"},
+                          append={"type": "button", "emoji": "✅", "text": "提交", "variant": 2},
+                          size=2, clearable=True, x=36, y=240, w=500, h=36)
+    add_text(hwnd, sizes, "InputGroup 用原生子元素承接 prepend / append，内部 Input / Button / Select 都能拿到真实 element id。", 568, 244, 620, 28, MUTED)
+
+
+def showcase_input_group(hwnd, stage, w, h):
+    base = add_demo_panel(hwnd, stage, "🔗 prepend / append 组合输入", 28, 30, w - 56, 260)
+    ui.create_input_group(hwnd, base, value="", placeholder="请输入域名",
+                          prepend={"type": "text", "text": "Http://"},
+                          append={"type": "text", "text": ".com"},
+                          x=36, y=76, w=420, h=40)
+    ui.create_input_group(hwnd, base, value="", placeholder="请输入内容",
+                          prepend={"type": "select", "items": [("餐厅名", "1"), ("订单号", "2"), ("用户电话", "3")], "selected": 0, "placeholder": "请选择"},
+                          append={"type": "button", "emoji": "🔎", "text": "", "variant": 1},
+                          x=492, y=76, w=540, h=40)
+    ui.create_input_group(hwnd, base, value="可清空内容", placeholder="组合输入",
+                          prepend={"type": "text", "text": "前置"},
+                          append={"type": "button", "emoji": "🚀", "text": "发送", "variant": 1},
+                          size=1, clearable=True, x=36, y=146, w=460, h=40)
+    ui.create_input_group(hwnd, base, value="小尺寸组合", placeholder="mini 组",
+                          prepend={"type": "text", "text": "标签"},
+                          append={"type": "button", "emoji": "✅", "text": "", "variant": 2},
+                          size=3, x=522, y=150, w=360, h=30)
+    add_text(hwnd, base, "InputGroup 会暴露内部 element id，外部可以继续用现有 Input / Button / Select 的 Set/Get 和回调。", 36, 212, 900, 24, MUTED)
+
+
+def showcase_autocomplete(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🔎 激活即列出 / 输入后匹配", 28, 30, w - 56, 220)
+    ui.create_autocomplete(hwnd, basics, value="", placeholder="激活即列出建议",
+                           suggestions=["北京", "上海", "广州", "深圳"],
+                           trigger_on_focus=True, prefix_icon="🔍",
+                           x=36, y=76, w=360, h=40)
+    ui.create_autocomplete(hwnd, basics, value="", placeholder="输入后再展开",
+                           suggestions=["西安", "西宁", "西双版纳", "西湖"],
+                           trigger_on_focus=False, prefix_icon="🔍",
+                           x=430, y=76, w=360, h=40)
+    ui.create_autocomplete(hwnd, basics, value="餐", placeholder="右侧图标可点击",
+                           suggestions=["餐厅名", "餐品", "餐桌号"],
+                           suffix_icon="✏️", x=824, y=76, w=300, h=40)
+    add_text(hwnd, basics, "trigger_on_focus 可控制是否在聚焦时直接展开建议层。", 36, 150, 620, 24, MUTED)
+
+    detailed = add_demo_panel(hwnd, stage, "📋 双行建议项", 28, 276, w - 56, 230)
+    ui.create_autocomplete(
+        hwnd, detailed, value="三",
+        suggestions=[
+            ("三全鲜食（北新泾店）", "长宁区新渔路144号", "三全鲜食（北新泾店）"),
+            ("新旺角茶餐厅", "普陀区真北路988号", "新旺角茶餐厅"),
+            ("Monica 摩托主题咖啡店", "嘉定区曹安公路2409号", "Monica 摩托主题咖啡店"),
+        ],
+        placeholder="请输入餐厅名", prefix_icon="🍜", x=36, y=78, w=520, h=40
+    )
+    add_text(hwnd, detailed, "双行建议项固定为“主标题 + 副信息 + 写回值”，适合地址、联系人、门店等结构化提示。", 594, 86, 620, 28, MUTED)
+    ui.create_autocomplete(hwnd, detailed, value="", placeholder="暂时没有匹配项",
+                           suggestions=[], trigger_on_focus=True, x=594, y=146, w=360, h=40)
+    ui.set_autocomplete_empty_text(hwnd, ui.create_autocomplete(hwnd, detailed, value="", placeholder="异步加载中",
+                           suggestions=["加载占位"], trigger_on_focus=True, x=984, y=146, w=220, h=40), "⌛ 正在加载建议...")
+
+    async_panel = add_demo_panel(hwnd, stage, "⏳ 异步与空状态", 28, 534, w - 56, 190)
+    loading = ui.create_autocomplete(hwnd, async_panel, value="杭", placeholder="模拟异步请求",
+                                     suggestions=["杭州", "杭州西湖", "杭州东站"],
+                                     trigger_on_focus=True, suffix_icon="🔄",
+                                     x=36, y=74, w=360, h=40)
+    ui.set_autocomplete_async_state(hwnd, loading, True, 20260504)
+    empty = ui.create_autocomplete(hwnd, async_panel, value="", placeholder="无匹配建议",
+                                   suggestions=[], trigger_on_focus=True, x=430, y=74, w=360, h=40)
+    ui.set_autocomplete_empty_text(hwnd, empty, "🫥 没有匹配建议")
+    add_text(hwnd, async_panel, "Autocomplete 保留上下键、回车、ESC 的键盘路径，同时补齐 placeholder、图标和双行视觉。", 826, 80, 380, 28, MUTED)
+
+
 def showcase_tag(hwnd, stage, w, h):
     card = add_demo_panel(hwnd, stage, "🏷️ 状态标签组", 28, 30, w - 56, 210)
     tags = [
@@ -622,6 +730,9 @@ SPECIAL_SHOWCASES = {
     "Layout": showcase_layout,
     "Watermark": showcase_watermark,
     "Checkbox": showcase_checkbox,
+    "Input": showcase_input,
+    "InputGroup": showcase_input_group,
+    "Autocomplete": showcase_autocomplete,
     "Tag": showcase_tag,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
@@ -630,7 +741,7 @@ SPECIAL_SHOWCASES = {
 
 COMPACT_SHOWCASE = {
     "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
-    "Slider", "InputNumber", "Input", "Rate", "Tag", "Badge", "Progress", "Avatar", "Statistic",
+    "Slider", "InputNumber", "Input", "InputGroup", "Rate", "Tag", "Badge", "Progress", "Avatar", "Statistic",
     "StatusDot", "Backtop", "Segmented", "Scrollbar", "Breadcrumb", "Tabs", "Alert", "Loading",
     "Tooltip", "Popover", "Popconfirm",
 }
@@ -788,6 +899,18 @@ def build_pages(hwnd, root):
         ("Cascader", "🪜", "级联选择", lambda h, p, x, y, w, hh: ui.create_cascader(h, p, ["华东/上海/浦东", "华南/广东/深圳"], [0, 0, 0], x, y, w, 38), True),
     ])
 
+    category_components["表单输入"].append(("InputGroup", "🔗", "组合输入"))
+    add_component_detail(
+        hwnd, root, "表单输入", "InputGroup", "🔗", "组合输入",
+        lambda h, p, x, y, w, hh: ui.create_input_group(
+            h, p, "", "请输入关键词",
+            prepend={"type": "text", "text": "前置"},
+            append={"type": "button", "emoji": "🔎", "text": "", "variant": 1},
+            x=x, y=y, w=w, h=38
+        ),
+        True,
+    )
+
     make_media_page(hwnd, root)
 
     make_page(hwnd, root, "数据展示", "状态、卡片、表格、统计指标和加载占位，适合后台工具与业务系统。", [
@@ -797,12 +920,12 @@ def build_pages(hwnd, root):
         ("Avatar", "😀", "头像", lambda h, p, x, y, w, hh: ui.create_avatar(h, p, "新", 0, x, y, 50, 50)),
         ("Empty", "📭", "空状态", lambda h, p, x, y, w, hh: ui.create_empty(h, p, "暂无数据 📭", "请稍后刷新", x, y, w, 76)),
         ("Skeleton", "💀", "骨架屏", lambda h, p, x, y, w, hh: ui.create_skeleton(h, p, 3, True, x, y, w, 76)),
-        ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "81"), ("许可", "MIT")], 2, True, x, y, w, 76)),
+        ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "82"), ("许可", "MIT")], 2, True, x, y, w, 76)),
         ("Table", "📊", "表格", lambda h, p, x, y, w, hh: ui.create_table(h, p, ["组件", "状态"], [["Button", "完成"], ["Tabs", "完成"]], True, True, x, y, w, 84)),
         ("Card", "🪪", "卡片", lambda h, p, x, y, w, hh: ui.create_card(h, p, "🪪 项目卡片", "用于组织信息块", 1, x, y, w, 84)),
         ("Collapse", "📂", "折叠面板", lambda h, p, x, y, w, hh: ui.create_collapse(h, p, [("基础组件", "按钮/文本/面板"), ("反馈组件", "弹窗/提示/通知")], 0, True, x, y, w, 84)),
         ("Timeline", "🕒", "时间线", lambda h, p, x, y, w, hh: ui.create_timeline(h, p, ["启动", "封装", "开源"], x, y, w, 84)),
-        ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "81", suffix="个", x=x, y=y, w=w, h=62)),
+        ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "82", suffix="个", x=x, y=y, w=w, h=62)),
         ("KPI Card", "🎯", "指标卡", lambda h, p, x, y, w, hh: ui.create_kpi_card(h, p, "完成率", "100%", "全部组件已封装", x=x, y=y, w=w, h=76)),
         ("Trend", "📈", "趋势", lambda h, p, x, y, w, hh: ui.create_trend(h, p, "星标增长", "+128", "12%", "本周", 1, x, y, w, 62)),
         ("StatusDot", "🟢", "状态点", lambda h, p, x, y, w, hh: ui.create_status_dot(h, p, "运行正常", "DLL 已加载", 1, x, y, w, 48)),
@@ -810,7 +933,7 @@ def build_pages(hwnd, root):
 
     make_page(hwnd, root, "图表导航", "图表、菜单、锚点、页头、滚动与标签页，展示复杂信息组织能力。", [
         ("Gauge", "🎯", "仪表盘", lambda h, p, x, y, w, hh: ui.create_gauge(h, p, "质量分", 92, "运行良好", 1, x, y, w, 86)),
-        ("RingProgress", "⭕", "环形进度", lambda h, p, x, y, w, hh: ui.create_ring_progress(h, p, "完成度", 81, "组件完成", 1, x, y, w, 86)),
+        ("RingProgress", "⭕", "环形进度", lambda h, p, x, y, w, hh: ui.create_ring_progress(h, p, "完成度", 82, "组件完成", 1, x, y, w, 86)),
         ("BulletProgress", "🧭", "子弹进度", lambda h, p, x, y, w, hh: ui.create_bullet_progress(h, p, "目标", "发布准备", 72, 90, 1, x, y, w, 60)),
         ("LineChart", "📈", "折线图", lambda h, p, x, y, w, hh: ui.create_line_chart(h, p, "访问趋势", [("周一", 12), ("周二", 18), ("周三", 24)], 0, x, y, w, 78)),
         ("BarChart", "📊", "柱状图", lambda h, p, x, y, w, hh: ui.create_bar_chart(h, p, "组件排行", [("表单", 12), ("反馈", 9), ("导航", 7)], x, y, w, 78)),
@@ -843,10 +966,10 @@ def build_pages(hwnd, root):
 
 
 def main():
-    hwnd = ui.create_window("🧩 new_emoji 81 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
+    hwnd = ui.create_window("🧩 new_emoji 82 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
     root = ui.create_container(hwnd, 0, 0, 0, ROOT_W, ROOT_H)
     add_text(hwnd, root, "🧩 new_emoji 组件总览", 28, 18, 250, 34, TEXT)
-    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n81 个组件", 28, 54, 250, 72, MUTED)
+    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n82 个组件", 28, 54, 250, 72, MUTED)
     global status_text_id
     status_text_id = add_text(hwnd, root, "正在加载组件演示...", PAGE_X + 20, ROOT_H + 10, PAGE_W - 40, 28, MUTED)
 
@@ -915,7 +1038,7 @@ def main():
     elif START_THEME.lower() in ("dark", "1", "深色"):
         apply_gallery_theme(hwnd, 1)
     ui.dll.EU_ShowWindow(hwnd, 1)
-    print(f"new_emoji 组件总览已启动：81 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
+    print(f"new_emoji 组件总览已启动：82 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
     if gallery_errors:
         print("以下组件卡片创建失败：")
         for name, error in gallery_errors:

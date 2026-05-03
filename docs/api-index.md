@@ -29,7 +29,8 @@
 | `EU_CreateSwitch` | |
 | `EU_CreateSlider` | |
 | `EU_CreateInputNumber` | |
-| `EU_CreateInput` | |
+| `EU_CreateInput` | 创建 Input 输入框 |
+| `EU_CreateInputGroup` | 创建 InputGroup 组合输入 |
 | `EU_CreateInputTag` | |
 | `EU_CreateSelect` | |
 | `EU_CreateSelectV2` | |
@@ -61,7 +62,7 @@
 | `EU_CreateTree` | |
 | `EU_CreateTreeSelect` | |
 | `EU_CreateTransfer` | |
-| `EU_CreateAutocomplete` | |
+| `EU_CreateAutocomplete` | 创建 Autocomplete 自动补全 |
 | `EU_CreateMentions` | |
 | `EU_CreateCascader` | |
 | `EU_CreateDatePicker` | |
@@ -213,12 +214,26 @@
 | `EU_GetInputValue` | |
 | `EU_SetInputPlaceholder` | |
 | `EU_SetInputAffixes` | |
+| `EU_SetInputIcons` | 设置 Input 前后图标 |
+| `EU_GetInputIcons` | 读取 Input 前后图标 |
 | `EU_SetInputClearable` | |
 | `EU_SetInputOptions` | |
+| `EU_SetInputVisualOptions` | 设置 Input 尺寸、密码显隐、字数统计与 autosize |
+| `EU_GetInputVisualOptions` | 读取 Input 视觉选项 |
 | `EU_GetInputState` | |
 | `EU_SetInputMaxLength` | |
 | `EU_GetInputMaxLength` | |
 | `EU_SetInputTextCallback` | |
+| `EU_SetInputGroupValue` | 设置 InputGroup 内部输入值 |
+| `EU_GetInputGroupValue` | 读取 InputGroup 内部输入值 |
+| `EU_SetInputGroupOptions` | 设置 InputGroup 尺寸与输入行为选项 |
+| `EU_GetInputGroupOptions` | 读取 InputGroup 尺寸与输入行为选项 |
+| `EU_SetInputGroupTextAddon` | 设置 InputGroup 文本附加项 |
+| `EU_SetInputGroupButtonAddon` | 设置 InputGroup 按钮附加项 |
+| `EU_SetInputGroupSelectAddon` | 设置 InputGroup 选择附加项 |
+| `EU_ClearInputGroupAddon` | 清空 InputGroup 附加项 |
+| `EU_GetInputGroupInputElementId` | 读取 InputGroup 内部 Input 元素 ID |
+| `EU_GetInputGroupAddonElementId` | 读取 InputGroup 某侧附加项元素 ID |
 | `EU_SetInputTagTags` | |
 | `EU_SetInputTagPlaceholder` | |
 | `EU_SetInputTagOptions` | |
@@ -472,6 +487,12 @@
 | `EU_GetTransferDisabledCount` | |
 | `EU_SetAutocompleteSuggestions` | |
 | `EU_SetAutocompleteValue` | |
+| `EU_SetAutocompletePlaceholder` | 设置自动补全占位文本 |
+| `EU_GetAutocompletePlaceholder` | 读取自动补全占位文本 |
+| `EU_SetAutocompleteIcons` | 设置自动补全前后图标 |
+| `EU_GetAutocompleteIcons` | 读取自动补全前后图标 |
+| `EU_SetAutocompleteBehaviorOptions` | 设置自动补全行为选项 |
+| `EU_GetAutocompleteBehaviorOptions` | 读取自动补全行为选项 |
 | `EU_SetAutocompleteOpen` | |
 | `EU_SetAutocompleteSelected` | |
 | `EU_SetAutocompleteAsyncState` | |
