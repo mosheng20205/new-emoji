@@ -379,6 +379,21 @@ static std::vector<std::wstring> split_wide_list(const std::wstring& full,
     return items;
 }
 
+static std::vector<RadioGroupItem> parse_radio_group_items(const unsigned char* bytes, int len) {
+    std::vector<RadioGroupItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        RadioGroupItem item;
+        item.text = fields.empty() ? row : fields[0];
+        item.value = fields.size() >= 2 ? fields[1] : item.text;
+        item.disabled = fields.size() >= 3 && _wtoi(fields[2].c_str()) != 0;
+        if (!item.text.empty()) items.push_back(item);
+    }
+    return items;
+}
+
 static std::vector<std::pair<std::wstring, std::wstring>>
 parse_description_items(const unsigned char* bytes, int len) {
     std::vector<std::pair<std::wstring, std::wstring>> items;
@@ -745,6 +760,39 @@ int __stdcall EU_CreateRadio(HWND hwnd, int parent_id,
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
     static_cast<Radio*>(raw)->set_checked(checked != 0);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CreateRadioGroup(HWND hwnd, int parent_id,
+                                  const unsigned char* items_bytes, int items_len,
+                                  const unsigned char* value_bytes, int value_len,
+                                  int style_mode, int size, int group_disabled,
+                                  int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<RadioGroup>();
+    el->set_logical_bounds({ x, y, w, h });
+    el->set_items(parse_radio_group_items(items_bytes, items_len));
+    el->set_options(group_disabled != 0, style_mode, size);
+    std::wstring value = utf8_to_wide(value_bytes, value_len);
+    if (!value.empty()) el->set_value(value);
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 0;
+    logical_style.pad_top = 0;
+    logical_style.pad_right = 0;
+    logical_style.pad_bottom = 0;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -3596,12 +3644,103 @@ void __stdcall EU_SetRadioGroup(HWND hwnd, int element_id,
 int __stdcall EU_GetRadioGroup(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size) {
     auto* el = find_typed_element<Radio>(hwnd, element_id);
     if (!el) return 0;
-    std::string utf8 = wide_to_utf8(el->group_name);
-    int needed = (int)utf8.size();
-    if (!buffer || buffer_size <= 0) return needed;
-    int copy = needed < buffer_size ? needed : buffer_size;
-    if (copy > 0) memcpy(buffer, utf8.data(), copy);
-    return needed;
+    return copy_wide_as_utf8(el->group_name, buffer, buffer_size);
+}
+
+void __stdcall EU_SetRadioValue(HWND hwnd, int element_id,
+                                const unsigned char* value_bytes, int value_len) {
+    if (auto* el = find_typed_element<Radio>(hwnd, element_id)) {
+        el->set_value(utf8_to_wide(value_bytes, value_len));
+    }
+}
+
+int __stdcall EU_GetRadioValue(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Radio>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->value, buffer, buffer_size);
+}
+
+void __stdcall EU_SetRadioOptions(HWND hwnd, int element_id, int border, int size) {
+    if (auto* el = find_typed_element<Radio>(hwnd, element_id)) {
+        el->set_options(border != 0, size);
+    }
+}
+
+int __stdcall EU_GetRadioOptions(HWND hwnd, int element_id, int* border, int* size) {
+    auto* el = find_typed_element<Radio>(hwnd, element_id);
+    if (!el) return 0;
+    if (border) *border = el->border ? 1 : 0;
+    if (size) *size = el->size;
+    return 1;
+}
+
+void __stdcall EU_SetRadioGroupItems(HWND hwnd, int element_id,
+                                     const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<RadioGroup>(hwnd, element_id)) {
+        el->set_items(parse_radio_group_items(items_bytes, items_len));
+    }
+}
+
+void __stdcall EU_SetRadioGroupValue(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len) {
+    if (auto* el = find_typed_element<RadioGroup>(hwnd, element_id)) {
+        el->set_value(utf8_to_wide(value_bytes, value_len));
+    }
+}
+
+int __stdcall EU_GetRadioGroupValue(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<RadioGroup>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->selected_value(), buffer, buffer_size);
+}
+
+int __stdcall EU_GetRadioGroupSelectedIndex(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<RadioGroup>(hwnd, element_id);
+    return el ? el->selected_index : -1;
+}
+
+void __stdcall EU_SetRadioGroupOptions(HWND hwnd, int element_id,
+                                       int group_disabled, int style_mode, int size) {
+    if (auto* el = find_typed_element<RadioGroup>(hwnd, element_id)) {
+        el->set_options(group_disabled != 0, style_mode, size);
+    }
+}
+
+int __stdcall EU_GetRadioGroupOptions(HWND hwnd, int element_id,
+                                      int* group_disabled, int* style_mode, int* size) {
+    auto* el = find_typed_element<RadioGroup>(hwnd, element_id);
+    if (!el) return 0;
+    if (group_disabled) *group_disabled = el->group_disabled ? 1 : 0;
+    if (style_mode) *style_mode = el->style_mode;
+    if (size) *size = el->size;
+    return 1;
+}
+
+int __stdcall EU_GetRadioGroupState(HWND hwnd, int element_id,
+                                    int* selected_index, int* item_count,
+                                    int* disabled_count, int* group_disabled,
+                                    int* style_mode, int* size,
+                                    int* hover_index, int* press_index,
+                                    int* last_action) {
+    auto* el = find_typed_element<RadioGroup>(hwnd, element_id);
+    if (!el) return 0;
+    if (selected_index) *selected_index = el->selected_index;
+    if (item_count) *item_count = el->item_count();
+    if (disabled_count) *disabled_count = el->disabled_count();
+    if (group_disabled) *group_disabled = el->group_disabled ? 1 : 0;
+    if (style_mode) *style_mode = el->style_mode;
+    if (size) *size = el->size;
+    if (hover_index) *hover_index = el->hover_index();
+    if (press_index) *press_index = el->press_index();
+    if (last_action) *last_action = el->last_action;
+    return 1;
+}
+
+void __stdcall EU_SetRadioGroupChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<RadioGroup>(hwnd, element_id)) {
+        el->change_cb = cb;
+    }
 }
 
 void __stdcall EU_SetSwitchChecked(HWND hwnd, int element_id, int checked) {

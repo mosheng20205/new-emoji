@@ -101,6 +101,13 @@ dll.EU_CreateRadio.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateRadio.restype = ctypes.c_int
 
+dll.EU_CreateRadioGroup.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateRadioGroup.restype = ctypes.c_int
+
 dll.EU_CreateSwitch.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -718,6 +725,37 @@ dll.EU_SetRadioGroup.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_GetRadioGroup.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetRadioGroup.restype = ctypes.c_int
+dll.EU_SetRadioValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRadioValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRadioValue.restype = ctypes.c_int
+dll.EU_SetRadioOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetRadioOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetRadioOptions.restype = ctypes.c_int
+dll.EU_SetRadioGroupItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetRadioGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRadioGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRadioGroupValue.restype = ctypes.c_int
+dll.EU_GetRadioGroupSelectedIndex.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetRadioGroupSelectedIndex.restype = ctypes.c_int
+dll.EU_SetRadioGroupOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetRadioGroupOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetRadioGroupOptions.restype = ctypes.c_int
+dll.EU_GetRadioGroupState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetRadioGroupState.restype = ctypes.c_int
+dll.EU_SetRadioGroupChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetSwitchChecked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetSwitchChecked.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetSwitchChecked.restype = ctypes.c_int
@@ -2644,10 +2682,47 @@ def create_checkbox(hwnd, parent_id, text="复选框", checked=False, x=0, y=0, 
     return dll.EU_CreateCheckbox(hwnd, parent_id, bytes_arg(data), len(data),
                                  1 if checked else 0, x, y, w, h)
 
-def create_radio(hwnd, parent_id, text="单选框", checked=False, x=0, y=0, w=180, h=30):
+def create_radio(hwnd, parent_id, text="单选框", checked=False, x=0, y=0, w=180, h=30,
+                 value="", border=False, size=0):
     data = make_utf8(text)
-    return dll.EU_CreateRadio(hwnd, parent_id, bytes_arg(data), len(data),
-                              1 if checked else 0, x, y, w, h)
+    element_id = dll.EU_CreateRadio(hwnd, parent_id, bytes_arg(data), len(data),
+                                    1 if checked else 0, x, y, w, h)
+    if element_id:
+        if value != "":
+            set_radio_value(hwnd, element_id, value)
+        if border or size:
+            set_radio_options(hwnd, element_id, border=border, size=size)
+    return element_id
+
+def _radio_group_items_data(items):
+    rows = []
+    for item in items:
+        if isinstance(item, dict):
+            text = str(item.get("text", item.get("label", item.get("value", ""))))
+            value = str(item.get("value", text))
+            disabled = bool(item.get("disabled", False))
+        elif isinstance(item, (tuple, list)):
+            text = str(item[0]) if len(item) >= 1 else ""
+            value = str(item[1]) if len(item) >= 2 else text
+            disabled = bool(item[2]) if len(item) >= 3 else False
+        else:
+            text = str(item)
+            value = text
+            disabled = False
+        rows.append(f"{text}\t{value}\t{1 if disabled else 0}")
+    return make_utf8("\n".join(rows))
+
+def create_radio_group(hwnd, parent_id, items, value="", style=0, size=0, disabled=False,
+                       x=0, y=0, w=360, h=40):
+    items_data = _radio_group_items_data(items)
+    value_data = make_utf8(str(value))
+    return dll.EU_CreateRadioGroup(
+        hwnd, parent_id,
+        bytes_arg(items_data), len(items_data),
+        bytes_arg(value_data), len(value_data),
+        style, size, 1 if disabled else 0,
+        x, y, w, h,
+    )
 
 def create_switch(hwnd, parent_id, text="开关", checked=False, x=0, y=0, w=220, h=32):
     data = make_utf8(text)
@@ -2665,6 +2740,91 @@ def get_radio_group(hwnd, element_id, buffer_size=256):
         return ""
     data = bytes(buf[:min(written, buffer_size)])
     return data.decode("utf-8", errors="replace")
+
+def set_radio_value(hwnd, element_id, value):
+    data = make_utf8(str(value))
+    dll.EU_SetRadioValue(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_radio_value(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    written = dll.EU_GetRadioValue(hwnd, element_id, buf, buffer_size)
+    if written <= 0:
+        return ""
+    data = bytes(buf[:min(written, buffer_size)])
+    return data.decode("utf-8", errors="replace")
+
+def set_radio_options(hwnd, element_id, border=False, size=0):
+    dll.EU_SetRadioOptions(hwnd, element_id, 1 if border else 0, size)
+
+def get_radio_options(hwnd, element_id):
+    border = ctypes.c_int()
+    size = ctypes.c_int()
+    ok = dll.EU_GetRadioOptions(hwnd, element_id, ctypes.byref(border), ctypes.byref(size))
+    if not ok:
+        return None
+    return {"border": bool(border.value), "size": size.value}
+
+def set_radio_group_items(hwnd, element_id, items):
+    data = _radio_group_items_data(items)
+    dll.EU_SetRadioGroupItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_radio_group_value(hwnd, element_id, value):
+    data = make_utf8(str(value))
+    dll.EU_SetRadioGroupValue(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_radio_group_value(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    written = dll.EU_GetRadioGroupValue(hwnd, element_id, buf, buffer_size)
+    if written <= 0:
+        return ""
+    data = bytes(buf[:min(written, buffer_size)])
+    return data.decode("utf-8", errors="replace")
+
+def get_radio_group_selected_index(hwnd, element_id):
+    return dll.EU_GetRadioGroupSelectedIndex(hwnd, element_id)
+
+def set_radio_group_options(hwnd, element_id, disabled=False, style=0, size=0):
+    dll.EU_SetRadioGroupOptions(hwnd, element_id, 1 if disabled else 0, style, size)
+
+def get_radio_group_options(hwnd, element_id):
+    disabled = ctypes.c_int()
+    style = ctypes.c_int()
+    size = ctypes.c_int()
+    ok = dll.EU_GetRadioGroupOptions(hwnd, element_id, ctypes.byref(disabled),
+                                     ctypes.byref(style), ctypes.byref(size))
+    if not ok:
+        return None
+    return {"disabled": bool(disabled.value), "style": style.value, "size": size.value}
+
+def get_radio_group_state(hwnd, element_id):
+    selected = ctypes.c_int()
+    count = ctypes.c_int()
+    disabled_count = ctypes.c_int()
+    group_disabled = ctypes.c_int()
+    style = ctypes.c_int()
+    size = ctypes.c_int()
+    hover = ctypes.c_int()
+    press = ctypes.c_int()
+    last_action = ctypes.c_int()
+    ok = dll.EU_GetRadioGroupState(
+        hwnd, element_id,
+        ctypes.byref(selected), ctypes.byref(count), ctypes.byref(disabled_count),
+        ctypes.byref(group_disabled), ctypes.byref(style), ctypes.byref(size),
+        ctypes.byref(hover), ctypes.byref(press), ctypes.byref(last_action),
+    )
+    if not ok:
+        return None
+    return {
+        "selected_index": selected.value,
+        "item_count": count.value,
+        "disabled_count": disabled_count.value,
+        "disabled": bool(group_disabled.value),
+        "style": style.value,
+        "size": size.value,
+        "hover_index": hover.value,
+        "press_index": press.value,
+        "last_action": last_action.value,
+    }
 
 def set_switch_texts(hwnd, element_id, active, inactive):
     active_data = make_utf8(active)

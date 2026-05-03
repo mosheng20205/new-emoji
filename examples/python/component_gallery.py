@@ -476,6 +476,59 @@ def showcase_checkbox(hwnd, stage, w, h):
     add_text(hwnd, note, "多选项可用于权限、设置、发布检查、批量操作等场景。这里展示选中、未选中、分组和 checklist 组合。", 28, 70, w - 112, 34, MUTED)
 
 
+def showcase_radio(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "🔘 基础单选与 value", 28, 30, w - 56, 170)
+    radio_a = ui.create_radio(hwnd, basics, "备选项 A 🚀", True, 36, 74, 150, 34, value="1")
+    radio_b = ui.create_radio(hwnd, basics, "备选项 B ✨", False, 210, 74, 150, 34, value="2")
+    ui.set_radio_group(hwnd, radio_a, "基础方案")
+    ui.set_radio_group(hwnd, radio_b, "基础方案")
+    disabled_a = ui.create_radio(hwnd, basics, "禁用项 💤", False, 406, 74, 150, 34, value="disabled")
+    disabled_b = ui.create_radio(hwnd, basics, "选中且禁用 ✅", True, 584, 74, 180, 34, value="checked-disabled")
+    ui.set_element_enabled(hwnd, disabled_a, False)
+    ui.set_element_enabled(hwnd, disabled_b, False)
+    add_text(hwnd, basics, "旧 Radio 保留 checked/group_name，同时新增 value、border、size 读写。", 36, 122, 760, 28, MUTED)
+
+    normal = add_demo_panel(hwnd, stage, "🧩 原生 RadioGroup", 28, 230, w - 56, 150)
+    ui.create_radio_group(
+        hwnd, normal,
+        [("上海 🏙️", "上海", False), ("北京 🏛️", "北京", False), ("广州 🌆", "广州", False), ("深圳 🌊", "深圳", False)],
+        value="上海", style=0, size=0, x=36, y=76, w=720, h=42,
+    )
+    add_text(hwnd, normal, "整组保存 selected_value / selected_index，键盘方向键可在可用项之间切换。", 790, 82, 520, 28, MUTED)
+
+    buttons = add_demo_panel(hwnd, stage, "🎛️ RadioButton 按钮样式", 28, 410, w - 56, 280)
+    rows = [
+        ("默认", 0, False, 72),
+        ("中等", 1, False, 118),
+        ("小型，禁用北京", 2, False, 164),
+        ("超小，整组禁用", 3, True, 204),
+    ]
+    for title, size, disabled, y in rows:
+        add_text(hwnd, buttons, title, 34, y + 4, 120, 24, MUTED)
+        items = [
+            ("上海", "上海", False),
+            ("北京", "北京", size == 2),
+            ("广州", "广州", False),
+            ("深圳", "深圳", False),
+        ]
+        ui.create_radio_group(hwnd, buttons, items, value="上海", style=1, size=size,
+                              disabled=disabled, x=160, y=y, w=480, h=34 if size >= 2 else 38)
+    add_text(hwnd, buttons, "按钮型单选是 RadioGroup 的 style=button，不额外新增 native 组件。", 700, 112, 520, 28, MUTED)
+
+    bordered = add_demo_panel(hwnd, stage, "📦 Border 边框样式与尺寸", 28, 732, w - 56, 220)
+    ui.create_radio(hwnd, bordered, "备选项 1 📌", True, 36, 76, 150, 40, value="1", border=True)
+    ui.create_radio(hwnd, bordered, "备选项 2 📎", False, 210, 76, 150, 40, value="2", border=True)
+    ui.create_radio(hwnd, bordered, "中等尺寸 🧭", True, 390, 76, 150, 38, value="m", border=True, size=1)
+    small_disabled = ui.create_radio(hwnd, bordered, "小型禁用 🔒", False, 570, 78, 150, 34, value="s", border=True, size=2)
+    ui.set_element_enabled(hwnd, small_disabled, False)
+    ui.create_radio_group(
+        hwnd, bordered,
+        [("备选 1", "1", False), ("备选 2", "2", True), ("备选 3", "3", False)],
+        value="1", style=2, size=2, x=36, y=142, w=520, h=38,
+    )
+    add_text(hwnd, bordered, "边框样式覆盖独立 Radio 和原生 RadioGroup，单项禁用与整组禁用语义分离。", 600, 148, 640, 28, MUTED)
+
+
 def showcase_tag(hwnd, stage, w, h):
     card = add_demo_panel(hwnd, stage, "🏷️ 状态标签组", 28, 30, w - 56, 210)
     tags = [
@@ -520,6 +573,7 @@ SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
     "Link": showcase_link,
+    "Radio": showcase_radio,
     "Container": showcase_container,
     "Layout": showcase_layout,
     "Watermark": showcase_watermark,

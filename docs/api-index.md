@@ -24,6 +24,7 @@
 | `EU_CreateBorder` | |
 | `EU_CreateCheckbox` | |
 | `EU_CreateRadio` | |
+| `EU_CreateRadioGroup` | 创建原生单选组，支持普通/按钮/边框样式 |
 | `EU_CreateSwitch` | |
 | `EU_CreateSlider` | |
 | `EU_CreateInputNumber` | |
@@ -157,6 +158,18 @@
 | `EU_GetRadioChecked` | |
 | `EU_SetRadioGroup` | |
 | `EU_GetRadioGroup` | |
+| `EU_SetRadioValue` | 设置独立单选框业务值 |
+| `EU_GetRadioValue` | 读取独立单选框业务值 |
+| `EU_SetRadioOptions` | 设置独立单选框 border/size |
+| `EU_GetRadioOptions` | 读取独立单选框 border/size |
+| `EU_SetRadioGroupItems` | 设置原生单选组项目 |
+| `EU_SetRadioGroupValue` | 设置原生单选组选中值 |
+| `EU_GetRadioGroupValue` | 读取原生单选组选中值 |
+| `EU_GetRadioGroupSelectedIndex` | 读取原生单选组选中索引 |
+| `EU_SetRadioGroupOptions` | 设置原生单选组禁用、样式和尺寸 |
+| `EU_GetRadioGroupOptions` | 读取原生单选组禁用、样式和尺寸 |
+| `EU_GetRadioGroupState` | 读取原生单选组完整状态 |
+| `EU_SetRadioGroupChangeCallback` | 设置原生单选组变更回调 |
 | `EU_SetSwitchChecked` | |
 | `EU_GetSwitchChecked` | |
 | `EU_SetSwitchLoading` | |

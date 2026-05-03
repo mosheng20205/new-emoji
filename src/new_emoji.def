@@ -20,6 +20,7 @@ EXPORTS
     EU_CreateBorder
     EU_CreateCheckbox
     EU_CreateRadio
+    EU_CreateRadioGroup
     EU_CreateSwitch
     EU_CreateSlider
     EU_CreateInputNumber
@@ -153,6 +154,18 @@ EXPORTS
     EU_GetRadioChecked
     EU_SetRadioGroup
     EU_GetRadioGroup
+    EU_SetRadioValue
+    EU_GetRadioValue
+    EU_SetRadioOptions
+    EU_GetRadioOptions
+    EU_SetRadioGroupItems
+    EU_SetRadioGroupValue
+    EU_GetRadioGroupValue
+    EU_GetRadioGroupSelectedIndex
+    EU_SetRadioGroupOptions
+    EU_GetRadioGroupOptions
+    EU_GetRadioGroupState
+    EU_SetRadioGroupChangeCallback
     EU_SetSwitchChecked
     EU_GetSwitchChecked
     EU_SetSwitchLoading

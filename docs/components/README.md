@@ -24,7 +24,7 @@
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
 | `Checkbox` | 复选框 | `EU_CreateCheckbox` | 已完成 | [复选框](./checkbox.md) |
-| `Radio` | 单选框 | `EU_CreateRadio` | 已完成 | [单选框](./radio.md) |
+| `Radio` | 单选框 | `EU_CreateRadio` / `EU_CreateRadioGroup` | 已完成，支持 value、按钮样式、边框、尺寸、整组禁用 | [单选框](./radio.md) |
 | `Switch` | 开关 | `EU_CreateSwitch` | 已完成 | [开关](./switch.md) |
 | `Slider` | 滑块 | `EU_CreateSlider` | 已完成 | [滑块](./slider.md) |
 | `InputNumber` | 数字输入框 | `EU_CreateInputNumber` | 已完成 | [数字输入框](./input-number.md) |

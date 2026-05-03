@@ -46,6 +46,11 @@ int __stdcall EU_CreateCheckbox(HWND hwnd, int parent_id,
 int __stdcall EU_CreateRadio(HWND hwnd, int parent_id,
                              const unsigned char* text_bytes, int text_len,
                              int checked, int x, int y, int w, int h);
+int __stdcall EU_CreateRadioGroup(HWND hwnd, int parent_id,
+                                  const unsigned char* items_bytes, int items_len,
+                                  const unsigned char* value_bytes, int value_len,
+                                  int style_mode, int size, int group_disabled,
+                                  int x, int y, int w, int h);
 int __stdcall EU_CreateSwitch(HWND hwnd, int parent_id,
                               const unsigned char* text_bytes, int text_len,
                               int checked, int x, int y, int w, int h);
@@ -439,6 +444,29 @@ int  __stdcall EU_GetRadioChecked(HWND hwnd, int element_id);
 void __stdcall EU_SetRadioGroup(HWND hwnd, int element_id,
                                 const unsigned char* group_bytes, int group_len);
 int  __stdcall EU_GetRadioGroup(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetRadioValue(HWND hwnd, int element_id,
+                                const unsigned char* value_bytes, int value_len);
+int  __stdcall EU_GetRadioValue(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetRadioOptions(HWND hwnd, int element_id, int border, int size);
+int  __stdcall EU_GetRadioOptions(HWND hwnd, int element_id, int* border, int* size);
+void __stdcall EU_SetRadioGroupItems(HWND hwnd, int element_id,
+                                     const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetRadioGroupValue(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len);
+int  __stdcall EU_GetRadioGroupValue(HWND hwnd, int element_id,
+                                     unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetRadioGroupSelectedIndex(HWND hwnd, int element_id);
+void __stdcall EU_SetRadioGroupOptions(HWND hwnd, int element_id,
+                                       int group_disabled, int style_mode, int size);
+int  __stdcall EU_GetRadioGroupOptions(HWND hwnd, int element_id,
+                                       int* group_disabled, int* style_mode, int* size);
+int  __stdcall EU_GetRadioGroupState(HWND hwnd, int element_id,
+                                     int* selected_index, int* item_count,
+                                     int* disabled_count, int* group_disabled,
+                                     int* style_mode, int* size,
+                                     int* hover_index, int* press_index,
+                                     int* last_action);
+void __stdcall EU_SetRadioGroupChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetSwitchChecked(HWND hwnd, int element_id, int checked);
 int  __stdcall EU_GetSwitchChecked(HWND hwnd, int element_id);
 void __stdcall EU_SetSwitchLoading(HWND hwnd, int element_id, int loading);
