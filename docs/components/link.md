@@ -2,26 +2,21 @@
 
 ## 简介
 
-`Link` 是 new_emoji 的 基础/布局 组件。当前状态：**已完成**。
-
-已补 hover/禁用/访问态、鼠标和键盘点击回调、访问态读回、Python 封装和独立中文 emoji 验证
-
-## 创建
-
-| 项目 | 值 |
-|---|---|
-| 创建导出 | `EU_CreateLink` |
-| 组件分类 | 基础/布局 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_link` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
+`Link` 是文本型交互组件，适合文档入口、外部链接、表格行操作和轻量导航。当前已支持 Element 风格的链接类型、禁用态、悬停态、访问态、下划线开关、前后缀图标、`href/target` 状态和键鼠触发。
 
 ## 相关 API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateLink` | 当前组件相关导出 |
-| `EU_GetLinkVisited` | 当前组件相关导出 |
-| `EU_SetLinkVisited` | 当前组件相关导出 |
+| `EU_CreateLink` | 创建链接元素，文本使用 UTF-8 字节数组 |
+| `EU_SetLinkOptions` | 设置链接类型、下划线、自动打开和访问态 |
+| `EU_GetLinkOptions` | 读取链接类型、下划线、自动打开和访问态 |
+| `EU_SetLinkContent` | 设置前缀图标、后缀图标、href 和 target |
+| `EU_GetLinkContent` | 读取前缀图标、后缀图标、href 和 target |
+| `EU_SetLinkVisited` | 兼容旧接口，设置访问态 |
+| `EU_GetLinkVisited` | 兼容旧接口，读取访问态 |
+
+`type` 取值：`0` 默认、`1` 主要、`2` 成功、`3` 警告、`4` 危险、`5` 信息。默认链接使用中性色，主要链接使用主题 accent 色。
 
 ## Python 使用
 
@@ -31,30 +26,37 @@ import sys
 sys.path.insert(0, "examples/python")
 import new_emoji_ui as ui
 
-hwnd = ui.create_window("✨ 链接 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Link`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
+hwnd = ui.create_window("🔗 Link 链接示例", 240, 120, 960, 560)
+root = ui.create_container(hwnd, 0, 0, 0, 920, 500)
+
+ui.create_link(hwnd, root, "默认链接 🔗", 40, 40, 160, 30)
+ui.create_link(hwnd, root, "主要链接 🚀", 220, 40, 160, 30, type=1)
+ui.create_link(hwnd, root, "无下划线", 40, 90, 160, 30, underline=False)
+ui.create_link(
+    hwnd, root, "查看文档", 220, 90, 180, 30,
+    type=1, prefix_icon="✏️", suffix_icon="👀",
+    href="https://element.eleme.io", target="_blank",
+)
+
 ui.dll.EU_ShowWindow(hwnd, 1)
 ```
 
-## 易语言调用
-
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
 ## 状态与交互
 
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+- `enabled=0` 时链接不可点击，颜色使用主题 muted 色。
+- 鼠标点击或键盘回车/空格触发时会设置 `visited=1`，并继续触发现有元素点击回调。
+- `auto_open=1` 且 `href` 非空时，点击会调用系统默认方式打开链接；`target` 作为状态保存并可读回。
+- 前缀/后缀图标按普通文本和 emoji 渲染，仍走 DirectWrite 彩色 emoji fallback。
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_link_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
+优先运行：
+
+```powershell
+python .\tests\python\test_link_complete_components.py
+```
+
+测试窗口必须保持可见，首屏要能完整展示中文和 emoji 示例，并覆盖浅色/深色主题下的基本视觉状态。
 
 ## 文档维护
 

@@ -102,6 +102,10 @@ EXPORTS
     EU_SetElementFont
     EU_SetTextOptions
     EU_GetTextOptions
+    EU_SetLinkOptions
+    EU_GetLinkOptions
+    EU_SetLinkContent
+    EU_GetLinkContent
     EU_SetLinkVisited
     EU_GetLinkVisited
     EU_SetIconOptions

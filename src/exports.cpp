@@ -3119,6 +3119,49 @@ int __stdcall EU_GetTextOptions(HWND hwnd, int element_id, int* align, int* vali
     return 1;
 }
 
+void __stdcall EU_SetLinkOptions(HWND hwnd, int element_id, int type, int underline, int auto_open, int visited) {
+    if (auto* el = find_typed_element<Link>(hwnd, element_id)) {
+        el->set_options(type, underline, auto_open, visited);
+    }
+}
+
+int __stdcall EU_GetLinkOptions(HWND hwnd, int element_id, int* type, int* underline, int* auto_open, int* visited) {
+    auto* el = find_typed_element<Link>(hwnd, element_id);
+    if (!el) return 0;
+    if (type) *type = el->link_type;
+    if (underline) *underline = el->underline_enabled ? 1 : 0;
+    if (auto_open) *auto_open = el->auto_open ? 1 : 0;
+    if (visited) *visited = el->visited ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetLinkContent(HWND hwnd, int element_id,
+                                 const unsigned char* prefix_bytes, int prefix_len,
+                                 const unsigned char* suffix_bytes, int suffix_len,
+                                 const unsigned char* href_bytes, int href_len,
+                                 const unsigned char* target_bytes, int target_len) {
+    if (auto* el = find_typed_element<Link>(hwnd, element_id)) {
+        el->set_content(utf8_to_wide(prefix_bytes, prefix_len),
+                        utf8_to_wide(suffix_bytes, suffix_len),
+                        utf8_to_wide(href_bytes, href_len),
+                        utf8_to_wide(target_bytes, target_len));
+    }
+}
+
+int __stdcall EU_GetLinkContent(HWND hwnd, int element_id,
+                                unsigned char* prefix_buffer, int prefix_buffer_size,
+                                unsigned char* suffix_buffer, int suffix_buffer_size,
+                                unsigned char* href_buffer, int href_buffer_size,
+                                unsigned char* target_buffer, int target_buffer_size) {
+    auto* el = find_typed_element<Link>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->prefix_icon, prefix_buffer, prefix_buffer_size);
+    copy_wide_as_utf8(el->suffix_icon, suffix_buffer, suffix_buffer_size);
+    copy_wide_as_utf8(el->href, href_buffer, href_buffer_size);
+    copy_wide_as_utf8(el->target, target_buffer, target_buffer_size);
+    return 1;
+}
+
 void __stdcall EU_SetLinkVisited(HWND hwnd, int element_id, int visited) {
     if (auto* el = find_typed_element<Link>(hwnd, element_id)) {
         el->visited = visited != 0;

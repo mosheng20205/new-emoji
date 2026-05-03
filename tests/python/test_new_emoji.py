@@ -573,6 +573,23 @@ dll.EU_GetTextOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTextOptions.restype = ctypes.c_int
+dll.EU_SetLinkOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetLinkOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                  ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetLinkOptions.restype = ctypes.c_int
+dll.EU_SetLinkContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetLinkContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetLinkContent.restype = ctypes.c_int
 dll.EU_SetLinkVisited.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetLinkVisited.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetLinkVisited.restype = ctypes.c_int
@@ -2275,9 +2292,16 @@ def create_text(hwnd, parent_id, text="Text", x=0, y=0, w=200, h=28):
     data = make_utf8(text)
     return dll.EU_CreateText(hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h)
 
-def create_link(hwnd, parent_id, text="Link", x=0, y=0, w=200, h=28):
+def create_link(hwnd, parent_id, text="Link", x=0, y=0, w=200, h=28,
+                type=0, underline=True, auto_open=False, visited=False,
+                prefix_icon="", suffix_icon="", href="", target=""):
     data = make_utf8(text)
-    return dll.EU_CreateLink(hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h)
+    element_id = dll.EU_CreateLink(hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h)
+    if element_id:
+        set_link_options(hwnd, element_id, type, underline, auto_open, visited)
+        if prefix_icon or suffix_icon or href or target:
+            set_link_content(hwnd, element_id, prefix_icon, suffix_icon, href, target)
+    return element_id
 
 def create_icon(hwnd, parent_id, text="✓", x=0, y=0, w=36, h=36):
     data = make_utf8(text)
@@ -2305,6 +2329,72 @@ def set_link_visited(hwnd, element_id, visited=True):
 
 def get_link_visited(hwnd, element_id):
     return bool(dll.EU_GetLinkVisited(hwnd, element_id))
+
+def set_link_options(hwnd, element_id, type=0, underline=True, auto_open=False, visited=False):
+    dll.EU_SetLinkOptions(
+        hwnd, element_id, int(type),
+        1 if underline else 0,
+        1 if auto_open else 0,
+        1 if visited else 0,
+    )
+
+def get_link_options(hwnd, element_id):
+    link_type = ctypes.c_int()
+    underline = ctypes.c_int()
+    auto_open = ctypes.c_int()
+    visited = ctypes.c_int()
+    ok = dll.EU_GetLinkOptions(
+        hwnd, element_id,
+        ctypes.byref(link_type), ctypes.byref(underline),
+        ctypes.byref(auto_open), ctypes.byref(visited),
+    )
+    if not ok:
+        return None
+    return {
+        "type": link_type.value,
+        "underline": bool(underline.value),
+        "auto_open": bool(auto_open.value),
+        "visited": bool(visited.value),
+    }
+
+def set_link_content(hwnd, element_id, prefix_icon="", suffix_icon="", href="", target=""):
+    prefix_data = make_utf8(prefix_icon)
+    suffix_data = make_utf8(suffix_icon)
+    href_data = make_utf8(href)
+    target_data = make_utf8(target)
+    dll.EU_SetLinkContent(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+        bytes_arg(href_data), len(href_data),
+        bytes_arg(target_data), len(target_data),
+    )
+
+def get_link_content(hwnd, element_id, buffer_size=1024):
+    prefix = (ctypes.c_ubyte * buffer_size)()
+    suffix = (ctypes.c_ubyte * buffer_size)()
+    href = (ctypes.c_ubyte * buffer_size)()
+    target = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetLinkContent(
+        hwnd, element_id,
+        prefix, buffer_size,
+        suffix, buffer_size,
+        href, buffer_size,
+        target, buffer_size,
+    )
+    if not ok:
+        return None
+
+    def decode(buf):
+        raw = bytes(buf).split(b"\0", 1)[0]
+        return raw.decode("utf-8", errors="replace")
+
+    return {
+        "prefix_icon": decode(prefix),
+        "suffix_icon": decode(suffix),
+        "href": decode(href),
+        "target": decode(target),
+    }
 
 def set_icon_options(hwnd, element_id, scale=1.25, rotation_degrees=0.0):
     dll.EU_SetIconOptions(hwnd, element_id, ctypes.c_float(scale), ctypes.c_float(rotation_degrees))

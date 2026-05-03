@@ -333,6 +333,51 @@ def showcase_button(hwnd, stage, w, h):
     add_text(hwnd, advanced, "按钮组为组合展示，不新增 native 组件。", 36, 174, 480, 26, MUTED)
 
 
+def showcase_link(hwnd, stage, w, h):
+    labels = [
+        ("默认链接", "🔗", 0),
+        ("主要链接", "🚀", 1),
+        ("成功链接", "✅", 2),
+        ("警告链接", "⚠️", 3),
+        ("危险链接", "🧯", 4),
+        ("信息链接", "💬", 5),
+    ]
+
+    def add_link_row(parent, title, y, *, disabled=False, underline=True):
+        add_text(hwnd, parent, title, 30, y + 2, 120, 26, MUTED)
+        for i, (text, emoji, link_type) in enumerate(labels):
+            x = 150 + i * 190
+            link = ui.create_link(
+                hwnd, parent, f"{text} {emoji}", x, y, 150, 30,
+                type=link_type, underline=underline,
+                href="https://element.eleme.io", target="_blank",
+            )
+            if disabled:
+                ui.set_element_enabled(hwnd, link, False)
+            if i == 1 and not disabled:
+                set_click(hwnd, link, button_action(hwnd, "链接回调 🔗", "主要链接点击事件已触发。"))
+
+    matrix = add_demo_panel(hwnd, stage, "🔗 类型、禁用与下划线", 28, 30, w - 56, 250)
+    add_text(hwnd, matrix, "把鼠标移到链接上可查看悬停颜色，点击后会进入访问态。", 30, 58, 520, 28, MUTED)
+    add_link_row(matrix, "基础类型", 96)
+    add_link_row(matrix, "禁用类型", 142, disabled=True)
+    add_link_row(matrix, "无下划线", 188, underline=False)
+
+    behavior = add_demo_panel(hwnd, stage, "✨ 图标、href/target 与访问态", 28, 310, w - 56, 250)
+    ui.create_link(hwnd, behavior, "编辑资料", 44, 78, 160, 32, type=1, prefix_icon="✏️")
+    ui.create_link(hwnd, behavior, "查看详情", 230, 78, 160, 32, type=5, suffix_icon="👀")
+    ui.create_link(
+        hwnd, behavior, "打开 Element 文档", 420, 78, 240, 32,
+        type=1, prefix_icon="📚", suffix_icon="↗",
+        href="https://element.eleme.io", target="_blank",
+    )
+    visited = ui.create_link(hwnd, behavior, "已访问链接", 700, 78, 160, 32, type=1, visited=True)
+    disabled = ui.create_link(hwnd, behavior, "禁用链接", 900, 78, 150, 32, type=4)
+    ui.set_element_enabled(hwnd, disabled, False)
+    add_text(hwnd, behavior, "href/target 已写入状态，可通过 get_link_content 读回；gallery 默认不自动打开浏览器。", 44, 138, 900, 28, MUTED)
+    add_text(hwnd, behavior, "支持前缀 emoji、后缀 emoji、键盘回车/空格触发和点击回调。", 44, 176, 760, 28, MUTED)
+
+
 def showcase_panel(hwnd, stage, w, h):
     hero = add_demo_panel(hwnd, stage, "🧱 品牌信息面板", 28, 30, w - 56, 190)
     add_themed_panel(hwnd, hero, 24, 60, 340, 86, "panel_blue", "panel_blue_border", 1.0, 10.0, 12)
@@ -474,6 +519,7 @@ def showcase_pagination(hwnd, stage, w, h):
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
+    "Link": showcase_link,
     "Container": showcase_container,
     "Layout": showcase_layout,
     "Watermark": showcase_watermark,

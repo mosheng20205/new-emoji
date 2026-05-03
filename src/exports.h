@@ -363,6 +363,18 @@ void __stdcall EU_SetElementColor(HWND hwnd, int element_id, Color bg, Color fg)
 void __stdcall EU_SetElementFont(HWND hwnd, int element_id, const unsigned char* font_bytes, int font_len, float size);
 void __stdcall EU_SetTextOptions(HWND hwnd, int element_id, int align, int valign, int wrap, int ellipsis);
 int  __stdcall EU_GetTextOptions(HWND hwnd, int element_id, int* align, int* valign, int* wrap, int* ellipsis);
+void __stdcall EU_SetLinkOptions(HWND hwnd, int element_id, int type, int underline, int auto_open, int visited);
+int  __stdcall EU_GetLinkOptions(HWND hwnd, int element_id, int* type, int* underline, int* auto_open, int* visited);
+void __stdcall EU_SetLinkContent(HWND hwnd, int element_id,
+                                 const unsigned char* prefix_bytes, int prefix_len,
+                                 const unsigned char* suffix_bytes, int suffix_len,
+                                 const unsigned char* href_bytes, int href_len,
+                                 const unsigned char* target_bytes, int target_len);
+int  __stdcall EU_GetLinkContent(HWND hwnd, int element_id,
+                                 unsigned char* prefix_buffer, int prefix_buffer_size,
+                                 unsigned char* suffix_buffer, int suffix_buffer_size,
+                                 unsigned char* href_buffer, int href_buffer_size,
+                                 unsigned char* target_buffer, int target_buffer_size);
 void __stdcall EU_SetLinkVisited(HWND hwnd, int element_id, int visited);
 int  __stdcall EU_GetLinkVisited(HWND hwnd, int element_id);
 void __stdcall EU_SetIconOptions(HWND hwnd, int element_id, float scale, float rotation_degrees);
