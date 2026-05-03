@@ -23,7 +23,7 @@
 ## 📝 表单/选择
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
-| `Checkbox` | 复选框 | `EU_CreateCheckbox` | 已完成 | [复选框](./checkbox.md) |
+| `Checkbox` | 复选框 | `EU_CreateCheckbox` / `EU_CreateCheckboxGroup` | 已完成，支持组、按钮样式、边框、尺寸、min/max | [复选框](./checkbox.md) |
 | `Radio` | 单选框 | `EU_CreateRadio` / `EU_CreateRadioGroup` | 已完成，支持 value、按钮样式、边框、尺寸、整组禁用 | [单选框](./radio.md) |
 | `Switch` | 开关 | `EU_CreateSwitch` | 已完成 | [开关](./switch.md) |
 | `Slider` | 滑块 | `EU_CreateSlider` | 已完成 | [滑块](./slider.md) |

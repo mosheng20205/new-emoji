@@ -462,18 +462,62 @@ def showcase_watermark(hwnd, stage, w, h):
 
 
 def showcase_checkbox(hwnd, stage, w, h):
-    card = add_demo_panel(hwnd, stage, "☑️ 权限配置", 28, 30, 520, 270)
-    ui.create_checkbox(hwnd, card, "接收构建通知 🔔", True, 30, 70, 280, 32)
-    ui.create_checkbox(hwnd, card, "自动同步文档 📘", True, 30, 116, 280, 32)
-    ui.create_checkbox(hwnd, card, "允许实验组件 🧪", False, 30, 162, 280, 32)
-    ui.create_checkbox(hwnd, card, "启用性能日志 📈", True, 30, 208, 280, 32)
+    basics = add_demo_panel(hwnd, stage, "☑️ 基础、禁用与半选", 28, 30, w - 56, 150)
+    ui.create_checkbox(hwnd, basics, "备选项 ✅", True, 36, 70, 150, 34)
+    unchecked = ui.create_checkbox(hwnd, basics, "备选项 🔔", False, 210, 70, 150, 34)
+    disabled_a = ui.create_checkbox(hwnd, basics, "禁用项 🔒", False, 390, 70, 150, 34)
+    disabled_b = ui.create_checkbox(hwnd, basics, "选中且禁用 ✅", True, 570, 70, 190, 34)
+    partial = ui.create_checkbox(hwnd, basics, "全选：部分城市 🌆", False, 790, 70, 230, 34)
+    ui.dll.EU_SetCheckboxIndeterminate(hwnd, partial, 1)
+    ui.set_element_enabled(hwnd, disabled_a, False)
+    ui.set_element_enabled(hwnd, disabled_b, False)
+    ui.set_checkbox_options(hwnd, unchecked, border=True, size=1)
+    add_text(hwnd, basics, "独立 Checkbox 已支持 checked、disabled、indeterminate、border 和 size。", 36, 116, 760, 24, MUTED)
 
-    card2 = add_demo_panel(hwnd, stage, "🎯 发布检查清单", 580, 30, min(520, w - 608), 270)
-    ui.create_checkbox(hwnd, card2, "Win32 构建通过 ✅", True, 30, 70, 300, 32)
-    ui.create_checkbox(hwnd, card2, "x64 构建通过 ✅", True, 30, 116, 300, 32)
-    ui.create_checkbox(hwnd, card2, "Python UI 测试通过 🐍", True, 30, 162, 320, 32)
-    note = add_demo_panel(hwnd, stage, "📋 表单联动场景", 28, 330, w - 56, 160)
-    add_text(hwnd, note, "多选项可用于权限、设置、发布检查、批量操作等场景。这里展示选中、未选中、分组和 checklist 组合。", 28, 70, w - 112, 34, MUTED)
+    groups = add_demo_panel(hwnd, stage, "🧩 CheckboxGroup 多选组", 28, 204, w - 56, 170)
+    city_items = [
+        ("上海 🏙️", "上海", False),
+        ("北京 🏛️", "北京", False),
+        ("广州 🌿", "广州", False),
+        ("深圳 🚀", "深圳", False),
+    ]
+    normal = ui.create_checkbox_group(hwnd, groups, city_items, ["上海", "北京"],
+                                      style=0, x=36, y=68, w=620, h=40)
+    limited = ui.create_checkbox_group(hwnd, groups, city_items, ["上海", "北京"],
+                                       style=0, min_checked=1, max_checked=2,
+                                       x=36, y=116, w=620, h=40)
+    add_text(hwnd, groups, "基础组选中值：" + "、".join(ui.get_checkbox_group_value(hwnd, normal)), 700, 70, 360, 24, MUTED)
+    add_text(hwnd, groups, "第二行限制最少 1 项、最多 2 项。", 700, 118, 360, 24, MUTED)
+
+    buttons = add_demo_panel(hwnd, stage, "🎛️ CheckboxButton 按钮样式", 28, 398, w - 56, 190)
+    sizes = [("默认", 0), ("中等", 1), ("小型", 2), ("超小", 3)]
+    for row, (label, size) in enumerate(sizes):
+        y = 60 + row * 32
+        add_text(hwnd, buttons, label, 36, y + 4, 70, 22, MUTED)
+        ui.create_checkbox_group(
+            hwnd, buttons, city_items, ["上海"], style=1, size=size,
+            x=112, y=y, w=500, h=30 if size >= 2 else 34,
+        )
+    ui.create_checkbox_group(
+        hwnd, buttons,
+        [("上海 🏙️", "上海", False), ("北京 🔒", "北京", True), ("广州 🌿", "广州", False), ("深圳 🚀", "深圳", False)],
+        ["上海"], style=1, size=2, x=660, y=70, w=500, h=32,
+    )
+    ui.create_checkbox_group(hwnd, buttons, city_items, ["上海"], style=1, size=3,
+                             disabled=True, x=660, y=118, w=500, h=30)
+    add_text(hwnd, buttons, "右侧展示单项禁用与整组禁用。", 660, 154, 360, 24, MUTED)
+
+    bordered = add_demo_panel(hwnd, stage, "📦 边框样式与尺寸", 28, 612, w - 56, 190)
+    ui.create_checkbox(hwnd, bordered, "备选项1 📌", True, 36, 68, 150, 38, border=True)
+    ui.create_checkbox(hwnd, bordered, "备选项2 📎", False, 208, 68, 150, 38, border=True)
+    ui.create_checkbox(hwnd, bordered, "中等尺寸 🧭", True, 386, 68, 160, 36, border=True, size=1)
+    small_disabled = ui.create_checkbox(hwnd, bordered, "小型禁用 🔒", False, 570, 70, 160, 34, border=True, size=2)
+    ui.set_element_enabled(hwnd, small_disabled, False)
+    ui.create_checkbox_group(hwnd, bordered, city_items, ["上海", "深圳"], style=2, size=2,
+                             x=36, y=124, w=620, h=36)
+    ui.create_checkbox_group(hwnd, bordered, city_items, [], style=2, size=3, disabled=True,
+                             x=690, y=124, w=520, h=32)
+    add_text(hwnd, bordered, "边框样式覆盖独立 Checkbox 与 CheckboxGroup，按钮式不额外新增 native 组件。", 760, 72, 520, 24, MUTED)
 
 
 def showcase_radio(hwnd, stage, w, h):

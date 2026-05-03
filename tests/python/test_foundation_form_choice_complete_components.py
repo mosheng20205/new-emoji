@@ -88,9 +88,14 @@ def main():
     g_checkbox_id = ui.create_checkbox(hwnd, border_id, "☑️ 复选：键盘切换", False, 0, 40, 260, 34)
     ui.dll.EU_SetCheckboxIndeterminate(hwnd, g_checkbox_id, 1)
     ui.dll.EU_SetElementClickCallback(hwnd, g_checkbox_id, on_click)
+    group_id = ui.create_checkbox_group(
+        hwnd, border_id,
+        [("上海 🏙️", "上海", False), ("北京 🔒", "北京", True), ("深圳 🚀", "深圳", False)],
+        ["上海"], style=1, size=2, x=0, y=82, w=300, h=34,
+    )
 
-    g_radio_a_id = ui.create_radio(hwnd, border_id, "🍵 方案甲", True, 0, 92, 180, 34)
-    g_radio_b_id = ui.create_radio(hwnd, border_id, "🍰 方案乙", False, 0, 136, 180, 34)
+    g_radio_a_id = ui.create_radio(hwnd, border_id, "🍵 方案甲", True, 0, 132, 180, 34)
+    g_radio_b_id = ui.create_radio(hwnd, border_id, "🍰 方案乙", False, 0, 176, 180, 34)
     ui.set_radio_group(hwnd, g_radio_a_id, "demo")
     ui.set_radio_group(hwnd, g_radio_b_id, "demo")
     ui.dll.EU_SetElementClickCallback(hwnd, g_radio_a_id, on_click)
@@ -110,6 +115,7 @@ def main():
     print("[读取] Container:", ui.get_panel_layout(hwnd, content_id))
     print("[读取] Border:", ui.get_border_options(hwnd, border_id), "虚线:", ui.get_border_dashed(hwnd, border_id))
     print("[读取] Checkbox 半选:", bool(ui.dll.EU_GetCheckboxIndeterminate(hwnd, g_checkbox_id)))
+    print("[读取] CheckboxGroup:", ui.get_checkbox_group_state(hwnd, group_id))
     print("[读取] Radio 分组:", ui.get_radio_group(hwnd, g_radio_a_id))
     print("[读取] Switch:", ui.get_switch_options(hwnd, g_switch_id))
 

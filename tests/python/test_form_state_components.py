@@ -65,8 +65,10 @@ def main():
     ui.create_text(hwnd, content_id, "☑️ 表单状态组件", 28, 24, 260, 30)
     ui.create_divider(hwnd, content_id, "复选框 / 单选框 / 开关", 0, 1, 28, 60, 620, 28)
 
-    g_checkbox_id = ui.create_checkbox(hwnd, content_id, "📌 部分权限已选择", False, 28, 108, 260, 34)
+    g_checkbox_id = ui.create_checkbox(hwnd, content_id, "📌 部分权限已选择", False, 28, 108, 260, 34,
+                                       border=True, size=1)
     ui.dll.EU_SetCheckboxIndeterminate(hwnd, g_checkbox_id, 1)
+    print("[读取] 复选框样式=", ui.get_checkbox_options(hwnd, g_checkbox_id))
 
     g_radio_a_id = ui.create_radio(hwnd, content_id, "🟢 普通模式", True, 28, 156, 180, 34)
     g_radio_b_id = ui.create_radio(hwnd, content_id, "🔵 专家模式", False, 220, 156, 180, 34)

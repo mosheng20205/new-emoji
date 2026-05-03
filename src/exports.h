@@ -43,6 +43,12 @@ int __stdcall EU_CreateBorder(HWND hwnd, int parent_id, int x, int y, int w, int
 int __stdcall EU_CreateCheckbox(HWND hwnd, int parent_id,
                                 const unsigned char* text_bytes, int text_len,
                                 int checked, int x, int y, int w, int h);
+int __stdcall EU_CreateCheckboxGroup(HWND hwnd, int parent_id,
+                                     const unsigned char* items_bytes, int items_len,
+                                     const unsigned char* checked_bytes, int checked_len,
+                                     int style_mode, int size, int group_disabled,
+                                     int min_checked, int max_checked,
+                                     int x, int y, int w, int h);
 int __stdcall EU_CreateRadio(HWND hwnd, int parent_id,
                              const unsigned char* text_bytes, int text_len,
                              int checked, int x, int y, int w, int h);
@@ -439,6 +445,28 @@ void __stdcall EU_SetCheckboxChecked(HWND hwnd, int element_id, int checked);
 int  __stdcall EU_GetCheckboxChecked(HWND hwnd, int element_id);
 void __stdcall EU_SetCheckboxIndeterminate(HWND hwnd, int element_id, int indeterminate);
 int  __stdcall EU_GetCheckboxIndeterminate(HWND hwnd, int element_id);
+void __stdcall EU_SetCheckboxOptions(HWND hwnd, int element_id, int border, int size);
+int  __stdcall EU_GetCheckboxOptions(HWND hwnd, int element_id, int* border, int* size);
+void __stdcall EU_SetCheckboxGroupItems(HWND hwnd, int element_id,
+                                        const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetCheckboxGroupValue(HWND hwnd, int element_id,
+                                        const unsigned char* values_bytes, int values_len);
+int  __stdcall EU_GetCheckboxGroupValue(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetCheckboxGroupOptions(HWND hwnd, int element_id,
+                                          int group_disabled, int style_mode, int size,
+                                          int min_checked, int max_checked);
+int  __stdcall EU_GetCheckboxGroupOptions(HWND hwnd, int element_id,
+                                          int* group_disabled, int* style_mode, int* size,
+                                          int* min_checked, int* max_checked);
+int  __stdcall EU_GetCheckboxGroupState(HWND hwnd, int element_id,
+                                        int* checked_count, int* item_count,
+                                        int* disabled_count, int* group_disabled,
+                                        int* style_mode, int* size,
+                                        int* min_checked, int* max_checked,
+                                        int* hover_index, int* press_index,
+                                        int* focus_index, int* last_action);
+void __stdcall EU_SetCheckboxGroupChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetRadioChecked(HWND hwnd, int element_id, int checked);
 int  __stdcall EU_GetRadioChecked(HWND hwnd, int element_id);
 void __stdcall EU_SetRadioGroup(HWND hwnd, int element_id,

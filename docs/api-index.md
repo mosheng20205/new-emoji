@@ -22,7 +22,8 @@
 | `EU_CreateContainer` | |
 | `EU_CreateLayout` | |
 | `EU_CreateBorder` | |
-| `EU_CreateCheckbox` | |
+| `EU_CreateCheckbox` | 创建独立复选框，支持普通/边框/尺寸样式 |
+| `EU_CreateCheckboxGroup` | 创建原生复选框组，支持普通/按钮/边框样式、min/max |
 | `EU_CreateRadio` | |
 | `EU_CreateRadioGroup` | 创建原生单选组，支持普通/按钮/边框样式 |
 | `EU_CreateSwitch` | |
@@ -154,6 +155,15 @@
 | `EU_GetCheckboxChecked` | |
 | `EU_SetCheckboxIndeterminate` | |
 | `EU_GetCheckboxIndeterminate` | |
+| `EU_SetCheckboxOptions` | 设置独立复选框 border/size |
+| `EU_GetCheckboxOptions` | 读取独立复选框 border/size |
+| `EU_SetCheckboxGroupItems` | 设置原生复选框组项目 |
+| `EU_SetCheckboxGroupValue` | 设置原生复选框组选中值列表 |
+| `EU_GetCheckboxGroupValue` | 读取原生复选框组选中值列表 |
+| `EU_SetCheckboxGroupOptions` | 设置原生复选框组禁用、样式、尺寸和 min/max |
+| `EU_GetCheckboxGroupOptions` | 读取原生复选框组禁用、样式、尺寸和 min/max |
+| `EU_GetCheckboxGroupState` | 读取原生复选框组完整状态 |
+| `EU_SetCheckboxGroupChangeCallback` | 设置原生复选框组变更回调 |
 | `EU_SetRadioChecked` | |
 | `EU_GetRadioChecked` | |
 | `EU_SetRadioGroup` | |

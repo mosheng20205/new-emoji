@@ -99,6 +99,14 @@ dll.EU_CreateCheckbox.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateCheckbox.restype = ctypes.c_int
 
+dll.EU_CreateCheckboxGroup.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateCheckboxGroup.restype = ctypes.c_int
+
 dll.EU_CreateRadio.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -722,6 +730,39 @@ dll.EU_GetCheckboxChecked.restype = ctypes.c_int
 dll.EU_SetCheckboxIndeterminate.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetCheckboxIndeterminate.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCheckboxIndeterminate.restype = ctypes.c_int
+dll.EU_SetCheckboxOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetCheckboxOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCheckboxOptions.restype = ctypes.c_int
+dll.EU_SetCheckboxGroupItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCheckboxGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCheckboxGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCheckboxGroupValue.restype = ctypes.c_int
+dll.EU_SetCheckboxGroupOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.c_int, ctypes.c_int
+]
+dll.EU_GetCheckboxGroupOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int)
+]
+dll.EU_GetCheckboxGroupOptions.restype = ctypes.c_int
+dll.EU_GetCheckboxGroupState.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)
+]
+dll.EU_GetCheckboxGroupState.restype = ctypes.c_int
+dll.EU_SetCheckboxGroupChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetRadioChecked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetRadioChecked.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetRadioChecked.restype = ctypes.c_int
@@ -2680,10 +2721,56 @@ def get_divider_spacing(hwnd, element_id):
     ok = dll.EU_GetDividerSpacing(hwnd, element_id, ctypes.byref(margin), ctypes.byref(gap))
     return (margin.value, gap.value) if ok else None
 
-def create_checkbox(hwnd, parent_id, text="复选框", checked=False, x=0, y=0, w=220, h=30):
+def create_checkbox(hwnd, parent_id, text="复选框", checked=False, x=0, y=0, w=220, h=30,
+                    border=False, size=0):
     data = make_utf8(text)
-    return dll.EU_CreateCheckbox(hwnd, parent_id, bytes_arg(data), len(data),
-                                 1 if checked else 0, x, y, w, h)
+    element_id = dll.EU_CreateCheckbox(hwnd, parent_id, bytes_arg(data), len(data),
+                                       1 if checked else 0, x, y, w, h)
+    if element_id and (border or size):
+        set_checkbox_options(hwnd, element_id, border=border, size=size)
+    return element_id
+
+def _checkbox_group_items_data(items):
+    rows = []
+    for item in items:
+        if isinstance(item, dict):
+            text = str(item.get("text", item.get("label", item.get("value", ""))))
+            value = str(item.get("value", text))
+            disabled = bool(item.get("disabled", False))
+        elif isinstance(item, (tuple, list)):
+            text = str(item[0]) if len(item) >= 1 else ""
+            value = str(item[1]) if len(item) >= 2 else text
+            disabled = bool(item[2]) if len(item) >= 3 else False
+        else:
+            text = str(item)
+            value = text
+            disabled = False
+        rows.append(f"{text}\t{value}\t{1 if disabled else 0}")
+    return make_utf8("\n".join(rows))
+
+def _checkbox_values_data(values):
+    if values is None:
+        values = []
+    if isinstance(values, str):
+        text = values
+    else:
+        text = "\n".join(str(value) for value in values)
+    return make_utf8(text)
+
+def create_checkbox_group(hwnd, parent_id, items, checked_values=None,
+                          style=0, size=0, disabled=False,
+                          min_checked=0, max_checked=0,
+                          x=0, y=0, w=420, h=40):
+    items_data = _checkbox_group_items_data(items)
+    values_data = _checkbox_values_data(checked_values)
+    return dll.EU_CreateCheckboxGroup(
+        hwnd, parent_id,
+        bytes_arg(items_data), len(items_data),
+        bytes_arg(values_data), len(values_data),
+        style, size, 1 if disabled else 0,
+        min_checked, max_checked,
+        x, y, w, h,
+    )
 
 def create_radio(hwnd, parent_id, text="单选框", checked=False, x=0, y=0, w=180, h=30,
                  value="", border=False, size=0):
@@ -2755,6 +2842,99 @@ def get_radio_value(hwnd, element_id, buffer_size=256):
         return ""
     data = bytes(buf[:min(written, buffer_size)])
     return data.decode("utf-8", errors="replace")
+
+def set_checkbox_options(hwnd, element_id, border=False, size=0):
+    dll.EU_SetCheckboxOptions(hwnd, element_id, 1 if border else 0, size)
+
+def get_checkbox_options(hwnd, element_id):
+    border = ctypes.c_int()
+    size = ctypes.c_int()
+    ok = dll.EU_GetCheckboxOptions(hwnd, element_id, ctypes.byref(border), ctypes.byref(size))
+    if not ok:
+        return None
+    return {"border": bool(border.value), "size": size.value}
+
+def set_checkbox_group_items(hwnd, element_id, items):
+    data = _checkbox_group_items_data(items)
+    dll.EU_SetCheckboxGroupItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_checkbox_group_value(hwnd, element_id, values):
+    data = _checkbox_values_data(values)
+    dll.EU_SetCheckboxGroupValue(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_checkbox_group_value(hwnd, element_id, buffer_size=1024):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    written = dll.EU_GetCheckboxGroupValue(hwnd, element_id, buf, buffer_size)
+    if written <= 0:
+        return []
+    data = bytes(buf[:min(written, buffer_size)])
+    text = data.decode("utf-8", errors="replace")
+    return [value for value in text.splitlines() if value]
+
+def set_checkbox_group_options(hwnd, element_id, disabled=False, style=0, size=0,
+                               min_checked=0, max_checked=0):
+    dll.EU_SetCheckboxGroupOptions(
+        hwnd, element_id, 1 if disabled else 0, style, size, min_checked, max_checked
+    )
+
+def get_checkbox_group_options(hwnd, element_id):
+    disabled = ctypes.c_int()
+    style = ctypes.c_int()
+    size = ctypes.c_int()
+    min_checked = ctypes.c_int()
+    max_checked = ctypes.c_int()
+    ok = dll.EU_GetCheckboxGroupOptions(
+        hwnd, element_id,
+        ctypes.byref(disabled), ctypes.byref(style), ctypes.byref(size),
+        ctypes.byref(min_checked), ctypes.byref(max_checked),
+    )
+    if not ok:
+        return None
+    return {
+        "disabled": bool(disabled.value),
+        "style": style.value,
+        "size": size.value,
+        "min_checked": min_checked.value,
+        "max_checked": max_checked.value,
+    }
+
+def get_checkbox_group_state(hwnd, element_id):
+    checked = ctypes.c_int()
+    count = ctypes.c_int()
+    disabled_count = ctypes.c_int()
+    group_disabled = ctypes.c_int()
+    style = ctypes.c_int()
+    size = ctypes.c_int()
+    min_checked = ctypes.c_int()
+    max_checked = ctypes.c_int()
+    hover = ctypes.c_int()
+    press = ctypes.c_int()
+    focus = ctypes.c_int()
+    last_action = ctypes.c_int()
+    ok = dll.EU_GetCheckboxGroupState(
+        hwnd, element_id,
+        ctypes.byref(checked), ctypes.byref(count), ctypes.byref(disabled_count),
+        ctypes.byref(group_disabled), ctypes.byref(style), ctypes.byref(size),
+        ctypes.byref(min_checked), ctypes.byref(max_checked),
+        ctypes.byref(hover), ctypes.byref(press), ctypes.byref(focus),
+        ctypes.byref(last_action),
+    )
+    if not ok:
+        return None
+    return {
+        "checked_count": checked.value,
+        "item_count": count.value,
+        "disabled_count": disabled_count.value,
+        "disabled": bool(group_disabled.value),
+        "style": style.value,
+        "size": size.value,
+        "min_checked": min_checked.value,
+        "max_checked": max_checked.value,
+        "hover_index": hover.value,
+        "press_index": press.value,
+        "focus_index": focus.value,
+        "last_action": last_action.value,
+    }
 
 def set_radio_options(hwnd, element_id, border=False, size=0):
     dll.EU_SetRadioOptions(hwnd, element_id, 1 if border else 0, size)

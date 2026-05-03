@@ -19,6 +19,7 @@ EXPORTS
     EU_CreateLayout
     EU_CreateBorder
     EU_CreateCheckbox
+    EU_CreateCheckboxGroup
     EU_CreateRadio
     EU_CreateRadioGroup
     EU_CreateSwitch
@@ -150,6 +151,15 @@ EXPORTS
     EU_GetCheckboxChecked
     EU_SetCheckboxIndeterminate
     EU_GetCheckboxIndeterminate
+    EU_SetCheckboxOptions
+    EU_GetCheckboxOptions
+    EU_SetCheckboxGroupItems
+    EU_SetCheckboxGroupValue
+    EU_GetCheckboxGroupValue
+    EU_SetCheckboxGroupOptions
+    EU_GetCheckboxGroupOptions
+    EU_GetCheckboxGroupState
+    EU_SetCheckboxGroupChangeCallback
     EU_SetRadioChecked
     EU_GetRadioChecked
     EU_SetRadioGroup

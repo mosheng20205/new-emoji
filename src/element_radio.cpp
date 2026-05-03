@@ -428,11 +428,6 @@ void RadioGroup::paint(RenderContext& ctx) {
         }
     }
 
-    if (has_focus && enabled && !group_disabled) {
-        D2D1_RECT_F focus = { x0 + 0.5f, top + 0.5f, x0 + w0 - 0.5f, top + h - 0.5f };
-        ctx.rt->DrawRoundedRectangle(ROUNDED_RECT(focus, 7.0f, 7.0f), ctx.get_brush(t->accent), 1.0f);
-    }
-
     ctx.rt->SetTransform(saved);
 }
 

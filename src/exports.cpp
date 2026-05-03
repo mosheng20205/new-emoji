@@ -394,6 +394,30 @@ static std::vector<RadioGroupItem> parse_radio_group_items(const unsigned char* 
     return items;
 }
 
+static std::vector<CheckboxGroupItem> parse_checkbox_group_items(const unsigned char* bytes, int len) {
+    std::vector<CheckboxGroupItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        CheckboxGroupItem item;
+        item.text = fields.empty() ? row : fields[0];
+        item.value = fields.size() >= 2 ? fields[1] : item.text;
+        item.disabled = fields.size() >= 3 && _wtoi(fields[2].c_str()) != 0;
+        if (!item.text.empty()) items.push_back(item);
+    }
+    return items;
+}
+
+static std::vector<std::wstring> parse_checkbox_checked_values(const unsigned char* bytes, int len) {
+    std::vector<std::wstring> values;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& value : split_wide_list(full, L"\n\r")) {
+        if (!value.empty()) values.push_back(value);
+    }
+    return values;
+}
+
 static std::vector<std::pair<std::wstring, std::wstring>>
 parse_description_items(const unsigned char* bytes, int len) {
     std::vector<std::pair<std::wstring, std::wstring>> items;
@@ -717,6 +741,39 @@ int __stdcall EU_CreateCheckbox(HWND hwnd, int parent_id,
     el->set_logical_bounds({ x, y, w, h });
     el->text = utf8_to_wide(text_bytes, text_len);
     el->checked = checked != 0;
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 0;
+    logical_style.pad_top = 0;
+    logical_style.pad_right = 0;
+    logical_style.pad_bottom = 0;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CreateCheckboxGroup(HWND hwnd, int parent_id,
+                                     const unsigned char* items_bytes, int items_len,
+                                     const unsigned char* checked_bytes, int checked_len,
+                                     int style_mode, int size, int group_disabled,
+                                     int min_checked, int max_checked,
+                                     int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<CheckboxGroup>();
+    el->set_logical_bounds({ x, y, w, h });
+    el->set_items(parse_checkbox_group_items(items_bytes, items_len));
+    el->set_options(group_disabled != 0, style_mode, size, min_checked, max_checked);
+    el->set_checked_values(parse_checkbox_checked_values(checked_bytes, checked_len));
 
     ElementStyle logical_style = el->style;
     logical_style.bg_color = 0;
@@ -3621,6 +3678,92 @@ void __stdcall EU_SetCheckboxIndeterminate(HWND hwnd, int element_id, int indete
 int __stdcall EU_GetCheckboxIndeterminate(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Checkbox>(hwnd, element_id);
     return (el && el->indeterminate) ? 1 : 0;
+}
+
+void __stdcall EU_SetCheckboxOptions(HWND hwnd, int element_id, int border, int size) {
+    if (auto* el = find_typed_element<Checkbox>(hwnd, element_id)) {
+        el->set_options(border != 0, size);
+    }
+}
+
+int __stdcall EU_GetCheckboxOptions(HWND hwnd, int element_id, int* border, int* size) {
+    auto* el = find_typed_element<Checkbox>(hwnd, element_id);
+    if (!el) return 0;
+    if (border) *border = el->border ? 1 : 0;
+    if (size) *size = el->size;
+    return 1;
+}
+
+void __stdcall EU_SetCheckboxGroupItems(HWND hwnd, int element_id,
+                                        const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id)) {
+        el->set_items(parse_checkbox_group_items(items_bytes, items_len));
+    }
+}
+
+void __stdcall EU_SetCheckboxGroupValue(HWND hwnd, int element_id,
+                                        const unsigned char* values_bytes, int values_len) {
+    if (auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id)) {
+        el->set_checked_values(parse_checkbox_checked_values(values_bytes, values_len));
+    }
+}
+
+int __stdcall EU_GetCheckboxGroupValue(HWND hwnd, int element_id,
+                                       unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->checked_values(), buffer, buffer_size);
+}
+
+void __stdcall EU_SetCheckboxGroupOptions(HWND hwnd, int element_id,
+                                          int group_disabled, int style_mode, int size,
+                                          int min_checked, int max_checked) {
+    if (auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id)) {
+        el->set_options(group_disabled != 0, style_mode, size, min_checked, max_checked);
+    }
+}
+
+int __stdcall EU_GetCheckboxGroupOptions(HWND hwnd, int element_id,
+                                         int* group_disabled, int* style_mode, int* size,
+                                         int* min_checked, int* max_checked) {
+    auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id);
+    if (!el) return 0;
+    if (group_disabled) *group_disabled = el->group_disabled ? 1 : 0;
+    if (style_mode) *style_mode = el->style_mode;
+    if (size) *size = el->size;
+    if (min_checked) *min_checked = el->min_checked;
+    if (max_checked) *max_checked = el->max_checked;
+    return 1;
+}
+
+int __stdcall EU_GetCheckboxGroupState(HWND hwnd, int element_id,
+                                       int* checked_count, int* item_count,
+                                       int* disabled_count, int* group_disabled,
+                                       int* style_mode, int* size,
+                                       int* min_checked, int* max_checked,
+                                       int* hover_index, int* press_index,
+                                       int* focus_index, int* last_action) {
+    auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id);
+    if (!el) return 0;
+    if (checked_count) *checked_count = el->checked_count();
+    if (item_count) *item_count = el->item_count();
+    if (disabled_count) *disabled_count = el->disabled_count();
+    if (group_disabled) *group_disabled = el->group_disabled ? 1 : 0;
+    if (style_mode) *style_mode = el->style_mode;
+    if (size) *size = el->size;
+    if (min_checked) *min_checked = el->min_checked;
+    if (max_checked) *max_checked = el->max_checked;
+    if (hover_index) *hover_index = el->hover_index();
+    if (press_index) *press_index = el->press_index();
+    if (focus_index) *focus_index = el->focus_index();
+    if (last_action) *last_action = el->last_action;
+    return 1;
+}
+
+void __stdcall EU_SetCheckboxGroupChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<CheckboxGroup>(hwnd, element_id)) {
+        el->change_cb = cb;
+    }
 }
 
 void __stdcall EU_SetRadioChecked(HWND hwnd, int element_id, int checked) {
