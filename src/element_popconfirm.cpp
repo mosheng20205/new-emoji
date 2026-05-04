@@ -10,18 +10,57 @@ static int round_px(float v) {
     return (int)std::lround(v);
 }
 
-static void keep_rect_inside_parent(const Element* el, Rect& r, int margin) {
-    if (!el || !el->parent) return;
-    int min_x = margin - el->bounds.x;
-    int min_y = margin - el->bounds.y;
-    int max_x = el->parent->bounds.w - el->bounds.x - r.w - margin;
-    int max_y = el->parent->bounds.h - el->bounds.y - r.h - margin;
+static const Element* root_element(const Element* el) {
+    const Element* root = el;
+    while (root && root->parent) root = root->parent;
+    return root;
+}
+
+static void keep_rect_inside_root(const Element* el, Rect& r, int margin) {
+    if (!el) return;
+    const Element* root = root_element(el);
+    if (!root) return;
+
+    int abs_x = 0, abs_y = 0;
+    el->get_absolute_pos(abs_x, abs_y);
+    int root_x = 0, root_y = 0;
+    root->get_absolute_pos(root_x, root_y);
+
+    int min_x = root_x + margin;
+    int min_y = root_y + margin;
+    int max_x = root_x + root->bounds.w - r.w - margin;
+    int max_y = root_y + root->bounds.h - r.h - margin;
     if (max_x < min_x) max_x = min_x;
     if (max_y < min_y) max_y = min_y;
-    if (r.x < min_x) r.x = min_x;
-    if (r.x > max_x) r.x = max_x;
-    if (r.y < min_y) r.y = min_y;
-    if (r.y > max_y) r.y = max_y;
+
+    int popup_x = abs_x + r.x;
+    int popup_y = abs_y + r.y;
+    if (popup_x < min_x) popup_x = min_x;
+    if (popup_x > max_x) popup_x = max_x;
+    if (popup_y < min_y) popup_y = min_y;
+    if (popup_y > max_y) popup_y = max_y;
+
+    r.x = popup_x - abs_x;
+    r.y = popup_y - abs_y;
+}
+
+static int old_popconfirm_to_advanced(int placement) {
+    if (placement == 0) return 7;
+    if (placement == 1) return 10;
+    if (placement == 2) return 1;
+    return 4;
+}
+
+static int popconfirm_side(int advanced) {
+    if (advanced >= 0 && advanced <= 2) return 0;
+    if (advanced >= 3 && advanced <= 5) return 1;
+    if (advanced >= 6 && advanced <= 8) return 2;
+    return 3;
+}
+
+static int popconfirm_align(int advanced) {
+    int pos = advanced % 3;
+    return pos == 0 ? -1 : (pos == 2 ? 1 : 0);
 }
 
 static void draw_text(RenderContext& ctx, const std::wstring& text, const ElementStyle& style,
@@ -50,6 +89,15 @@ void Popconfirm::set_buttons(const std::wstring& confirm, const std::wstring& ca
     invalidate();
 }
 
+void Popconfirm::set_icon(const std::wstring& icon, Color color, bool visible) {
+    icon_text = icon.empty() ? L"!" : icon;
+    icon_color = color ? color : 0xFFE6A23C;
+    show_icon = visible;
+    result_action = 1;
+    last_action = 1;
+    invalidate();
+}
+
 void Popconfirm::reset_result() {
     last_result = -1;
     result_action = 1;
@@ -68,23 +116,33 @@ void Popconfirm::choose_result(int result, int action) {
 
 void Popconfirm::update_popup_rect() {
     float s = scale();
-    int gap = round_px(8.0f * s);
+    int gap = round_px((float)offset * s);
     int pw = round_px((float)(popup_width > 120 ? popup_width : 286) * s);
     int ph = round_px((float)(popup_height > 80 ? popup_height : 146) * s);
     int x = (bounds.w - pw) / 2;
     int y = bounds.h + gap;
-    if (placement == 0) {
+    int active = use_advanced_placement ? advanced_placement : old_popconfirm_to_advanced(placement);
+    int side = popconfirm_side(active);
+    int align = popconfirm_align(active);
+    if (side == 2) {
         x = -pw - gap;
         y = (bounds.h - ph) / 2;
-    } else if (placement == 1) {
+    } else if (side == 3) {
         x = bounds.w + gap;
         y = (bounds.h - ph) / 2;
-    } else if (placement == 2) {
+    } else if (side == 0) {
         x = (bounds.w - pw) / 2;
         y = -ph - gap;
     }
+    if (side == 0 || side == 1) {
+        if (align < 0) x = 0;
+        else if (align > 0) x = bounds.w - pw;
+    } else {
+        if (align < 0) y = 0;
+        else if (align > 0) y = bounds.h - ph;
+    }
     popup_rect = { x, y, pw, ph };
-    keep_rect_inside_parent(this, popup_rect, round_px(6.0f * s));
+    keep_rect_inside_root(this, popup_rect, round_px(6.0f * s));
 
     int button_w = round_px(76.0f * s);
     int button_h = round_px(30.0f * s);
@@ -148,19 +206,25 @@ void Popconfirm::draw_button(RenderContext& ctx, const Rect& r, const std::wstri
 void Popconfirm::draw_popup_content(RenderContext& ctx, const Rect& content_rect) {
     const Theme* t = theme_for_window(owner_hwnd);
     float s = scale();
-    float icon_d = 20.0f * s;
     float ix = (float)content_rect.x;
     float iy = (float)content_rect.y + 1.0f * s;
-    ctx.rt->FillEllipse(D2D1::Ellipse(D2D1::Point2F(ix + icon_d * 0.5f, iy + icon_d * 0.5f),
-                                      icon_d * 0.5f, icon_d * 0.5f),
-                        ctx.get_brush(0xFFE6A23C));
-    draw_text(ctx, L"!", style, 0xFFFFFFFF, ix, iy, icon_d, icon_d,
-              0.92f, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
-              DWRITE_WORD_WRAPPING_NO_WRAP);
+    float text_x = ix;
+    float text_w = (float)content_rect.w;
+    if (show_icon) {
+        float icon_d = 20.0f * s;
+        ctx.rt->FillEllipse(D2D1::Ellipse(D2D1::Point2F(ix + icon_d * 0.5f, iy + icon_d * 0.5f),
+                                          icon_d * 0.5f, icon_d * 0.5f),
+                            ctx.get_brush(icon_color));
+        draw_text(ctx, icon_text, style, 0xFFFFFFFF, ix, iy, icon_d, icon_d,
+                  0.92f, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
+                  DWRITE_WORD_WRAPPING_NO_WRAP);
+        text_x = ix + icon_d + 8.0f * s;
+        text_w = (float)content_rect.w - icon_d - 8.0f * s;
+    }
 
-    draw_text(ctx, content.empty() ? L"Are you sure?" : content, style, t->text_secondary,
-              ix + icon_d + 8.0f * s, (float)content_rect.y,
-              (float)content_rect.w - icon_d - 8.0f * s,
+    draw_text(ctx, content.empty() ? L"确定继续吗？" : content, style, t->text_secondary,
+              text_x, (float)content_rect.y,
+              text_w,
               (float)content_rect.h - 44.0f * s);
 
     draw_button(ctx, cancel_rect, cancel_text, false,
@@ -198,9 +262,9 @@ void Popconfirm::on_mouse_up(int x, int y, MouseButton) {
     ButtonPart release = open ? button_at(x, y) : ButtonNone;
     if (press_button != ButtonNone && press_button == release) {
         choose_result(release == ButtonConfirm ? 1 : 0, 2);
-    } else if (trigger_pressed && in_trigger(x, y)) {
+    } else if (trigger_mode == 0 && trigger_pressed && in_trigger(x, y)) {
         apply_open(!open, 2);
-    } else if (open && !in_popup(x, y) && !in_trigger(x, y)) {
+    } else if (open && close_on_outside && !in_popup(x, y) && !in_trigger(x, y)) {
         apply_open(false, 2);
     }
     press_button = ButtonNone;

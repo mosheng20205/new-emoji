@@ -1697,6 +1697,21 @@ void __stdcall EU_SetDialogBody(HWND hwnd, int element_id,
 void __stdcall EU_SetDialogOptions(HWND hwnd, int element_id, int open, int modal,
                                    int closable, int close_on_mask, int draggable,
                                    int w, int h);
+void __stdcall EU_SetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                           int width_mode, int width_value,
+                                           int center, int footer_center,
+                                           int content_padding, int footer_height);
+int  __stdcall EU_GetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                           int* width_mode, int* width_value,
+                                           int* center, int* footer_center,
+                                           int* content_padding, int* footer_height,
+                                           int* content_parent_id, int* footer_parent_id,
+                                           int* close_pending);
+int  __stdcall EU_GetDialogContentParent(HWND hwnd, int element_id);
+int  __stdcall EU_GetDialogFooterParent(HWND hwnd, int element_id);
+void __stdcall EU_SetDialogBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb);
+void __stdcall EU_ConfirmDialogClose(HWND hwnd, int element_id, int allow);
 int  __stdcall EU_GetDialogOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetDialogOptions(HWND hwnd, int element_id,
                                    int* open, int* modal, int* closable,
@@ -1752,6 +1767,14 @@ int  __stdcall EU_GetTooltipOptions(HWND hwnd, int element_id,
 void __stdcall EU_SetTooltipBehavior(HWND hwnd, int element_id,
                                      int show_delay, int hide_delay,
                                      int trigger_mode, int show_arrow);
+void __stdcall EU_SetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int effect,
+                                            int disabled, int show_arrow,
+                                            int offset, int max_width);
+int  __stdcall EU_GetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                            int* placement, int* effect,
+                                            int* disabled, int* show_arrow,
+                                            int* offset, int* max_width);
 void __stdcall EU_TriggerTooltip(HWND hwnd, int element_id, int open);
 int  __stdcall EU_GetTooltipText(HWND hwnd, int element_id, int text_kind,
                                  unsigned char* buffer, int buffer_size);
@@ -1770,6 +1793,17 @@ void __stdcall EU_SetPopoverTitle(HWND hwnd, int element_id,
                                   const unsigned char* title_bytes, int title_len);
 void __stdcall EU_SetPopoverOptions(HWND hwnd, int element_id, int placement, int open,
                                     int popup_width, int popup_height, int closable);
+void __stdcall EU_SetPopoverAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int open,
+                                            int popup_width, int popup_height,
+                                            int closable);
+void __stdcall EU_SetPopoverBehavior(HWND hwnd, int element_id,
+                                     int trigger_mode, int close_on_outside,
+                                     int show_arrow, int offset);
+int  __stdcall EU_GetPopoverBehavior(HWND hwnd, int element_id,
+                                     int* trigger_mode, int* close_on_outside,
+                                     int* show_arrow, int* offset);
+int  __stdcall EU_GetPopoverContentParent(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopoverOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopoverOptions(HWND hwnd, int element_id,
                                     int* placement, int* open,
@@ -1789,12 +1823,23 @@ void __stdcall EU_SetPopoverActionCallback(HWND hwnd, int element_id, ElementVal
 void __stdcall EU_SetPopconfirmOpen(HWND hwnd, int element_id, int open);
 void __stdcall EU_SetPopconfirmOptions(HWND hwnd, int element_id, int placement, int open,
                                        int popup_width, int popup_height);
+void __stdcall EU_SetPopconfirmAdvancedOptions(HWND hwnd, int element_id,
+                                               int placement, int open,
+                                               int popup_width, int popup_height,
+                                               int trigger_mode, int close_on_outside,
+                                               int show_arrow, int offset);
 void __stdcall EU_SetPopconfirmContent(HWND hwnd, int element_id,
                                        const unsigned char* title_bytes, int title_len,
                                        const unsigned char* content_bytes, int content_len);
 void __stdcall EU_SetPopconfirmButtons(HWND hwnd, int element_id,
                                        const unsigned char* confirm_bytes, int confirm_len,
                                        const unsigned char* cancel_bytes, int cancel_len);
+void __stdcall EU_SetPopconfirmIcon(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    Color icon_color, int visible);
+int  __stdcall EU_GetPopconfirmIcon(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size,
+                                    Color* icon_color, int* visible);
 void __stdcall EU_ResetPopconfirmResult(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopconfirmOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopconfirmResult(HWND hwnd, int element_id);

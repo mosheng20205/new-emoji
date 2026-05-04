@@ -5862,6 +5862,47 @@
     .参数 宽度, 整数型, , 对话框逻辑宽度
     .参数 高度, 整数型, , 对话框逻辑高度
 
+.DLL命令 设置对话框高级选项, , "new_emoji.dll", "EU_SetDialogAdvancedOptions", , 对应 C++ 导出命令 EU_SetDialogAdvancedOptions；支持百分比宽度、居中和 slot 布局
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 宽度模式, 整数型, , 0逻辑像素 1百分比
+    .参数 宽度值, 整数型, , 宽度模式为1时表示百分比
+    .参数 标题居中, 整数型, , 0否 1是
+    .参数 页脚居中, 整数型, , 0否 1是
+    .参数 内容内边距, 整数型, , 逻辑像素
+    .参数 页脚高度, 整数型, , 逻辑像素
+
+.DLL命令 取对话框高级选项, 整数型, "new_emoji.dll", "EU_GetDialogAdvancedOptions", , 对应 C++ 导出命令 EU_GetDialogAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 宽度模式指针, 整数型, , 传址接收
+    .参数 宽度值指针, 整数型, , 传址接收
+    .参数 标题居中指针, 整数型, , 传址接收
+    .参数 页脚居中指针, 整数型, , 传址接收
+    .参数 内容内边距指针, 整数型, , 传址接收
+    .参数 页脚高度指针, 整数型, , 传址接收
+    .参数 内容容器ID指针, 整数型, , 传址接收
+    .参数 页脚容器ID指针, 整数型, , 传址接收
+    .参数 关闭待确认指针, 整数型, , 传址接收
+
+.DLL命令 取对话框内容容器, 整数型, "new_emoji.dll", "EU_GetDialogContentParent", , 对应 C++ 导出命令 EU_GetDialogContentParent；返回可挂载子组件的内容 slot 容器ID
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取对话框页脚容器, 整数型, "new_emoji.dll", "EU_GetDialogFooterParent", , 对应 C++ 导出命令 EU_GetDialogFooterParent；返回可挂载子组件的页脚 slot 容器ID
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置对话框关闭前回调, , "new_emoji.dll", "EU_SetDialogBeforeCloseCallback", , 对应 C++ 导出命令 EU_SetDialogBeforeCloseCallback；回调返回1允许关闭，返回0拦截
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 确认对话框继续关闭, , "new_emoji.dll", "EU_ConfirmDialogClose", , 对应 C++ 导出命令 EU_ConfirmDialogClose；before-close 拦截后继续或取消关闭
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否允许关闭, 整数型, , 0取消关闭 1继续关闭
+
 .DLL命令 取对话框打开状态, 整数型, "new_emoji.dll", "EU_GetDialogOpen", , 对应 C++ 导出命令 EU_GetDialogOpen；返回 0关闭 1打开
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -6050,6 +6091,26 @@
     .参数 触发方式, 整数型, , 0悬停和焦点 1仅悬停 2仅焦点 3仅手动
     .参数 是否显示箭头, 整数型, , 0不显示 1显示
 
+.DLL命令 设置文字提示高级选项, , "new_emoji.dll", "EU_SetTooltipAdvancedOptions", , 对应 C++ 导出命令 EU_SetTooltipAdvancedOptions；支持12方位、明暗主题、禁用、箭头、偏移和最大宽度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 扩展位置, 整数型, , 0上左 1上 2上右 3下左 4下 5下右 6左上 7左 8左下 9右上 10右 11右下
+    .参数 主题效果, 整数型, , 0深色 1浅色
+    .参数 是否禁用, 整数型, , 0启用 1禁用
+    .参数 是否显示箭头, 整数型, , 0不显示 1显示
+    .参数 偏移, 整数型, , 逻辑像素
+    .参数 最大宽度, 整数型, , 逻辑像素
+
+.DLL命令 取文字提示高级选项, 整数型, "new_emoji.dll", "EU_GetTooltipAdvancedOptions", , 对应 C++ 导出命令 EU_GetTooltipAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 扩展位置指针, 整数型, , 传址接收；旧API模式返回-1
+    .参数 主题效果指针, 整数型, , 传址接收
+    .参数 是否禁用指针, 整数型, , 传址接收
+    .参数 是否显示箭头指针, 整数型, , 传址接收
+    .参数 偏移指针, 整数型, , 传址接收
+    .参数 最大宽度指针, 整数型, , 传址接收
+
 .DLL命令 触发文字提示, , "new_emoji.dll", "EU_TriggerTooltip", , 对应 C++ 导出命令 EU_TriggerTooltip；手动打开或关闭
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -6107,6 +6168,35 @@
     .参数 弹层宽度, 整数型, , 逻辑尺寸
     .参数 弹层高度, 整数型, , 逻辑尺寸
     .参数 是否可关闭, 整数型, , 0隐藏关闭按钮 1显示关闭按钮
+
+.DLL命令 设置弹出框高级选项, , "new_emoji.dll", "EU_SetPopoverAdvancedOptions", , 对应 C++ 导出命令 EU_SetPopoverAdvancedOptions；支持12方位弹层定位
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 扩展位置, 整数型, , 0上左 1上 2上右 3下左 4下 5下右 6左上 7左 8左下 9右上 10右 11右下
+    .参数 是否打开, 整数型, , 0关闭 1打开
+    .参数 弹层宽度, 整数型, , 逻辑尺寸
+    .参数 弹层高度, 整数型, , 逻辑尺寸
+    .参数 是否可关闭, 整数型, , 0隐藏关闭按钮 1显示关闭按钮
+
+.DLL命令 设置弹出框行为, , "new_emoji.dll", "EU_SetPopoverBehavior", , 对应 C++ 导出命令 EU_SetPopoverBehavior；设置 hover/click/focus/manual 触发和外部关闭
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 触发方式, 整数型, , 0点击 1悬停 2焦点 3手动
+    .参数 是否外部关闭, 整数型, , 0否 1是
+    .参数 是否显示箭头, 整数型, , 0不显示 1显示
+    .参数 偏移, 整数型, , 逻辑像素
+
+.DLL命令 取弹出框行为, 整数型, "new_emoji.dll", "EU_GetPopoverBehavior", , 对应 C++ 导出命令 EU_GetPopoverBehavior；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 触发方式指针, 整数型, , 传址接收
+    .参数 是否外部关闭指针, 整数型, , 传址接收
+    .参数 是否显示箭头指针, 整数型, , 传址接收
+    .参数 偏移指针, 整数型, , 传址接收
+
+.DLL命令 取弹出框内容容器, 整数型, "new_emoji.dll", "EU_GetPopoverContentParent", , 对应 C++ 导出命令 EU_GetPopoverContentParent；返回可挂载子组件的内容 slot 容器ID
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 取弹出框打开状态, 整数型, "new_emoji.dll", "EU_GetPopoverOpen", , 对应 C++ 导出命令 EU_GetPopoverOpen；返回 0关闭 1打开
     .参数 窗口句柄, 整数型
@@ -6169,6 +6259,18 @@
     .参数 弹层宽度, 整数型, , 逻辑尺寸
     .参数 弹层高度, 整数型, , 逻辑尺寸
 
+.DLL命令 设置气泡确认框高级选项, , "new_emoji.dll", "EU_SetPopconfirmAdvancedOptions", , 对应 C++ 导出命令 EU_SetPopconfirmAdvancedOptions；支持12方位、触发方式、外部关闭、箭头和偏移
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 扩展位置, 整数型, , 0上左 1上 2上右 3下左 4下 5下右 6左上 7左 8左下 9右上 10右 11右下
+    .参数 是否打开, 整数型, , 0关闭 1打开
+    .参数 弹层宽度, 整数型, , 逻辑尺寸
+    .参数 弹层高度, 整数型, , 逻辑尺寸
+    .参数 触发方式, 整数型, , 0点击 1悬停 2焦点 3手动
+    .参数 是否外部关闭, 整数型, , 0否 1是
+    .参数 是否显示箭头, 整数型, , 0不显示 1显示
+    .参数 偏移, 整数型, , 逻辑像素
+
 .DLL命令 设置气泡确认框内容, , "new_emoji.dll", "EU_SetPopconfirmContent", , 对应 C++ 导出命令 EU_SetPopconfirmContent
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -6184,6 +6286,22 @@
     .参数 确认按钮长度, 整数型
     .参数 取消按钮字节集指针, 整数型, , UTF-8
     .参数 取消按钮长度, 整数型
+
+.DLL命令 设置气泡确认框图标, , "new_emoji.dll", "EU_SetPopconfirmIcon", , 对应 C++ 导出命令 EU_SetPopconfirmIcon；设置图标文本/emoji、颜色和显示状态
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8
+    .参数 图标长度, 整数型
+    .参数 图标颜色, 整数型, , ARGB
+    .参数 是否显示, 整数型, , 0隐藏 1显示
+
+.DLL命令 取气泡确认框图标, 整数型, "new_emoji.dll", "EU_GetPopconfirmIcon", , 对应 C++ 导出命令 EU_GetPopconfirmIcon；返回写入 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 缓冲区长度, 整数型
+    .参数 图标颜色指针, 整数型, , 传址接收
+    .参数 是否显示指针, 整数型, , 传址接收
 
 .DLL命令 重置气泡确认框结果, , "new_emoji.dll", "EU_ResetPopconfirmResult", , 对应 C++ 导出命令 EU_ResetPopconfirmResult
     .参数 窗口句柄, 整数型

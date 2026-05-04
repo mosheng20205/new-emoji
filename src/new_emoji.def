@@ -87,10 +87,25 @@ EXPORTS
     EU_CreateNotification
     EU_CreateLoading
     EU_CreateDialog
+    EU_SetDialogAdvancedOptions
+    EU_GetDialogAdvancedOptions
+    EU_GetDialogContentParent
+    EU_GetDialogFooterParent
+    EU_SetDialogBeforeCloseCallback
+    EU_ConfirmDialogClose
     EU_CreateDrawer
     EU_CreateTooltip
+    EU_SetTooltipAdvancedOptions
+    EU_GetTooltipAdvancedOptions
     EU_CreatePopover
+    EU_SetPopoverAdvancedOptions
+    EU_SetPopoverBehavior
+    EU_GetPopoverBehavior
+    EU_GetPopoverContentParent
     EU_CreatePopconfirm
+    EU_SetPopconfirmAdvancedOptions
+    EU_SetPopconfirmIcon
+    EU_GetPopconfirmIcon
     EU_ShowMessage
     EU_ShowNotification
     EU_ShowMessageBox

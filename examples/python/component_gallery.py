@@ -1579,6 +1579,256 @@ def showcase_notification(hwnd, stage, w, h):
     refresh_state("初始嵌入式通知", tracked["target"])
 
 
+def showcase_dialog(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "💬 点击任意按钮打开对应 Dialog；表格、表单和页脚按钮都挂在真实 slot 容器中。", 36, 28, w - 72, 28, MUTED)
+    top = add_demo_panel(hwnd, stage, "💬 Dialog 样式与 slot 容器", 28, 70, w - 56, 330)
+    bottom = add_demo_panel(hwnd, stage, "🧩 嵌套内容场景", 28, 430, w - 56, 360)
+
+    def open_basic(_eid):
+        dlg = ui.create_dialog(hwnd, "💬 提示", "这是一段信息，支持中文与 emoji。", True, True, 460, 250)
+        ui.set_dialog_buttons(hwnd, dlg, ["确定 ✅", "取消 ❌"])
+        ui.set_dialog_options(hwnd, dlg, open=True, modal=True, closable=True, close_on_mask=True, draggable=True, w=460, h=250)
+        ui.set_element_text(hwnd, status, "💬 已打开基础提示 Dialog")
+
+    def open_center(_eid):
+        dlg = ui.create_dialog(hwnd, "🎯 居中提示", "标题和页脚按钮居中，内容保持常规阅读排版。", True, True, 460, 250)
+        ui.set_dialog_buttons(hwnd, dlg, ["确定 ✅", "取消 ❌"])
+        ui.set_dialog_advanced_options(hwnd, dlg, width_mode=0, width_value=460, center=True, footer_center=True, content_padding=22, footer_height=62)
+        ui.set_dialog_options(hwnd, dlg, open=True, modal=True, closable=True, close_on_mask=True, draggable=True, w=460, h=250)
+        ui.set_element_text(hwnd, status, "🎯 已打开居中 Dialog")
+
+    before_holder = {"dialog": 0}
+
+    @ui.BeforeCloseCallback
+    def before_close(element_id, action):
+        ui.set_element_text(hwnd, status, f"🛡️ before-close 已拦截 #{element_id}，动作={action}；点击确认关闭继续。")
+        return 0
+
+    keep_callback(before_close)
+
+    def open_before_close(_eid):
+        dlg = ui.create_dialog(hwnd, "🛡️ 关闭前确认", "关闭动作会先进入 before-close，外部确认后再继续关闭。", False, True, 500, 260)
+        before_holder["dialog"] = dlg
+        ui.set_dialog_buttons(hwnd, dlg, ["尝试关闭 ✅", "取消 ❌"])
+        ui.set_dialog_before_close_callback(hwnd, dlg, before_close)
+        ui.set_dialog_options(hwnd, dlg, open=True, modal=False, closable=True, close_on_mask=False, draggable=True, w=500, h=260)
+        ui.set_element_text(hwnd, status, "🛡️ 已打开 before-close Dialog，关闭会先被拦截。")
+
+    def confirm_blocked(_eid):
+        dlg = before_holder["dialog"]
+        if not dlg:
+            ui.set_element_text(hwnd, status, "🛡️ 请先打开 before-close Dialog。")
+            return
+        options = ui.get_dialog_options(hwnd, dlg)
+        if options and not options[0]:
+            before_holder["dialog"] = 0
+            ui.set_element_text(hwnd, status, "✅ before-close Dialog 已经关闭。")
+            return
+        advanced = ui.get_dialog_advanced_options(hwnd, dlg)
+        if not advanced or not advanced.get("close_pending"):
+            ui.trigger_dialog_button(hwnd, dlg, 0)
+            advanced = ui.get_dialog_advanced_options(hwnd, dlg)
+        if advanced and advanced.get("close_pending"):
+            ui.confirm_dialog_close(hwnd, dlg, True)
+            before_holder["dialog"] = 0
+            ui.set_element_text(hwnd, status, "✅ 已确认继续关闭 before-close Dialog。")
+        else:
+            ui.set_element_text(hwnd, status, "🛡️ 请先点击弹窗里的尝试关闭，再确认关闭。")
+
+    def open_table(_eid):
+        dlg = ui.create_dialog(hwnd, "📦 收货地址", "", True, True, 680, 360)
+        ui.set_dialog_buttons(hwnd, dlg, ["确定 ✅", "取消 ❌"])
+        ui.set_dialog_advanced_options(hwnd, dlg, width_mode=0, width_value=680, center=False, footer_center=False, content_padding=22, footer_height=62)
+        parent_id = ui.get_dialog_content_parent(hwnd, dlg)
+        ui.create_table(
+            hwnd, parent_id,
+            ["日期", "姓名", "地址"],
+            [
+                ["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+                ["2016-05-04", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+                ["2016-05-01", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+                ["2016-05-03", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+            ],
+            True, True, 0, 0, 620, 190,
+        )
+        ui.set_dialog_options(hwnd, dlg, open=True, modal=True, closable=True, close_on_mask=True, draggable=True, w=680, h=360)
+        ui.set_element_text(hwnd, status, "📦 已打开带真实 Table slot 的 Dialog。")
+
+    def open_form(_eid):
+        dlg = ui.create_dialog(hwnd, "🧾 活动表单", "", True, True, 620, 380)
+        ui.set_dialog_buttons(hwnd, dlg, ["确定 ✅", "取消 ❌"])
+        ui.set_dialog_advanced_options(hwnd, dlg, width_mode=0, width_value=620, center=False, footer_center=False, content_padding=24, footer_height=62)
+        parent_id = ui.get_dialog_content_parent(hwnd, dlg)
+        add_text(hwnd, parent_id, "活动名称", 0, 10, 94, 28, TEXT)
+        ui.create_input(hwnd, parent_id, "", "请输入活动名称 🎉", x=110, y=4, w=360, h=38)
+        add_text(hwnd, parent_id, "活动区域", 0, 66, 94, 28, TEXT)
+        ui.create_select(hwnd, parent_id, "请选择活动区域", ["区域一：上海", "区域二：北京"], 0, 110, 60, 360, 38)
+        add_text(hwnd, parent_id, "备注", 0, 122, 94, 28, TEXT)
+        ui.create_input(hwnd, parent_id, "", "补充说明，可留空 ✍️", x=110, y=116, w=360, h=38)
+        ui.set_dialog_options(hwnd, dlg, open=True, modal=True, closable=True, close_on_mask=True, draggable=True, w=620, h=380)
+        ui.set_element_text(hwnd, status, "🧾 已打开 Text + Input + Select 组合表单 Dialog。")
+
+    def open_nested(_eid):
+        outer = ui.create_dialog(hwnd, "🪟 外层 Dialog", "外层页脚按钮可继续打开内层 Dialog。", True, True, 560, 300)
+        footer = ui.get_dialog_footer_parent(hwnd, outer)
+        ui.set_dialog_advanced_options(hwnd, outer, width_mode=0, width_value=560, center=False, footer_center=True, content_padding=22, footer_height=64)
+        btn_cancel = ui.create_button(hwnd, footer, "❌", "取消", 118, 14, 110, 36)
+        btn_inner = ui.create_button(hwnd, footer, "🪟", "打开内层", 244, 14, 130, 36)
+        set_click(hwnd, btn_cancel, lambda _id: ui.set_dialog_options(hwnd, outer, open=False, modal=True, closable=True, close_on_mask=True, draggable=True, w=560, h=300))
+        def open_inner(_id):
+            inner = ui.create_dialog(hwnd, "🪟 内层 Dialog", "内层 Dialog 追加到窗口根部，显示在外层之上。", True, True, 360, 210)
+            ui.set_dialog_buttons(hwnd, inner, ["知道了 ✅"])
+            ui.set_dialog_options(hwnd, inner, open=True, modal=True, closable=True, close_on_mask=True, draggable=True, w=360, h=210)
+        set_click(hwnd, btn_inner, open_inner)
+        ui.set_dialog_options(hwnd, outer, open=True, modal=True, closable=True, close_on_mask=True, draggable=True, w=560, h=300)
+        ui.set_element_text(hwnd, status, "🪟 已打开外层 Dialog，可继续打开内层。")
+
+    buttons = [
+        ("💬", "基础提示", open_basic),
+        ("🎯", "居中 Dialog", open_center),
+        ("🛡️", "before-close", open_before_close),
+        ("✅", "确认关闭", confirm_blocked),
+    ]
+    for i, (emoji, label, handler) in enumerate(buttons):
+        btn = ui.create_button(hwnd, top, emoji, label, 30 + i * 170, 74, 146, 38)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, top, "支持遮罩关闭、拖拽、百分比宽度、居中标题/页脚、关闭前拦截。", 30, 140, w - 120, 28, MUTED)
+
+    complex_buttons = [
+        ("📦", "嵌套表格", open_table),
+        ("🧾", "嵌套表单", open_form),
+        ("🪟", "外层/内层", open_nested),
+    ]
+    for i, (emoji, label, handler) in enumerate(complex_buttons):
+        btn = ui.create_button(hwnd, bottom, emoji, label, 30 + i * 180, 76, 150, 40)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, bottom, "表格和表单不再用假截图或纯文本替代，而是挂到 Dialog 内容 slot 中真实绘制和交互。", 30, 144, w - 120, 28, MUTED)
+    ui.create_table(hwnd, bottom, ["能力", "状态", "说明"], [["content slot", "✅", "可挂载 Table/Input/Select"], ["footer slot", "✅", "可替换默认按钮区"], ["before-close", "✅", "支持拦截后继续关闭"]], True, True, 30, 198, min(w - 120, 760), 116)
+
+
+def showcase_tooltip(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "💭 Tooltip 覆盖 12 方位、深色/浅色、多行内容和禁用状态。", 36, 28, w - 72, 28, MUTED)
+    matrix = add_demo_panel(hwnd, stage, "📍 12 方位矩阵", 28, 70, w - 56, 390)
+    details = add_demo_panel(hwnd, stage, "🎨 主题、多行与禁用", 28, 470, w - 56, 260)
+    placements = [
+        ("top-start", "上左"), ("top", "上边"), ("top-end", "上右"),
+        ("left-start", "左上"), ("left", "左边"), ("left-end", "左下"),
+        ("right-start", "右上"), ("right", "右边"), ("right-end", "右下"),
+        ("bottom-start", "下左"), ("bottom", "下边"), ("bottom-end", "下右"),
+    ]
+    anchor_x = 320
+    anchor_y = 82
+    col_gap = 270
+    row_gap = 72
+    for i, (placement, label) in enumerate(placements):
+        col = i % 3
+        row = i // 3
+        tip = ui.create_tooltip(hwnd, matrix, f"{label} 📍", f"📍 {label}提示文字", 2, anchor_x + col * col_gap, anchor_y + row * row_gap, 148, 44)
+        ui.set_tooltip_advanced_options(hwnd, tip, placement=placement, effect="dark" if i % 2 == 0 else "light", disabled=False, show_arrow=True, offset=8, max_width=180)
+    dark = ui.create_tooltip(hwnd, details, "深色提示 💭", "上方居中提示", 2, 34, 74, 150, 38)
+    ui.set_tooltip_advanced_options(hwnd, dark, placement="top", effect="dark", disabled=False, show_arrow=True, offset=8, max_width=220)
+    light = ui.create_tooltip(hwnd, details, "浅色提示 ✨", "下方居中提示", 3, 214, 74, 150, 38)
+    ui.set_tooltip_advanced_options(hwnd, light, placement="bottom", effect="light", disabled=False, show_arrow=True, offset=8, max_width=220)
+    multi = ui.create_tooltip(hwnd, details, "多行内容 🧾", "多行信息\n第二行信息\n自动换行中文内容", 2, 394, 74, 150, 38)
+    ui.set_tooltip_advanced_options(hwnd, multi, placement="top", effect="dark", disabled=False, show_arrow=True, offset=8, max_width=210)
+    disabled_tip = ui.create_tooltip(hwnd, details, "点击开启 🚫", "当前已禁用，不会弹出", 3, 574, 74, 160, 38)
+    disabled_state = {"disabled": True}
+    ui.set_tooltip_advanced_options(hwnd, disabled_tip, placement="bottom", effect="light", disabled=True, show_arrow=True, offset=8, max_width=220)
+    toggle = ui.create_button(hwnd, details, "🚫", "切换禁用", 764, 74, 158, 38)
+    def toggle_disabled(_eid):
+        disabled_state["disabled"] = not disabled_state["disabled"]
+        ui.set_tooltip_advanced_options(hwnd, disabled_tip, placement="bottom", effect="light", disabled=disabled_state["disabled"], show_arrow=True, offset=8, max_width=220)
+        ui.set_element_text(hwnd, status, "🚫 Tooltip 禁用已关闭，可悬停查看。" if not disabled_state["disabled"] else "🚫 Tooltip 禁用已开启，触发区仍绘制但不弹出。")
+    set_click(hwnd, toggle, toggle_disabled)
+    add_text(hwnd, details, "旧 0/1/2/3 placement 仍兼容；新高级 API 使用 top-start 等 12 方位。", 34, 150, w - 124, 32, MUTED)
+
+
+def showcase_popover(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "🗯️ Popover 支持 hover/click/focus/manual、slot 内容、外部关闭与键盘关闭。", 36, 28, w - 72, 28, MUTED)
+    triggers = add_demo_panel(hwnd, stage, "🖱️ 四种触发方式", 28, 70, w - 56, 250)
+    slots = add_demo_panel(hwnd, stage, "📊 嵌套表格与删除确认式 Popover", 28, 350, w - 56, 390)
+
+    specs = [
+        ("hover", "悬停激活 🖱️", "🖱️ 悬停打开，离开关闭。", "top"),
+        ("click", "点击激活 👆", "👆 点击切换打开状态。", "bottom"),
+        ("focus", "聚焦激活 ⌨️", "⌨️ 获得焦点时打开。", "right"),
+        ("manual", "手动激活 🧭", "🧭 由程序按钮控制。", "left"),
+    ]
+    manual_holder = {"id": 0, "open": False}
+    for i, (trigger, label, content, placement) in enumerate(specs):
+        pop = ui.create_popover(hwnd, triggers, label, f"{label}", content, 3, 34 + i * 190, 76, 156, 38)
+        ui.set_popover_advanced_options(hwnd, pop, placement=placement, open=False, popup_width=260, popup_height=132, closable=True)
+        ui.set_popover_behavior(hwnd, pop, trigger_mode=trigger, close_on_outside=True, show_arrow=True, offset=8)
+        if trigger == "manual":
+            manual_holder["id"] = pop
+    manual_button = ui.create_button(hwnd, triggers, "🧭", "切换手动弹层", 34, 146, 156, 36)
+    def toggle_manual(_eid):
+        manual_holder["open"] = not manual_holder["open"]
+        ui.trigger_popover(hwnd, manual_holder["id"], manual_holder["open"])
+        ui.set_element_text(hwnd, status, "🧭 手动 Popover 已打开。" if manual_holder["open"] else "🧭 手动 Popover 已关闭。")
+    set_click(hwnd, manual_button, toggle_manual)
+    add_text(hwnd, triggers, "click/hover/focus/manual 均复用同一行为 API；Escape、Tab、Enter 可走键盘路径。", 224, 150, w - 330, 28, MUTED)
+
+    table_pop = ui.create_popover(hwnd, slots, "收货地址 📦", "📦 收货地址", "", 3, 34, 78, 160, 38)
+    ui.set_popover_advanced_options(hwnd, table_pop, placement="right", open=False, popup_width=430, popup_height=230, closable=True)
+    ui.set_popover_behavior(hwnd, table_pop, trigger_mode="click", close_on_outside=True, show_arrow=True, offset=10)
+    table_parent = ui.get_popover_content_parent(hwnd, table_pop)
+    ui.create_table(hwnd, table_parent, ["日期", "姓名", "地址"], [["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄"], ["2016-05-04", "王小虎", "上海市普陀区金沙江路 1518 弄"], ["2016-05-01", "王小虎", "上海市普陀区金沙江路 1518 弄"]], True, True, 0, 0, 380, 128)
+
+    delete_pop = ui.create_popover(hwnd, slots, "删除 🗑️", "🗑️ 删除确认", "", 3, 234, 78, 120, 38)
+    ui.set_popover_advanced_options(hwnd, delete_pop, placement="top", open=False, popup_width=260, popup_height=150, closable=False)
+    ui.set_popover_behavior(hwnd, delete_pop, trigger_mode="click", close_on_outside=True, show_arrow=True, offset=8)
+    delete_parent = ui.get_popover_content_parent(hwnd, delete_pop)
+    add_text(hwnd, delete_parent, "这是一段内容，确定删除吗？", 0, 4, 218, 42, TEXT)
+    cancel = ui.create_button(hwnd, delete_parent, "❌", "取消", 44, 62, 76, 30)
+    ok = ui.create_button(hwnd, delete_parent, "✅", "确定", 132, 62, 76, 30)
+    set_click(hwnd, cancel, lambda _id: ui.trigger_popover(hwnd, delete_pop, False))
+    set_click(hwnd, ok, lambda _id: ui.trigger_popover(hwnd, delete_pop, False))
+    add_text(hwnd, slots, "上方表格 Popover 使用真实 content slot；删除确认式 Popover 使用 Text + Button 组合。", 34, 158, w - 120, 30, MUTED)
+
+
+def showcase_popconfirm(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "❓ Popconfirm 覆盖默认确认、自定义按钮、自定义图标颜色、键盘和程序触发结果。", 36, 28, w - 72, 28, MUTED)
+    panel = add_demo_panel(hwnd, stage, "❓ Popconfirm 样式矩阵", 28, 70, w - 56, 360)
+    result_panel = add_demo_panel(hwnd, stage, "⌨️ 结果读回与程序触发", 28, 460, w - 56, 260)
+
+    default_id = ui.create_popconfirm(hwnd, panel, "删除 ❓", "确认操作", "这是一段内容，确定删除吗？", "确定", "取消", 3, 34, 76, 132, 38)
+    ui.set_popconfirm_advanced_options(hwnd, default_id, placement="top", open=False, popup_width=286, popup_height=146, trigger_mode="click", close_on_outside=True, show_arrow=True, offset=8)
+
+    custom_id = ui.create_popconfirm(hwnd, panel, "自定义按钮 🧩", "确认删除", "按钮文案可自定义。", "好的 ✅", "不用了 ❌", 3, 204, 76, 158, 38)
+    ui.set_popconfirm_advanced_options(hwnd, custom_id, placement="bottom", open=False, popup_width=300, popup_height=150, trigger_mode="click", close_on_outside=True, show_arrow=True, offset=8)
+
+    icon_id = ui.create_popconfirm(hwnd, panel, "红色图标 ⚠️", "危险操作", "图标文本、颜色和显示状态可配置。", "继续 ✅", "取消 ❌", 3, 402, 76, 150, 38)
+    ui.set_popconfirm_advanced_options(hwnd, icon_id, placement="right", open=False, popup_width=310, popup_height=158, trigger_mode="click", close_on_outside=True, show_arrow=True, offset=8)
+    ui.set_popconfirm_icon(hwnd, icon_id, icon="!", color=0xFFF56C6C, visible=True)
+
+    hidden_icon = ui.create_popconfirm(hwnd, panel, "隐藏图标 👁️", "轻量确认", "可以隐藏左侧图标。", "明白 ✅", "返回 ❌", 3, 592, 76, 150, 38)
+    ui.set_popconfirm_advanced_options(hwnd, hidden_icon, placement="left", open=False, popup_width=300, popup_height=150, trigger_mode="click", close_on_outside=True, show_arrow=True, offset=8)
+    ui.set_popconfirm_icon(hwnd, hidden_icon, icon="?", color=0xFFE6A23C, visible=False)
+    add_text(hwnd, panel, "确认/取消结果可通过 GetResult 读回，也可注册结果回调；Escape 取消，Enter/Space 确认当前焦点按钮。", 34, 154, w - 124, 30, MUTED)
+
+    result_text = add_text(hwnd, result_panel, "⌨️ 最近结果：等待操作", 34, 76, 620, 28, TEXT)
+
+    @ui.ValueCallback
+    def on_result(element_id, result, count, action):
+        text = "确认 ✅" if result else "取消 ❌"
+        ui.set_element_text(hwnd, result_text, f"⌨️ 最近结果：#{element_id} {text}，次数={count}，动作={action}")
+
+    keep_callback(on_result)
+    ui.set_popconfirm_result_callback(hwnd, default_id, on_result)
+    ui.set_popconfirm_result_callback(hwnd, custom_id, on_result)
+    ui.set_popconfirm_result_callback(hwnd, icon_id, on_result)
+    ui.set_popconfirm_result_callback(hwnd, hidden_icon, on_result)
+
+    open_btn = ui.create_button(hwnd, result_panel, "❓", "程序打开默认确认", 34, 130, 168, 36)
+    ok_btn = ui.create_button(hwnd, result_panel, "✅", "程序确认", 224, 130, 120, 36)
+    cancel_btn = ui.create_button(hwnd, result_panel, "❌", "程序取消", 366, 130, 120, 36)
+    set_click(hwnd, open_btn, lambda _id: ui.set_popconfirm_open(hwnd, default_id, True))
+    set_click(hwnd, ok_btn, lambda _id: ui.trigger_popconfirm_result(hwnd, default_id, True))
+    set_click(hwnd, cancel_btn, lambda _id: ui.trigger_popconfirm_result(hwnd, default_id, False))
+    add_text(hwnd, result_panel, "程序触发会更新 result、confirm_count/cancel_count 和回调状态。", 34, 186, w - 120, 28, MUTED)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -1607,6 +1857,10 @@ SPECIAL_SHOWCASES = {
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
     "Notification": showcase_notification,
+    "Dialog": showcase_dialog,
+    "Tooltip": showcase_tooltip,
+    "Popover": showcase_popover,
+    "Popconfirm": showcase_popconfirm,
 }
 
 

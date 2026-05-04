@@ -118,8 +118,8 @@
 | `MessageBox` | 消息框 | `EU_ShowMessageBoxEx` / `EU_ShowPromptBox` | 已完成，支持 alert/confirm/prompt/msgbox、富文本、区分关闭、loading 和输入校验 | [消息框](./message-box.md) |
 | `Notification` | 通知 | `EU_CreateNotification` / `EU_ShowNotification` | 已完成，支持嵌入式与服务式通知、四角位置、offset、富文本和隐藏关闭按钮 | [通知](./notification.md) |
 | `Loading` | 加载 | `EU_CreateLoading` | 已完成 | [加载](./loading.md) |
-| `Dialog` | 对话框 | `EU_CreateDialog` | 已完成 | [对话框](./dialog.md) |
+| `Dialog` | 对话框 | `EU_CreateDialog` | 已完成：slot / before-close / 居中 / 嵌套内容 | [对话框](./dialog.md) |
 | `Drawer` | 抽屉 | `EU_CreateDrawer` | 已完成 | [抽屉](./drawer.md) |
-| `Tooltip` | 文字提示 | `EU_CreateTooltip` | 已完成 | [文字提示](./tooltip.md) |
-| `Popover` | 弹出框 | `EU_CreatePopover` | 已完成 | [弹出框](./popover.md) |
-| `Popconfirm` | 气泡确认框 | `EU_CreatePopconfirm` | 已完成 | [气泡确认框](./popconfirm.md) |
+| `Tooltip` | 文字提示 | `EU_CreateTooltip` | 已完成：12 方位 / dark-light / disabled / 换行 | [文字提示](./tooltip.md) |
+| `Popover` | 弹出框 | `EU_CreatePopover` | 已完成：slot / 四触发 / 12 方位 / 键盘关闭 | [弹出框](./popover.md) |
+| `Popconfirm` | 气泡确认框 | `EU_CreatePopconfirm` | 已完成：12 方位 / 自定义按钮 / 图标 / 结果回调 | [气泡确认框](./popconfirm.md) |

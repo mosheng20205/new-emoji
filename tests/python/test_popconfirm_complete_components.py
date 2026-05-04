@@ -73,7 +73,24 @@ def main():
     )
     ui.set_popconfirm_options(hwnd, confirm_id, placement=3, open=True,
                               popup_width=330, popup_height=170)
+    ui.set_popconfirm_advanced_options(
+        hwnd,
+        confirm_id,
+        placement="bottom-start",
+        open=True,
+        popup_width=330,
+        popup_height=170,
+        trigger_mode="click",
+        close_on_outside=True,
+        show_arrow=True,
+        offset=10,
+    )
+    ui.set_popconfirm_icon(hwnd, confirm_id, icon="⚠", color=0xFFF56C6C, visible=True)
     ui.set_popconfirm_result_callback(hwnd, confirm_id, on_result)
+
+    icon_state = ui.get_popconfirm_icon(hwnd, confirm_id)
+    if not icon_state or icon_state["icon"] != "⚠" or icon_state["color"] != 0xFFF56C6C or not icon_state["visible"]:
+        raise RuntimeError("Popconfirm 图标配置读回失败")
 
     if "删除任务" not in ui.get_popconfirm_text(hwnd, confirm_id, 0):
         raise RuntimeError("气泡确认框触发标签读回失败")
@@ -117,6 +134,7 @@ def main():
 
     ui.set_popconfirm_content(hwnd, confirm_id, "🛡️ 再次确认", "按 Esc 可走取消语义，按钮和状态保持中文。")
     ui.set_popconfirm_buttons(hwnd, confirm_id, "继续 ✅", "取消 ❌")
+    ui.set_popconfirm_icon(hwnd, confirm_id, icon="❗", color=0xFFE6A23C, visible=True)
     ui.set_popconfirm_options(hwnd, confirm_id, placement=1, open=True,
                               popup_width=310, popup_height=160)
     reopened = ui.get_popconfirm_full_state(hwnd, confirm_id)

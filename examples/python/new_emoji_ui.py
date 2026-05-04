@@ -32,6 +32,21 @@ MessageBoxExCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 TextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 ValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+BeforeCloseCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
+
+EXTENDED_PLACEMENTS = {
+    "top-start": 0, "top": 1, "top-end": 2,
+    "bottom-start": 3, "bottom": 4, "bottom-end": 5,
+    "left-start": 6, "left": 7, "left-end": 8,
+    "right-start": 9, "right": 10, "right-end": 11,
+}
+
+TRIGGER_MODES = {
+    "click": 0,
+    "hover": 1,
+    "focus": 2,
+    "manual": 3,
+}
 
 # 鈹€鈹€ Export signatures 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -2388,6 +2403,23 @@ dll.EU_SetDialogOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int]
+dll.EU_SetDialogAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int]
+dll.EU_GetDialogAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDialogAdvancedOptions.restype = ctypes.c_int
+dll.EU_GetDialogContentParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDialogContentParent.restype = ctypes.c_int
+dll.EU_GetDialogFooterParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDialogFooterParent.restype = ctypes.c_int
+dll.EU_SetDialogBeforeCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, BeforeCloseCallback]
+dll.EU_ConfirmDialogClose.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDialogOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDialogOpen.restype = ctypes.c_int
 dll.EU_GetDialogOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2463,6 +2495,15 @@ dll.EU_GetTooltipOptions.restype = ctypes.c_int
 dll.EU_SetTooltipBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int]
+dll.EU_SetTooltipAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int]
+dll.EU_GetTooltipAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTooltipAdvancedOptions.restype = ctypes.c_int
 dll.EU_TriggerTooltip.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTooltipText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -2485,6 +2526,18 @@ dll.EU_SetPopoverTitle.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetPopoverOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int]
+dll.EU_GetPopoverBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetPopoverBehavior.restype = ctypes.c_int
+dll.EU_GetPopoverContentParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetPopoverContentParent.restype = ctypes.c_int
 dll.EU_GetPopoverOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopoverOpen.restype = ctypes.c_int
 dll.EU_GetPopoverOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2510,12 +2563,24 @@ dll.EU_SetPopconfirmOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopconfirmOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopconfirmAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopconfirmContent.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetPopconfirmButtons.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetPopconfirmIcon.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.c_uint32, ctypes.c_int]
+dll.EU_GetPopconfirmIcon.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetPopconfirmIcon.restype = ctypes.c_int
 dll.EU_ResetPopconfirmResult.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopconfirmOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopconfirmOpen.restype = ctypes.c_int
@@ -2549,6 +2614,24 @@ def make_utf8(text: str) -> bytes:
 
 def bytes_arg(data: bytes):
     return (ctypes.c_ubyte * len(data))(*data)
+
+def _extended_placement_value(placement, default="bottom"):
+    if isinstance(placement, str):
+        return EXTENDED_PLACEMENTS.get(placement, EXTENDED_PLACEMENTS[default])
+    try:
+        value = int(placement)
+    except (TypeError, ValueError):
+        value = EXTENDED_PLACEMENTS[default]
+    return max(0, min(11, value))
+
+def _trigger_mode_value(trigger_mode, default="click"):
+    if isinstance(trigger_mode, str):
+        return TRIGGER_MODES.get(trigger_mode, TRIGGER_MODES[default])
+    try:
+        value = int(trigger_mode)
+    except (TypeError, ValueError):
+        value = TRIGGER_MODES[default]
+    return max(0, min(3, value))
 
 def _autocomplete_suggestions_data(suggestions):
     if suggestions is None:
@@ -7753,7 +7836,7 @@ def set_result_actions(hwnd, element_id, actions):
     data = make_utf8("|".join(actions))
     dll.EU_SetResultActions(hwnd, element_id, bytes_arg(data), len(data))
 
-def create_dialog(hwnd, title="Dialog", body="", modal=True, closable=True,
+def create_dialog(hwnd, title="对话框", body="", modal=True, closable=True,
                   w=460, h=250):
     title_data = make_utf8(title)
     body_data = make_utf8(body)
@@ -7781,6 +7864,46 @@ def set_dialog_options(hwnd, element_id, open=True, modal=True, closable=True,
         1 if close_on_mask else 0, 1 if draggable else 0,
         w, h
     )
+
+def set_dialog_advanced_options(hwnd, element_id, width_mode=0, width_value=460,
+                                center=False, footer_center=False,
+                                content_padding=20, footer_height=58):
+    dll.EU_SetDialogAdvancedOptions(
+        hwnd, element_id,
+        width_mode, width_value,
+        1 if center else 0, 1 if footer_center else 0,
+        content_padding, footer_height,
+    )
+
+def get_dialog_advanced_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(9)]
+    ok = dll.EU_GetDialogAdvancedOptions(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "width_mode", "width_value", "center", "footer_center",
+        "content_padding", "footer_height", "content_parent_id",
+        "footer_parent_id", "close_pending",
+    ]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("center", "footer_center", "close_pending"):
+        state[key] = bool(state[key])
+    return state
+
+def get_dialog_content_parent(hwnd, element_id):
+    return dll.EU_GetDialogContentParent(hwnd, element_id)
+
+def get_dialog_footer_parent(hwnd, element_id):
+    return dll.EU_GetDialogFooterParent(hwnd, element_id)
+
+def set_dialog_before_close_callback(hwnd, element_id, callback):
+    dll.EU_SetDialogBeforeCloseCallback(hwnd, element_id, callback)
+
+def confirm_dialog_close(hwnd, element_id, allow=True):
+    dll.EU_ConfirmDialogClose(hwnd, element_id, 1 if allow else 0)
 
 def get_dialog_options(hwnd, element_id):
     open_value = ctypes.c_int()
@@ -7927,7 +8050,7 @@ def get_drawer_full_state(hwnd, element_id):
 def set_drawer_close_callback(hwnd, element_id, callback):
     dll.EU_SetDrawerCloseCallback(hwnd, element_id, callback)
 
-def create_tooltip(hwnd, parent_id, label="Tooltip", content="", placement=2,
+def create_tooltip(hwnd, parent_id, label="文字提示", content="", placement=2,
                    x=0, y=0, w=140, h=36):
     label_data = make_utf8(label)
     content_data = make_utf8(content)
@@ -7962,8 +8085,36 @@ def set_tooltip_behavior(hwnd, element_id, show_delay=220, hide_delay=120,
                          trigger_mode=0, show_arrow=True):
     dll.EU_SetTooltipBehavior(
         hwnd, element_id, show_delay, hide_delay,
-        trigger_mode, 1 if show_arrow else 0,
+        _trigger_mode_value(trigger_mode), 1 if show_arrow else 0,
     )
+
+def set_tooltip_advanced_options(hwnd, element_id, placement="top", effect="dark",
+                                 disabled=False, show_arrow=True, offset=8,
+                                 max_width=280):
+    effect_value = 1 if effect == "light" else int(effect) if isinstance(effect, int) else 0
+    dll.EU_SetTooltipAdvancedOptions(
+        hwnd, element_id,
+        _extended_placement_value(placement, "top"),
+        effect_value,
+        1 if disabled else 0,
+        1 if show_arrow else 0,
+        offset,
+        max_width,
+    )
+
+def get_tooltip_advanced_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetTooltipAdvancedOptions(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = ["placement", "effect", "disabled", "show_arrow", "offset", "max_width"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("disabled", "show_arrow"):
+        state[key] = bool(state[key])
+    return state
 
 def trigger_tooltip(hwnd, element_id, open=True):
     dll.EU_TriggerTooltip(hwnd, element_id, 1 if open else 0)
@@ -7994,7 +8145,7 @@ def get_tooltip_full_state(hwnd, element_id):
         state[key] = bool(state[key])
     return state
 
-def create_popover(hwnd, parent_id, label="Popover", title="Popover",
+def create_popover(hwnd, parent_id, label="弹出框", title="弹出框",
                    content="", placement=3, x=0, y=0, w=140, h=36):
     label_data = make_utf8(label)
     title_data = make_utf8(title)
@@ -8021,6 +8172,44 @@ def set_popover_options(hwnd, element_id, placement=3, open=False,
         hwnd, element_id, placement, 1 if open else 0,
         popup_width, popup_height, 1 if closable else 0
     )
+
+def set_popover_advanced_options(hwnd, element_id, placement="bottom", open=False,
+                                 popup_width=250, popup_height=132,
+                                 closable=True):
+    dll.EU_SetPopoverAdvancedOptions(
+        hwnd, element_id,
+        _extended_placement_value(placement, "bottom"),
+        1 if open else 0,
+        popup_width, popup_height,
+        1 if closable else 0,
+    )
+
+def set_popover_behavior(hwnd, element_id, trigger_mode="click",
+                         close_on_outside=True, show_arrow=True, offset=8):
+    dll.EU_SetPopoverBehavior(
+        hwnd, element_id,
+        _trigger_mode_value(trigger_mode),
+        1 if close_on_outside else 0,
+        1 if show_arrow else 0,
+        offset,
+    )
+
+def get_popover_behavior(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(4)]
+    ok = dll.EU_GetPopoverBehavior(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = ["trigger_mode", "close_on_outside", "show_arrow", "offset"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("close_on_outside", "show_arrow"):
+        state[key] = bool(state[key])
+    return state
+
+def get_popover_content_parent(hwnd, element_id):
+    return dll.EU_GetPopoverContentParent(hwnd, element_id)
 
 def get_popover_options(hwnd, element_id):
     placement = ctypes.c_int()
@@ -8072,8 +8261,8 @@ def get_popover_full_state(hwnd, element_id):
 def set_popover_action_callback(hwnd, element_id, callback):
     dll.EU_SetPopoverActionCallback(hwnd, element_id, callback)
 
-def create_popconfirm(hwnd, parent_id, label="Popconfirm", title="Confirm",
-                      content="", confirm="OK", cancel="Cancel", placement=3,
+def create_popconfirm(hwnd, parent_id, label="气泡确认", title="确认操作",
+                      content="", confirm="确定", cancel="取消", placement=3,
                       x=0, y=0, w=150, h=36):
     label_data = make_utf8(label)
     title_data = make_utf8(title)
@@ -8105,6 +8294,22 @@ def set_popconfirm_options(hwnd, element_id, placement=3, open=False,
         hwnd, element_id, placement, 1 if open else 0, popup_width, popup_height
     )
 
+def set_popconfirm_advanced_options(hwnd, element_id, placement="top", open=False,
+                                    popup_width=286, popup_height=146,
+                                    trigger_mode="click",
+                                    close_on_outside=True, show_arrow=True,
+                                    offset=8):
+    dll.EU_SetPopconfirmAdvancedOptions(
+        hwnd, element_id,
+        _extended_placement_value(placement, "top"),
+        1 if open else 0,
+        popup_width, popup_height,
+        _trigger_mode_value(trigger_mode),
+        1 if close_on_outside else 0,
+        1 if show_arrow else 0,
+        offset,
+    )
+
 def get_popconfirm_options(hwnd, element_id):
     placement = ctypes.c_int()
     open_value = ctypes.c_int()
@@ -8132,6 +8337,38 @@ def set_popconfirm_buttons(hwnd, element_id, confirm="确定 ✅", cancel="取�
         bytes_arg(confirm_data), len(confirm_data),
         bytes_arg(cancel_data), len(cancel_data)
     )
+
+def set_popconfirm_icon(hwnd, element_id, icon="!", color=0xFFE6A23C, visible=True):
+    data = make_utf8(icon)
+    dll.EU_SetPopconfirmIcon(
+        hwnd, element_id,
+        bytes_arg(data), len(data),
+        color,
+        1 if visible else 0,
+    )
+
+def get_popconfirm_icon(hwnd, element_id):
+    needed = dll.EU_GetPopconfirmIcon(hwnd, element_id, None, 0, None, None)
+    if needed <= 0:
+        icon = ""
+    else:
+        buf = (ctypes.c_ubyte * (needed + 1))()
+        color = ctypes.c_uint32()
+        visible = ctypes.c_int()
+        dll.EU_GetPopconfirmIcon(
+            hwnd, element_id, buf, needed + 1,
+            ctypes.byref(color), ctypes.byref(visible),
+        )
+        return {
+            "icon": bytes(buf[:needed]).decode("utf-8", errors="replace"),
+            "color": color.value,
+            "visible": bool(visible.value),
+        }
+    color = ctypes.c_uint32()
+    visible = ctypes.c_int()
+    dll.EU_GetPopconfirmIcon(hwnd, element_id, None, 0,
+                             ctypes.byref(color), ctypes.byref(visible))
+    return {"icon": icon, "color": color.value, "visible": bool(visible.value)}
 
 def trigger_popconfirm_result(hwnd, element_id, result=True):
     dll.EU_TriggerPopconfirmResult(hwnd, element_id, 1 if result else 0)

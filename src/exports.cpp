@@ -3109,6 +3109,16 @@ int __stdcall EU_CreateDialog(HWND hwnd,
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    if (auto* dlg = dynamic_cast<Dialog*>(raw)) {
+        auto content = std::make_unique<Panel>();
+        content->mouse_passthrough = true;
+        Element* content_raw = st->element_tree->add_child(dlg, std::move(content));
+        dlg->content_parent_id = content_raw ? content_raw->id : 0;
+        auto footer = std::make_unique<Panel>();
+        footer->mouse_passthrough = true;
+        Element* footer_raw = st->element_tree->add_child(dlg, std::move(footer));
+        dlg->footer_parent_id = footer_raw ? footer_raw->id : 0;
+    }
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -3210,6 +3220,12 @@ int __stdcall EU_CreatePopover(HWND hwnd, int parent_id,
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
+    if (auto* pop = dynamic_cast<Popover*>(raw)) {
+        auto content = std::make_unique<Panel>();
+        content->mouse_passthrough = true;
+        Element* content_raw = st->element_tree->add_child(pop, std::move(content));
+        pop->content_parent_id = content_raw ? content_raw->id : 0;
+    }
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -9547,6 +9563,64 @@ void __stdcall EU_SetDialogOptions(HWND hwnd, int element_id, int open, int moda
     }
 }
 
+void __stdcall EU_SetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                           int width_mode, int width_value,
+                                           int center, int footer_center,
+                                           int content_padding, int footer_height) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Dialog>(hwnd, element_id)) {
+        el->set_advanced_options(width_mode, width_value, center != 0, footer_center != 0,
+                                 content_padding, footer_height);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                          int* width_mode, int* width_value,
+                                          int* center, int* footer_center,
+                                          int* content_padding, int* footer_height,
+                                          int* content_parent_id, int* footer_parent_id,
+                                          int* close_pending) {
+    auto* el = find_typed_element<Dialog>(hwnd, element_id);
+    if (!el) return 0;
+    if (width_mode) *width_mode = el->width_mode;
+    if (width_value) *width_value = el->width_value;
+    if (center) *center = el->center ? 1 : 0;
+    if (footer_center) *footer_center = el->footer_center ? 1 : 0;
+    if (content_padding) *content_padding = el->content_padding;
+    if (footer_height) *footer_height = el->footer_height;
+    if (content_parent_id) *content_parent_id = el->content_parent_id;
+    if (footer_parent_id) *footer_parent_id = el->footer_parent_id;
+    if (close_pending) *close_pending = el->close_pending ? 1 : 0;
+    return 1;
+}
+
+int __stdcall EU_GetDialogContentParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Dialog>(hwnd, element_id);
+    return el ? el->content_parent_id : 0;
+}
+
+int __stdcall EU_GetDialogFooterParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Dialog>(hwnd, element_id);
+    return el ? el->footer_parent_id : 0;
+}
+
+void __stdcall EU_SetDialogBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb) {
+    if (auto* el = find_typed_element<Dialog>(hwnd, element_id)) {
+        el->before_close_cb = cb;
+    }
+}
+
+void __stdcall EU_ConfirmDialogClose(HWND hwnd, int element_id, int allow) {
+    if (auto* el = find_typed_element<Dialog>(hwnd, element_id)) {
+        el->confirm_pending_close(allow != 0);
+        relayout_and_invalidate(hwnd);
+    }
+}
+
 int __stdcall EU_GetDialogOpen(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Dialog>(hwnd, element_id);
     return el && el->is_open() ? 1 : 0;
@@ -9788,6 +9862,30 @@ void __stdcall EU_SetTooltipBehavior(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int effect,
+                                            int disabled, int show_arrow,
+                                            int offset, int max_width) {
+    if (auto* el = find_typed_element<Tooltip>(hwnd, element_id)) {
+        el->set_advanced_options(placement, effect, disabled, show_arrow, offset, max_width);
+    }
+}
+
+int __stdcall EU_GetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                           int* placement, int* effect,
+                                           int* disabled, int* show_arrow,
+                                           int* offset, int* max_width) {
+    auto* el = find_typed_element<Tooltip>(hwnd, element_id);
+    if (!el) return 0;
+    if (placement) *placement = el->use_advanced_placement ? el->advanced_placement : -1;
+    if (effect) *effect = el->effect;
+    if (disabled) *disabled = el->tooltip_disabled ? 1 : 0;
+    if (show_arrow) *show_arrow = el->show_arrow ? 1 : 0;
+    if (offset) *offset = el->offset;
+    if (max_width) *max_width = el->max_width();
+    return 1;
+}
+
 void __stdcall EU_TriggerTooltip(HWND hwnd, int element_id, int open) {
     if (auto* el = find_typed_element<Tooltip>(hwnd, element_id)) {
         el->trigger_open(open != 0, 5);
@@ -9856,6 +9954,47 @@ void __stdcall EU_SetPopoverOptions(HWND hwnd, int element_id, int placement, in
     if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
         el->set_options(placement, open, popup_width, popup_height, closable);
     }
+}
+
+void __stdcall EU_SetPopoverAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int open,
+                                            int popup_width, int popup_height,
+                                            int closable) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        if (placement < 0) placement = 0;
+        if (placement > 11) placement = 11;
+        el->advanced_placement = placement;
+        el->use_advanced_placement = true;
+        el->popup_width = popup_width > 120 ? popup_width : 250;
+        el->popup_height = popup_height > 80 ? popup_height : 132;
+        el->close_enabled = closable != 0;
+        el->set_open(open != 0);
+    }
+}
+
+void __stdcall EU_SetPopoverBehavior(HWND hwnd, int element_id,
+                                     int trigger_mode, int close_on_outside,
+                                     int show_arrow, int offset) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        el->set_behavior(trigger_mode, close_on_outside, show_arrow, offset);
+    }
+}
+
+int __stdcall EU_GetPopoverBehavior(HWND hwnd, int element_id,
+                                    int* trigger_mode, int* close_on_outside,
+                                    int* show_arrow, int* offset) {
+    auto* el = find_typed_element<Popover>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_mode) *trigger_mode = el->trigger_mode;
+    if (close_on_outside) *close_on_outside = el->close_on_outside ? 1 : 0;
+    if (show_arrow) *show_arrow = el->show_arrow ? 1 : 0;
+    if (offset) *offset = el->offset;
+    return 1;
+}
+
+int __stdcall EU_GetPopoverContentParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Popover>(hwnd, element_id);
+    return el ? el->content_parent_id : 0;
 }
 
 int __stdcall EU_GetPopoverOpen(HWND hwnd, int element_id) {
@@ -9937,6 +10076,23 @@ void __stdcall EU_SetPopconfirmOptions(HWND hwnd, int element_id, int placement,
     }
 }
 
+void __stdcall EU_SetPopconfirmAdvancedOptions(HWND hwnd, int element_id,
+                                               int placement, int open,
+                                               int popup_width, int popup_height,
+                                               int trigger_mode, int close_on_outside,
+                                               int show_arrow, int offset) {
+    if (auto* el = find_typed_element<Popconfirm>(hwnd, element_id)) {
+        if (placement < 0) placement = 0;
+        if (placement > 11) placement = 11;
+        el->advanced_placement = placement;
+        el->use_advanced_placement = true;
+        el->popup_width = popup_width > 120 ? popup_width : 286;
+        el->popup_height = popup_height > 80 ? popup_height : 146;
+        el->set_behavior(trigger_mode, close_on_outside, show_arrow, offset);
+        el->set_open(open != 0);
+    }
+}
+
 void __stdcall EU_SetPopconfirmContent(HWND hwnd, int element_id,
                                        const unsigned char* title_bytes, int title_len,
                                        const unsigned char* content_bytes, int content_len) {
@@ -9953,6 +10109,24 @@ void __stdcall EU_SetPopconfirmButtons(HWND hwnd, int element_id,
         el->set_buttons(utf8_or_default(confirm_bytes, confirm_len, L"确定"),
                         utf8_or_default(cancel_bytes, cancel_len, L"取消"));
     }
+}
+
+void __stdcall EU_SetPopconfirmIcon(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    Color icon_color, int visible) {
+    if (auto* el = find_typed_element<Popconfirm>(hwnd, element_id)) {
+        el->set_icon(utf8_or_default(icon_bytes, icon_len, L"!"), icon_color, visible != 0);
+    }
+}
+
+int __stdcall EU_GetPopconfirmIcon(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size,
+                                   Color* icon_color, int* visible) {
+    auto* el = find_typed_element<Popconfirm>(hwnd, element_id);
+    if (!el) return 0;
+    if (icon_color) *icon_color = el->icon_color;
+    if (visible) *visible = el->show_icon ? 1 : 0;
+    return copy_wide_as_utf8(el->icon_text, buffer, buffer_size);
 }
 
 void __stdcall EU_ResetPopconfirmResult(HWND hwnd, int element_id) {

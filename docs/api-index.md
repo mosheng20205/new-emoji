@@ -91,10 +91,25 @@
 | `EU_CreateNotification` | |
 | `EU_CreateLoading` | |
 | `EU_CreateDialog` | |
+| `EU_SetDialogAdvancedOptions` | 设置 Dialog 百分比宽度、居中和 slot 布局 |
+| `EU_GetDialogAdvancedOptions` | 读取 Dialog 高级选项、slot ID 和 before-close 待确认状态 |
+| `EU_GetDialogContentParent` | 获取 Dialog 内容 slot 容器 ID |
+| `EU_GetDialogFooterParent` | 获取 Dialog 页脚 slot 容器 ID |
+| `EU_SetDialogBeforeCloseCallback` | 设置 Dialog 关闭前拦截回调 |
+| `EU_ConfirmDialogClose` | before-close 拦截后确认继续或取消关闭 |
 | `EU_CreateDrawer` | |
 | `EU_CreateTooltip` | |
+| `EU_SetTooltipAdvancedOptions` | 设置 Tooltip 12 方位、明暗主题、disabled、箭头和 offset |
+| `EU_GetTooltipAdvancedOptions` | 读取 Tooltip 高级选项 |
 | `EU_CreatePopover` | |
+| `EU_SetPopoverAdvancedOptions` | 设置 Popover 12 方位和弹层尺寸 |
+| `EU_SetPopoverBehavior` | 设置 Popover hover/click/focus/manual 行为 |
+| `EU_GetPopoverBehavior` | 读取 Popover 行为选项 |
+| `EU_GetPopoverContentParent` | 获取 Popover 内容 slot 容器 ID |
 | `EU_CreatePopconfirm` | |
+| `EU_SetPopconfirmAdvancedOptions` | 设置 Popconfirm 12 方位、触发、外部关闭、箭头和 offset |
+| `EU_SetPopconfirmIcon` | 设置 Popconfirm 图标文本/emoji、颜色和显示状态 |
+| `EU_GetPopconfirmIcon` | 读取 Popconfirm 图标文本/emoji、颜色和显示状态 |
 | `EU_ShowMessage` | 显示服务式 Message 消息提示 |
 | `EU_ShowNotification` | 显示服务式 Notification 通知 |
 | `EU_ShowMessageBox` | |
@@ -831,6 +846,12 @@
 | `EU_SetDialogTitle` | |
 | `EU_SetDialogBody` | |
 | `EU_SetDialogOptions` | |
+| `EU_SetDialogAdvancedOptions` | 设置 Dialog 百分比宽度、居中和 slot 布局 |
+| `EU_GetDialogAdvancedOptions` | 读取 Dialog 高级选项、slot ID 和 before-close 待确认状态 |
+| `EU_GetDialogContentParent` | 获取 Dialog 内容 slot 容器 ID |
+| `EU_GetDialogFooterParent` | 获取 Dialog 页脚 slot 容器 ID |
+| `EU_SetDialogBeforeCloseCallback` | 设置 Dialog 关闭前拦截回调 |
+| `EU_ConfirmDialogClose` | before-close 拦截后确认继续或取消关闭 |
 | `EU_GetDialogOpen` | |
 | `EU_GetDialogOptions` | |
 | `EU_SetDialogButtons` | |
@@ -857,6 +878,8 @@
 | `EU_GetTooltipOpen` | |
 | `EU_GetTooltipOptions` | |
 | `EU_SetTooltipBehavior` | |
+| `EU_SetTooltipAdvancedOptions` | 设置 Tooltip 12 方位、明暗主题、disabled、箭头和 offset |
+| `EU_GetTooltipAdvancedOptions` | 读取 Tooltip 高级选项 |
 | `EU_TriggerTooltip` | |
 | `EU_GetTooltipText` | |
 | `EU_GetTooltipFullState` | |
@@ -864,6 +887,10 @@
 | `EU_SetPopoverContent` | |
 | `EU_SetPopoverTitle` | |
 | `EU_SetPopoverOptions` | |
+| `EU_SetPopoverAdvancedOptions` | 设置 Popover 12 方位和弹层尺寸 |
+| `EU_SetPopoverBehavior` | 设置 Popover hover/click/focus/manual 行为 |
+| `EU_GetPopoverBehavior` | 读取 Popover 行为选项 |
+| `EU_GetPopoverContentParent` | 获取 Popover 内容 slot 容器 ID |
 | `EU_GetPopoverOpen` | |
 | `EU_GetPopoverOptions` | |
 | `EU_TriggerPopover` | |
@@ -872,8 +899,11 @@
 | `EU_SetPopoverActionCallback` | |
 | `EU_SetPopconfirmOpen` | |
 | `EU_SetPopconfirmOptions` | |
+| `EU_SetPopconfirmAdvancedOptions` | 设置 Popconfirm 12 方位、触发、外部关闭、箭头和 offset |
 | `EU_SetPopconfirmContent` | |
 | `EU_SetPopconfirmButtons` | |
+| `EU_SetPopconfirmIcon` | 设置 Popconfirm 图标文本/emoji、颜色和显示状态 |
+| `EU_GetPopconfirmIcon` | 读取 Popconfirm 图标文本/emoji、颜色和显示状态 |
 | `EU_ResetPopconfirmResult` | |
 | `EU_GetPopconfirmOpen` | |
 | `EU_GetPopconfirmResult` | |

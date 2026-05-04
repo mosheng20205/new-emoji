@@ -5,6 +5,9 @@ class Popconfirm : public Popover {
 public:
     std::wstring confirm_text = L"确定";
     std::wstring cancel_text = L"取消";
+    std::wstring icon_text = L"!";
+    Color icon_color = 0xFFE6A23C;
+    bool show_icon = true;
     int last_result = -1; // 1 confirm, 0 cancel, -1 no selection
     int confirm_count = 0;
     int cancel_count = 0;
@@ -19,6 +22,7 @@ public:
     void on_key_down(int vk, int mods) override;
 
     void set_buttons(const std::wstring& confirm, const std::wstring& cancel);
+    void set_icon(const std::wstring& icon, Color color, bool visible);
     void reset_result();
     void choose_result(int result, int action);
     int get_last_result() const { return last_result; }

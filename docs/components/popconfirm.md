@@ -1,71 +1,53 @@
 # Popconfirm 气泡确认框
 
-## 简介
+`Popconfirm` 复用 Popover 的扩展定位与触发能力，并补齐自定义确认/取消按钮、自定义图标文本/emoji、图标颜色、隐藏图标、确认/取消结果读回、结果重置、程序触发和结果回调。
 
-`Popconfirm` 是 new_emoji 的 反馈/浮层 组件。当前状态：**已完成**。
-
-已补确认/取消按钮、结果读取/重置、定位和内容更新、键盘确认/取消、程序触发结果、结果回调、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证
-
-## 创建
-
-| 项目 | 值 |
-|---|---|
-| 创建导出 | `EU_CreatePopconfirm` |
-| 组件分类 | 反馈/浮层 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_popconfirm` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
-
-## 相关 API
+## API
 
 | API | 说明 |
 |---|---|
-| `EU_CreatePopconfirm` | 当前组件相关导出 |
-| `EU_GetPopconfirmFullState` | 当前组件相关导出 |
-| `EU_GetPopconfirmOpen` | 当前组件相关导出 |
-| `EU_GetPopconfirmOptions` | 当前组件相关导出 |
-| `EU_GetPopconfirmResult` | 当前组件相关导出 |
-| `EU_GetPopconfirmText` | 当前组件相关导出 |
-| `EU_ResetPopconfirmResult` | 当前组件相关导出 |
-| `EU_SetPopconfirmButtons` | 当前组件相关导出 |
-| `EU_SetPopconfirmContent` | 当前组件相关导出 |
-| `EU_SetPopconfirmOpen` | 当前组件相关导出 |
-| `EU_SetPopconfirmOptions` | 当前组件相关导出 |
-| `EU_SetPopconfirmResultCallback` | 当前组件相关导出 |
-| `EU_TriggerPopconfirmResult` | 当前组件相关导出 |
+| `EU_CreatePopconfirm` | 创建气泡确认框 |
+| `EU_SetPopconfirmOpen` / `EU_GetPopconfirmOpen` | 设置/读取打开状态 |
+| `EU_SetPopconfirmOptions` / `EU_GetPopconfirmOptions` | 旧四方位、打开状态、尺寸、结果读回 |
+| `EU_SetPopconfirmAdvancedOptions` | 设置 12 方位、打开状态、尺寸、触发方式、外部关闭、箭头、offset |
+| `EU_SetPopconfirmContent` | 设置标题和内容 |
+| `EU_SetPopconfirmButtons` | 设置确认/取消按钮文本 |
+| `EU_SetPopconfirmIcon` / `EU_GetPopconfirmIcon` | 设置/读取图标文本或 emoji、ARGB 颜色和显示状态 |
+| `EU_TriggerPopconfirmResult` | 程序触发确认或取消 |
+| `EU_GetPopconfirmResult` / `EU_ResetPopconfirmResult` | 读取和重置结果；`-1` 未选择、`0` 取消、`1` 确认 |
+| `EU_SetPopconfirmResultCallback` | 结果回调 |
+| `EU_GetPopconfirmText` / `EU_GetPopconfirmFullState` | 文本和完整状态读回 |
 
-## Python 使用
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
-
-hwnd = ui.create_window("✨ 气泡确认框 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Popconfirm`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+confirm = ui.create_popconfirm(hwnd, root,
+                               "删除 ❓",
+                               "确认操作",
+                               "这是一段内容，确定删除吗？",
+                               "确定 ✅",
+                               "取消 ❌",
+                               3, 60, 90, 132, 38)
+ui.set_popconfirm_advanced_options(hwnd, confirm,
+                                   placement="top",
+                                   open=False,
+                                   popup_width=286,
+                                   popup_height=146,
+                                   trigger_mode="click",
+                                   close_on_outside=True,
+                                   show_arrow=True,
+                                   offset=8)
+ui.set_popconfirm_icon(hwnd, confirm, icon="!", color=0xFFF56C6C, visible=True)
 ```
 
-## 易语言调用
+程序触发：
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+```python
+ui.set_popconfirm_open(hwnd, confirm, True)
+ui.trigger_popconfirm_result(hwnd, confirm, True)
+result = ui.get_popconfirm_full_state(hwnd, confirm)["result"]
+```
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_popconfirm_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Popconfirm` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+优先运行 `tests/python/test_popconfirm_complete_components.py`。gallery 的 `Popconfirm` 详情页覆盖默认删除确认、自定义按钮、自定义图标颜色、隐藏图标、键盘操作和程序触发结果。
