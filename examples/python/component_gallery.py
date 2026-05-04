@@ -1312,6 +1312,273 @@ def showcase_messagebox(hwnd, stage, w, h):
     add_text(hwnd, scene_panel, "这里不再复用标准四按钮，而是单独展示居中、富文本、关闭来源区分、输入校验和关闭前延迟处理。", 28, 128, w - 112, 48, MUTED)
 
 
+def showcase_notification(hwnd, stage, w, h):
+    type_names = {0: "信息", 1: "成功", 2: "警告", 3: "错误"}
+    action_names = {
+        0: "无动作",
+        1: "属性设置",
+        2: "鼠标关闭",
+        3: "键盘关闭",
+        4: "程序关闭",
+        5: "定时关闭",
+    }
+    placement_names = {0: "右上角", 1: "右下角", 2: "左下角", 3: "左上角"}
+    tracked = {"target": 0, "auto": 0, "keyboard": 0, "rich": 0, "last_service": 0, "rich_closable": False}
+
+    status_id = add_text(hwnd, stage, "🔔 最近通知：页面已展示嵌入式通知，点击按钮可触发服务式通知。", 44, 28, w - 88, 26, MUTED)
+
+    @ui.ValueCallback
+    def on_notification_close(element_id, close_count, notify_type, action):
+        action_text = action_names.get(action, "状态更新")
+        type_text = type_names.get(notify_type, "通知")
+        ui.set_element_text(hwnd, status_id, f"🔔 最近关闭：#{element_id} · {type_text} · {action_text} · 第 {close_count} 次")
+
+    notify_cb = keep_callback(on_notification_close)
+
+    left_w = min(1052, w - 646)
+    control_x = 28 + left_w + 28
+    control_w = w - control_x - 28
+
+    embedded = add_demo_panel(hwnd, stage, "🧩 嵌入式通知：创建、类型、关闭按钮与自动关闭", 28, 68, left_w, 448)
+    type_specs = [
+        ("ℹ️ 信息通知", "type=0，适合轻量说明。", 0),
+        ("✅ 成功通知", "type=1，左侧强调色为成功绿。", 1),
+        ("⚠️ 警告通知", "type=2，适合风险提醒。", 2),
+        ("❌ 错误通知", "type=3，适合失败反馈。", 3),
+    ]
+    type_ids = []
+    notify_w = 238
+    for i, (title, body, notify_type) in enumerate(type_specs):
+        nid = ui.create_notification(
+            hwnd, embedded, title, body, notify_type, True,
+            26 + i * (notify_w + 14), 68, notify_w, 106,
+        )
+        type_ids.append(nid)
+
+    stack_ids = []
+    for idx, (title, body, notify_type) in enumerate([
+        ("📚 堆叠 1", "EU_SetNotificationStack index=0", 0),
+        ("📚 堆叠 2", "同一基准点自动下移", 1),
+        ("📚 堆叠 3", "gap 控制垂直间距", 2),
+    ]):
+        nid = ui.create_notification(hwnd, embedded, title, body, notify_type, True, 28, 210, 460, 70)
+        ui.set_notification_stack(hwnd, nid, idx, 8)
+        stack_ids.append(nid)
+
+    auto_id = ui.create_notification(
+        hwnd, embedded,
+        "⏱️ 自动关闭进度条",
+        "duration=15000ms，底部进度条会随定时器减少。",
+        0, True, 528, 210, 470, 90,
+    )
+    ui.set_notification_options(hwnd, auto_id, notify_type=0, closable=True, duration_ms=15000)
+
+    rich_id = ui.create_notification(
+        hwnd, embedded,
+        "🎨 富文本 + 无关闭按钮",
+        "<strong>加粗</strong>、<i>斜体</i> 与 <span style=\"color: teal\">彩色文字</span> 同屏展示。",
+        1, False, 528, 314, 470, 90,
+    )
+    ui.set_notification_rich_mode(hwnd, rich_id, True)
+    ui.set_notification_placement(hwnd, rich_id, "bottom-left", 36)
+
+    tracked["target"] = type_ids[0]
+    tracked["auto"] = auto_id
+    tracked["keyboard"] = stack_ids[1]
+    tracked["rich"] = rich_id
+
+    for nid in type_ids + stack_ids + [auto_id, rich_id]:
+        ui.set_notification_close_callback(hwnd, nid, notify_cb)
+
+    control = add_demo_panel(hwnd, stage, "🎛️ Set/Get、关闭来源与回调", control_x, 68, control_w, 448)
+    callback_hint_id = add_text(hwnd, control, "📣 关闭回调：等待触发", 24, 54, control_w - 48, 28, MUTED)
+    state_id = add_text(hwnd, control, "📋 状态读回：点击「读回状态」查看完整字段。", 24, 92, control_w - 48, 132, TEXT)
+
+    def refresh_state(label, element_id=None):
+        nid = element_id or tracked["last_service"] or tracked["target"]
+        if not nid:
+            return
+        title = ui.get_notification_text(hwnd, nid, 0)
+        body = ui.get_notification_text(hwnd, nid, 1)
+        options = ui.get_notification_options(hwnd, nid)
+        base = ui.get_notification_full_state(hwnd, nid) or {}
+        state = ui.get_notification_full_state_ex(hwnd, nid) or {}
+        closed = ui.dll.EU_GetNotificationClosed(hwnd, nid)
+        type_text = type_names.get(state.get("notify_type", base.get("notify_type", 0)), "通知")
+        action_text = action_names.get(state.get("last_action", base.get("last_action", 0)), "状态更新")
+        place_text = placement_names.get(state.get("placement", 0), "右上角")
+        option_text = "读取失败" if not options else f"type={options[0]} / closable={int(options[1])} / duration={options[2]} / closed={int(options[3])}"
+        ui.set_element_text(
+            hwnd,
+            state_id,
+            f"📋 {label}\n元素 #{nid} · {type_text} · {place_text} · rich={state.get('rich', 0)}\n"
+            f"closed={closed} · timer={state.get('timer_running', base.get('timer_running', 0))} · "
+            f"stack={state.get('stack_index', base.get('stack_index', 0))}/{state.get('stack_gap', base.get('stack_gap', 0))}\n"
+            f"last={action_text} · 标题：{title}\n正文：{body}\n选项：{option_text}",
+        )
+
+    def remember_service(nid, label):
+        if nid > 0:
+            tracked["last_service"] = nid
+            ui.set_notification_close_callback(hwnd, nid, notify_cb)
+            refresh_state(label, nid)
+        return nid
+
+    def update_target(_eid):
+        ui.set_element_text(hwnd, tracked["target"], "❌ 已切换为错误")
+        ui.set_notification_body(hwnd, tracked["target"], "正文通过 EU_SetNotificationBody 更新；类型通过 EU_SetNotificationType 切换。")
+        ui.set_notification_type(hwnd, tracked["target"], 3)
+        refresh_state("已更新嵌入式通知", tracked["target"])
+
+    def toggle_rich_closable(_eid):
+        tracked["rich_closable"] = not tracked["rich_closable"]
+        ui.set_notification_closable(hwnd, tracked["rich"], tracked["rich_closable"])
+        label = "显示关闭按钮" if tracked["rich_closable"] else "隐藏关闭按钮"
+        refresh_state(label, tracked["rich"])
+
+    def close_auto(_eid):
+        ui.trigger_notification_close(hwnd, tracked["auto"])
+        refresh_state("程序关闭自动通知", tracked["auto"])
+
+    def reopen_auto(_eid):
+        ui.set_notification_closed(hwnd, tracked["auto"], False)
+        ui.set_notification_options(hwnd, tracked["auto"], notify_type=0, closable=True, duration_ms=15000)
+        refresh_state("重新打开并重启定时器", tracked["auto"])
+
+    def focus_keyboard(_eid):
+        ui.dll.EU_SetElementFocus(hwnd, tracked["keyboard"])
+        ui.set_element_text(hwnd, callback_hint_id, "⌨️ 已聚焦第二条堆叠通知，可按 Enter / Esc / Space / Delete 关闭。")
+        refresh_state("键盘关闭目标已聚焦", tracked["keyboard"])
+
+    def read_target(_eid):
+        refresh_state("手动读回完整状态", tracked["target"])
+
+    def add_control_button(emoji, label, x, y, handler):
+        btn = ui.create_button(hwnd, control, emoji, label, x, y, 154, 34)
+        set_click(hwnd, btn, handler)
+        return btn
+
+    add_control_button("✏️", "更新正文", 24, 250, update_target)
+    add_control_button("🚫", "切换关闭", 194, 250, toggle_rich_closable)
+    add_control_button("🧯", "程序关闭", 364, 250, close_auto)
+    add_control_button("🔁", "重开定时", 24, 296, reopen_auto)
+    add_control_button("⌨️", "键盘目标", 194, 296, focus_keyboard)
+    add_control_button("📋", "读回状态", 364, 296, read_target)
+    add_text(hwnd, control, "关闭按钮、键盘关闭、定时关闭和程序关闭都会进入同一个关闭回调。", 24, 354, control_w - 48, 42, MUTED)
+
+    service = add_demo_panel(hwnd, stage, "🚀 服务式通知：四角位置、自动堆叠、富文本与隐藏关闭按钮", 28, 540, w - 56, 250)
+
+    def show_corners(_eid):
+        remember_service(ui.notify_success(hwnd, "✅ 右上角", "保存成功，默认从右上角向下堆叠。", duration_ms=0, position="top-right", offset=56), "服务式右上角")
+        remember_service(ui.notify_warning(hwnd, "⚠️ 右下角", "底部位置从下往上堆叠。", duration_ms=0, position="bottom-right", offset=56), "服务式右下角")
+        remember_service(ui.notify_info(hwnd, "ℹ️ 左下角", "左下角适合低优先级提醒。", duration_ms=0, position="bottom-left", offset=56), "服务式左下角")
+        remember_service(ui.notify_error(hwnd, "❌ 左上角", "左上角用于覆盖四角定位验证。", duration_ms=0, position="top-left", offset=56), "服务式左上角")
+
+    def show_stack(_eid):
+        for i in range(3):
+            remember_service(
+                ui.notify_success(
+                    hwnd,
+                    f"📚 右上堆叠 {i + 1}",
+                    "连续创建会读取同位置可见数量，并自动计算 stack_index。",
+                    duration_ms=0,
+                    position="top-right",
+                    offset=86,
+                    w=360,
+                    h=92,
+                ),
+                f"右上堆叠第 {i + 1} 条",
+            )
+
+    def show_rich(_eid):
+        remember_service(
+            ui.notify_info(
+                hwnd,
+                "🎨 富文本通知",
+                "<strong>HTML</strong> 片段、<i>斜体</i> 和 <span style=\"color: teal\">teal</span> 文本可直接绘制。",
+                rich=True,
+                duration_ms=0,
+                position="bottom-left",
+                offset=72,
+                w=390,
+                h=110,
+            ),
+            "服务式富文本通知",
+        )
+
+    def show_hidden(_eid):
+        remember_service(
+            ui.notify_success(
+                hwnd,
+                "✅ 无关闭按钮",
+                "closable=False，鼠标不能关闭，但程序关闭仍有效。",
+                closable=False,
+                duration_ms=0,
+                position="top-right",
+                offset=126,
+                w=370,
+                h=96,
+            ),
+            "服务式隐藏关闭按钮",
+        )
+
+    def show_auto(_eid):
+        remember_service(
+            ui.show_notification(
+                hwnd,
+                title="⏱️ 短时自动关闭",
+                message="duration=2800ms，关闭动作为定时关闭。",
+                notify_type=0,
+                duration_ms=2800,
+                position="top-right",
+                offset=166,
+                w=370,
+                h=96,
+            ),
+            "服务式自动关闭",
+        )
+
+    def close_last_service(_eid):
+        if tracked["last_service"]:
+            ui.trigger_notification_close(hwnd, tracked["last_service"])
+            refresh_state("程序关闭最近服务通知", tracked["last_service"])
+
+    service_buttons = [
+        ("🧭", "四角通知", show_corners),
+        ("📚", "右上堆叠", show_stack),
+        ("🎨", "富文本", show_rich),
+        ("🚫", "隐藏关闭", show_hidden),
+        ("⏱️", "自动关闭", show_auto),
+        ("🧯", "关闭最近", close_last_service),
+    ]
+    for i, (emoji, label, handler) in enumerate(service_buttons):
+        btn = ui.create_button(hwnd, service, emoji, label, 28 + i * 158, 72, 142, 36)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, service, "这些按钮调用 EU_ShowNotification；通知直接挂到根元素，按 position/offset 在窗口四角浮出。", 28, 132, w - 112, 28, MUTED)
+    add_text(hwnd, service, "右上堆叠按钮会一次创建三条同位置通知，用于验证服务式自动 stack_index 和 stack_gap。", 28, 168, w - 112, 28, MUTED)
+
+    fields = add_demo_panel(hwnd, stage, "📋 已覆盖的 Notification 导出能力", 28, 814, w - 56, 270)
+    field_specs = [
+        ("创建", "EU_CreateNotification / EU_ShowNotification", "嵌入式卡片与服务式浮层同页展示。"),
+        ("属性", "SetBody / SetType / SetClosable / SetOptions", "正文、类型、关闭按钮和 duration 可动态修改。"),
+        ("位置", "SetPlacement / SetStack", "四角 position、offset 与 stack_index/gap 都有可见演示。"),
+        ("富文本", "SetRichMode", "strong、i、span color 在通知正文内渲染。"),
+        ("关闭", "SetClosed / TriggerClose / CloseCallback", "鼠标、键盘、程序和定时关闭会记录动作来源。"),
+        ("读回", "GetText / GetOptions / GetFullStateEx", "右侧状态区读回文本、选项和完整内部状态。"),
+    ]
+    for i, (title, api, desc) in enumerate(field_specs):
+        col = i % 3
+        row = i // 3
+        card_x = 28 + col * 520
+        card_y = 66 + row * 92
+        card = add_themed_panel(hwnd, fields, card_x, card_y, 488, 76, "panel_neutral", "panel_neutral_border", 1.0, 8.0, 10)
+        add_role_text(hwnd, card, f"🔔 {title}", 14, 10, 160, 24, "panel_neutral_text")
+        add_text(hwnd, card, api, 14, 34, 450, 22, MUTED)
+        add_text(hwnd, card, desc, 180, 10, 286, 48, MUTED)
+
+    refresh_state("初始嵌入式通知", tracked["target"])
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -1339,6 +1606,7 @@ SPECIAL_SHOWCASES = {
     "Upload": showcase_upload,
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
+    "Notification": showcase_notification,
 }
 
 
