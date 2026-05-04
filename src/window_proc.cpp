@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <windowsx.h>
+#include <shellapi.h>
 #include <imm.h>
 #include <d2d1.h>
 #include <dwrite.h>
@@ -9,6 +10,7 @@
 #include "element_button.h"
 #include "element_titlebar.h"
 #include "element_editbox.h"
+#include "element_upload.h"
 #include "element_messagebox.h"
 #include "element_carousel.h"
 #include "element_notification.h"
@@ -18,6 +20,7 @@
 #include "theme.h"
 #include "dpi_context.h"
 #include <map>
+#include <vector>
 
 extern HMODULE g_module;
 
@@ -92,6 +95,68 @@ static bool is_modal_overlay_point(WindowState* st, int x, int y) {
     return st && st->element_tree && st->element_tree->has_modal_overlay_at(x, y);
 }
 
+static Upload* upload_from_hit(Element* hit) {
+    while (hit) {
+        if (auto* upload = dynamic_cast<Upload*>(hit)) return upload;
+        hit = hit->parent;
+    }
+    return nullptr;
+}
+
+static Upload* find_drop_upload_at(Element* el, int x, int y) {
+    if (!el || !el->visible || !el->enabled) return nullptr;
+    int lx = x - el->bounds.x;
+    int ly = y - el->bounds.y;
+    if (el->parent && (lx < 0 || ly < 0 || lx >= el->bounds.w || ly >= el->bounds.h)) return nullptr;
+
+    for (auto it = el->children.rbegin(); it != el->children.rend(); ++it) {
+        if (auto* upload = find_drop_upload_at(it->get(), lx, ly)) return upload;
+    }
+    auto* upload = dynamic_cast<Upload*>(el);
+    if (upload && upload->wants_dropped_files() && lx >= 0 && ly >= 0 &&
+        lx < upload->bounds.w && ly < upload->bounds.h) {
+        return upload;
+    }
+    return nullptr;
+}
+
+static void handle_drop_files(HWND hwnd, HDROP drop) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree || !drop) {
+        if (drop) DragFinish(drop);
+        return;
+    }
+
+    POINT pt = {};
+    DragQueryPoint(drop, &pt);
+    Upload* upload = st->element_tree->root() ? find_drop_upload_at(st->element_tree->root(), pt.x, pt.y) : nullptr;
+    if (!upload) {
+        Element* hit = st->element_tree->root() ? st->element_tree->root()->hit_test(pt.x, pt.y) : nullptr;
+        upload = upload_from_hit(hit);
+    }
+    if (!upload || !upload->wants_dropped_files()) {
+        DragFinish(drop);
+        return;
+    }
+
+    std::vector<std::wstring> files;
+    UINT count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
+    for (UINT i = 0; i < count; ++i) {
+        UINT len = DragQueryFileW(drop, i, nullptr, 0);
+        if (len == 0) continue;
+        std::wstring path((size_t)len + 1, L'\0');
+        DragQueryFileW(drop, i, path.data(), len + 1);
+        path.resize(len);
+        files.push_back(path);
+    }
+    DragFinish(drop);
+
+    if (!files.empty()) {
+        upload->accept_dropped_files(files);
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
 // ── Window class registration ────────────────────────────────────────
 
 void register_window_class() {
@@ -119,6 +184,10 @@ void register_window_class() {
             recreate_render_target(st);
             st->element_tree = new ElementTree(hwnd, st->dpi_scale);
             st->element_tree->layout();
+            DragAcceptFiles(hwnd, TRUE);
+            ChangeWindowMessageFilterEx(hwnd, WM_DROPFILES, MSGFLT_ALLOW, nullptr);
+            ChangeWindowMessageFilterEx(hwnd, WM_COPYDATA, MSGFLT_ALLOW, nullptr);
+            ChangeWindowMessageFilterEx(hwnd, 0x0049, MSGFLT_ALLOW, nullptr);
             return 0;
         }
         case WM_SIZE: {
@@ -170,6 +239,10 @@ void register_window_class() {
         }
         case WM_ERASEBKGND:
             return 1;
+
+        case WM_DROPFILES:
+            handle_drop_files(hwnd, reinterpret_cast<HDROP>(wp));
+            return 0;
 
         case WM_GETMINMAXINFO: {
             auto* mmi = reinterpret_cast<MINMAXINFO*>(lp);
@@ -414,6 +487,7 @@ void register_window_class() {
             DestroyWindow(hwnd); return 0;
         case WM_DESTROY:
             if (st) {
+                DragAcceptFiles(hwnd, FALSE);
                 delete st->element_tree; st->element_tree = nullptr;
                 if (st->render_target) { st->render_target->Release(); st->render_target = nullptr; }
                 g_windows.erase(hwnd); delete st;

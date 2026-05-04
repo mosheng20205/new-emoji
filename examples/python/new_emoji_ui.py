@@ -1969,6 +1969,39 @@ dll.EU_SetUploadFiles.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetUploadFileItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetUploadOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetUploadStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int]
+dll.EU_GetUploadStyle.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetUploadStyle.restype = ctypes.c_int
+dll.EU_SetUploadTexts.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_SetUploadConstraints.argtypes = [
+    wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_GetUploadConstraints.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_GetUploadConstraints.restype = ctypes.c_int
+dll.EU_SetUploadPreviewOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetUploadPreviewState.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetUploadPreviewState.restype = ctypes.c_int
 dll.EU_SetUploadSelectedFiles.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetUploadFileStatus.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -6795,12 +6828,79 @@ def set_upload_file_items(hwnd, element_id, items):
         status = int(item[1]) if len(item) > 1 else 1
         progress = int(item[2]) if len(item) > 2 else 100
         path = str(item[3]) if len(item) > 3 else name
-        rows.append(f"{name}\t{status}\t{progress}\t{path}")
+        thumbnail = str(item[4]) if len(item) > 4 else path
+        size = int(item[5]) if len(item) > 5 else 0
+        rows.append(f"{name}\t{status}\t{progress}\t{path}\t{thumbnail}\t{size}")
     data = make_utf8("|".join(rows))
     dll.EU_SetUploadFileItems(hwnd, element_id, bytes_arg(data), len(data))
 
 def set_upload_options(hwnd, element_id, multiple=True, auto_upload=False):
     dll.EU_SetUploadOptions(hwnd, element_id, 1 if multiple else 0, 1 if auto_upload else 0)
+
+def set_upload_style(hwnd, element_id, style_mode=5, show_file_list=True,
+                     show_tip=True, show_actions=True, drop_enabled=False):
+    dll.EU_SetUploadStyle(
+        hwnd, element_id, int(style_mode),
+        1 if show_file_list else 0,
+        1 if show_tip else 0,
+        1 if show_actions else 0,
+        1 if drop_enabled else 0,
+    )
+
+def get_upload_style(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(5)]
+    ok = dll.EU_GetUploadStyle(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = ["style_mode", "show_file_list", "show_tip", "show_actions", "drop_enabled"]
+    result = {key: value.value for key, value in zip(keys, values)}
+    for key in keys[1:]:
+        result[key] = bool(result[key])
+    return result
+
+def set_upload_texts(hwnd, element_id, title="", tip="", trigger="", submit=""):
+    title_data = make_utf8(title)
+    tip_data = make_utf8(tip)
+    trigger_data = make_utf8(trigger)
+    submit_data = make_utf8(submit)
+    dll.EU_SetUploadTexts(
+        hwnd, element_id,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(tip_data), len(tip_data),
+        bytes_arg(trigger_data), len(trigger_data),
+        bytes_arg(submit_data), len(submit_data),
+    )
+
+def set_upload_constraints(hwnd, element_id, limit=0, max_size_kb=0, accept=""):
+    accept_data = make_utf8(accept)
+    dll.EU_SetUploadConstraints(
+        hwnd, element_id, int(limit), int(max_size_kb),
+        bytes_arg(accept_data), len(accept_data),
+    )
+
+def get_upload_constraints(hwnd, element_id):
+    limit = ctypes.c_int()
+    max_size_kb = ctypes.c_int()
+    needed = dll.EU_GetUploadConstraints(
+        hwnd, element_id, ctypes.byref(limit), ctypes.byref(max_size_kb), None, 0
+    )
+    accept = ""
+    if needed > 0:
+        buf = (ctypes.c_ubyte * (needed + 1))()
+        dll.EU_GetUploadConstraints(
+            hwnd, element_id, ctypes.byref(limit), ctypes.byref(max_size_kb), buf, needed + 1
+        )
+        accept = bytes(buf[:needed]).decode("utf-8", errors="replace")
+    return {"limit": limit.value, "max_size_kb": max_size_kb.value, "accept": accept}
+
+def set_upload_preview_open(hwnd, element_id, index=0, open=True):
+    dll.EU_SetUploadPreviewOpen(hwnd, element_id, int(index), 1 if open else 0)
+
+def get_upload_preview_state(hwnd, element_id):
+    index = ctypes.c_int()
+    open_value = ctypes.c_int()
+    ok = dll.EU_GetUploadPreviewState(hwnd, element_id, ctypes.byref(index), ctypes.byref(open_value))
+    return {"file_index": index.value, "open": bool(open_value.value)} if ok else None
 
 def set_upload_selected_files(hwnd, element_id, files):
     data = make_utf8("|".join(files))

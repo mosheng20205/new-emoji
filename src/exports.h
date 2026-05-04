@@ -1379,6 +1379,25 @@ void __stdcall EU_SetUploadFiles(HWND hwnd, int element_id,
 void __stdcall EU_SetUploadFileItems(HWND hwnd, int element_id,
                                      const unsigned char* files_bytes, int files_len);
 void __stdcall EU_SetUploadOptions(HWND hwnd, int element_id, int multiple, int auto_upload);
+void __stdcall EU_SetUploadStyle(HWND hwnd, int element_id, int style_mode,
+                                 int show_file_list, int show_tip, int show_actions,
+                                 int drop_enabled);
+int  __stdcall EU_GetUploadStyle(HWND hwnd, int element_id, int* style_mode,
+                                 int* show_file_list, int* show_tip,
+                                 int* show_actions, int* drop_enabled);
+void __stdcall EU_SetUploadTexts(HWND hwnd, int element_id,
+                                 const unsigned char* title_bytes, int title_len,
+                                 const unsigned char* tip_bytes, int tip_len,
+                                 const unsigned char* trigger_bytes, int trigger_len,
+                                 const unsigned char* submit_bytes, int submit_len);
+void __stdcall EU_SetUploadConstraints(HWND hwnd, int element_id, int limit,
+                                       int max_size_kb,
+                                       const unsigned char* accept_bytes, int accept_len);
+int  __stdcall EU_GetUploadConstraints(HWND hwnd, int element_id, int* limit,
+                                       int* max_size_kb,
+                                       unsigned char* accept_buffer, int accept_buffer_size);
+void __stdcall EU_SetUploadPreviewOpen(HWND hwnd, int element_id, int file_index, int open);
+int  __stdcall EU_GetUploadPreviewState(HWND hwnd, int element_id, int* file_index, int* open);
 void __stdcall EU_SetUploadSelectedFiles(HWND hwnd, int element_id,
                                          const unsigned char* files_bytes, int files_len);
 void __stdcall EU_SetUploadFileStatus(HWND hwnd, int element_id,

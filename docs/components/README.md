@@ -106,7 +106,7 @@
 | `Tour` | 漫游引导 | `EU_CreateTour` | 已完成 | [漫游引导](./tour.md) |
 | `Image` | 图片 | `EU_CreateImage` | 已完成 | [图片](./image.md) |
 | `Carousel` | 轮播 | `EU_CreateCarousel` | 已完成 | [轮播](./carousel.md) |
-| `Upload` | 上传 | `EU_CreateUpload` | 已完成 | [上传](./upload.md) |
+| `Upload` | 上传 | `EU_CreateUpload` | 已完成，支持普通列表、头像、图片卡片、图片列表、拖拽、手动上传、系统文件选择和类型过滤 | [上传](./upload.md) |
 | `Scrollbar` | 滚动条 | `EU_CreateScrollbar` | 已完成 | [滚动条](./scrollbar.md) |
 
 ## 💬 反馈/浮层

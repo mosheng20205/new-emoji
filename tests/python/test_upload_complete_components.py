@@ -1,24 +1,36 @@
+import base64
 import ctypes
-from ctypes import wintypes
 import os
 import tempfile
 import time
+from ctypes import wintypes
 
 import test_new_emoji as ui
 
 
 g_hwnd = None
-g_upload_id = 0
-g_start_id = 0
-g_retry_id = 0
-g_clear_id = 0
 g_selected_text = ""
 g_action_events = []
+g_callbacks = []
+
+
+PNG_1X1 = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8"
+    "/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+)
+
+
+class DROPFILES(ctypes.Structure):
+    _fields_ = [
+        ("pFiles", wintypes.DWORD),
+        ("pt", wintypes.POINT),
+        ("fNC", wintypes.BOOL),
+        ("fWide", wintypes.BOOL),
+    ]
 
 
 @ui.CloseCallback
 def on_close(hwnd):
-    print("[关闭] 上传完整验证窗口正在关闭")
     ui.dll.EU_DestroyWindow(hwnd)
 
 
@@ -33,166 +45,218 @@ def on_select(element_id, data, length):
 @ui.ValueCallback
 def on_upload_action(element_id, action, index, value):
     g_action_events.append((action, index, value))
-    print(f"[上传动作回调] 元素={element_id} 动作={action} 索引={index} 值={value}")
+    print(f"[上传动作] 元素={element_id} 动作={action} 索引={index} 值={value}")
 
 
-@ui.ClickCallback
-def on_click(element_id):
-    if element_id == g_start_id:
-        ui.start_upload(g_hwnd, g_upload_id, -1)
-        print("[按钮] 开始上传：", ui.get_upload_full_state(g_hwnd, g_upload_id))
-    elif element_id == g_retry_id:
-        ui.retry_upload_file(g_hwnd, g_upload_id, 0)
-        print("[按钮] 重试首项：", ui.get_upload_full_state(g_hwnd, g_upload_id))
-    elif element_id == g_clear_id:
-        ui.clear_upload_files(g_hwnd, g_upload_id)
-        print("[按钮] 清空列表：", ui.get_upload_full_state(g_hwnd, g_upload_id))
+def keep_callbacks():
+    g_callbacks.extend([on_close, on_select, on_upload_action])
 
 
 def make_sample_files():
     folder = tempfile.mkdtemp(prefix="new_emoji_upload_")
-    names = ["发布说明.txt", "封面素材.png", "演示数据.csv"]
-    paths = []
-    for name in names:
-        path = os.path.join(folder, name)
-        with open(path, "w", encoding="utf-8") as f:
-            f.write(f"📤 上传组件验证文件：{name}\n")
-        paths.append(path)
-    return paths
+    png1 = os.path.join(folder, "封面图片.png")
+    png2 = os.path.join(folder, "头像素材.png")
+    txt = os.path.join(folder, "说明文档.txt")
+    big = os.path.join(folder, "超大图片.png")
+    with open(png1, "wb") as f:
+        f.write(base64.b64decode(PNG_1X1))
+    with open(png2, "wb") as f:
+        f.write(base64.b64decode(PNG_1X1))
+    with open(txt, "w", encoding="utf-8") as f:
+        f.write("📤 上传组件测试文件\n")
+    with open(big, "wb") as f:
+        f.write(base64.b64decode(PNG_1X1) + b"x" * 4096)
+    return folder, png1, png2, txt, big
 
 
-def pump_messages(user32, msg, duration):
-    start = time.time()
-    running = True
-    while running and time.time() - start < duration:
-        handled = False
+def pump_messages(duration=0.1):
+    msg = wintypes.MSG()
+    user32 = ctypes.windll.user32
+    end = time.time() + duration
+    while time.time() < end:
         while user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):
-            handled = True
-            if msg.message in (0x0012, 0x0002):
-                running = False
-                break
             user32.TranslateMessage(ctypes.byref(msg))
             user32.DispatchMessageW(ctypes.byref(msg))
-        if not handled:
-            time.sleep(0.01)
-    return running
+        time.sleep(0.01)
+
+
+def make_lparam(x, y):
+    return (int(y) << 16) | (int(x) & 0xFFFF)
+
+
+def client_size(hwnd):
+    rect = wintypes.RECT()
+    ctypes.windll.user32.GetClientRect(hwnd, ctypes.byref(rect))
+    return rect.right - rect.left, rect.bottom - rect.top
+
+
+def preview_close_point(hwnd):
+    w, h = client_size(hwnd)
+    margin_x = max(28.0, min(96.0, w * 0.06))
+    margin_y = max(34.0, min(96.0, h * 0.07))
+    panel_w = max(280.0, w - margin_x * 2.0)
+    panel_h = max(220.0, h - margin_y * 2.0)
+    if panel_w > w:
+        panel_w = w
+    if panel_h > h:
+        panel_h = h
+    panel_left = (w - panel_w) * 0.5
+    panel_top = (h - panel_h) * 0.5
+    panel_right = panel_left + panel_w
+    return int(panel_right - 28), int(panel_top + 24)
+
+
+def send_escape(hwnd):
+    send_message = ctypes.windll.user32.SendMessageW
+    send_message.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    send_message.restype = wintypes.LPARAM
+    send_message(hwnd, 0x0100, 0x1B, 0)
+    pump_messages(0.05)
+
+
+def send_left_click(hwnd, x, y):
+    send_message = ctypes.windll.user32.SendMessageW
+    send_message.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    send_message.restype = wintypes.LPARAM
+    lp = make_lparam(x, y)
+    send_message(hwnd, 0x0201, 1, lp)
+    send_message(hwnd, 0x0202, 0, lp)
+    pump_messages(0.05)
+
+
+def send_drop_files(hwnd, paths, x, y):
+    payload = ("\0".join(paths) + "\0\0").encode("utf-16le")
+    header_size = ctypes.sizeof(DROPFILES)
+    total_size = header_size + len(payload)
+    kernel32 = ctypes.windll.kernel32
+    kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
+    kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+    kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalLock.restype = ctypes.c_void_p
+    kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalUnlock.restype = wintypes.BOOL
+    handle = kernel32.GlobalAlloc(0x0042, total_size)
+    if not handle:
+        raise RuntimeError("创建拖拽内存失败")
+    ptr = kernel32.GlobalLock(handle)
+    if not ptr:
+        raise RuntimeError("锁定拖拽内存失败")
+    drop = DROPFILES()
+    drop.pFiles = header_size
+    drop.pt.x = int(x)
+    drop.pt.y = int(y)
+    drop.fNC = False
+    drop.fWide = True
+    ctypes.memmove(ptr, ctypes.byref(drop), header_size)
+    ctypes.memmove(ptr + header_size, payload, len(payload))
+    kernel32.GlobalUnlock(handle)
+
+    send_message = ctypes.windll.user32.SendMessageW
+    send_message.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    send_message.restype = wintypes.LPARAM
+    send_message(hwnd, 0x0233, handle, 0)
+    pump_messages(0.05)
+
+
+def assert_state(condition, message):
+    if not condition:
+        raise RuntimeError(message)
 
 
 def main():
-    global g_hwnd, g_upload_id, g_start_id, g_retry_id, g_clear_id
+    global g_hwnd
+    keep_callbacks()
+    folder, png1, png2, txt, big = make_sample_files()
 
-    sample_files = make_sample_files()
-    hwnd = ui.create_window("📤 上传完整组件验证", 220, 80, 1000, 680)
-    if not hwnd:
-        print("错误：窗口创建失败")
-        return
-
+    hwnd = ui.create_window("📤 上传组件完整验证", 180, 80, 1060, 720)
+    assert_state(hwnd, "窗口创建失败")
     g_hwnd = hwnd
     ui.dll.EU_SetWindowCloseCallback(hwnd, on_close)
-    content_id = ui.create_container(hwnd, 0, 0, 0, 960, 620)
+    root = ui.create_container(hwnd, 0, 0, 0, 1020, 660)
 
-    ui.create_text(hwnd, content_id, "📤 Upload 上传完整封装", 28, 24, 430, 38)
-    intro_id = ui.create_text(
-        hwnd,
-        content_id,
-        "验证真实文件选择入口、选择结果写入文件列表、选择/上传回调、重试/删除/清空和完整状态读回。",
-        28, 72, 860, 54,
-    )
-    ui.set_text_options(hwnd, intro_id, align=0, valign=0, wrap=True, ellipsis=False)
-
-    g_upload_id = ui.create_upload(
-        hwnd,
-        content_id,
-        "📤 点击可打开系统文件选择，也可由 API 写入待上传文件",
-        "支持多选、自动上传、状态更新、失败重试和结果读回",
+    upload_id = ui.create_upload(
+        hwnd, root,
+        "📤 点击或拖拽文件到此处上传",
+        "只能选择 PNG 图片，最多 2 个，单文件不超过 2KB",
         [],
-        46,
-        145,
-        760,
-        310,
+        32, 72, 760, 330,
     )
-    ui.set_upload_select_callback(hwnd, g_upload_id, on_select)
-    ui.set_upload_action_callback(hwnd, g_upload_id, on_upload_action)
-    ui.set_upload_options(hwnd, g_upload_id, multiple=True, auto_upload=False)
+    ui.set_upload_select_callback(hwnd, upload_id, on_select)
+    ui.set_upload_action_callback(hwnd, upload_id, on_upload_action)
 
-    g_start_id = ui.create_button(hwnd, content_id, "🚀", "开始上传", 46, 490, 130, 40)
-    g_retry_id = ui.create_button(hwnd, content_id, "🔁", "重试首项", 196, 490, 130, 40)
-    g_clear_id = ui.create_button(hwnd, content_id, "🧹", "清空列表", 346, 490, 130, 40)
-    for eid in (g_start_id, g_retry_id, g_clear_id):
-        ui.dll.EU_SetElementClickCallback(hwnd, eid, on_click)
-
-    status_id = ui.create_text(hwnd, content_id, "✅ 控制台会输出选择、上传、重试、删除、清空的状态。", 46, 550, 760, 34)
-    ui.set_text_options(hwnd, status_id, align=0, valign=0, wrap=False, ellipsis=False)
-
-    initial = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[初始状态] ", initial)
-    if not initial or initial["file_count"] != 0 or not initial["multiple"] or initial["auto_upload"]:
-        raise RuntimeError("上传组件初始状态读回失败")
-
-    ui.set_upload_selected_files(hwnd, g_upload_id, sample_files[:2])
-    selected = ui.get_upload_full_state(hwnd, g_upload_id)
-    selected_text = ui.get_upload_selected_files(hwnd, g_upload_id)
-    print("[选择写入] ", selected, selected_text)
-    if selected["file_count"] != 2 or selected["waiting_count"] != 2 or selected["last_action"] != 2:
-        raise RuntimeError("上传选择结果写入失败")
-    if sample_files[0] not in selected_text or "发布说明.txt" not in ui.get_upload_file_name(hwnd, g_upload_id, 0):
-        raise RuntimeError("上传文件名或完整路径读回失败")
-    if g_selected_text != selected_text:
-        raise RuntimeError("上传选择回调未返回 UTF-8 文件列表")
-
-    started = ui.start_upload(hwnd, g_upload_id, -1)
-    uploading = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[开始上传] ", started, uploading)
-    if started != 2 or uploading["uploading_count"] != 2 or uploading["upload_request_count"] != 2:
-        raise RuntimeError("上传开始动作失败")
-
-    ui.dll.EU_SetUploadFileStatus(hwnd, g_upload_id, 0, 1, 100)
-    ui.dll.EU_SetUploadFileStatus(hwnd, g_upload_id, 1, 3, 45)
-    mixed = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[状态更新] ", mixed)
-    if mixed["success_count"] != 1 or mixed["failed_count"] != 1:
-        raise RuntimeError("上传成功/失败状态读回失败")
-
-    ui.retry_upload_file(hwnd, g_upload_id, 1)
-    retried = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[失败重试] ", retried)
-    if retried["retry_count"] != 1 or retried["uploading_count"] != 1:
-        raise RuntimeError("上传重试状态失败")
-
-    ui.remove_upload_file(hwnd, g_upload_id, 0)
-    removed = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[删除文件] ", removed)
-    if removed["file_count"] != 1 or removed["remove_count"] != 1:
-        raise RuntimeError("上传删除状态失败")
-
-    ui.set_upload_options(hwnd, g_upload_id, multiple=True, auto_upload=True)
-    ui.set_upload_selected_files(hwnd, g_upload_id, sample_files)
-    auto_state = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[自动上传选择] ", auto_state)
-    if not auto_state["auto_upload"] or auto_state["file_count"] != 3 or auto_state["uploading_count"] != 3:
-        raise RuntimeError("上传自动上传状态失败")
-    if auto_state["upload_request_count"] < 6 or auto_state["last_action"] != 3:
-        raise RuntimeError("上传自动上传回调/计数失败")
-
-    ui.clear_upload_files(hwnd, g_upload_id)
-    cleared = ui.get_upload_full_state(hwnd, g_upload_id)
-    print("[清空文件] ", cleared)
-    if cleared["file_count"] != 0 or cleared["last_action"] != 6:
-        raise RuntimeError("上传清空状态失败")
-    if not any(event[0] == 3 for event in g_action_events):
-        raise RuntimeError("上传动作回调未触发")
-
+    ui.set_upload_options(hwnd, upload_id, multiple=True, auto_upload=False)
+    ui.set_upload_style(hwnd, upload_id, style_mode=5, show_file_list=True,
+                        show_tip=True, show_actions=True, drop_enabled=True)
+    ui.set_upload_texts(
+        hwnd, upload_id,
+        "📤 拖拽或点击上传图片",
+        "支持系统文件选择、系统拖入、数量限制和类型过滤",
+        "📤 点击上传",
+        "🚀 上传到服务器",
+    )
+    ui.set_upload_constraints(hwnd, upload_id, limit=2, max_size_kb=2, accept=".png")
     ui.dll.EU_ShowWindow(hwnd, 1)
-    print("上传完整组件示例已显示。关闭窗口或等待 60 秒结束。")
+    pump_messages(0.1)
 
-    msg = wintypes.MSG()
-    user32 = ctypes.windll.user32
-    start = time.time()
-    running = True
-    while running and time.time() - start < 60:
-        running = pump_messages(user32, msg, 0.05)
+    style = ui.get_upload_style(hwnd, upload_id)
+    assert_state(style["style_mode"] == 5 and style["drop_enabled"], "上传样式读回失败")
+    constraints = ui.get_upload_constraints(hwnd, upload_id)
+    assert_state(constraints == {"limit": 2, "max_size_kb": 2, "accept": ".png"}, "上传限制读回失败")
 
-    print("上传完整组件示例结束。")
+    send_drop_files(hwnd, [png1], 50, 180)
+    dropped = ui.get_upload_full_state(hwnd, upload_id)
+    assert_state(dropped["file_count"] == 1 and any(event[0] == 12 for event in g_action_events), "系统拖入接收失败")
+
+    ui.set_upload_selected_files(hwnd, upload_id, [png1, png2])
+    selected = ui.get_upload_full_state(hwnd, upload_id)
+    assert_state(selected["file_count"] == 2 and selected["waiting_count"] == 2, "多文件选择写入失败")
+    assert_state(png1 in ui.get_upload_selected_files(hwnd, upload_id), "已选文件读回失败")
+
+    ui.start_upload(hwnd, upload_id, -1)
+    uploading = ui.get_upload_full_state(hwnd, upload_id)
+    assert_state(uploading["uploading_count"] == 2, "手动开始上传失败")
+    ui.dll.EU_SetUploadFileStatus(hwnd, upload_id, 0, 1, 100)
+    ui.dll.EU_SetUploadFileStatus(hwnd, upload_id, 1, 3, 45)
+    mixed = ui.get_upload_full_state(hwnd, upload_id)
+    assert_state(mixed["success_count"] == 1 and mixed["failed_count"] == 1, "状态更新失败")
+
+    ui.set_upload_preview_open(hwnd, upload_id, 0, True)
+    preview = ui.get_upload_preview_state(hwnd, upload_id)
+    assert_state(preview["open"] and preview["file_index"] == 0, "预览状态打开失败")
+    send_escape(hwnd)
+    assert_state(not ui.get_upload_preview_state(hwnd, upload_id)["open"], "ESC 关闭预览失败")
+    ui.set_upload_preview_open(hwnd, upload_id, 0, True)
+    close_x, close_y = preview_close_point(hwnd)
+    send_left_click(hwnd, close_x, close_y)
+    assert_state(not ui.get_upload_preview_state(hwnd, upload_id)["open"], "点击关闭按钮关闭预览失败")
+
+    ui.set_upload_selected_files(hwnd, upload_id, [png1, png2, txt])
+    assert_state(any(event[0] == 10 for event in g_action_events), "超出限制回调未触发")
+    ui.set_upload_selected_files(hwnd, upload_id, [txt])
+    assert_state(any(event[0] == 11 and event[2] == 1 for event in g_action_events), "类型过滤回调未触发")
+    ui.set_upload_selected_files(hwnd, upload_id, [big])
+    assert_state(any(event[0] == 11 and event[2] == 2 for event in g_action_events), "大小限制回调未触发")
+
+    ui.set_upload_options(hwnd, upload_id, multiple=False, auto_upload=False)
+    ui.set_upload_selected_files(hwnd, upload_id, [png1, png2])
+    assert_state(any(event[0] == 10 for event in g_action_events), "单文件模式限制未触发")
+
+    ui.set_upload_options(hwnd, upload_id, multiple=True, auto_upload=True)
+    ui.set_upload_selected_files(hwnd, upload_id, [png1])
+    auto_state = ui.get_upload_full_state(hwnd, upload_id)
+    assert_state(auto_state["auto_upload"] and auto_state["uploading_count"] == 1, "自动上传状态失败")
+
+    for mode in range(7):
+        x = 32 + (mode % 4) * 245
+        y = 430 + (mode // 4) * 112
+        eid = ui.create_upload(hwnd, root, f"📤 样式 {mode}", "中文提示 + emoji", [png1], x, y, 220, 90)
+        ui.set_upload_style(hwnd, eid, mode, True, True, True, mode == 5)
+        readback = ui.get_upload_style(hwnd, eid)
+        assert_state(readback["style_mode"] == mode, f"样式 {mode} 读回失败")
+
+    pump_messages(0.2)
+    print("✅ 上传组件样式、限制、预览和状态 API 验证通过")
+    ui.dll.EU_DestroyWindow(hwnd)
 
 
 if __name__ == "__main__":

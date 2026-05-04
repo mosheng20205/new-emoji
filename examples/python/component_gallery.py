@@ -4,8 +4,10 @@ new_emoji 82 component gallery.
 Run from the repository root:
     python examples/python/component_gallery.py
 """
+import base64
 import ctypes
 import os
+import tempfile
 import time
 from ctypes import wintypes
 
@@ -107,6 +109,31 @@ status_text_id = 0
 current_page_name = ""
 current_category_name = ""
 current_theme_mode = 1
+upload_sample_cache = None
+
+PNG_1X1 = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8"
+    "/x8AAwMCAO+/p9sAAAAASUVORK5CYII="
+)
+
+
+def upload_sample_files():
+    global upload_sample_cache
+    if upload_sample_cache:
+        return upload_sample_cache
+    folder = tempfile.mkdtemp(prefix="new_emoji_gallery_upload_")
+    files = []
+    for name in ("封面图片.png", "头像素材.png", "相册照片.png"):
+        path = os.path.join(folder, name)
+        with open(path, "wb") as f:
+            f.write(base64.b64decode(PNG_1X1))
+        files.append(path)
+    doc = os.path.join(folder, "上传说明.txt")
+    with open(doc, "w", encoding="utf-8") as f:
+        f.write("📤 上传组件示例文件\n")
+    files.append(doc)
+    upload_sample_cache = files
+    return files
 
 
 @ui.MessageBoxCallback
@@ -933,6 +960,46 @@ def showcase_pagination(hwnd, stage, w, h):
     ui.create_table(hwnd, table, ["组件", "分类", "状态"], [["Pagination", "反馈流程", "当前页 3"], ["Table", "数据展示", "可分页"], ["Search", "业务场景", "结果 128 条"]], True, True, 30, 70, min(w - 116, 760), 120)
 
 
+def showcase_upload(hwnd, stage, w, h):
+    img1, img2, img3, doc = upload_sample_files()
+
+    top = add_demo_panel(hwnd, stage, "📤 普通列表、多选和手动上传", 28, 30, w - 56, 250)
+    normal = ui.create_upload(hwnd, top, "📤 选择文件", "支持单选/多选、数量限制和类型过滤", [img1, doc], 30, 66, 500, 150)
+    ui.set_upload_style(hwnd, normal, 0, True, True, True, False)
+    ui.set_upload_options(hwnd, normal, multiple=True, auto_upload=False)
+    ui.set_upload_constraints(hwnd, normal, limit=3, max_size_kb=500, accept=".png,.txt")
+
+    manual = ui.create_upload(hwnd, top, "📤 手动上传", "先选择文件，再上传到服务器", [img1, img2], 560, 66, 520, 150)
+    ui.set_upload_style(hwnd, manual, 6, True, True, True, False)
+    ui.set_upload_options(hwnd, manual, multiple=True, auto_upload=False)
+    ui.set_upload_texts(hwnd, manual, "📤 手动上传", "文件会等待宿主程序处理", "选取文件", "🚀 上传到服务器")
+    ui.set_upload_file_items(hwnd, manual, [
+        ("封面图片.png", 0, 0, img1, img1, 0),
+        ("头像素材.png", 3, 45, img2, img2, 0),
+    ])
+
+    media = add_demo_panel(hwnd, stage, "🖼️ 头像、图片列表和图片卡片", 28, 310, w - 56, 330)
+    avatar = ui.create_upload(hwnd, media, "😀 上传头像", "只显示一个头像入口", [img2], 30, 70, 190, 210)
+    ui.set_upload_style(hwnd, avatar, 1, False, False, True, False)
+    ui.set_upload_options(hwnd, avatar, multiple=False, auto_upload=False)
+    ui.set_upload_constraints(hwnd, avatar, limit=1, max_size_kb=2048, accept="image/*")
+
+    picture = ui.create_upload(hwnd, media, "🖼️ 图片列表", "缩略图 + 文件状态", [img1, img2], 250, 70, 370, 210)
+    ui.set_upload_style(hwnd, picture, 4, True, True, True, False)
+    ui.set_upload_constraints(hwnd, picture, limit=4, max_size_kb=2048, accept=".png,.jpg")
+
+    cards = ui.create_upload(hwnd, media, "🧩 图片卡片", "预览 / 下载 / 删除动作", [img1, img2, img3], 650, 70, 460, 210)
+    ui.set_upload_style(hwnd, cards, 3, True, True, True, False)
+    ui.set_upload_constraints(hwnd, cards, limit=6, max_size_kb=2048, accept="image/*")
+
+    drag = add_demo_panel(hwnd, stage, "🧲 系统拖拽上传", 28, 670, w - 56, 270)
+    drop = ui.create_upload(hwnd, drag, "🧲 将文件拖到此处，或点击选择", "支持从资源管理器拖入；这里只接收 PNG 图片，最多 3 个", [img1], 30, 66, 660, 160)
+    ui.set_upload_style(hwnd, drop, 5, True, True, True, True)
+    ui.set_upload_options(hwnd, drop, multiple=True, auto_upload=False)
+    ui.set_upload_constraints(hwnd, drop, limit=3, max_size_kb=2048, accept=".png")
+    add_text(hwnd, drag, "✅ 点击会打开系统文件选择框\n✅ 多选由上传选项控制\n✅ 文件类型过滤会同时作用于对话框、API 写入和系统拖入", 730, 78, 520, 116, TEXT)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -957,6 +1024,7 @@ SPECIAL_SHOWCASES = {
     "Tag": showcase_tag,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
+    "Upload": showcase_upload,
 }
 
 

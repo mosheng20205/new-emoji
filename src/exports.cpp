@@ -127,7 +127,7 @@ HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
     DWORD style = WS_POPUP | WS_CLIPCHILDREN;
 
     HWND hwnd = CreateWindowExW(
-        0, L"NewEmojiWindow", title.c_str(), style,
+        WS_EX_ACCEPTFILES, L"NewEmojiWindow", title.c_str(), style,
         x, y, sw, sh,
         nullptr, nullptr, g_module,
         (LPVOID)(UINT_PTR)titlebar_color);
@@ -618,8 +618,10 @@ static std::vector<UploadFileItem> parse_upload_file_items(const unsigned char* 
         UploadFileItem item;
         item.name = fields.empty() ? entry : fields[0];
         item.full_path = fields.size() >= 4 ? fields[3] : item.name;
+        item.thumbnail_path = fields.size() >= 5 ? fields[4] : item.full_path;
         item.status = fields.size() >= 2 ? _wtoi(fields[1].c_str()) : 1;
         item.progress = fields.size() >= 3 ? _wtoi(fields[2].c_str()) : (item.status == 2 ? 50 : 100);
+        item.size_bytes = fields.size() >= 6 ? _wtoi64(fields[5].c_str()) : 0;
         if (item.status < 0) item.status = 0;
         if (item.status > 3) item.status = 3;
         if (item.progress < 0) item.progress = 0;
@@ -8085,6 +8087,72 @@ void __stdcall EU_SetUploadOptions(HWND hwnd, int element_id, int multiple, int 
     if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
         el->set_options(multiple, auto_upload);
     }
+}
+
+void __stdcall EU_SetUploadStyle(HWND hwnd, int element_id, int style_mode,
+                                 int show_file_list, int show_tip, int show_actions,
+                                 int drop_enabled) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_style(style_mode, show_file_list, show_tip, show_actions, drop_enabled);
+    }
+}
+
+int __stdcall EU_GetUploadStyle(HWND hwnd, int element_id, int* style_mode,
+                                int* show_file_list, int* show_tip,
+                                int* show_actions, int* drop_enabled) {
+    auto* el = find_typed_element<Upload>(hwnd, element_id);
+    if (!el) return 0;
+    if (style_mode) *style_mode = el->style_mode;
+    if (show_file_list) *show_file_list = el->show_file_list;
+    if (show_tip) *show_tip = el->show_tip;
+    if (show_actions) *show_actions = el->show_actions;
+    if (drop_enabled) *drop_enabled = el->drop_enabled;
+    return 1;
+}
+
+void __stdcall EU_SetUploadTexts(HWND hwnd, int element_id,
+                                 const unsigned char* title_bytes, int title_len,
+                                 const unsigned char* tip_bytes, int tip_len,
+                                 const unsigned char* trigger_bytes, int trigger_len,
+                                 const unsigned char* submit_bytes, int submit_len) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_texts(utf8_to_wide(title_bytes, title_len),
+                      utf8_to_wide(tip_bytes, tip_len),
+                      utf8_to_wide(trigger_bytes, trigger_len),
+                      utf8_to_wide(submit_bytes, submit_len));
+    }
+}
+
+void __stdcall EU_SetUploadConstraints(HWND hwnd, int element_id, int limit,
+                                       int max_size_kb,
+                                       const unsigned char* accept_bytes, int accept_len) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_constraints(limit, max_size_kb, utf8_to_wide(accept_bytes, accept_len));
+    }
+}
+
+int __stdcall EU_GetUploadConstraints(HWND hwnd, int element_id, int* limit,
+                                      int* max_size_kb,
+                                      unsigned char* accept_buffer, int accept_buffer_size) {
+    auto* el = find_typed_element<Upload>(hwnd, element_id);
+    if (!el) return 0;
+    if (limit) *limit = el->limit;
+    if (max_size_kb) *max_size_kb = el->max_size_kb;
+    return copy_wide_as_utf8(el->accept_filter, accept_buffer, accept_buffer_size);
+}
+
+void __stdcall EU_SetUploadPreviewOpen(HWND hwnd, int element_id, int file_index, int open) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_preview_open(file_index, open != 0);
+    }
+}
+
+int __stdcall EU_GetUploadPreviewState(HWND hwnd, int element_id, int* file_index, int* open) {
+    auto* el = find_typed_element<Upload>(hwnd, element_id);
+    if (!el) return 0;
+    if (file_index) *file_index = el->preview_index;
+    if (open) *open = el->preview_open;
+    return 1;
 }
 
 void __stdcall EU_SetUploadSelectedFiles(HWND hwnd, int element_id,

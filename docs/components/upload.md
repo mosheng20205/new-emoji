@@ -2,9 +2,21 @@
 
 ## 简介
 
-`Upload` 是 new_emoji 的 媒体/工具 组件。当前状态：**已完成**。
+`Upload` 是纯 D2D 上传入口组件，已补齐 Element Upload 常见样式：普通列表、头像上传、图片卡片、自定义图片卡片、图片列表、拖拽上传和手动上传。
 
-已补真实文件选择入口、选择结果写入文件列表、多选/自动上传选项、选择回调、上传动作回调、开始上传、重试、删除、清空、文件名/路径/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证
+组件负责系统文件选择、单选/多选、文件类型过滤、数量/大小限制、系统拖入、缩略图展示、状态读回和动作回调。真实上传网络请求由宿主程序处理。
+
+## 样式模式
+
+| 值 | 样式 | 说明 |
+|---|---|---|
+| `0` | 普通列表 | 按钮 + 提示 + 文件列表 |
+| `1` | 头像上传 | 方形头像入口，适合单文件图片 |
+| `2` | 图片卡片 | 图片墙 + 加号卡片 |
+| `3` | 自定义图片卡片 | 图片墙 + 预览/下载/删除操作层 |
+| `4` | 图片列表 | 缩略图 + 文件名 + 状态 |
+| `5` | 拖拽上传 | 虚线拖拽区域，支持系统拖入 |
+| `6` | 手动上传 | 选择文件 + 上传到服务器按钮 |
 
 ## 创建
 
@@ -12,60 +24,67 @@
 |---|---|
 | 创建导出 | `EU_CreateUpload` |
 | 组件分类 | 媒体/工具 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_upload` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
+| Python helper | `create_upload` |
+| 易语言命令 | `创建上传` |
 
 ## 相关 API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateUpload` | 当前组件相关导出 |
-| `EU_GetUploadFileCount` | 当前组件相关导出 |
-| `EU_GetUploadFileName` | 当前组件相关导出 |
-| `EU_GetUploadFileStatus` | 当前组件相关导出 |
-| `EU_GetUploadFullState` | 当前组件相关导出 |
-| `EU_GetUploadSelectedFiles` | 当前组件相关导出 |
-| `EU_SetUploadActionCallback` | 当前组件相关导出 |
-| `EU_SetUploadFileItems` | 当前组件相关导出 |
-| `EU_SetUploadFileStatus` | 当前组件相关导出 |
-| `EU_SetUploadFiles` | 当前组件相关导出 |
-| `EU_SetUploadOptions` | 当前组件相关导出 |
-| `EU_SetUploadSelectCallback` | 当前组件相关导出 |
-| `EU_SetUploadSelectedFiles` | 当前组件相关导出 |
+| `EU_SetUploadOptions` | 设置单选/多选、是否自动上传 |
+| `EU_SetUploadStyle` / `EU_GetUploadStyle` | 设置/读取样式模式、文件列表、提示、操作按钮和系统拖拽开关 |
+| `EU_SetUploadTexts` | 设置标题、提示、选择按钮、手动上传按钮文案 |
+| `EU_SetUploadConstraints` / `EU_GetUploadConstraints` | 设置/读取数量限制、大小限制和类型过滤 |
+| `EU_OpenUploadFileDialog` | 打开系统文件选择框，支持单选/多选和文件类型过滤 |
+| `EU_SetUploadSelectedFiles` | 由宿主写入已选文件，走同一套限制校验 |
+| `EU_SetUploadFileItems` | 写入带状态的文件列表 |
+| `EU_SetUploadFileStatus` | 更新单个文件状态和进度 |
+| `EU_StartUpload` | 将等待/失败文件置为上传中，并触发上传动作回调 |
+| `EU_SetUploadPreviewOpen` / `EU_GetUploadPreviewState` | 打开/读取图片预览层 |
+| `EU_RemoveUploadFile` / `EU_RetryUploadFile` / `EU_ClearUploadFiles` | 删除、重试、清空 |
+| `EU_GetUploadFileCount` / `EU_GetUploadFileStatus` / `EU_GetUploadFileName` / `EU_GetUploadSelectedFiles` / `EU_GetUploadFullState` | 状态读回 |
+| `EU_SetUploadSelectCallback` / `EU_SetUploadActionCallback` | 选择回调和动作回调 |
 
-## Python 使用
+## 类型过滤
+
+`accept` 支持 `.jpg,.png`、`jpg|png`、`image/*`、`image/jpeg`、`image/png` 等写法。过滤同时作用于：
+
+- 系统文件选择对话框
+- `EU_SetUploadSelectedFiles`
+- Windows 系统文件拖入
+
+## 动作码
+
+| 动作码 | 含义 |
+|---|---|
+| `1` | 打开系统选择框 |
+| `2` | 已选择文件 |
+| `3` | 开始上传 |
+| `4` | 重试 |
+| `5` | 删除 |
+| `6` | 清空 |
+| `7` | 状态更新 |
+| `8` | 预览 |
+| `9` | 下载 |
+| `10` | 超出数量限制 |
+| `11` | 校验失败，`value=1` 表示类型不匹配，`value=2` 表示大小超限 |
+| `12` | 系统拖入 |
+
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
-
-hwnd = ui.create_window("✨ 上传 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Upload`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+upload = ui.create_upload(
+    hwnd, root,
+    "📤 点击或拖拽文件到此处上传",
+    "只能上传 JPG/PNG 图片，且不超过 500KB",
+    [],
+    40, 80, 520, 240,
+)
+ui.set_upload_options(hwnd, upload, multiple=True, auto_upload=False)
+ui.set_upload_style(hwnd, upload, style_mode=5, drop_enabled=True)
+ui.set_upload_constraints(hwnd, upload, limit=3, max_size_kb=500, accept=".jpg,.png")
 ```
-
-## 易语言调用
-
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_upload_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Upload` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+优先运行 `tests/python/test_upload_complete_components.py`。该测试覆盖样式 Set/Get、单选/多选限制、类型过滤、大小限制、预览、状态更新和手动上传动作。
