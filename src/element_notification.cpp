@@ -1,5 +1,6 @@
 #include "element_notification.h"
 #include "emoji_fallback.h"
+#include "element_rich_text.h"
 #include "render_context.h"
 #include "theme.h"
 #include <algorithm>
@@ -86,6 +87,19 @@ void Notification::set_options(int type, bool closeable, int duration) {
     invalidate();
 }
 
+void Notification::set_placement(int value, int offset_value) {
+    placement = (std::max)(0, (std::min)(3, value));
+    offset = (std::max)(0, offset_value);
+    last_action = 1;
+    invalidate();
+}
+
+void Notification::set_rich(bool value) {
+    rich = value;
+    last_action = 1;
+    invalidate();
+}
+
 void Notification::set_stack(int index, int gap) {
     if (!m_has_base_y) {
         m_base_y = logical_bounds.y;
@@ -101,7 +115,7 @@ void Notification::set_stack(int index, int gap) {
 }
 
 void Notification::close_notification(int action) {
-    if (!closable && action != 5) return;
+    if (!closable && action != 5 && action != 4) return;
     if (closed) return;
     closed = true;
     visible = false;
@@ -198,12 +212,13 @@ void Notification::paint(RenderContext& ctx) {
     float right = closable ? (float)close_rect().x - 8.0f : (float)bounds.w - style.pad_right;
     float text_w = right - text_x;
     if (text_w < 1.0f) text_w = 1.0f;
-    draw_text(ctx, text.empty() ? L"Notification" : text, style, title_fg,
-              text_x, (float)style.pad_top, text_w, style.font_size * 1.5f, 1.05f);
-    draw_text(ctx, body, style, body_fg,
-              text_x, (float)style.pad_top + style.font_size * 1.75f,
-              text_w, (float)bounds.h - style.pad_top - style.pad_bottom - style.font_size * 1.75f,
-              0.95f, DWRITE_TEXT_ALIGNMENT_LEADING, DWRITE_WORD_WRAPPING_WRAP);
+    draw_rich_text(ctx, text.empty() ? L"Notification" : text, style, title_fg,
+                   text_x, (float)style.pad_top, text_w, style.font_size * 1.5f, rich,
+                   DWRITE_TEXT_ALIGNMENT_LEADING, false, 1.05f);
+    draw_rich_text(ctx, body, style, body_fg,
+                   text_x, (float)style.pad_top + style.font_size * 1.75f,
+                   text_w, (float)bounds.h - style.pad_top - style.pad_bottom - style.font_size * 1.75f,
+                   rich, DWRITE_TEXT_ALIGNMENT_LEADING, true, 0.95f);
     if (duration_ms > 0) {
         float bar_w = (float)bounds.w - 12.0f;
         float progress = 1.0f - (float)timer_elapsed_ms / (float)(std::max)(1, duration_ms);

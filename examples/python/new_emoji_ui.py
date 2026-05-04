@@ -28,6 +28,8 @@ ClickCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int)
 ResizeCallback = ctypes.WINFUNCTYPE(None, wintypes.HWND, ctypes.c_int, ctypes.c_int)
 CloseCallback  = ctypes.WINFUNCTYPE(None, wintypes.HWND)
 MessageBoxCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int)
+MessageBoxExCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 TextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 ValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
 
@@ -594,6 +596,20 @@ dll.EU_CreateNotification.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateNotification.restype = ctypes.c_int
 
+dll.EU_ShowMessage.argtypes = [wintypes.HWND,
+                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                               ctypes.c_int, ctypes.c_int]
+dll.EU_ShowMessage.restype = ctypes.c_int
+
+dll.EU_ShowNotification.argtypes = [wintypes.HWND,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int]
+dll.EU_ShowNotification.restype = ctypes.c_int
+
 dll.EU_CreateLoading.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                  ctypes.c_int,
@@ -653,6 +669,28 @@ dll.EU_ShowConfirmBox.argtypes = [wintypes.HWND,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   MessageBoxCallback]
 dll.EU_ShowConfirmBox.restype = ctypes.c_int
+
+dll.EU_ShowMessageBoxEx.argtypes = [wintypes.HWND,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, MessageBoxExCallback]
+dll.EU_ShowMessageBoxEx.restype = ctypes.c_int
+
+dll.EU_ShowPromptBox.argtypes = [wintypes.HWND,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 MessageBoxExCallback]
+dll.EU_ShowPromptBox.restype = ctypes.c_int
 
 dll.EU_SetElementColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32]
 dll.EU_SetElementText.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2241,10 +2279,53 @@ dll.EU_GetResultFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetResultFullState.restype = ctypes.c_int
 dll.EU_SetResultActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_SetMessageBoxBeforeClose.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMessageBoxInput.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetMessageBoxInput.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetMessageBoxInput.restype = ctypes.c_int
+dll.EU_GetMessageBoxFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMessageBoxFullState.restype = ctypes.c_int
+dll.EU_SetMessageText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMessageOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                     ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMessageClosed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetMessageOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                     ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMessageOptions.restype = ctypes.c_int
+dll.EU_GetMessageFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMessageFullState.restype = ctypes.c_int
+dll.EU_TriggerMessageClose.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetMessageCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetNotificationBody.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetNotificationType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetNotificationClosable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetNotificationPlacement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetNotificationRichMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetNotificationOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetNotificationClosed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2267,6 +2348,16 @@ dll.EU_GetNotificationFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetNotificationFullState.restype = ctypes.c_int
+dll.EU_GetNotificationFullStateEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetNotificationFullStateEx.restype = ctypes.c_int
 dll.EU_SetNotificationCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetLoadingActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetLoadingOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -7435,6 +7526,99 @@ def create_notification(hwnd, parent_id, title="通知", body="",
         notify_type, 1 if closable else 0, x, y, w, h
     )
 
+def show_message(hwnd, text, message_type=0, closable=False, center=False,
+                 rich=False, duration_ms=3000, offset=20):
+    data = make_utf8(text)
+    return dll.EU_ShowMessage(
+        hwnd, bytes_arg(data), len(data),
+        message_type, 1 if closable else 0, 1 if center else 0, 1 if rich else 0,
+        duration_ms, offset
+    )
+
+def message_success(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=1, **kwargs)
+
+def message_warning(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=2, **kwargs)
+
+def message_error(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=3, **kwargs)
+
+def message_info(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=0, **kwargs)
+
+def set_message_text(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetMessageText(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_message_options(hwnd, element_id, message_type=0, closable=False,
+                        center=False, rich=False, duration_ms=3000, offset=20):
+    dll.EU_SetMessageOptions(
+        hwnd, element_id, message_type, 1 if closable else 0,
+        1 if center else 0, 1 if rich else 0, duration_ms, offset
+    )
+
+def set_message_closed(hwnd, element_id, closed=True):
+    dll.EU_SetMessageClosed(hwnd, element_id, 1 if closed else 0)
+
+def get_message_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(7)]
+    ok = dll.EU_GetMessageOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    return tuple(v.value for v in values) if ok else None
+
+def get_message_full_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(15)]
+    ok = dll.EU_GetMessageFullState(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = [
+        "message_type", "closable", "center", "rich", "duration_ms", "closed",
+        "close_hover", "close_down", "close_count", "last_action",
+        "timer_elapsed_ms", "timer_running", "stack_index", "stack_gap", "offset",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
+def trigger_message_close(hwnd, element_id):
+    dll.EU_TriggerMessageClose(hwnd, element_id)
+
+def set_message_close_callback(hwnd, element_id, callback):
+    dll.EU_SetMessageCloseCallback(hwnd, element_id, callback)
+
+def _placement_value(position):
+    if isinstance(position, int):
+        return position
+    return {
+        "top-right": 0,
+        "bottom-right": 1,
+        "bottom-left": 2,
+        "top-left": 3,
+    }.get(str(position), 0)
+
+def show_notification(hwnd, title="通知", message="", notify_type=0, closable=True,
+                      duration_ms=4500, position="top-right", offset=20,
+                      rich=False, w=330, h=96):
+    title_data = make_utf8(title)
+    body_data = make_utf8(message)
+    return dll.EU_ShowNotification(
+        hwnd,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(body_data), len(body_data),
+        notify_type, 1 if closable else 0, duration_ms,
+        _placement_value(position), offset, 1 if rich else 0, w, h
+    )
+
+def notify_success(hwnd, title="成功", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=1, **kwargs)
+
+def notify_warning(hwnd, title="警告", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=2, **kwargs)
+
+def notify_error(hwnd, title="错误", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=3, **kwargs)
+
+def notify_info(hwnd, title="消息", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=0, **kwargs)
+
 def get_notification_options(hwnd, element_id):
     notify_type = ctypes.c_int()
     closable = ctypes.c_int()
@@ -7456,6 +7640,12 @@ def set_notification_type(hwnd, element_id, notify_type):
 
 def set_notification_closable(hwnd, element_id, closable=True):
     dll.EU_SetNotificationClosable(hwnd, element_id, 1 if closable else 0)
+
+def set_notification_placement(hwnd, element_id, position="top-right", offset=20):
+    dll.EU_SetNotificationPlacement(hwnd, element_id, _placement_value(position), offset)
+
+def set_notification_rich_mode(hwnd, element_id, rich=True):
+    dll.EU_SetNotificationRichMode(hwnd, element_id, 1 if rich else 0)
 
 def set_notification_options(hwnd, element_id, notify_type=0, closable=True, duration_ms=0):
     dll.EU_SetNotificationOptions(hwnd, element_id, notify_type, 1 if closable else 0, duration_ms)
@@ -7489,6 +7679,22 @@ def get_notification_full_state(hwnd, element_id):
         "notify_type", "closable", "duration_ms", "closed",
         "close_hover", "close_down", "close_count", "last_action",
         "timer_elapsed_ms", "timer_running", "stack_index", "stack_gap",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
+def get_notification_full_state_ex(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(15)]
+    ok = dll.EU_GetNotificationFullStateEx(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "notify_type", "closable", "duration_ms", "closed",
+        "close_hover", "close_down", "close_count", "last_action",
+        "timer_elapsed_ms", "timer_running", "stack_index", "stack_gap",
+        "placement", "offset", "rich",
     ]
     return {key: value.value for key, value in zip(keys, values)}
 
@@ -7985,6 +8191,101 @@ def show_confirmbox(hwnd, title="纭", text="", confirm="纭畾", cance
 
 # 鈹€鈹€ Callbacks 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
+def show_alert_box(hwnd, title="提示", text="", confirm="确定",
+                   box_type=0, center=False, rich=False, callback=None):
+    return show_msgbox(hwnd, title, text, confirm, "", box_type,
+                       False, center, rich, False, callback)
+
+def show_confirm_box(hwnd, title="提示", text="", confirm="确定", cancel="取消",
+                     box_type=0, center=False, rich=False,
+                     distinguish_cancel_and_close=False, callback=None):
+    return show_msgbox(hwnd, title, text, confirm, cancel, box_type,
+                       True, center, rich, distinguish_cancel_and_close, callback)
+
+def show_msgbox(hwnd, title="消息", text="", confirm="确定", cancel="取消",
+                box_type=0, show_cancel=True, center=False, rich=False,
+                distinguish_cancel_and_close=False, callback=None):
+    title_data = make_utf8(title)
+    text_data = make_utf8(text)
+    confirm_data = make_utf8(confirm)
+    cancel_data = make_utf8(cancel)
+    cb = callback or on_messagebox_ex_result
+    return dll.EU_ShowMessageBoxEx(
+        hwnd,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(text_data), len(text_data),
+        bytes_arg(confirm_data), len(confirm_data),
+        bytes_arg(cancel_data), len(cancel_data),
+        box_type, 1 if show_cancel else 0, 1 if center else 0, 1 if rich else 0,
+        1 if distinguish_cancel_and_close else 0,
+        cb
+    )
+
+def show_prompt_box(hwnd, title="提示", text="", placeholder="请输入内容", value="",
+                    pattern="", error="输入内容格式不正确",
+                    confirm="确定", cancel="取消", box_type=0, center=False,
+                    rich=False, distinguish_cancel_and_close=False, callback=None):
+    title_data = make_utf8(title)
+    text_data = make_utf8(text)
+    placeholder_data = make_utf8(placeholder)
+    value_data = make_utf8(value)
+    pattern_data = make_utf8(pattern)
+    error_data = make_utf8(error)
+    confirm_data = make_utf8(confirm)
+    cancel_data = make_utf8(cancel)
+    cb = callback or on_messagebox_ex_result
+    return dll.EU_ShowPromptBox(
+        hwnd,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(text_data), len(text_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(pattern_data), len(pattern_data),
+        bytes_arg(error_data), len(error_data),
+        bytes_arg(confirm_data), len(confirm_data),
+        bytes_arg(cancel_data), len(cancel_data),
+        box_type, 1 if center else 0, 1 if rich else 0,
+        1 if distinguish_cancel_and_close else 0,
+        cb
+    )
+
+def set_messagebox_before_close(hwnd, element_id, delay_ms=0, loading_text="执行中..."):
+    data = make_utf8(loading_text)
+    dll.EU_SetMessageBoxBeforeClose(hwnd, element_id, delay_ms, bytes_arg(data), len(data))
+
+def set_messagebox_input(hwnd, element_id, value="", placeholder="", pattern="", error=""):
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    pattern_data = make_utf8(pattern)
+    error_data = make_utf8(error)
+    dll.EU_SetMessageBoxInput(
+        hwnd, element_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        bytes_arg(pattern_data), len(pattern_data),
+        bytes_arg(error_data), len(error_data),
+    )
+
+def get_messagebox_input(hwnd, element_id):
+    needed = dll.EU_GetMessageBoxInput(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetMessageBoxInput(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_messagebox_full_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(10)]
+    ok = dll.EU_GetMessageBoxFullState(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = [
+        "box_type", "show_cancel", "center", "rich", "distinguish",
+        "prompt", "confirm_loading", "input_error_visible",
+        "last_action", "timer_elapsed_ms",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
 g_hwnd = None
 g_message_button_id = 0
 g_confirm_button_id = 0
@@ -8097,6 +8398,14 @@ def on_button_click(btn_id):
 def on_messagebox_result(messagebox_id, result):
     label = {1: "confirm", 0: "cancel", -1: "close"}.get(result, str(result))
     print(f"[MessageBox] #{messagebox_id} result: {label}")
+
+@MessageBoxExCallback
+def on_messagebox_ex_result(messagebox_id, action, value_ptr, value_len):
+    label = {1: "confirm", 0: "cancel", -1: "close"}.get(action, str(action))
+    value = ""
+    if value_ptr and value_len > 0:
+        value = ctypes.string_at(value_ptr, value_len).decode("utf-8", errors="replace")
+    print(f"[MessageBoxEx] #{messagebox_id} action={label} value={value}")
 
 # 鈹€鈹€ Test 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 

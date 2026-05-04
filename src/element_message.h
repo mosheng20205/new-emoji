@@ -1,26 +1,24 @@
 #pragma once
 #include "element_base.h"
 
-class Notification : public Element {
+class Message : public Element {
 public:
-    std::wstring body;
-    int notify_type = 0;
-    bool closable = true;
+    int message_type = 0;
+    bool closable = false;
     bool closed = false;
+    bool center = false;
     bool rich = false;
-    int duration_ms = 0;
+    int duration_ms = 3000;
     int timer_elapsed_ms = 0;
     int close_count = 0;
     int last_action = 0; // 0 none, 1 set, 2 mouse, 3 keyboard, 4 trigger, 5 timer
     int stack_index = 0;
     int stack_gap = 12;
-    int placement = 0; // 0 top-right, 1 bottom-right, 2 bottom-left, 3 top-left
     int offset = 20;
     ElementValueCallback close_cb = nullptr;
 
-    ~Notification() override;
-
-    const wchar_t* type_name() const override { return L"Notification"; }
+    ~Message() override;
+    const wchar_t* type_name() const override { return L"Message"; }
     void paint(RenderContext& ctx) override;
     void on_mouse_move(int x, int y) override;
     void on_mouse_leave() override;
@@ -28,15 +26,11 @@ public:
     void on_mouse_up(int x, int y, MouseButton btn) override;
     void on_key_down(int vk, int mods) override;
 
-    void set_body(const std::wstring& value);
-    void set_type(int value);
-    void set_closable(bool value);
+    void set_text(const std::wstring& value);
+    void set_options(int type, bool closeable, bool centered, bool rich_text, int duration, int top_offset);
     void set_closed(bool value);
-    void set_options(int type, bool closeable, int duration);
     void set_stack(int index, int gap);
-    void set_placement(int value, int offset_value);
-    void set_rich(bool value);
-    void close_notification(int action);
+    void close_message(int action);
     void reset_timer();
     void tick(int elapsed_ms);
     bool close_hover() const { return m_close_hover; }

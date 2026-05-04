@@ -12,6 +12,7 @@ extern HMODULE g_module;
 #include "element_button.h"
 #include "element_editbox.h"
 #include "element_infobox.h"
+#include "element_message.h"
 #include "element_messagebox.h"
 #include "element_text.h"
 #include "element_link.h"
@@ -2926,6 +2927,128 @@ int __stdcall EU_CreateNotification(HWND hwnd, int parent_id,
     return raw->id;
 }
 
+static Rect logical_client_rect(WindowState* st) {
+    RECT rc{};
+    if (!st || !st->hwnd) return { 0, 0, 800, 600 };
+    GetClientRect(st->hwnd, &rc);
+    float scale = st->dpi_scale > 0.0f ? st->dpi_scale : 1.0f;
+    return { 0, 0, (int)std::lround((rc.right - rc.left) / scale),
+             (int)std::lround((rc.bottom - rc.top) / scale) };
+}
+
+template <typename T>
+static int visible_service_count(Element* root) {
+    if (!root) return 0;
+    int count = 0;
+    for (auto& ch : root->children) {
+        if (ch && ch->visible && dynamic_cast<T*>(ch.get())) ++count;
+    }
+    return count;
+}
+
+int __stdcall EU_ShowMessage(HWND hwnd,
+                             const unsigned char* text_bytes, int text_len,
+                             int message_type, int closable, int center, int rich,
+                             int duration_ms, int offset) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Rect client = logical_client_rect(st);
+    int w = (std::min)(420, (std::max)(260, client.w - 48));
+    int h = 46;
+    int gap = 12;
+    int index = visible_service_count<Message>(st->element_tree->root());
+    int x = (client.w - w) / 2;
+    int y = (std::max)(0, offset) + index * (h + gap);
+
+    auto el = std::make_unique<Message>();
+    el->set_logical_bounds({ x, y, w, h });
+    el->set_text(utf8_to_wide(text_bytes, text_len));
+    el->set_options(message_type, closable != 0, center != 0, rich != 0, duration_ms, offset);
+    el->stack_index = index;
+    el->stack_gap = gap;
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 6.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 16;
+    logical_style.pad_right = 12;
+    logical_style.pad_top = 8;
+    logical_style.pad_bottom = 8;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+static Rect notification_service_rect(WindowState* st, int placement, int offset, int w, int h, int index, int gap) {
+    Rect client = logical_client_rect(st);
+    if (w <= 0) w = 330;
+    if (h <= 0) h = 96;
+    int off = (std::max)(0, offset);
+    bool left = placement == 2 || placement == 3;
+    bool bottom = placement == 1 || placement == 2;
+    int x = left ? off : client.w - w - off;
+    int y = bottom ? client.h - h - off - index * (h + gap) : off + index * (h + gap);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    return { x, y, w, h };
+}
+
+static int visible_notification_count(Element* root, int placement) {
+    if (!root) return 0;
+    int count = 0;
+    for (auto& ch : root->children) {
+        auto* n = ch ? dynamic_cast<Notification*>(ch.get()) : nullptr;
+        if (n && n->visible && !n->closed && n->placement == placement) ++count;
+    }
+    return count;
+}
+
+int __stdcall EU_ShowNotification(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* body_bytes, int body_len,
+                                  int notify_type, int closable, int duration_ms,
+                                  int placement, int offset, int rich, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    int gap = 14;
+    int normalized_placement = placement >= 0 && placement <= 3 ? placement : 0;
+    int index = visible_notification_count(st->element_tree->root(), normalized_placement);
+    Rect r = notification_service_rect(st, normalized_placement, offset, w, h, index, gap);
+
+    auto el = std::make_unique<Notification>();
+    el->set_logical_bounds(r);
+    el->text = utf8_to_wide(title_bytes, title_len);
+    el->set_body(utf8_to_wide(body_bytes, body_len));
+    el->set_options(notify_type, closable != 0, duration_ms < 0 ? 4500 : duration_ms);
+    el->set_placement(normalized_placement, offset);
+    el->set_rich(rich != 0);
+    el->stack_index = index;
+    el->stack_gap = gap;
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 6.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 18;
+    logical_style.pad_top = 14;
+    logical_style.pad_right = 14;
+    logical_style.pad_bottom = 14;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
 int __stdcall EU_CreateLoading(HWND hwnd, int parent_id,
                                const unsigned char* text_bytes, int text_len,
                                int active,
@@ -3196,6 +3319,106 @@ int __stdcall EU_ShowConfirmBox(HWND hwnd,
                                 MessageBoxResultCallback cb) {
     return create_message_box(hwnd, title_bytes, title_len, text_bytes, text_len,
                               confirm_bytes, confirm_len, cancel_bytes, cancel_len, true, cb);
+}
+
+static int create_message_box_ex(HWND hwnd,
+                                 const unsigned char* title_bytes, int title_len,
+                                 const unsigned char* text_bytes, int text_len,
+                                 const unsigned char* confirm_bytes, int confirm_len,
+                                 const unsigned char* cancel_bytes, int cancel_len,
+                                 int box_type, int show_cancel, int center, int rich,
+                                 int distinguish_cancel_and_close,
+                                 MessageBoxExCallback cb) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    auto box = std::make_unique<MessageBoxElement>();
+    box->title = utf8_or_default(title_bytes, title_len, L"提示");
+    box->text = utf8_to_wide(text_bytes, text_len);
+    box->confirm_text = utf8_or_default(confirm_bytes, confirm_len, L"确定");
+    box->cancel_text = utf8_or_default(cancel_bytes, cancel_len, L"取消");
+    box->show_cancel = show_cancel != 0;
+    box->result_ex_cb = cb;
+    box->set_options(box_type, center != 0, rich != 0, distinguish_cancel_and_close != 0);
+
+    ElementStyle logical_style = box->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 8.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 20;
+    logical_style.pad_right = 20;
+    logical_style.pad_top = 18;
+    logical_style.pad_bottom = 20;
+    box->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(box));
+    st->element_tree->layout();
+    st->element_tree->set_focus(raw);
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_ShowMessageBoxEx(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* text_bytes, int text_len,
+                                  const unsigned char* confirm_bytes, int confirm_len,
+                                  const unsigned char* cancel_bytes, int cancel_len,
+                                  int box_type, int show_cancel, int center, int rich,
+                                  int distinguish_cancel_and_close,
+                                  MessageBoxExCallback cb) {
+    return create_message_box_ex(hwnd, title_bytes, title_len, text_bytes, text_len,
+                                 confirm_bytes, confirm_len, cancel_bytes, cancel_len,
+                                 box_type, show_cancel, center, rich,
+                                 distinguish_cancel_and_close, cb);
+}
+
+int __stdcall EU_ShowPromptBox(HWND hwnd,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* text_bytes, int text_len,
+                               const unsigned char* placeholder_bytes, int placeholder_len,
+                               const unsigned char* value_bytes, int value_len,
+                               const unsigned char* pattern_bytes, int pattern_len,
+                               const unsigned char* error_bytes, int error_len,
+                               const unsigned char* confirm_bytes, int confirm_len,
+                               const unsigned char* cancel_bytes, int cancel_len,
+                               int box_type, int center, int rich,
+                               int distinguish_cancel_and_close,
+                               MessageBoxExCallback cb) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    auto box = std::make_unique<MessageBoxElement>();
+    box->title = utf8_or_default(title_bytes, title_len, L"提示");
+    box->text = utf8_to_wide(text_bytes, text_len);
+    box->confirm_text = utf8_or_default(confirm_bytes, confirm_len, L"确定");
+    box->cancel_text = utf8_or_default(cancel_bytes, cancel_len, L"取消");
+    box->show_cancel = true;
+    box->result_ex_cb = cb;
+    box->set_options(box_type, center != 0, rich != 0, distinguish_cancel_and_close != 0);
+    box->set_input(utf8_to_wide(value_bytes, value_len),
+                   utf8_or_default(placeholder_bytes, placeholder_len, L"请输入内容"),
+                   utf8_to_wide(pattern_bytes, pattern_len),
+                   utf8_or_default(error_bytes, error_len, L"输入内容格式不正确"));
+
+    ElementStyle logical_style = box->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 8.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 20;
+    logical_style.pad_right = 20;
+    logical_style.pad_top = 18;
+    logical_style.pad_bottom = 20;
+    box->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(box));
+    st->element_tree->layout();
+    st->element_tree->set_focus(raw);
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
 }
 
 // ── Element properties ───────────────────────────────────────────────
@@ -8965,6 +9188,128 @@ void __stdcall EU_SetResultActionCallback(HWND hwnd, int element_id, ElementValu
     }
 }
 
+void __stdcall EU_SetMessageBoxBeforeClose(HWND hwnd, int element_id,
+                                           int delay_ms,
+                                           const unsigned char* loading_bytes, int loading_len) {
+    if (auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id)) {
+        el->set_before_close(delay_ms, utf8_to_wide(loading_bytes, loading_len));
+    }
+}
+
+void __stdcall EU_SetMessageBoxInput(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len,
+                                     const unsigned char* placeholder_bytes, int placeholder_len,
+                                     const unsigned char* pattern_bytes, int pattern_len,
+                                     const unsigned char* error_bytes, int error_len) {
+    if (auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id)) {
+        el->set_input(utf8_to_wide(value_bytes, value_len),
+                      utf8_to_wide(placeholder_bytes, placeholder_len),
+                      utf8_to_wide(pattern_bytes, pattern_len),
+                      utf8_to_wide(error_bytes, error_len));
+    }
+}
+
+int __stdcall EU_GetMessageBoxInput(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->input_value, buffer, buffer_size);
+}
+
+int __stdcall EU_GetMessageBoxFullState(HWND hwnd, int element_id,
+                                        int* box_type, int* show_cancel, int* center,
+                                        int* rich, int* distinguish, int* prompt,
+                                        int* confirm_loading, int* input_error_visible,
+                                        int* last_action, int* timer_elapsed_ms) {
+    auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id);
+    if (!el) return 0;
+    if (box_type) *box_type = el->box_type;
+    if (show_cancel) *show_cancel = el->show_cancel ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (rich) *rich = el->rich ? 1 : 0;
+    if (distinguish) *distinguish = el->distinguish_cancel_and_close ? 1 : 0;
+    if (prompt) *prompt = el->prompt ? 1 : 0;
+    if (confirm_loading) *confirm_loading = el->confirm_loading ? 1 : 0;
+    if (input_error_visible) *input_error_visible = el->input_error_visible ? 1 : 0;
+    if (last_action) *last_action = el->last_action;
+    if (timer_elapsed_ms) *timer_elapsed_ms = el->timer_elapsed_ms;
+    return 1;
+}
+
+void __stdcall EU_SetMessageText(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->set_text(utf8_to_wide(bytes, len));
+    }
+}
+
+void __stdcall EU_SetMessageOptions(HWND hwnd, int element_id, int message_type,
+                                    int closable, int center, int rich,
+                                    int duration_ms, int offset) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->set_options(message_type, closable != 0, center != 0, rich != 0, duration_ms, offset);
+    }
+}
+
+void __stdcall EU_SetMessageClosed(HWND hwnd, int element_id, int closed) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->set_closed(closed != 0);
+    }
+}
+
+int __stdcall EU_GetMessageOptions(HWND hwnd, int element_id, int* message_type,
+                                   int* closable, int* center, int* rich,
+                                   int* duration_ms, int* closed, int* offset) {
+    auto* el = find_typed_element<Message>(hwnd, element_id);
+    if (!el) return 0;
+    if (message_type) *message_type = el->message_type;
+    if (closable) *closable = el->closable ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (rich) *rich = el->rich ? 1 : 0;
+    if (duration_ms) *duration_ms = el->duration_ms;
+    if (closed) *closed = el->closed ? 1 : 0;
+    if (offset) *offset = el->offset;
+    return 1;
+}
+
+int __stdcall EU_GetMessageFullState(HWND hwnd, int element_id, int* message_type,
+                                     int* closable, int* center, int* rich,
+                                     int* duration_ms, int* closed,
+                                     int* close_hover, int* close_down,
+                                     int* close_count, int* last_action,
+                                     int* timer_elapsed_ms, int* timer_running,
+                                     int* stack_index, int* stack_gap, int* offset) {
+    auto* el = find_typed_element<Message>(hwnd, element_id);
+    if (!el) return 0;
+    if (message_type) *message_type = el->message_type;
+    if (closable) *closable = el->closable ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (rich) *rich = el->rich ? 1 : 0;
+    if (duration_ms) *duration_ms = el->duration_ms;
+    if (closed) *closed = el->closed ? 1 : 0;
+    if (close_hover) *close_hover = el->close_hover() ? 1 : 0;
+    if (close_down) *close_down = el->close_down() ? 1 : 0;
+    if (close_count) *close_count = el->close_count;
+    if (last_action) *last_action = el->last_action;
+    if (timer_elapsed_ms) *timer_elapsed_ms = el->timer_elapsed_ms;
+    if (timer_running) *timer_running = el->timer_running() ? 1 : 0;
+    if (stack_index) *stack_index = el->stack_index;
+    if (stack_gap) *stack_gap = el->stack_gap;
+    if (offset) *offset = el->offset;
+    return 1;
+}
+
+void __stdcall EU_TriggerMessageClose(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->close_message(4);
+    }
+}
+
+void __stdcall EU_SetMessageCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->close_cb = cb;
+    }
+}
+
 void __stdcall EU_SetNotificationBody(HWND hwnd, int element_id,
                                       const unsigned char* body_bytes, int body_len) {
     if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
@@ -8981,6 +9326,18 @@ void __stdcall EU_SetNotificationType(HWND hwnd, int element_id, int notify_type
 void __stdcall EU_SetNotificationClosable(HWND hwnd, int element_id, int closable) {
     if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
         el->set_closable(closable != 0);
+    }
+}
+
+void __stdcall EU_SetNotificationPlacement(HWND hwnd, int element_id, int placement, int offset) {
+    if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
+        el->set_placement(placement, offset);
+    }
+}
+
+void __stdcall EU_SetNotificationRichMode(HWND hwnd, int element_id, int rich) {
+    if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
+        el->set_rich(rich != 0);
     }
 }
 
@@ -9054,6 +9411,25 @@ int __stdcall EU_GetNotificationFullState(HWND hwnd, int element_id,
     if (timer_running) *timer_running = el->timer_running() ? 1 : 0;
     if (stack_index) *stack_index = el->stack_index;
     if (stack_gap) *stack_gap = el->stack_gap;
+    return 1;
+}
+
+int __stdcall EU_GetNotificationFullStateEx(HWND hwnd, int element_id,
+                                            int* notify_type, int* closable,
+                                            int* duration_ms, int* closed,
+                                            int* close_hover, int* close_down,
+                                            int* close_count, int* last_action,
+                                            int* timer_elapsed_ms, int* timer_running,
+                                            int* stack_index, int* stack_gap,
+                                            int* placement, int* offset, int* rich) {
+    auto* el = find_typed_element<Notification>(hwnd, element_id);
+    if (!el) return 0;
+    EU_GetNotificationFullState(hwnd, element_id, notify_type, closable, duration_ms, closed,
+                                close_hover, close_down, close_count, last_action,
+                                timer_elapsed_ms, timer_running, stack_index, stack_gap);
+    if (placement) *placement = el->placement;
+    if (offset) *offset = el->offset;
+    if (rich) *rich = el->rich ? 1 : 0;
     return 1;
 }
 

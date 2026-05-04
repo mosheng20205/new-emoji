@@ -4,13 +4,14 @@
 
 `Notification` 是 new_emoji 的 反馈/浮层 组件。当前状态：**已完成**。
 
-已补真实自动关闭定时器、堆叠布局、倒计时进度条、鼠标/键盘/程序/定时器关闭、关闭回调、文本/完整状态读回、Python 封装、易语言 DLL 命令文档和独立中文 emoji 验证
+已补嵌入式与服务式通知，支持默认自动关闭、`duration=0` 不自动关闭、`success` / `warning` / `error` / `info` 四类型、四角位置、`offset`、隐藏关闭按钮、轻量 HTML 富文本、堆叠、关闭回调、文本/完整状态读回、Python 封装、易语言 DLL 命令文档和独立中文 emoji 验证。
 
 ## 创建
 
 | 项目 | 值 |
 |---|---|
 | 创建导出 | `EU_CreateNotification` |
+| 服务式导出 | `EU_ShowNotification` |
 | 组件分类 | 反馈/浮层 |
 | Python helper | `examples/python/new_emoji_ui.py` 中的 `create_notification` 或同类 helper |
 | 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
@@ -20,8 +21,10 @@
 | API | 说明 |
 |---|---|
 | `EU_CreateNotification` | 当前组件相关导出 |
+| `EU_ShowNotification` | 显示服务式通知 |
 | `EU_GetNotificationClosed` | 当前组件相关导出 |
 | `EU_GetNotificationFullState` | 当前组件相关导出 |
+| `EU_GetNotificationFullStateEx` | 读取包含 position / offset / rich_mode 的扩展完整状态 |
 | `EU_GetNotificationOptions` | 当前组件相关导出 |
 | `EU_GetNotificationText` | 当前组件相关导出 |
 | `EU_SetNotificationBody` | 当前组件相关导出 |
@@ -29,6 +32,8 @@
 | `EU_SetNotificationCloseCallback` | 当前组件相关导出 |
 | `EU_SetNotificationClosed` | 当前组件相关导出 |
 | `EU_SetNotificationOptions` | 当前组件相关导出 |
+| `EU_SetNotificationPlacement` | 设置四角位置和偏移 |
+| `EU_SetNotificationRichMode` | 设置轻量 HTML 富文本模式 |
 | `EU_SetNotificationStack` | 当前组件相关导出 |
 | `EU_SetNotificationType` | 当前组件相关导出 |
 | `EU_TriggerNotificationClose` | 当前组件相关导出 |

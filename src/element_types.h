@@ -53,3 +53,5 @@ typedef void (__stdcall *WindowResizeCallback)(HWND hwnd, int width, int height)
 typedef void (__stdcall *WindowCloseCallback)(HWND hwnd);
 typedef void (__stdcall *WindowDestroyCallback)(HWND hwnd);
 typedef void (__stdcall *MessageBoxResultCallback)(int messagebox_id, int result);
+typedef void (__stdcall *MessageBoxExCallback)(int messagebox_id, int action,
+                                               const unsigned char* value_utf8, int value_len);

@@ -95,8 +95,12 @@
 | `EU_CreateTooltip` | |
 | `EU_CreatePopover` | |
 | `EU_CreatePopconfirm` | |
+| `EU_ShowMessage` | 显示服务式 Message 消息提示 |
+| `EU_ShowNotification` | 显示服务式 Notification 通知 |
 | `EU_ShowMessageBox` | |
 | `EU_ShowConfirmBox` | |
+| `EU_ShowMessageBoxEx` | 显示扩展 MessageBox |
+| `EU_ShowPromptBox` | 显示 Prompt 输入消息框 |
 | `EU_SetElementText` | |
 | `EU_GetElementText` | |
 | `EU_SetElementBounds` | |
@@ -790,6 +794,17 @@
 | `EU_GetResultActionText` | |
 | `EU_GetResultFullState` | |
 | `EU_SetResultActionCallback` | |
+| `EU_SetMessageBoxBeforeClose` | 设置 MessageBox 确认按钮 loading 与延迟关闭 |
+| `EU_SetMessageBoxInput` | 设置 Prompt 输入值、占位和校验 |
+| `EU_GetMessageBoxInput` | 读取 Prompt 输入值 |
+| `EU_GetMessageBoxFullState` | 读取 MessageBox 完整状态 |
+| `EU_SetMessageText` | 更新 Message 文本 |
+| `EU_SetMessageOptions` | 设置 Message 类型、关闭、居中、富文本、持续时间和偏移 |
+| `EU_SetMessageClosed` | 设置 Message 关闭状态 |
+| `EU_GetMessageOptions` | 读取 Message 基础选项 |
+| `EU_GetMessageFullState` | 读取 Message 完整状态 |
+| `EU_TriggerMessageClose` | 程序触发 Message 关闭 |
+| `EU_SetMessageCloseCallback` | 设置 Message 关闭回调 |
 | `EU_SetNotificationBody` | |
 | `EU_SetNotificationType` | |
 | `EU_SetNotificationClosable` | |
@@ -797,10 +812,13 @@
 | `EU_SetNotificationClosed` | |
 | `EU_GetNotificationClosed` | |
 | `EU_GetNotificationOptions` | |
+| `EU_SetNotificationPlacement` | 设置 Notification 四角位置和偏移 |
+| `EU_SetNotificationRichMode` | 设置 Notification 轻量富文本模式 |
 | `EU_SetNotificationStack` | |
 | `EU_TriggerNotificationClose` | |
 | `EU_GetNotificationText` | |
 | `EU_GetNotificationFullState` | |
+| `EU_GetNotificationFullStateEx` | 读取 Notification 扩展完整状态 |
 | `EU_SetNotificationCloseCallback` | |
 | `EU_SetLoadingActive` | |
 | `EU_SetLoadingOptions` | |

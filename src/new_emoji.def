@@ -91,8 +91,12 @@ EXPORTS
     EU_CreateTooltip
     EU_CreatePopover
     EU_CreatePopconfirm
+    EU_ShowMessage
+    EU_ShowNotification
     EU_ShowMessageBox
     EU_ShowConfirmBox
+    EU_ShowMessageBoxEx
+    EU_ShowPromptBox
     EU_SetElementText
     EU_GetElementText
     EU_SetElementBounds
@@ -822,9 +826,22 @@ EXPORTS
     EU_GetResultActionText
     EU_GetResultFullState
     EU_SetResultActionCallback
+    EU_SetMessageBoxBeforeClose
+    EU_SetMessageBoxInput
+    EU_GetMessageBoxInput
+    EU_GetMessageBoxFullState
+    EU_SetMessageText
+    EU_SetMessageOptions
+    EU_SetMessageClosed
+    EU_GetMessageOptions
+    EU_GetMessageFullState
+    EU_TriggerMessageClose
+    EU_SetMessageCloseCallback
     EU_SetNotificationBody
     EU_SetNotificationType
     EU_SetNotificationClosable
+    EU_SetNotificationPlacement
+    EU_SetNotificationRichMode
     EU_SetNotificationOptions
     EU_SetNotificationClosed
     EU_GetNotificationClosed
@@ -833,6 +850,7 @@ EXPORTS
     EU_TriggerNotificationClose
     EU_GetNotificationText
     EU_GetNotificationFullState
+    EU_GetNotificationFullStateEx
     EU_SetNotificationCloseCallback
     EU_SetLoadingActive
     EU_SetLoadingOptions

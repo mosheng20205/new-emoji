@@ -11,6 +11,7 @@
 #include "element_titlebar.h"
 #include "element_editbox.h"
 #include "element_upload.h"
+#include "element_message.h"
 #include "element_messagebox.h"
 #include "element_carousel.h"
 #include "element_notification.h"
@@ -19,6 +20,7 @@
 #include "element_tooltip.h"
 #include "theme.h"
 #include "dpi_context.h"
+#include "utf8_helpers.h"
 #include <map>
 #include <vector>
 
@@ -29,6 +31,8 @@ static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
 extern std::map<UINT_PTR, Button*> g_button_timer_map;
 extern std::map<UINT_PTR, Carousel*> g_carousel_timer_map;
+extern std::map<UINT_PTR, Message*> g_message_timer_map;
+extern std::map<UINT_PTR, MessageBoxElement*> g_messagebox_timer_map;
 extern std::map<UINT_PTR, Notification*> g_notification_timer_map;
 extern std::map<UINT_PTR, Loading*> g_loading_timer_map;
 extern std::map<UINT_PTR, Drawer*> g_drawer_timer_map;
@@ -260,6 +264,26 @@ void register_window_class() {
         }
 
         // ── Hit test: resize cursor only; D2D title bar stays in client area ──
+        case WM_SETCURSOR: {
+            if (LOWORD(lp) == HTCLIENT && st && st->element_tree && st->element_tree->root()) {
+                POINT pt{};
+                if (GetCursorPos(&pt)) {
+                    ScreenToClient(hwnd, &pt);
+                    Element* hit = st->element_tree->root()->hit_test(pt.x, pt.y);
+                    if (auto* mb = dynamic_cast<MessageBoxElement*>(hit)) {
+                        int ox = 0;
+                        int oy = 0;
+                        mb->get_absolute_pos(ox, oy);
+                        if (mb->wants_text_cursor_at(pt.x - ox, pt.y - oy)) {
+                            SetCursor(LoadCursorW(nullptr, IDC_IBEAM));
+                            return TRUE;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
         case WM_NCHITTEST: {
             POINT pt = { GET_X_LPARAM(lp), GET_Y_LPARAM(lp) };
             ScreenToClient(hwnd, &pt);
@@ -374,6 +398,14 @@ void register_window_class() {
                 if (it->second) it->second->tick(50);
                 return 0;
             }
+            if (auto it = g_message_timer_map.find((UINT_PTR)wp); it != g_message_timer_map.end()) {
+                if (it->second) it->second->tick(50);
+                return 0;
+            }
+            if (auto it = g_messagebox_timer_map.find((UINT_PTR)wp); it != g_messagebox_timer_map.end()) {
+                if (it->second) it->second->tick(50);
+                return 0;
+            }
             if (auto it = g_loading_timer_map.find((UINT_PTR)wp); it != g_loading_timer_map.end()) {
                 if (it->second) it->second->tick(33);
                 return 0;
@@ -471,9 +503,16 @@ void register_window_class() {
                 Element* el = st->element_tree->find_by_id(messagebox_id);
                 if (auto* mb = dynamic_cast<MessageBoxElement*>(el)) {
                     MessageBoxResultCallback cb = mb->result_cb;
+                    MessageBoxExCallback ex_cb = mb->result_ex_cb;
+                    std::string value = wide_to_utf8(mb->input_value);
                     st->element_tree->remove_child(mb);
                     InvalidateRect(hwnd, nullptr, FALSE);
                     if (cb) cb(messagebox_id, result);
+                    if (ex_cb) {
+                        ex_cb(messagebox_id, result,
+                              reinterpret_cast<const unsigned char*>(value.data()),
+                              (int)value.size());
+                    }
                 }
             }
             return 0;

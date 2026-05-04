@@ -1,5 +1,5 @@
 """
-new_emoji 82 component gallery.
+new_emoji 84 component gallery.
 
 Run from the repository root:
     python examples/python/component_gallery.py
@@ -210,7 +210,7 @@ def show_component(hwnd, category_name, component_name):
             elif category == category_name:
                 ui.set_element_color(hwnd, button_id, colors["nav_item"], colors["muted"])
     if status_text_id:
-        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 82 个组件 · 左侧二级菜单切换演示")
+        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 84 个组件 · 左侧二级菜单切换演示")
         ui.set_element_color(hwnd, status_text_id, 0, colors["muted"])
 
 
@@ -1000,6 +1000,318 @@ def showcase_upload(hwnd, stage, w, h):
     add_text(hwnd, drag, "✅ 点击会打开系统文件选择框\n✅ 多选由上传选项控制\n✅ 文件类型过滤会同时作用于对话框、API 写入和系统拖入", 730, 78, 520, 116, TEXT)
 
 
+def showcase_message(hwnd, stage, w, h):
+    last_message = {"id": 0}
+    status_id = add_text(hwnd, stage, "💬 最近消息：点击任一按钮开始演示", 44, 28, w - 88, 26, MUTED)
+
+    @ui.ValueCallback
+    def on_message_close(element_id, close_count, message_type, action):
+        action_text = {
+            2: "手动点击关闭",
+            3: "键盘关闭",
+            4: "程序触发关闭",
+            5: "到时自动关闭",
+        }.get(action, "状态更新")
+        type_text = {0: "信息", 1: "成功", 2: "警告", 3: "错误"}.get(message_type, "消息")
+        ui.set_element_text(hwnd, status_id, f"💬 最近关闭：#{element_id} · {type_text} · {action_text} · 第 {close_count} 次")
+
+    close_cb = keep_callback(on_message_close)
+
+    def remember(message_id):
+        if message_id > 0:
+            last_message["id"] = message_id
+            ui.set_message_close_callback(hwnd, message_id, close_cb)
+        return message_id
+
+    def show_info(_eid):
+        mid = ui.message_info(hwnd, "ℹ️ 信息提示：手动关闭，持续时间=0", closable=True, duration_ms=0, offset=34)
+        remember(mid)
+        ui.set_element_text(hwnd, status_id, "ℹ️ 已显示信息提示：不自动关闭，可点右侧关闭")
+
+    def show_success(_eid):
+        mid = ui.message_success(hwnd, "✅ 成功提示：2 秒后自动关闭", duration_ms=2000, offset=34)
+        remember(mid)
+        ui.set_element_text(hwnd, status_id, "✅ 已显示成功提示：2 秒后自动关闭")
+
+    def show_warning(_eid):
+        mid = ui.message_warning(hwnd, "⚠️ 居中警告：3 秒后自动关闭", center=True, duration_ms=3000, offset=34)
+        remember(mid)
+        ui.set_element_text(hwnd, status_id, "⚠️ 已显示居中警告：文本居中，3 秒后自动关闭")
+
+    def show_error(_eid):
+        mid = ui.message_error(
+            hwnd,
+            "❌ 富文本错误：<span style=\"color: teal\"><strong>VNode</strong></span> 高亮",
+            rich=True,
+            closable=True,
+            duration_ms=0,
+            offset=34,
+        )
+        remember(mid)
+        ui.set_element_text(hwnd, status_id, "❌ 已显示富文本错误：手动关闭")
+
+    def show_stack(_eid):
+        ids = [
+            ui.message_info(hwnd, "ℹ️ 堆叠 1：信息提示，4 秒自动关闭", duration_ms=4000, offset=34),
+            ui.message_success(hwnd, "✅ 堆叠 2：成功提示，3 秒自动关闭", duration_ms=3000, offset=34),
+            ui.message_warning(hwnd, "⚠️ 堆叠 3：警告提示，居中文本", center=True, duration_ms=3500, offset=34),
+            ui.message_error(hwnd, "❌ 堆叠 4：可关闭错误提示", closable=True, duration_ms=0, offset=34),
+        ]
+        for mid in ids:
+            remember(mid)
+        ui.set_element_text(hwnd, status_id, "📚 已演示多条消息堆叠：每条都有独立类型和关闭策略")
+
+    def close_last(_eid):
+        mid = last_message.get("id", 0)
+        if mid > 0:
+            ui.trigger_message_close(hwnd, mid)
+            ui.set_element_text(hwnd, status_id, f"🧹 已请求程序关闭最近消息：#{mid}")
+        else:
+            ui.set_element_text(hwnd, status_id, "🧹 还没有可关闭的消息")
+
+    type_panel = add_demo_panel(hwnd, stage, "🎨 四种类型与文本能力", 28, 68, w - 56, 210)
+    type_specs = [
+        ("ℹ️", "信息·手动关", show_info),
+        ("✅", "成功·2秒", show_success),
+        ("⚠️", "警告·居中3秒", show_warning),
+        ("❌", "错误·富文本", show_error),
+    ]
+    for i, (emoji, label, handler) in enumerate(type_specs):
+        btn = ui.create_button(hwnd, type_panel, emoji, label, 28 + i * 172, 70, 150, 36)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, type_panel, "每个按钮只触发一种消息，分别覆盖信息、成功、警告、错误、居中、富文本和可关闭。", 28, 128, w - 112, 28, MUTED)
+
+    duration_panel = add_demo_panel(hwnd, stage, "⏱ 自动关闭时间", 28, 310, w - 56, 190)
+    quick = ui.create_button(hwnd, duration_panel, "⚡", "1 秒自动关", 28, 70, 142, 36)
+    normal = ui.create_button(hwnd, duration_panel, "⏱️", "5 秒自动关", 188, 70, 142, 36)
+    persist = ui.create_button(hwnd, duration_panel, "📌", "不自动关闭", 348, 70, 142, 36)
+    set_click(hwnd, quick, lambda _eid: remember(ui.message_success(hwnd, "⚡ 1 秒自动关闭的成功消息", duration_ms=1000, offset=34)))
+    set_click(hwnd, normal, lambda _eid: remember(ui.message_info(hwnd, "⏱️ 5 秒自动关闭的信息消息", duration_ms=5000, offset=34)))
+    set_click(hwnd, persist, lambda _eid: remember(ui.message_warning(hwnd, "📌 持续时间=0，不自动关闭", closable=True, duration_ms=0, offset=34)))
+    add_text(hwnd, duration_panel, "关闭回调会在上方状态行显示“到时自动关闭 / 手动点击关闭 / 程序触发关闭”。", 28, 126, w - 112, 28, MUTED)
+
+    stack_panel = add_demo_panel(hwnd, stage, "📚 堆叠与程序关闭", 28, 532, w - 56, 190)
+    stack_btn = ui.create_button(hwnd, stack_panel, "📚", "一键堆叠四类", 28, 70, 150, 36)
+    close_btn = ui.create_button(hwnd, stack_panel, "🧹", "关闭最近消息", 196, 70, 150, 36)
+    set_click(hwnd, stack_btn, show_stack)
+    set_click(hwnd, close_btn, close_last)
+    add_text(hwnd, stack_panel, "堆叠按钮专门用于验证多条消息同时出现；普通类型按钮不会再一次弹出四条消息。", 28, 126, w - 112, 28, MUTED)
+
+
+def showcase_messagebox(hwnd, stage, w, h):
+    status_id = add_text(hwnd, stage, "🪟 最近消息框：点击任一按钮开始演示", 44, 28, w - 88, 26, MUTED)
+    email_pattern = r"[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?"
+
+    @ui.MessageBoxExCallback
+    def on_box_result(messagebox_id, action, value_ptr, value_len):
+        action_text = {1: "确认", 0: "取消", -1: "关闭"}.get(action, "状态")
+        value = ""
+        if value_ptr and value_len > 0:
+            value = ctypes.string_at(value_ptr, value_len).decode("utf-8", errors="replace")
+        suffix = f" · 输入：{value}" if value else ""
+        ui.set_element_text(hwnd, status_id, f"🪟 最近结果：#{messagebox_id} · {action_text}{suffix}")
+
+    box_cb = keep_callback(on_box_result)
+
+    def set_opened(label):
+        ui.set_element_text(hwnd, status_id, f"🪟 已打开：{label}")
+
+    def add_show_button(parent, emoji, label, x, y, bw, handler):
+        btn = ui.create_button(hwnd, parent, emoji, label, x, y, bw, 36)
+        set_click(hwnd, btn, handler)
+        return btn
+
+    def open_alert(_eid):
+        ui.show_alert_box(
+            hwnd,
+            "📌 提示消息",
+            "用于只告知结果的单确认消息框。",
+            confirm="知道了 ✅",
+            callback=box_cb,
+        )
+        set_opened("提示消息 · 单确认按钮")
+
+    def open_confirm(_eid):
+        ui.show_confirm_box(
+            hwnd,
+            "⚠️ 确认操作",
+            "检测到未保存内容，是否立即保存修改？",
+            confirm="保存 ✅",
+            cancel="放弃修改",
+            box_type=2,
+            distinguish_cancel_and_close=True,
+            callback=box_cb,
+        )
+        set_opened("确认操作 · 确认/取消/关闭")
+
+    def open_prompt(_eid):
+        ui.show_prompt_box(
+            hwnd,
+            "📧 输入邮箱",
+            "请输入邮箱地址",
+            placeholder="name@example.com",
+            pattern=email_pattern,
+            error="邮箱格式不正确",
+            confirm="提交 ✅",
+            cancel="取消",
+            callback=box_cb,
+        )
+        set_opened("输入消息框 · 占位文字与校验")
+
+    def open_msgbox(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "🚀 通用消息",
+            "通用消息框可以自定义按钮、类型、居中和富文本。",
+            confirm="执行 ✅",
+            cancel="取消",
+            show_cancel=True,
+            callback=box_cb,
+        )
+        set_opened("通用消息框 · 自定义按钮")
+
+    flow_panel = add_demo_panel(hwnd, stage, "⭐ 标准演示：四种入口", 28, 68, w - 56, 210)
+    add_show_button(flow_panel, "📌", "提示框", 28, 70, 142, open_alert)
+    add_show_button(flow_panel, "⚠️", "确认框", 196, 70, 142, open_confirm)
+    add_show_button(flow_panel, "📧", "输入框", 364, 70, 142, open_prompt)
+    add_show_button(flow_panel, "🚀", "通用框", 532, 70, 142, open_msgbox)
+    add_text(hwnd, flow_panel, "分别覆盖提示、确认、输入、通用四种消息框入口；每个按钮只打开对应的一种消息框。", 28, 128, w - 112, 28, MUTED)
+
+    def open_plain_type(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "ℹ️ 普通信息",
+            "普通信息样式适合轻量说明，默认不显示类型图标。",
+            confirm="明白了",
+            show_cancel=False,
+            callback=box_cb,
+        )
+        set_opened("普通信息样式")
+
+    def open_success_type(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "✅ 成功状态",
+            "操作已经完成，用户只需要确认即可。",
+            confirm="完成 ✅",
+            box_type=1,
+            show_cancel=False,
+            callback=box_cb,
+        )
+        set_opened("成功类型图标")
+
+    def open_warning_type(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "⚠️ 风险提醒",
+            "继续操作可能覆盖当前配置，请确认后再执行。",
+            confirm="继续",
+            cancel="返回",
+            box_type=2,
+            show_cancel=True,
+            callback=box_cb,
+        )
+        set_opened("警告类型图标")
+
+    def open_error_type(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "❌ 处理失败",
+            "保存失败，请检查网络后重试。",
+            confirm="重试",
+            cancel="稍后处理",
+            box_type=3,
+            show_cancel=True,
+            callback=box_cb,
+        )
+        set_opened("错误类型图标")
+
+    type_panel = add_demo_panel(hwnd, stage, "🎨 类型图标样式", 28, 310, w - 56, 210)
+    add_show_button(type_panel, "ℹ️", "普通信息", 28, 70, 142, open_plain_type)
+    add_show_button(type_panel, "✅", "成功", 196, 70, 142, open_success_type)
+    add_show_button(type_panel, "⚠️", "警告", 364, 70, 142, open_warning_type)
+    add_show_button(type_panel, "❌", "错误", 532, 70, 142, open_error_type)
+    add_text(hwnd, type_panel, "覆盖普通、成功、警告、错误四类视觉状态，并展示单按钮与双按钮组合。", 28, 128, w - 112, 28, MUTED)
+
+    def open_centered(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "🎯 居中展示",
+            "标题与正文居中，适合短句确认和结果反馈。",
+            confirm="好的",
+            box_type=1,
+            show_cancel=False,
+            center=True,
+            callback=box_cb,
+        )
+        set_opened("居中展示")
+
+    def open_rich(_eid):
+        ui.show_msgbox(
+            hwnd,
+            "🎨 富文本片段",
+            "正文支持 <strong>加粗</strong>、<i>斜体</i> 与 <span style=\"color: teal\">彩色文字</span>。",
+            confirm="查看完成",
+            cancel="关闭",
+            box_type=0,
+            show_cancel=True,
+            rich=True,
+            callback=box_cb,
+        )
+        set_opened("富文本片段")
+
+    def open_distinguish(_eid):
+        ui.show_confirm_box(
+            hwnd,
+            "🧭 区分关闭来源",
+            "点击取消返回 0，点击右上角关闭或按 Esc 返回 -1。",
+            confirm="确认",
+            cancel="取消",
+            box_type=2,
+            distinguish_cancel_and_close=True,
+            callback=box_cb,
+        )
+        set_opened("区分取消与关闭")
+
+    def open_validation(_eid):
+        ui.show_prompt_box(
+            hwnd,
+            "📧 校验失败示例",
+            "默认填入错误邮箱，点击确定会显示红色校验提示。",
+            placeholder="name@example.com",
+            value="错误邮箱",
+            pattern=email_pattern,
+            error="邮箱格式不正确",
+            confirm="验证 ✅",
+            cancel="取消",
+            box_type=3,
+            callback=box_cb,
+        )
+        set_opened("输入校验失败")
+
+    def open_loading(_eid):
+        mid = ui.show_msgbox(
+            hwnd,
+            "🚀 延迟执行",
+            "点击确认后按钮进入加载状态，延迟结束再关闭。",
+            confirm="开始执行 ✅",
+            cancel="取消",
+            box_type=0,
+            show_cancel=True,
+            callback=box_cb,
+        )
+        ui.set_messagebox_before_close(hwnd, mid, 1200, "执行中...")
+        set_opened("确认前加载")
+
+    scene_panel = add_demo_panel(hwnd, stage, "🎛️ 场景变化与交互状态", 28, 552, w - 56, 238)
+    add_show_button(scene_panel, "🎯", "居中", 28, 70, 142, open_centered)
+    add_show_button(scene_panel, "🎨", "富文本", 196, 70, 142, open_rich)
+    add_show_button(scene_panel, "🧭", "区分关闭", 364, 70, 142, open_distinguish)
+    add_show_button(scene_panel, "📧", "输入校验", 532, 70, 142, open_validation)
+    add_show_button(scene_panel, "🚀", "延迟关闭", 700, 70, 142, open_loading)
+    add_text(hwnd, scene_panel, "这里不再复用标准四按钮，而是单独展示居中、富文本、关闭来源区分、输入校验和关闭前延迟处理。", 28, 128, w - 112, 48, MUTED)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -1025,6 +1337,8 @@ SPECIAL_SHOWCASES = {
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
     "Upload": showcase_upload,
+    "Message": showcase_message,
+    "MessageBox": showcase_messagebox,
 }
 
 
@@ -1032,7 +1346,7 @@ COMPACT_SHOWCASE = {
     "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
     "Slider", "Input", "InputGroup", "Rate", "Tag", "Badge", "Progress", "Avatar", "Statistic",
     "StatusDot", "Backtop", "Segmented", "Scrollbar", "Breadcrumb", "Tabs", "Alert", "Loading",
-    "Tooltip", "Popover", "Popconfirm",
+    "Message", "MessageBox", "Tooltip", "Popover", "Popconfirm",
 }
 
 
@@ -1132,6 +1446,77 @@ def demo_drawer_button(hwnd, parent, x, y, w, h):
     set_click(hwnd, btn, lambda _eid: ui.create_drawer(hwnd, "📚 抽屉面板", "Drawer 可从侧边滑出展示详情。", 1, True, True, 320))
 
 
+def demo_message_service(hwnd, parent, x, y, w, h):
+    btn = ui.create_button(hwnd, parent, "💬", "弹出消息", x, y, 132, 36)
+    def action(_eid):
+        ui.message_info(hwnd, "ℹ️ 这是一条消息提示", closable=True, duration_ms=0, offset=26)
+        ui.message_success(hwnd, "✅ 恭喜你，这是一条成功消息", duration_ms=3200, offset=26)
+        ui.message_warning(hwnd, "⚠️ 警告哦，这是一条警告消息", center=True, duration_ms=3600, offset=26)
+        ui.message_error(
+            hwnd,
+            "❌ 内容可以是 <span style=\"color: teal\"><strong>VNode</strong></span>",
+            rich=True,
+            closable=True,
+            duration_ms=0,
+            offset=26,
+        )
+    set_click(hwnd, btn, action)
+    add_text(hwnd, parent, "自动堆叠、可关闭、居中和轻量富文本。", x, y + 48, min(w - 20, 280), 40, MUTED)
+
+
+def demo_messagebox_service(hwnd, parent, x, y, w, h):
+    alert_btn = ui.create_button(hwnd, parent, "📌", "提示", x, y, 82, 32)
+    confirm_btn = ui.create_button(hwnd, parent, "⚠️", "确认", x + 92, y, 96, 32)
+    prompt_btn = ui.create_button(hwnd, parent, "📧", "输入", x, y + 42, 92, 32)
+    loading_btn = ui.create_button(hwnd, parent, "🚀", "执行", x + 102, y + 42, 96, 32)
+    set_click(hwnd, alert_btn, lambda _eid: ui.show_alert_box(
+        hwnd, "📌 HTML 片段", "<strong>这是 <i>HTML</i> 片段</strong>",
+        confirm="确定 ✅", center=True, rich=True,
+    ))
+    set_click(hwnd, confirm_btn, lambda _eid: ui.show_confirm_box(
+        hwnd, "⚠️ 确认信息", "检测到未保存内容，是否保存修改？",
+        confirm="保存 ✅", cancel="放弃修改", box_type=2,
+        center=True, distinguish_cancel_and_close=True,
+    ))
+    set_click(hwnd, prompt_btn, lambda _eid: ui.show_prompt_box(
+        hwnd, "📧 输入邮箱", "请输入邮箱地址", placeholder="name@example.com",
+        pattern=r"[\w!#$%&'*+/=?^_`{|}~-]+(?:\.[\w!#$%&'*+/=?^_`{|}~-]+)*@(?:[\w](?:[\w-]*[\w])?\.)+[\w](?:[\w-]*[\w])?",
+        error="邮箱格式不正确",
+    ))
+    def loading_action(_eid):
+        mid = ui.show_msgbox(
+            hwnd, "🚀 消息", "内容可以是 <span style=\"color: teal\"><strong>VNode</strong></span>",
+            confirm="执行 ✅", cancel="取消", rich=True,
+        )
+        ui.set_messagebox_before_close(hwnd, mid, 1200, "执行中...")
+    set_click(hwnd, loading_btn, loading_action)
+
+
+def demo_notification_service(hwnd, parent, x, y, w, h):
+    pos_btn = ui.create_button(hwnd, parent, "🧭", "四角通知", x, y, 118, 32)
+    html_btn = ui.create_button(hwnd, parent, "🎨", "富文本", x + 128, y, 92, 32)
+    hide_btn = ui.create_button(hwnd, parent, "🚫", "隐藏关闭", x, y + 42, 118, 32)
+    set_click(hwnd, pos_btn, lambda _eid: (
+        ui.notify_success(hwnd, "✅ 右上角", "保存成功", position="top-right", offset=34),
+        ui.notify_warning(hwnd, "⚠️ 右下角", "请确认设置", position="bottom-right", offset=34),
+        ui.notify_info(hwnd, "ℹ️ 左下角", "同步完成", position="bottom-left", offset=34),
+        ui.notify_error(hwnd, "❌ 左上角", "处理失败", position="top-left", offset=34),
+    ))
+    set_click(hwnd, html_btn, lambda _eid: ui.notify_info(
+        hwnd, "🎨 HTML 片段",
+        "<strong>这是 <i>HTML</i></strong>，含 <span style=\"color: teal\">teal</span> 文本。",
+        rich=True,
+        duration_ms=0,
+    ))
+    set_click(hwnd, hide_btn, lambda _eid: ui.notify_success(
+        hwnd, "✅ 无关闭按钮", "这条通知不会自动关闭，也不显示关闭按钮。",
+        closable=False,
+        duration_ms=0,
+        position="top-right",
+        offset=90,
+    ))
+
+
 def demo_message_button(hwnd, parent, x, y, w, h, title, body):
     btn = ui.create_button(hwnd, parent, "✨", "点击查看", x, y, 130, 36)
     set_click(hwnd, btn, button_action(hwnd, title, body))
@@ -1212,12 +1597,12 @@ def build_pages(hwnd, root):
         ("Avatar", "😀", "头像", lambda h, p, x, y, w, hh: ui.create_avatar(h, p, "新", 0, x, y, 50, 50)),
         ("Empty", "📭", "空状态", lambda h, p, x, y, w, hh: ui.create_empty(h, p, "暂无数据 📭", "请稍后刷新", x, y, w, 76)),
         ("Skeleton", "💀", "骨架屏", lambda h, p, x, y, w, hh: ui.create_skeleton(h, p, 3, True, x, y, w, 76)),
-        ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "82"), ("许可", "MIT")], 2, True, x, y, w, 76)),
+        ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "84"), ("许可", "MIT")], 2, True, x, y, w, 76)),
         ("Table", "📊", "表格", lambda h, p, x, y, w, hh: ui.create_table(h, p, ["组件", "状态"], [["Button", "完成"], ["Tabs", "完成"]], True, True, x, y, w, 84)),
         ("Card", "🪪", "卡片", lambda h, p, x, y, w, hh: ui.create_card(h, p, "🪪 项目卡片", "用于组织信息块", 1, x, y, w, 84)),
         ("Collapse", "📂", "折叠面板", lambda h, p, x, y, w, hh: ui.create_collapse(h, p, [("基础组件", "按钮/文本/面板"), ("反馈组件", "弹窗/提示/通知")], 0, True, x, y, w, 84)),
         ("Timeline", "🕒", "时间线", lambda h, p, x, y, w, hh: ui.create_timeline(h, p, ["启动", "封装", "开源"], x, y, w, 84)),
-        ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "82", suffix="个", x=x, y=y, w=w, h=62)),
+        ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "84", suffix="个", x=x, y=y, w=w, h=62)),
         ("KPI Card", "🎯", "指标卡", lambda h, p, x, y, w, hh: ui.create_kpi_card(h, p, "完成率", "100%", "全部组件已封装", x=x, y=y, w=w, h=76)),
         ("Trend", "📈", "趋势", lambda h, p, x, y, w, hh: ui.create_trend(h, p, "星标增长", "+128", "12%", "本周", 1, x, y, w, 62)),
         ("StatusDot", "🟢", "状态点", lambda h, p, x, y, w, hh: ui.create_status_dot(h, p, "运行正常", "DLL 已加载", 1, x, y, w, 48)),
@@ -1246,7 +1631,9 @@ def build_pages(hwnd, root):
         ("Steps", "👣", "步骤条", lambda h, p, x, y, w, hh: ui.create_steps(h, p, ["创建", "构建", "发布"], 1, x, y, w, 70)),
         ("Alert", "🚨", "警告提示", lambda h, p, x, y, w, hh: ui.create_alert(h, p, "保存成功", "配置已经同步", 1, 0, True, x, y, w, 58)),
         ("Result", "✅", "结果页", lambda h, p, x, y, w, hh: ui.create_result(h, p, "操作成功", "所有组件加载完成", 1, x, y, w, 86)),
-        ("Notification", "🔔", "通知", lambda h, p, x, y, w, hh: ui.create_notification(h, p, "构建完成", "Release DLL 已生成", 1, True, x, y, w, 72)),
+        ("Message", "💬", "消息提示", demo_message_service),
+        ("MessageBox", "🪟", "消息框", demo_messagebox_service),
+        ("Notification", "🔔", "通知", demo_notification_service),
         ("Loading", "⏳", "加载", lambda h, p, x, y, w, hh: ui.create_loading(h, p, "加载组件中", True, x, y, w, 76)),
         ("Dialog", "💬", "对话框", demo_dialog_button),
         ("Drawer", "📚", "抽屉", demo_drawer_button),
@@ -1258,10 +1645,10 @@ def build_pages(hwnd, root):
 
 
 def main():
-    hwnd = ui.create_window("🧩 new_emoji 82 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
+    hwnd = ui.create_window("🧩 new_emoji 84 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
     root = ui.create_container(hwnd, 0, 0, 0, ROOT_W, ROOT_H)
     add_text(hwnd, root, "🧩 new_emoji 组件总览", 28, 18, 250, 34, TEXT)
-    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n82 个组件", 28, 54, 250, 72, MUTED)
+    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n84 个组件", 28, 54, 250, 72, MUTED)
     global status_text_id
     status_text_id = add_text(hwnd, root, "正在加载组件演示...", PAGE_X + 20, ROOT_H + 10, PAGE_W - 40, 28, MUTED)
 
@@ -1330,7 +1717,7 @@ def main():
     elif START_THEME.lower() in ("dark", "1", "深色"):
         apply_gallery_theme(hwnd, 1)
     ui.dll.EU_ShowWindow(hwnd, 1)
-    print(f"new_emoji 组件总览已启动：82 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
+    print(f"new_emoji 组件总览已启动：84 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
     if gallery_errors:
         print("以下组件卡片创建失败：")
         for name, error in gallery_errors:

@@ -116,6 +116,7 @@ def main():
 
     user32 = ctypes.windll.user32
     msg = wintypes.MSG()
+    ui.dll.EU_ShowWindow(hwnd, 1)
     pump_messages(user32, msg, 1.0)
     auto_state = ui.get_notification_full_state(hwnd, n3)
     print("[自动关闭后]", auto_state)
@@ -140,6 +141,79 @@ def main():
     if 5 not in actions or 4 not in actions or 3 not in actions:
         raise RuntimeError("通知关闭回调动作来源不完整")
 
+    service_top = ui.notify_success(
+        hwnd,
+        title="✅ 右上角",
+        message="服务式通知支持默认右上角位置。",
+        duration_ms=0,
+        position="top-right",
+        offset=36,
+    )
+    service_right_bottom = ui.notify_warning(
+        hwnd,
+        title="⚠️ 右下角",
+        message="右下角通知会从底部向上堆叠。",
+        duration_ms=0,
+        position="bottom-right",
+        offset=42,
+    )
+    service_left_bottom = ui.notify_info(
+        hwnd,
+        title="ℹ️ 左下角",
+        message="<strong>HTML</strong> 片段支持 <span style=\"color: teal\">teal</span> 文本。",
+        duration_ms=0,
+        position="bottom-left",
+        offset=48,
+        rich=True,
+    )
+    service_left_top = ui.notify_error(
+        hwnd,
+        title="❌ 左上角",
+        message="隐藏关闭按钮的通知仍可由程序关闭。",
+        closable=False,
+        duration_ms=0,
+        position="top-left",
+        offset=54,
+    )
+    service_auto = ui.show_notification(
+        hwnd,
+        title="⏱️ 自动关闭",
+        message="默认自动关闭行为可通过 duration 控制。",
+        notify_type=0,
+        duration_ms=350,
+        position="top-right",
+        offset=36,
+    )
+
+    for nid in (service_top, service_right_bottom, service_left_bottom, service_left_top, service_auto):
+        if nid <= 0:
+            raise RuntimeError("服务式通知创建失败")
+        ui.set_notification_close_callback(hwnd, nid, on_notification_close)
+
+    top_state = ui.get_notification_full_state_ex(hwnd, service_top)
+    right_bottom_state = ui.get_notification_full_state_ex(hwnd, service_right_bottom)
+    left_bottom_state = ui.get_notification_full_state_ex(hwnd, service_left_bottom)
+    left_top_state = ui.get_notification_full_state_ex(hwnd, service_left_top)
+    auto_service_initial = ui.get_notification_full_state_ex(hwnd, service_auto)
+    if top_state["placement"] != 0 or top_state["offset"] != 36:
+        raise RuntimeError(f"服务式通知右上角状态失败: {top_state}")
+    if right_bottom_state["placement"] != 1 or left_bottom_state["placement"] != 2:
+        raise RuntimeError("服务式通知底部位置状态失败")
+    if left_bottom_state["rich"] != 1 or left_top_state["placement"] != 3 or left_top_state["closable"] != 0:
+        raise RuntimeError("服务式通知富文本/左上角/隐藏关闭状态失败")
+    if right_bottom_state["stack_index"] != 0 or left_bottom_state["stack_index"] != 0 or auto_service_initial["stack_index"] != 1:
+        raise RuntimeError("服务式通知按位置堆叠失败")
+
+    pump_messages(user32, msg, 0.5)
+    auto_service_state = ui.get_notification_full_state_ex(hwnd, service_auto)
+    if auto_service_state["closed"] != 1 or auto_service_state["last_action"] != 5:
+        raise RuntimeError(f"服务式通知自动关闭失败: {auto_service_state}")
+
+    ui.trigger_notification_close(hwnd, service_left_top)
+    closed_left_top = ui.get_notification_full_state_ex(hwnd, service_left_top)
+    if closed_left_top["closed"] != 1 or closed_left_top["last_action"] != 4:
+        raise RuntimeError("隐藏关闭按钮通知程序关闭失败")
+
     ui.set_notification_closed(hwnd, n1, False)
     ui.set_notification_body(hwnd, n1, "🔔 已重新显示：状态、正文和主题绘制仍保持同步。")
     ui.set_notification_type(hwnd, n1, 3)
@@ -147,9 +221,8 @@ def main():
     if reopened["closed"] != 0 or reopened["notify_type"] != 3:
         raise RuntimeError("通知重新显示或类型更新失败")
 
-    ui.dll.EU_ShowWindow(hwnd, 1)
-    print("[提示] 窗口将保持 60 秒，可检查中文、emoji、堆叠位置、进度条和尺寸余量。")
-    pump_messages(user32, msg, 60.0)
+    print("[提示] 窗口将保持 1.5 秒，可检查中文、emoji、堆叠位置、进度条和尺寸余量。")
+    pump_messages(user32, msg, 1.5)
     ui.dll.EU_DestroyWindow(hwnd)
 
 

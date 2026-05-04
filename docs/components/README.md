@@ -1,6 +1,6 @@
 # 组件文档导航
 
-计划内 82 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
+计划内 84 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
 
 ## 🧱 基础/布局
 `Button` 已补齐 Element 风格常用按钮样式，包括语义变体、朴素、圆角、圆形、加载中和尺寸选项。
@@ -114,7 +114,9 @@
 |---|---|---|---|---|
 | `Alert` | 警告提示 | `EU_CreateAlert` | 已完成 | [警告提示](./alert.md) |
 | `Result` | 结果页 | `EU_CreateResult` | 已完成 | [结果页](./result.md) |
-| `Notification` | 通知 | `EU_CreateNotification` | 已完成 | [通知](./notification.md) |
+| `Message` | 消息提示 | `EU_ShowMessage` | 已完成，服务式轻提示，支持四类型、可关闭、居中、富文本、自动关闭、偏移和堆叠 | [消息提示](./message.md) |
+| `MessageBox` | 消息框 | `EU_ShowMessageBoxEx` / `EU_ShowPromptBox` | 已完成，支持 alert/confirm/prompt/msgbox、富文本、区分关闭、loading 和输入校验 | [消息框](./message-box.md) |
+| `Notification` | 通知 | `EU_CreateNotification` / `EU_ShowNotification` | 已完成，支持嵌入式与服务式通知、四角位置、offset、富文本和隐藏关闭按钮 | [通知](./notification.md) |
 | `Loading` | 加载 | `EU_CreateLoading` | 已完成 | [加载](./loading.md) |
 | `Dialog` | 对话框 | `EU_CreateDialog` | 已完成 | [对话框](./dialog.md) |
 | `Drawer` | 抽屉 | `EU_CreateDrawer` | 已完成 | [抽屉](./drawer.md) |

@@ -323,6 +323,15 @@ int __stdcall EU_CreateNotification(HWND hwnd, int parent_id,
                                     const unsigned char* body_bytes, int body_len,
                                     int notify_type, int closable,
                                     int x, int y, int w, int h);
+int __stdcall EU_ShowMessage(HWND hwnd,
+                             const unsigned char* text_bytes, int text_len,
+                             int message_type, int closable, int center, int rich,
+                             int duration_ms, int offset);
+int __stdcall EU_ShowNotification(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* body_bytes, int body_len,
+                                  int notify_type, int closable, int duration_ms,
+                                  int placement, int offset, int rich, int w, int h);
 int __stdcall EU_CreateLoading(HWND hwnd, int parent_id,
                                const unsigned char* text_bytes, int text_len,
                                int active,
@@ -367,6 +376,26 @@ int __stdcall EU_ShowConfirmBox(HWND hwnd,
                                 const unsigned char* confirm_bytes, int confirm_len,
                                 const unsigned char* cancel_bytes, int cancel_len,
                                 MessageBoxResultCallback cb);
+int __stdcall EU_ShowMessageBoxEx(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* text_bytes, int text_len,
+                                  const unsigned char* confirm_bytes, int confirm_len,
+                                  const unsigned char* cancel_bytes, int cancel_len,
+                                  int box_type, int show_cancel, int center, int rich,
+                                  int distinguish_cancel_and_close,
+                                  MessageBoxExCallback cb);
+int __stdcall EU_ShowPromptBox(HWND hwnd,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* text_bytes, int text_len,
+                               const unsigned char* placeholder_bytes, int placeholder_len,
+                               const unsigned char* value_bytes, int value_len,
+                               const unsigned char* pattern_bytes, int pattern_len,
+                               const unsigned char* error_bytes, int error_len,
+                               const unsigned char* confirm_bytes, int confirm_len,
+                               const unsigned char* cancel_bytes, int cancel_len,
+                               int box_type, int center, int rich,
+                               int distinguish_cancel_and_close,
+                               MessageBoxExCallback cb);
 
 // ── Element properties ───────────────────────────────────────────────
 void __stdcall EU_SetElementText(HWND hwnd, int element_id, const unsigned char* bytes, int len);
@@ -1584,6 +1613,8 @@ void __stdcall EU_SetNotificationBody(HWND hwnd, int element_id,
                                       const unsigned char* body_bytes, int body_len);
 void __stdcall EU_SetNotificationType(HWND hwnd, int element_id, int notify_type);
 void __stdcall EU_SetNotificationClosable(HWND hwnd, int element_id, int closable);
+void __stdcall EU_SetNotificationPlacement(HWND hwnd, int element_id, int placement, int offset);
+void __stdcall EU_SetNotificationRichMode(HWND hwnd, int element_id, int rich);
 void __stdcall EU_SetNotificationOptions(HWND hwnd, int element_id,
                                          int notify_type, int closable, int duration_ms);
 void __stdcall EU_SetNotificationClosed(HWND hwnd, int element_id, int closed);
@@ -1602,7 +1633,49 @@ int  __stdcall EU_GetNotificationFullState(HWND hwnd, int element_id,
                                            int* close_count, int* last_action,
                                            int* timer_elapsed_ms, int* timer_running,
                                            int* stack_index, int* stack_gap);
+int  __stdcall EU_GetNotificationFullStateEx(HWND hwnd, int element_id,
+                                             int* notify_type, int* closable,
+                                             int* duration_ms, int* closed,
+                                             int* close_hover, int* close_down,
+                                             int* close_count, int* last_action,
+                                             int* timer_elapsed_ms, int* timer_running,
+                                             int* stack_index, int* stack_gap,
+                                             int* placement, int* offset, int* rich);
 void __stdcall EU_SetNotificationCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+
+void __stdcall EU_SetMessageText(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetMessageOptions(HWND hwnd, int element_id, int message_type,
+                                    int closable, int center, int rich,
+                                    int duration_ms, int offset);
+void __stdcall EU_SetMessageClosed(HWND hwnd, int element_id, int closed);
+int  __stdcall EU_GetMessageOptions(HWND hwnd, int element_id, int* message_type,
+                                    int* closable, int* center, int* rich,
+                                    int* duration_ms, int* closed, int* offset);
+int  __stdcall EU_GetMessageFullState(HWND hwnd, int element_id, int* message_type,
+                                      int* closable, int* center, int* rich,
+                                      int* duration_ms, int* closed,
+                                      int* close_hover, int* close_down,
+                                      int* close_count, int* last_action,
+                                      int* timer_elapsed_ms, int* timer_running,
+                                      int* stack_index, int* stack_gap, int* offset);
+void __stdcall EU_TriggerMessageClose(HWND hwnd, int element_id);
+void __stdcall EU_SetMessageCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+
+void __stdcall EU_SetMessageBoxBeforeClose(HWND hwnd, int element_id,
+                                           int delay_ms,
+                                           const unsigned char* loading_bytes, int loading_len);
+void __stdcall EU_SetMessageBoxInput(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len,
+                                     const unsigned char* placeholder_bytes, int placeholder_len,
+                                     const unsigned char* pattern_bytes, int pattern_len,
+                                     const unsigned char* error_bytes, int error_len);
+int  __stdcall EU_GetMessageBoxInput(HWND hwnd, int element_id,
+                                     unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetMessageBoxFullState(HWND hwnd, int element_id,
+                                         int* box_type, int* show_cancel, int* center,
+                                         int* rich, int* distinguish, int* prompt,
+                                         int* confirm_loading, int* input_error_visible,
+                                         int* last_action, int* timer_elapsed_ms);
 void __stdcall EU_SetLoadingActive(HWND hwnd, int element_id, int active);
 void __stdcall EU_SetLoadingOptions(HWND hwnd, int element_id,
                                     int active, int fullscreen, int progress);

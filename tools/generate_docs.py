@@ -17,7 +17,7 @@ CATEGORIES = {
     ],
     "表单/选择": [
         "Checkbox", "Radio", "Switch", "Slider", "InputNumber", "Input",
-        "InputTag", "Select", "SelectV2", "Rate", "ColorPicker",
+        "InputGroup", "InputTag", "Select", "SelectV2", "Rate", "ColorPicker",
     ],
     "数据展示": [
         "Tag", "Badge", "Progress", "Avatar", "Empty", "Skeleton",
@@ -41,7 +41,7 @@ CATEGORIES = {
         "Watermark", "Tour", "Image", "Carousel", "Upload", "Scrollbar",
     ],
     "反馈/浮层": [
-        "Alert", "Result", "Notification", "Loading", "Dialog",
+        "Alert", "Result", "Message", "MessageBox", "Notification", "Loading", "Dialog",
         "Drawer", "Tooltip", "Popover", "Popconfirm",
     ],
 }
@@ -52,7 +52,7 @@ ZH_NAMES = {
     "Text": "文本", "Link": "链接", "Icon": "图标", "Space": "间距",
     "Container": "容器", "Layout": "布局", "Border": "边框", "Divider": "分割线",
     "Checkbox": "复选框", "Radio": "单选框", "Switch": "开关", "Slider": "滑块",
-    "InputNumber": "数字输入框", "Input": "输入框", "InputTag": "标签输入",
+    "InputNumber": "数字输入框", "Input": "输入框", "InputGroup": "组合输入", "InputTag": "标签输入",
     "Select": "选择器", "SelectV2": "虚拟选择器", "Rate": "评分",
     "ColorPicker": "颜色选择器", "Tag": "标签", "Badge": "徽标",
     "Progress": "进度条", "Avatar": "头像", "Empty": "空状态",
@@ -72,7 +72,8 @@ ZH_NAMES = {
     "Tour": "漫游引导", "Image": "图片", "Carousel": "轮播",
     "Upload": "上传", "Scrollbar": "滚动条", "Breadcrumb": "面包屑",
     "Tabs": "标签页", "Pagination": "分页", "Steps": "步骤条",
-    "Alert": "警告提示", "Result": "结果页", "Notification": "通知",
+    "Alert": "警告提示", "Result": "结果页", "Message": "消息提示",
+    "MessageBox": "消息框", "Notification": "通知",
     "Loading": "加载", "Dialog": "对话框", "Drawer": "抽屉",
     "Tooltip": "文字提示", "Popover": "弹出框", "Popconfirm": "气泡确认框",
 }
@@ -126,7 +127,7 @@ def component_exports(component: str, exports: list[str], components: list[str])
     longer = sorted([c for c in components if c != component and c.startswith(component)], key=len, reverse=True)
     for export in exports:
         matched = False
-        for prefix in ("EU_Create", "EU_Set", "EU_Get", "EU_Trigger", "EU_Reset"):
+        for prefix in ("EU_Create", "EU_Show", "EU_Set", "EU_Get", "EU_Trigger", "EU_Reset"):
             head = prefix + component
             if not export.startswith(head):
                 continue
