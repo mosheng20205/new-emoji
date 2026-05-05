@@ -211,6 +211,7 @@
     <ClInclude Include="src\element_skeleton.h" />
     <ClInclude Include="src\element_descriptions.h" />
     <ClInclude Include="src\element_table.h" />
+    <ClInclude Include="src\xlsx_table_io.h" />
     <ClInclude Include="src\element_card.h" />
     <ClInclude Include="src\element_collapse.h" />
     <ClInclude Include="src\element_timeline.h" />
@@ -304,6 +305,9 @@
     <ClCompile Include="src\element_skeleton.cpp" />
     <ClCompile Include="src\element_descriptions.cpp" />
     <ClCompile Include="src\element_table.cpp" />
+    <ClCompile Include="src\element_table_input.cpp" />
+    <ClCompile Include="src\element_table_paint.cpp" />
+    <ClCompile Include="src\xlsx_table_io.cpp" />
     <ClCompile Include="src\element_card.cpp" />
     <ClCompile Include="src\element_collapse.cpp" />
     <ClCompile Include="src\element_timeline.cpp" />

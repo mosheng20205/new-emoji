@@ -697,6 +697,28 @@ void __stdcall EU_SetRateTexts(HWND hwnd, int element_id,
                                const unsigned char* low_bytes, int low_len,
                                const unsigned char* high_bytes, int high_len,
                                int show_score);
+void __stdcall EU_SetRateColors(HWND hwnd, int element_id, Color low_color, Color mid_color, Color high_color);
+int  __stdcall EU_GetRateColors(HWND hwnd, int element_id, Color* low_color, Color* mid_color, Color* high_color);
+void __stdcall EU_SetRateIcons(HWND hwnd, int element_id,
+                               const unsigned char* full_bytes, int full_len,
+                               const unsigned char* void_bytes, int void_len,
+                               const unsigned char* low_bytes, int low_len,
+                               const unsigned char* mid_bytes, int mid_len,
+                               const unsigned char* high_bytes, int high_len);
+int  __stdcall EU_GetRateIcons(HWND hwnd, int element_id,
+                               unsigned char* full_buffer, int full_buffer_size,
+                               unsigned char* void_buffer, int void_buffer_size,
+                               unsigned char* low_buffer, int low_buffer_size,
+                               unsigned char* mid_buffer, int mid_buffer_size,
+                               unsigned char* high_buffer, int high_buffer_size);
+void __stdcall EU_SetRateTextItems(HWND hwnd, int element_id,
+                                   const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetRateDisplayOptions(HWND hwnd, int element_id,
+                                        int show_text, int show_score, Color text_color,
+                                        const unsigned char* template_bytes, int template_len);
+int  __stdcall EU_GetRateDisplayOptions(HWND hwnd, int element_id,
+                                        int* show_text, int* show_score, Color* text_color,
+                                        unsigned char* template_buffer, int template_buffer_size);
 void __stdcall EU_SetRateChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetColorPickerColor(HWND hwnd, int element_id, Color color);
 int  __stdcall EU_GetColorPickerColor(HWND hwnd, int element_id);
@@ -810,6 +832,56 @@ int  __stdcall EU_GetTableOptions(HWND hwnd, int element_id,
                                   int* selectable, int* sort_column,
                                   int* sort_desc, int* scroll_row,
                                   int* column_width);
+void __stdcall EU_SetTableColumnsEx(HWND hwnd, int element_id,
+                                    const unsigned char* columns_bytes, int columns_len);
+void __stdcall EU_SetTableRowsEx(HWND hwnd, int element_id,
+                                 const unsigned char* rows_bytes, int rows_len);
+void __stdcall EU_SetTableCellEx(HWND hwnd, int element_id, int row, int col, int type,
+                                 const unsigned char* value_bytes, int value_len,
+                                 const unsigned char* options_bytes, int options_len);
+void __stdcall EU_SetTableRowStyle(HWND hwnd, int element_id, int row,
+                                   unsigned int bg, unsigned int fg,
+                                   int align, int font_flags, int font_size);
+void __stdcall EU_SetTableCellStyle(HWND hwnd, int element_id, int row, int col,
+                                    unsigned int bg, unsigned int fg,
+                                    int align, int font_flags, int font_size);
+void __stdcall EU_SetTableSelectionMode(HWND hwnd, int element_id, int mode);
+void __stdcall EU_SetTableSelectedRows(HWND hwnd, int element_id,
+                                       const unsigned char* rows_bytes, int rows_len);
+void __stdcall EU_SetTableFilter(HWND hwnd, int element_id, int col,
+                                 const unsigned char* value_bytes, int value_len);
+void __stdcall EU_ClearTableFilter(HWND hwnd, int element_id, int col);
+void __stdcall EU_SetTableSearch(HWND hwnd, int element_id,
+                                 const unsigned char* value_bytes, int value_len);
+void __stdcall EU_SetTableSpan(HWND hwnd, int element_id, int row, int col,
+                               int rowspan, int colspan);
+void __stdcall EU_ClearTableSpans(HWND hwnd, int element_id);
+void __stdcall EU_SetTableSummary(HWND hwnd, int element_id,
+                                  const unsigned char* values_bytes, int values_len);
+void __stdcall EU_SetTableRowExpanded(HWND hwnd, int element_id, int row, int expanded);
+void __stdcall EU_SetTableTreeOptions(HWND hwnd, int element_id, int enabled, int indent, int lazy);
+void __stdcall EU_SetTableViewportOptions(HWND hwnd, int element_id, int max_height,
+                                          int fixed_header, int horizontal_scroll,
+                                          int show_summary);
+void __stdcall EU_SetTableScroll(HWND hwnd, int element_id, int scroll_row, int scroll_x);
+void __stdcall EU_SetTableHeaderDragOptions(HWND hwnd, int element_id, int column_resize,
+                                            int header_height_resize, int min_col_width,
+                                            int max_col_width, int min_header_height,
+                                            int max_header_height);
+int  __stdcall EU_ExportTableExcel(HWND hwnd, int element_id,
+                                    const unsigned char* path_bytes, int path_len, int flags);
+int  __stdcall EU_ImportTableExcel(HWND hwnd, int element_id,
+                                    const unsigned char* path_bytes, int path_len, int flags);
+void __stdcall EU_SetTableCellClickCallback(HWND hwnd, int element_id, TableCellCallback cb);
+void __stdcall EU_SetTableCellActionCallback(HWND hwnd, int element_id, TableCellCallback cb);
+void __stdcall EU_SetTableVirtualOptions(HWND hwnd, int element_id, int enabled,
+                                         int row_count, int cache_window);
+void __stdcall EU_SetTableVirtualRowProvider(HWND hwnd, int element_id, TableVirtualRowCallback cb);
+void __stdcall EU_ClearTableVirtualCache(HWND hwnd, int element_id);
+int  __stdcall EU_GetTableCellValue(HWND hwnd, int element_id, int row, int col,
+                                    unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
                               const unsigned char* body_bytes, int body_len);
 void __stdcall EU_SetCardFooter(HWND hwnd, int element_id,
@@ -1239,6 +1311,24 @@ int  __stdcall EU_GetDropdownState(HWND hwnd, int element_id,
                                    int* selected_index, int* item_count,
                                    int* disabled_count, int* selected_level,
                                    int* hover_index);
+void __stdcall EU_SetDropdownOptions(HWND hwnd, int element_id,
+                                     int trigger_mode, int hide_on_click,
+                                     int split_button, int button_variant,
+                                     int size, int trigger_style);
+int  __stdcall EU_GetDropdownOptions(HWND hwnd, int element_id,
+                                     int* trigger_mode, int* hide_on_click,
+                                     int* split_button, int* button_variant,
+                                     int* size, int* trigger_style);
+void __stdcall EU_SetDropdownItemMeta(HWND hwnd, int element_id,
+                                      const unsigned char* icons_bytes, int icons_len,
+                                      const unsigned char* commands_bytes, int commands_len,
+                                      const int* divided_indices, int divided_count);
+int  __stdcall EU_GetDropdownItemMeta(HWND hwnd, int element_id, int item_index,
+                                      unsigned char* icon_buffer, int icon_buffer_size,
+                                      unsigned char* command_buffer, int command_buffer_size,
+                                      int* divided, int* disabled, int* level);
+void __stdcall EU_SetDropdownCommandCallback(HWND hwnd, int element_id, DropdownCommandCallback cb);
+void __stdcall EU_SetDropdownMainClickCallback(HWND hwnd, int element_id, ElementClickCallback cb);
 void __stdcall EU_SetMenuItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetMenuActive(HWND hwnd, int element_id, int active_index);
@@ -1741,6 +1831,22 @@ void __stdcall EU_SetDrawerBody(HWND hwnd, int element_id,
 void __stdcall EU_SetDrawerPlacement(HWND hwnd, int element_id, int placement);
 void __stdcall EU_SetDrawerOptions(HWND hwnd, int element_id, int placement, int open,
                                    int modal, int closable, int close_on_mask, int size);
+void __stdcall EU_SetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_close,
+                                           int close_on_escape, int content_padding,
+                                           int footer_height, int size_mode,
+                                           int size_value);
+int  __stdcall EU_GetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                           int* show_header, int* show_close,
+                                           int* close_on_escape, int* content_padding,
+                                           int* footer_height, int* size_mode,
+                                           int* size_value, int* content_parent_id,
+                                           int* footer_parent_id, int* close_pending);
+int  __stdcall EU_GetDrawerContentParent(HWND hwnd, int element_id);
+int  __stdcall EU_GetDrawerFooterParent(HWND hwnd, int element_id);
+void __stdcall EU_SetDrawerBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb);
+void __stdcall EU_ConfirmDrawerClose(HWND hwnd, int element_id, int allow);
 int  __stdcall EU_GetDrawerOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetDrawerOptions(HWND hwnd, int element_id,
                                    int* placement, int* open, int* modal,

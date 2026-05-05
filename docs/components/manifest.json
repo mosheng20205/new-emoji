@@ -805,7 +805,7 @@
     "zh": "抽屉",
     "create": "EU_CreateDrawer",
     "status": "已完成",
-    "summary": "已补方向、遮罩关闭、打开动画计时器、尺寸变化、鼠标/键盘/程序关闭、关闭回调、标题/正文/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "summary": "已补四方向、无标题栏、50% 百分比尺寸、content/footer slot、真实表格/表单、before-close 确认、外层/内层抽屉、Python 封装、易语言命令文档和中文 emoji gallery",
     "category": "反馈/浮层",
     "slug": "drawer"
   },

@@ -40,6 +40,7 @@ extern HMODULE g_module;
 #include "element_skeleton.h"
 #include "element_descriptions.h"
 #include "element_table.h"
+#include "xlsx_table_io.h"
 #include "element_card.h"
 #include "element_collapse.h"
 #include "element_timeline.h"
@@ -363,6 +364,23 @@ static std::vector<std::wstring> split_option_list(const unsigned char* bytes, i
         }
     }
     if (!current.empty()) items.push_back(current);
+    return items;
+}
+
+static std::vector<std::wstring> split_option_list_keep_empty(const unsigned char* bytes, int len) {
+    std::vector<std::wstring> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    if (full.empty()) return items;
+    std::wstring current;
+    for (wchar_t ch : full) {
+        if (ch == L'|' || ch == L'\n' || ch == L'\r') {
+            items.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(ch);
+        }
+    }
+    items.push_back(current);
     return items;
 }
 
@@ -3134,6 +3152,7 @@ int __stdcall EU_CreateDrawer(HWND hwnd,
 
     auto el = std::make_unique<Drawer>();
     el->set_logical_bounds({ 0, 0, size, size });
+    el->size_value = size;
     el->set_title(utf8_to_wide(title_bytes, title_len));
     el->set_body(utf8_to_wide(body_bytes, body_len));
     el->set_placement(placement);
@@ -3152,6 +3171,16 @@ int __stdcall EU_CreateDrawer(HWND hwnd,
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    if (auto* drawer = dynamic_cast<Drawer*>(raw)) {
+        auto content = std::make_unique<Panel>();
+        content->mouse_passthrough = true;
+        Element* content_raw = st->element_tree->add_child(drawer, std::move(content));
+        drawer->content_parent_id = content_raw ? content_raw->id : 0;
+        auto footer = std::make_unique<Panel>();
+        footer->mouse_passthrough = true;
+        Element* footer_raw = st->element_tree->add_child(drawer, std::move(footer));
+        drawer->footer_parent_id = footer_raw ? footer_raw->id : 0;
+    }
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -5173,6 +5202,80 @@ void __stdcall EU_SetRateTexts(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetRateColors(HWND hwnd, int element_id, Color low_color, Color mid_color, Color high_color) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_colors(low_color, mid_color, high_color);
+    }
+}
+
+int __stdcall EU_GetRateColors(HWND hwnd, int element_id, Color* low_color, Color* mid_color, Color* high_color) {
+    auto* el = find_typed_element<Rate>(hwnd, element_id);
+    if (!el) return 0;
+    if (low_color) *low_color = el->low_color;
+    if (mid_color) *mid_color = el->mid_color;
+    if (high_color) *high_color = el->high_color;
+    return 1;
+}
+
+void __stdcall EU_SetRateIcons(HWND hwnd, int element_id,
+                               const unsigned char* full_bytes, int full_len,
+                               const unsigned char* void_bytes, int void_len,
+                               const unsigned char* low_bytes, int low_len,
+                               const unsigned char* mid_bytes, int mid_len,
+                               const unsigned char* high_bytes, int high_len) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_icons(utf8_to_wide(full_bytes, full_len),
+                      utf8_to_wide(void_bytes, void_len),
+                      utf8_to_wide(low_bytes, low_len),
+                      utf8_to_wide(mid_bytes, mid_len),
+                      utf8_to_wide(high_bytes, high_len));
+    }
+}
+
+int __stdcall EU_GetRateIcons(HWND hwnd, int element_id,
+                              unsigned char* full_buffer, int full_buffer_size,
+                              unsigned char* void_buffer, int void_buffer_size,
+                              unsigned char* low_buffer, int low_buffer_size,
+                              unsigned char* mid_buffer, int mid_buffer_size,
+                              unsigned char* high_buffer, int high_buffer_size) {
+    auto* el = find_typed_element<Rate>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->full_icon, full_buffer, full_buffer_size);
+    copy_wide_as_utf8(el->void_icon, void_buffer, void_buffer_size);
+    copy_wide_as_utf8(el->low_icon, low_buffer, low_buffer_size);
+    copy_wide_as_utf8(el->mid_icon, mid_buffer, mid_buffer_size);
+    copy_wide_as_utf8(el->high_icon, high_buffer, high_buffer_size);
+    return 1;
+}
+
+void __stdcall EU_SetRateTextItems(HWND hwnd, int element_id,
+                                   const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_text_items(split_option_list(items_bytes, items_len));
+    }
+}
+
+void __stdcall EU_SetRateDisplayOptions(HWND hwnd, int element_id,
+                                        int show_text, int show_score, Color text_color,
+                                        const unsigned char* template_bytes, int template_len) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_display_options(show_text != 0, show_score != 0, text_color,
+                                utf8_to_wide(template_bytes, template_len));
+    }
+}
+
+int __stdcall EU_GetRateDisplayOptions(HWND hwnd, int element_id,
+                                       int* show_text, int* show_score, Color* text_color,
+                                       unsigned char* template_buffer, int template_buffer_size) {
+    auto* el = find_typed_element<Rate>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_text) *show_text = el->show_text ? 1 : 0;
+    if (show_score) *show_score = el->show_score ? 1 : 0;
+    if (text_color) *text_color = el->score_text_color;
+    copy_wide_as_utf8(el->score_template, template_buffer, template_buffer_size);
+    return 1;
+}
+
 void __stdcall EU_SetRateChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
     if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
         el->change_cb = cb;
@@ -5651,7 +5754,7 @@ int __stdcall EU_GetTableSelectedRow(HWND hwnd, int element_id) {
 
 int __stdcall EU_GetTableRowCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Table>(hwnd, element_id);
-    return el ? (int)el->rows.size() : 0;
+    return el ? el->row_count() : 0;
 }
 
 int __stdcall EU_GetTableColumnCount(HWND hwnd, int element_id) {
@@ -5703,6 +5806,180 @@ int __stdcall EU_GetTableOptions(HWND hwnd, int element_id,
     if (scroll_row) *scroll_row = el->scroll_row;
     if (column_width) *column_width = el->fixed_column_width;
     return 1;
+}
+
+void __stdcall EU_SetTableColumnsEx(HWND hwnd, int element_id,
+                                    const unsigned char* columns_bytes, int columns_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_columns_ex(utf8_to_wide(columns_bytes, columns_len));
+    }
+}
+
+void __stdcall EU_SetTableRowsEx(HWND hwnd, int element_id,
+                                 const unsigned char* rows_bytes, int rows_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_rows_ex(utf8_to_wide(rows_bytes, rows_len));
+    }
+}
+
+void __stdcall EU_SetTableCellEx(HWND hwnd, int element_id, int row, int col, int type,
+                                 const unsigned char* value_bytes, int value_len,
+                                 const unsigned char* options_bytes, int options_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_cell_ex(row, col, type, utf8_to_wide(value_bytes, value_len),
+                        utf8_to_wide(options_bytes, options_len));
+    }
+}
+
+void __stdcall EU_SetTableRowStyle(HWND hwnd, int element_id, int row,
+                                   unsigned int bg, unsigned int fg,
+                                   int align, int font_flags, int font_size) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_row_style(row, (Color)bg, (Color)fg, align, font_flags, font_size);
+    }
+}
+
+void __stdcall EU_SetTableCellStyle(HWND hwnd, int element_id, int row, int col,
+                                    unsigned int bg, unsigned int fg,
+                                    int align, int font_flags, int font_size) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_cell_style(row, col, (Color)bg, (Color)fg, align, font_flags, font_size);
+    }
+}
+
+void __stdcall EU_SetTableSelectionMode(HWND hwnd, int element_id, int mode) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->set_selection_mode(mode);
+}
+
+void __stdcall EU_SetTableSelectedRows(HWND hwnd, int element_id,
+                                       const unsigned char* rows_bytes, int rows_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_selected_rows_text(utf8_to_wide(rows_bytes, rows_len));
+    }
+}
+
+void __stdcall EU_SetTableFilter(HWND hwnd, int element_id, int col,
+                                 const unsigned char* value_bytes, int value_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_filter(col, utf8_to_wide(value_bytes, value_len));
+    }
+}
+
+void __stdcall EU_ClearTableFilter(HWND hwnd, int element_id, int col) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->clear_filter(col);
+}
+
+void __stdcall EU_SetTableSearch(HWND hwnd, int element_id,
+                                 const unsigned char* value_bytes, int value_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_search(utf8_to_wide(value_bytes, value_len));
+    }
+}
+
+void __stdcall EU_SetTableSpan(HWND hwnd, int element_id, int row, int col,
+                               int rowspan, int colspan) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_span(row, col, rowspan, colspan);
+    }
+}
+
+void __stdcall EU_ClearTableSpans(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->clear_spans();
+}
+
+void __stdcall EU_SetTableSummary(HWND hwnd, int element_id,
+                                  const unsigned char* values_bytes, int values_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_summary(utf8_to_wide(values_bytes, values_len));
+    }
+}
+
+void __stdcall EU_SetTableRowExpanded(HWND hwnd, int element_id, int row, int expanded) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->set_row_expanded(row, expanded != 0);
+}
+
+void __stdcall EU_SetTableTreeOptions(HWND hwnd, int element_id, int enabled, int indent, int lazy) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_tree_options(enabled != 0, indent, lazy != 0);
+    }
+}
+
+void __stdcall EU_SetTableViewportOptions(HWND hwnd, int element_id, int max_height,
+                                          int fixed_header, int horizontal_scroll,
+                                          int show_summary) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_viewport_options(max_height, fixed_header != 0, horizontal_scroll != 0, show_summary != 0);
+    }
+}
+
+void __stdcall EU_SetTableScroll(HWND hwnd, int element_id, int scroll_row_value, int scroll_x) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->set_scroll(scroll_row_value, scroll_x);
+}
+
+void __stdcall EU_SetTableHeaderDragOptions(HWND hwnd, int element_id, int column_resize,
+                                            int header_height_resize, int min_col_width,
+                                            int max_col_width, int min_header_height,
+                                            int max_header_height) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_header_drag_options(column_resize != 0, header_height_resize != 0,
+                                    min_col_width, max_col_width,
+                                    min_header_height, max_header_height);
+    }
+}
+
+int __stdcall EU_ExportTableExcel(HWND hwnd, int element_id,
+                                  const unsigned char* path_bytes, int path_len, int flags) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        return export_table_to_xlsx(*el, utf8_to_wide(path_bytes, path_len), flags) ? 1 : 0;
+    }
+    return 0;
+}
+
+int __stdcall EU_ImportTableExcel(HWND hwnd, int element_id,
+                                  const unsigned char* path_bytes, int path_len, int flags) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        return import_table_from_xlsx(*el, utf8_to_wide(path_bytes, path_len), flags) ? 1 : 0;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetTableCellClickCallback(HWND hwnd, int element_id, TableCellCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->cell_click_cb = cb;
+}
+
+void __stdcall EU_SetTableCellActionCallback(HWND hwnd, int element_id, TableCellCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->cell_cb = cb;
+}
+
+void __stdcall EU_SetTableVirtualOptions(HWND hwnd, int element_id, int enabled,
+                                         int row_count, int cache_window) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_virtual_options(enabled != 0, row_count, cache_window);
+    }
+}
+
+void __stdcall EU_SetTableVirtualRowProvider(HWND hwnd, int element_id, TableVirtualRowCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_virtual_row_provider(cb);
+    }
+}
+
+void __stdcall EU_ClearTableVirtualCache(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->clear_virtual_cache();
+    }
+}
+
+int __stdcall EU_GetTableCellValue(HWND hwnd, int element_id, int row, int col,
+                                   unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->get_cell_value(row, col), buffer, buffer_size) : 0;
+}
+
+int __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->full_state_text(), buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
@@ -7594,6 +7871,72 @@ int __stdcall EU_GetDropdownState(HWND hwnd, int element_id,
     if (selected_level) *selected_level = el->selected_level();
     if (hover_index) *hover_index = el->hover_index();
     return 1;
+}
+
+void __stdcall EU_SetDropdownOptions(HWND hwnd, int element_id,
+                                     int trigger_mode, int hide_on_click,
+                                     int split_button, int button_variant,
+                                     int size, int trigger_style) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        el->set_options(trigger_mode, hide_on_click, split_button,
+                        button_variant, size, trigger_style);
+    }
+}
+
+int __stdcall EU_GetDropdownOptions(HWND hwnd, int element_id,
+                                    int* trigger_mode, int* hide_on_click,
+                                    int* split_button, int* button_variant,
+                                    int* size, int* trigger_style) {
+    auto* el = find_typed_element<Dropdown>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_mode) *trigger_mode = el->trigger_mode;
+    if (hide_on_click) *hide_on_click = el->hide_on_click ? 1 : 0;
+    if (split_button) *split_button = el->split_button ? 1 : 0;
+    if (button_variant) *button_variant = el->button_variant;
+    if (size) *size = el->size;
+    if (trigger_style) *trigger_style = el->trigger_style;
+    return 1;
+}
+
+void __stdcall EU_SetDropdownItemMeta(HWND hwnd, int element_id,
+                                      const unsigned char* icons_bytes, int icons_len,
+                                      const unsigned char* commands_bytes, int commands_len,
+                                      const int* divided_indices, int divided_count) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        std::vector<int> divided;
+        if (divided_indices && divided_count > 0) {
+            divided.assign(divided_indices, divided_indices + divided_count);
+        }
+        el->set_item_meta(split_option_list_keep_empty(icons_bytes, icons_len),
+                          split_option_list_keep_empty(commands_bytes, commands_len),
+                          divided);
+    }
+}
+
+int __stdcall EU_GetDropdownItemMeta(HWND hwnd, int element_id, int item_index,
+                                     unsigned char* icon_buffer, int icon_buffer_size,
+                                     unsigned char* command_buffer, int command_buffer_size,
+                                     int* divided, int* disabled, int* level) {
+    auto* el = find_typed_element<Dropdown>(hwnd, element_id);
+    if (!el || item_index < 0 || item_index >= el->item_count()) return 0;
+    copy_wide_as_utf8(el->item_icon(item_index), icon_buffer, icon_buffer_size);
+    copy_wide_as_utf8(el->item_command(item_index), command_buffer, command_buffer_size);
+    if (divided) *divided = el->is_divided(item_index) ? 1 : 0;
+    if (disabled) *disabled = (item_index < (int)el->disabled_items.size() && el->disabled_items[item_index]) ? 1 : 0;
+    if (level) *level = (item_index < (int)el->item_levels.size()) ? el->item_levels[item_index] : 0;
+    return 1;
+}
+
+void __stdcall EU_SetDropdownCommandCallback(HWND hwnd, int element_id, DropdownCommandCallback cb) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        el->command_cb = cb;
+    }
+}
+
+void __stdcall EU_SetDropdownMainClickCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        el->main_click_cb = cb;
+    }
 }
 
 void __stdcall EU_SetMenuItems(HWND hwnd, int element_id,
@@ -9743,6 +10086,71 @@ void __stdcall EU_SetDrawerOptions(HWND hwnd, int element_id, int placement, int
         el->apply_dpi_scale(st->dpi_scale);
         st->element_tree->layout();
         InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_close,
+                                           int close_on_escape, int content_padding,
+                                           int footer_height, int size_mode,
+                                           int size_value) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Drawer>(hwnd, element_id)) {
+        el->set_advanced_options(show_header != 0, show_close != 0,
+                                 close_on_escape != 0, content_padding,
+                                 footer_height, size_mode, size_value);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                          int* show_header, int* show_close,
+                                          int* close_on_escape, int* content_padding,
+                                          int* footer_height, int* size_mode,
+                                          int* size_value, int* content_parent_id,
+                                          int* footer_parent_id, int* close_pending) {
+    auto* el = find_typed_element<Drawer>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_header) *show_header = el->show_header ? 1 : 0;
+    if (show_close) *show_close = el->show_close ? 1 : 0;
+    if (close_on_escape) *close_on_escape = el->close_on_escape ? 1 : 0;
+    if (content_padding) *content_padding = el->content_padding;
+    if (footer_height) *footer_height = el->footer_height;
+    if (size_mode) *size_mode = el->size_mode;
+    if (size_value) *size_value = el->size_value > 0
+        ? el->size_value
+        : ((el->placement == 0 || el->placement == 1)
+            ? el->logical_bounds.w : el->logical_bounds.h);
+    if (content_parent_id) *content_parent_id = el->content_parent_id;
+    if (footer_parent_id) *footer_parent_id = el->footer_parent_id;
+    if (close_pending) *close_pending = el->close_pending ? 1 : 0;
+    return 1;
+}
+
+int __stdcall EU_GetDrawerContentParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Drawer>(hwnd, element_id);
+    return el ? el->content_parent_id : 0;
+}
+
+int __stdcall EU_GetDrawerFooterParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Drawer>(hwnd, element_id);
+    return el ? el->footer_parent_id : 0;
+}
+
+void __stdcall EU_SetDrawerBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb) {
+    if (auto* el = find_typed_element<Drawer>(hwnd, element_id)) {
+        el->before_close_cb = cb;
+    }
+}
+
+void __stdcall EU_ConfirmDrawerClose(HWND hwnd, int element_id, int allow) {
+    if (auto* el = find_typed_element<Drawer>(hwnd, element_id)) {
+        el->confirm_pending_close(allow != 0);
+        relayout_and_invalidate(hwnd);
     }
 }
 

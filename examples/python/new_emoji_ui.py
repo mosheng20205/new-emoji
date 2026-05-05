@@ -33,6 +33,11 @@ MessageBoxExCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
 TextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 ValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
 BeforeCloseCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
+TableCellCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 
 EXTENDED_PLACEMENTS = {
     "top-start": 0, "top": 1, "top-end": 2,
@@ -1124,6 +1129,34 @@ dll.EU_SetRateTexts.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.c_int]
+dll.EU_SetRateColors.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetRateColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                 ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetRateColors.restype = ctypes.c_int
+dll.EU_SetRateIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateIcons.restype = ctypes.c_int
+dll.EU_SetRateTextItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetRateDisplayOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_uint32,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateDisplayOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_uint32),
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateDisplayOptions.restype = ctypes.c_int
 dll.EU_SetRateChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetColorPickerColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
 dll.EU_GetColorPickerColor.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -1267,6 +1300,56 @@ dll.EU_GetTableOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                    ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTableOptions.restype = ctypes.c_int
+dll.EU_SetTableColumnsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableRowsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableCellEx.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableRowStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                     ctypes.c_uint32, ctypes.c_uint32,
+                                     ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableCellStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_uint32, ctypes.c_uint32,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableSelectionMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableSelectedRows.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableFilter.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_ClearTableFilter.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableSearch.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableSpan.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int]
+dll.EU_ClearTableSpans.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetTableSummary.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableRowExpanded.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableTreeOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableViewportOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableHeaderDragOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                              ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_ExportTableExcel.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+dll.EU_ExportTableExcel.restype = ctypes.c_int
+dll.EU_ImportTableExcel.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+dll.EU_ImportTableExcel.restype = ctypes.c_int
+dll.EU_SetTableCellClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
+dll.EU_SetTableCellActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
+dll.EU_SetTableVirtualOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableVirtualRowProvider.argtypes = [wintypes.HWND, ctypes.c_int, TableVirtualRowCallback]
+dll.EU_ClearTableVirtualCache.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTableCellValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTableCellValue.restype = ctypes.c_int
+dll.EU_GetTableFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTableFullState.restype = ctypes.c_int
 dll.EU_SetCardBody.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardFooter.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1806,6 +1889,26 @@ dll.EU_GetDropdownState.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                     ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDropdownState.restype = ctypes.c_int
+dll.EU_SetDropdownOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDropdownOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDropdownOptions.restype = ctypes.c_int
+dll.EU_SetDropdownItemMeta.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int), ctypes.c_int]
+dll.EU_GetDropdownItemMeta.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDropdownItemMeta.restype = ctypes.c_int
+dll.EU_SetDropdownCommandCallback.argtypes = [wintypes.HWND, ctypes.c_int, DropdownCommandCallback]
+dll.EU_SetDropdownMainClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
 dll.EU_SetMenuItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetMenuActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2459,6 +2562,24 @@ dll.EU_SetDrawerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int]
+dll.EU_SetDrawerAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int]
+dll.EU_GetDrawerAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDrawerAdvancedOptions.restype = ctypes.c_int
+dll.EU_GetDrawerContentParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDrawerContentParent.restype = ctypes.c_int
+dll.EU_GetDrawerFooterParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDrawerFooterParent.restype = ctypes.c_int
+dll.EU_SetDrawerBeforeCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, BeforeCloseCallback]
+dll.EU_ConfirmDrawerClose.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDrawerOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDrawerOpen.restype = ctypes.c_int
 dll.EU_GetDrawerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2613,6 +2734,8 @@ def make_utf8(text: str) -> bytes:
     return text.encode('utf-8')
 
 def bytes_arg(data: bytes):
+    if not data:
+        return None
     return (ctypes.c_ubyte * len(data))(*data)
 
 def _extended_placement_value(placement, default="bottom"):
@@ -4044,7 +4167,9 @@ def get_select_v2_scroll_index(hwnd, element_id):
 
 def create_rate(hwnd, parent_id, text="Rate", value=3, max_value=5,
                 x=0, y=0, w=220, h=36,
-                allow_clear=None, allow_half=None, readonly=None, value_x2=None):
+                allow_clear=None, allow_half=None, readonly=None, value_x2=None,
+                colors=None, icons=None, text_items=None, show_text=None,
+                show_score=None, text_color=0, score_template="{value}"):
     data = make_utf8(text)
     element_id = dll.EU_CreateRate(
         hwnd, parent_id, bytes_arg(data), len(data),
@@ -4059,6 +4184,20 @@ def create_rate(hwnd, parent_id, text="Rate", value=3, max_value=5,
         )
     if element_id and value_x2 is not None:
         dll.EU_SetRateValueX2(hwnd, element_id, value_x2)
+    if element_id and colors:
+        set_rate_colors(hwnd, element_id, *colors)
+    if element_id and icons:
+        set_rate_icons(hwnd, element_id, **icons)
+    if element_id and text_items:
+        set_rate_text_items(hwnd, element_id, text_items)
+    if element_id and (show_text is not None or show_score is not None or text_color or score_template != "{value}"):
+        set_rate_display_options(
+            hwnd, element_id,
+            show_text=bool(show_text),
+            show_score=bool(show_score),
+            text_color=text_color,
+            score_template=score_template,
+        )
     return element_id
 
 def set_rate_value(hwnd, element_id, value=0):
@@ -4113,6 +4252,79 @@ def set_rate_texts(hwnd, element_id, low_text="待评分", high_text="已评分"
 
 def set_rate_change_callback(hwnd, element_id, callback):
     dll.EU_SetRateChangeCallback(hwnd, element_id, callback)
+
+def set_rate_colors(hwnd, element_id, low_color=0, mid_color=0, high_color=0):
+    dll.EU_SetRateColors(hwnd, element_id, low_color, mid_color, high_color)
+
+def get_rate_colors(hwnd, element_id):
+    low = ctypes.c_uint32()
+    mid = ctypes.c_uint32()
+    high = ctypes.c_uint32()
+    ok = dll.EU_GetRateColors(hwnd, element_id, ctypes.byref(low), ctypes.byref(mid), ctypes.byref(high))
+    if not ok:
+        return None
+    return low.value, mid.value, high.value
+
+def set_rate_icons(hwnd, element_id, full_icon="★", void_icon="☆",
+                   low_icon="", mid_icon="", high_icon=""):
+    full_data = make_utf8(full_icon)
+    void_data = make_utf8(void_icon)
+    low_data = make_utf8(low_icon)
+    mid_data = make_utf8(mid_icon)
+    high_data = make_utf8(high_icon)
+    dll.EU_SetRateIcons(
+        hwnd, element_id,
+        bytes_arg(full_data), len(full_data),
+        bytes_arg(void_data), len(void_data),
+        bytes_arg(low_data), len(low_data),
+        bytes_arg(mid_data), len(mid_data),
+        bytes_arg(high_data), len(high_data),
+    )
+
+def get_rate_icons(hwnd, element_id):
+    buffers = [ctypes.create_string_buffer(64) for _ in range(5)]
+    ptrs = [ctypes.cast(buffer, ctypes.POINTER(ctypes.c_ubyte)) for buffer in buffers]
+    ok = dll.EU_GetRateIcons(
+        hwnd, element_id,
+        ptrs[0], len(buffers[0]),
+        ptrs[1], len(buffers[1]),
+        ptrs[2], len(buffers[2]),
+        ptrs[3], len(buffers[3]),
+        ptrs[4], len(buffers[4]),
+    )
+    if not ok:
+        return None
+    return tuple(buffer.value.decode("utf-8") for buffer in buffers)
+
+def set_rate_text_items(hwnd, element_id, items):
+    data = make_utf8("\n".join(items or []))
+    dll.EU_SetRateTextItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_rate_display_options(hwnd, element_id, show_text=False, show_score=False,
+                             text_color=0, score_template="{value}"):
+    data = make_utf8(score_template)
+    dll.EU_SetRateDisplayOptions(
+        hwnd, element_id,
+        1 if show_text else 0,
+        1 if show_score else 0,
+        text_color,
+        bytes_arg(data), len(data),
+    )
+
+def get_rate_display_options(hwnd, element_id):
+    show_text = ctypes.c_int()
+    show_score = ctypes.c_int()
+    text_color = ctypes.c_uint32()
+    template = ctypes.create_string_buffer(256)
+    template_ptr = ctypes.cast(template, ctypes.POINTER(ctypes.c_ubyte))
+    ok = dll.EU_GetRateDisplayOptions(
+        hwnd, element_id,
+        ctypes.byref(show_text), ctypes.byref(show_score), ctypes.byref(text_color),
+        template_ptr, len(template),
+    )
+    if not ok:
+        return None
+    return bool(show_text.value), bool(show_score.value), text_color.value, template.value.decode("utf-8")
 
 def create_colorpicker(hwnd, parent_id, text="Color", color=0xFF1E66F5,
                        x=0, y=0, w=220, h=36, alpha=None, open_panel=None,
@@ -4552,8 +4764,8 @@ def create_table(hwnd, parent_id, columns=None, rows=None,
     if element_id and (row_height is not None or header_height is not None or selectable is not None):
         dll.EU_SetTableOptions(
             hwnd, element_id, 1 if striped else 0, 1 if bordered else 0,
-            30 if row_height is None else row_height,
-            32 if header_height is None else header_height,
+            42 if row_height is None else row_height,
+            48 if header_height is None else header_height,
             1 if selectable is None else int(bool(selectable))
         )
     if element_id and sort_column is not None:
@@ -4583,6 +4795,340 @@ def get_table_options(hwnd, element_id):
         bool(values[4].value), values[5].value, bool(values[6].value),
         values[7].value, values[8].value
     )
+
+TABLE_CELL_TYPES = {
+    "text": 0, "index": 1, "selection": 2, "expand": 3,
+    "button": 4, "buttons": 5, "combo": 6, "switch": 7,
+    "select": 8, "progress": 9, "status": 10, "tag": 11,
+    "popover_tag": 12,
+}
+TABLE_CELL_TYPE_NAMES = {value: key for key, value in TABLE_CELL_TYPES.items()}
+
+def table_cell_type(value):
+    if isinstance(value, int):
+        return value
+    return TABLE_CELL_TYPES.get(str(value or "text").lower(), 0)
+
+def table_cell_type_name(value):
+    if isinstance(value, str):
+        return value
+    return TABLE_CELL_TYPE_NAMES.get(table_cell_type(value), "text")
+
+def table_escape(value):
+    text = "" if value is None else str(value)
+    return (text.replace("\\", "\\\\")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t")
+                .replace("=", "\\=")
+                .replace("|", "\\|"))
+
+def table_kv_line(fields):
+    if isinstance(fields, dict):
+        iterable = fields.items()
+    else:
+        iterable = fields or []
+    parts = []
+    for key, value in iterable:
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            value = 1 if value else 0
+        parts.append(f"{key}={table_escape(value)}")
+    return "\t".join(parts)
+
+def table_options(options=None):
+    if options is None:
+        return ""
+    if isinstance(options, str):
+        return options
+    if isinstance(options, dict):
+        return table_kv_line(options)
+    return table_kv_line(options)
+
+def _table_join_values(values):
+    return "|".join(table_escape(v) for v in (values or []))
+
+def _table_column_title(column, index):
+    if isinstance(column, dict):
+        return column.get("title", column.get("label", f"列 {index + 1}"))
+    return str(column)
+
+def _table_column_key(column, index):
+    if isinstance(column, dict):
+        return column.get("key", f"c{index}")
+    return f"c{index}"
+
+def table_column_line(column, index=0):
+    if isinstance(column, dict):
+        fields = dict(column)
+        fields.setdefault("title", fields.get("label", f"列 {index + 1}"))
+        fields.setdefault("key", f"c{index}")
+    else:
+        fields = {"title": column, "key": f"c{index}"}
+    if "type" in fields:
+        fields["type"] = table_cell_type_name(fields["type"])
+    if "options" in fields and not isinstance(fields["options"], str):
+        fields["options"] = _table_join_values(fields["options"])
+    return table_kv_line(fields)
+
+def _table_cell_payload(cell):
+    if isinstance(cell, dict):
+        value = cell.get("value", cell.get("text", ""))
+        if value == "" and "items" in cell:
+            value = cell["items"]
+        if value == "" and "parts" in cell:
+            value = cell["parts"]
+        if isinstance(value, (list, tuple)):
+            value = _table_join_values(value)
+        cell_type = cell.get("type")
+        options = dict(cell.get("options", {}) or {})
+        for key in ("checked", "status", "value", "disabled"):
+            if key in cell:
+                options[key] = cell[key]
+        return value, cell_type, options
+    if isinstance(cell, (list, tuple)):
+        return _table_join_values(cell), None, {}
+    return cell, None, {}
+
+def table_row_line(row, columns=None):
+    fields = []
+    column_count = len(columns or [])
+    if isinstance(row, dict):
+        meta_map = {
+            "key": "key", "parent": "parent", "parent_key": "parent",
+            "level": "level", "expanded": "expanded", "children": "children",
+            "has_children": "children", "hasChildren": "haschildren", "lazy": "lazy",
+            "disabled": "disabled", "bg": "bg", "fg": "fg", "align": "align",
+            "font_flags": "font_flags", "font_size": "font_size",
+        }
+        for source, target in meta_map.items():
+            if source in row:
+                fields.append((target, row[source]))
+        raw_cells = row.get("cells")
+        if raw_cells is None:
+            raw_cells = row.get("values")
+        if raw_cells is not None:
+            for index, cell in enumerate(raw_cells):
+                value, cell_type, options = _table_cell_payload(cell)
+                base = f"c{index}"
+                fields.append((base, value))
+                if cell_type is not None:
+                    fields.append((f"{base}_type", table_cell_type_name(cell_type)))
+                if options:
+                    fields.append((f"{base}_options", table_options(options)))
+        else:
+            for index in range(column_count):
+                key = _table_column_key(columns[index], index)
+                value = row.get(key, row.get(f"c{index}", ""))
+                fields.append((f"c{index}", value))
+        existing = {name for name, _ in fields}
+        for key, value in row.items():
+            if key in meta_map or key in ("cells", "values", "options"):
+                continue
+            if key.startswith("c") and key not in existing:
+                fields.append((key, value))
+    else:
+        for index, cell in enumerate(row or []):
+            value, cell_type, options = _table_cell_payload(cell)
+            base = f"c{index}"
+            fields.append((base, value))
+            if cell_type is not None:
+                fields.append((f"{base}_type", table_cell_type_name(cell_type)))
+            if options:
+                fields.append((f"{base}_options", table_options(options)))
+    return table_kv_line(fields)
+
+def set_table_columns_ex(hwnd, element_id, columns):
+    data = make_utf8("\n".join(table_column_line(col, i) for i, col in enumerate(columns or [])))
+    dll.EU_SetTableColumnsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_rows_ex(hwnd, element_id, rows, columns=None):
+    data = make_utf8("\n".join(table_row_line(row, columns) for row in (rows or [])))
+    dll.EU_SetTableRowsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_cell(hwnd, element_id, row, col, cell_type="text", value="", options=None):
+    if isinstance(value, (list, tuple)):
+        value = _table_join_values(value)
+    value_data = make_utf8(str(value))
+    option_data = make_utf8(table_options(options))
+    dll.EU_SetTableCellEx(
+        hwnd, element_id, row, col, table_cell_type(cell_type),
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(option_data), len(option_data)
+    )
+
+def set_table_row_style(hwnd, element_id, row, bg=0, fg=0, align=-1, font_flags=-1, font_size=0):
+    dll.EU_SetTableRowStyle(hwnd, element_id, row, bg, fg, align, font_flags, font_size)
+
+def set_table_cell_style(hwnd, element_id, row, col, bg=0, fg=0, align=-1, font_flags=-1, font_size=0):
+    dll.EU_SetTableCellStyle(hwnd, element_id, row, col, bg, fg, align, font_flags, font_size)
+
+def set_table_selection_mode(hwnd, element_id, mode=1):
+    dll.EU_SetTableSelectionMode(hwnd, element_id, mode)
+
+def set_table_selected_rows(hwnd, element_id, rows):
+    if isinstance(rows, str):
+        spec = rows
+    else:
+        spec = "|".join(str(int(r)) for r in (rows or []))
+    data = make_utf8(spec)
+    dll.EU_SetTableSelectedRows(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_filter(hwnd, element_id, col, value):
+    if value is None:
+        dll.EU_ClearTableFilter(hwnd, element_id, col)
+        return
+    data = make_utf8(str(value))
+    dll.EU_SetTableFilter(hwnd, element_id, col, bytes_arg(data), len(data))
+
+def clear_table_filter(hwnd, element_id, col=-1):
+    dll.EU_ClearTableFilter(hwnd, element_id, col)
+
+def set_table_search(hwnd, element_id, value=""):
+    data = make_utf8(str(value or ""))
+    dll.EU_SetTableSearch(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_span(hwnd, element_id, row, col, rowspan=1, colspan=1):
+    dll.EU_SetTableSpan(hwnd, element_id, row, col, rowspan, colspan)
+
+def clear_table_spans(hwnd, element_id):
+    dll.EU_ClearTableSpans(hwnd, element_id)
+
+def set_table_summary(hwnd, element_id, values):
+    spec = values if isinstance(values, str) else "|".join(table_escape(v) for v in (values or []))
+    data = make_utf8(spec)
+    dll.EU_SetTableSummary(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_row_expanded(hwnd, element_id, row, expanded=True):
+    dll.EU_SetTableRowExpanded(hwnd, element_id, row, 1 if expanded else 0)
+
+def set_table_tree_options(hwnd, element_id, enabled=True, indent=18, lazy=False):
+    dll.EU_SetTableTreeOptions(hwnd, element_id, 1 if enabled else 0, indent, 1 if lazy else 0)
+
+def set_table_viewport_options(hwnd, element_id, max_height=0, fixed_header=True,
+                               horizontal_scroll=True, show_summary=False):
+    dll.EU_SetTableViewportOptions(
+        hwnd, element_id, max_height,
+        1 if fixed_header else 0,
+        1 if horizontal_scroll else 0,
+        1 if show_summary else 0
+    )
+
+def set_table_scroll(hwnd, element_id, scroll_row=0, scroll_x=0):
+    dll.EU_SetTableScroll(hwnd, element_id, scroll_row, scroll_x)
+
+def set_table_header_drag_options(hwnd, element_id, column_resize=False, header_height_resize=False,
+                                  min_col_width=48, max_col_width=720,
+                                  min_header_height=34, max_header_height=180):
+    dll.EU_SetTableHeaderDragOptions(
+        hwnd, element_id,
+        1 if column_resize else 0,
+        1 if header_height_resize else 0,
+        min_col_width, max_col_width, min_header_height, max_header_height,
+    )
+
+def export_table_excel(hwnd, element_id, path, flags=0):
+    data = make_utf8(path)
+    return bool(dll.EU_ExportTableExcel(hwnd, element_id, bytes_arg(data), len(data), flags))
+
+def import_table_excel(hwnd, element_id, path, flags=0):
+    data = make_utf8(path)
+    return bool(dll.EU_ImportTableExcel(hwnd, element_id, bytes_arg(data), len(data), flags))
+
+def set_table_cell_click_callback(hwnd, element_id, callback):
+    dll.EU_SetTableCellClickCallback(hwnd, element_id, callback)
+
+def set_table_cell_action_callback(hwnd, element_id, callback):
+    dll.EU_SetTableCellActionCallback(hwnd, element_id, callback)
+
+_table_virtual_row_provider_refs = {}
+
+def set_table_virtual_options(hwnd, element_id, enabled=True, row_count=0, cache_window=32):
+    dll.EU_SetTableVirtualOptions(hwnd, element_id, 1 if enabled else 0, row_count, cache_window)
+
+def set_table_virtual_row_provider(hwnd, element_id, provider):
+    key = (int(hwnd), int(element_id))
+    if provider is None:
+        _table_virtual_row_provider_refs.pop(key, None)
+        dll.EU_SetTableVirtualRowProvider(hwnd, element_id, TableVirtualRowCallback(0))
+        return
+    if not callable(provider):
+        raise TypeError("provider must be callable or None")
+    def _native(table_id, row_index, buffer, buffer_size):
+        text = provider(table_id, row_index)
+        data = make_utf8("" if text is None else str(text))
+        needed = len(data)
+        if not buffer or buffer_size <= 0:
+            return needed
+        n = min(needed, max(0, buffer_size - 1))
+        if n > 0:
+            ctypes.memmove(buffer, data, n)
+        if buffer_size > 0:
+            buffer[n] = 0
+        return needed
+    cb = TableVirtualRowCallback(_native)
+    _table_virtual_row_provider_refs[key] = cb
+    dll.EU_SetTableVirtualRowProvider(hwnd, element_id, cb)
+
+def clear_table_virtual_cache(hwnd, element_id):
+    dll.EU_ClearTableVirtualCache(hwnd, element_id)
+
+def _read_table_text(fn, *args, buffer_size=4096):
+    buf = ctypes.create_string_buffer(buffer_size)
+    ptr = ctypes.cast(buf, ctypes.POINTER(ctypes.c_ubyte))
+    needed = fn(*args, ptr, buffer_size)
+    if needed >= buffer_size:
+        buf = ctypes.create_string_buffer(needed + 1)
+        ptr = ctypes.cast(buf, ctypes.POINTER(ctypes.c_ubyte))
+        fn(*args, ptr, needed + 1)
+    return buf.value.decode("utf-8", errors="replace")
+
+def get_table_cell_value(hwnd, element_id, row, col):
+    return _read_table_text(dll.EU_GetTableCellValue, hwnd, element_id, row, col)
+
+def get_table_full_state(hwnd, element_id):
+    return _read_table_text(dll.EU_GetTableFullState, hwnd, element_id)
+
+def create_table_ex(hwnd, parent_id, columns=None, rows=None,
+                    striped=True, bordered=True, x=0, y=0, w=640, h=220,
+                    selection_mode=0, tree=False, lazy=False, max_height=0,
+                    fixed_header=True, horizontal_scroll=True, summary=None,
+                    row_height=None, header_height=None):
+    if columns is None:
+        columns = [
+            {"title": "序号", "key": "idx", "type": "index", "width": 64, "fixed": "left", "align": "center"},
+            {"title": "事项", "key": "task", "width": 170, "sortable": True, "tooltip": True},
+            {"title": "状态", "key": "state", "type": "status", "width": 120, "align": "center"},
+            {"title": "进度", "key": "progress", "type": "progress", "width": 150},
+        ]
+    if rows is None:
+        rows = [
+            {"cells": [{"type": "index"}, "🍜 备菜", {"type": "status", "value": "1", "options": {"status": 1}}, {"type": "progress", "value": 66}]},
+            {"cells": [{"type": "index"}, "🚚 配送", {"type": "status", "value": "2", "options": {"status": 2}}, {"type": "progress", "value": 88}]},
+        ]
+    legacy_columns = [_table_column_title(col, i) for i, col in enumerate(columns)]
+    legacy_rows = []
+    for row in rows:
+        if isinstance(row, dict):
+            raw_cells = row.get("cells", row.get("values", []))
+            legacy_rows.append([str(_table_cell_payload(cell)[0]) for cell in raw_cells])
+        else:
+            legacy_rows.append([str(_table_cell_payload(cell)[0]) for cell in row])
+    element_id = create_table(
+        hwnd, parent_id, legacy_columns, legacy_rows,
+        striped, bordered, x, y, w, h,
+        row_height=row_height, header_height=header_height,
+        selectable=selection_mode != 0
+    )
+    if element_id:
+        set_table_columns_ex(hwnd, element_id, columns)
+        set_table_rows_ex(hwnd, element_id, rows, columns)
+        set_table_selection_mode(hwnd, element_id, selection_mode)
+        set_table_tree_options(hwnd, element_id, tree, 18, lazy)
+        set_table_viewport_options(hwnd, element_id, max_height, fixed_header, horizontal_scroll, summary is not None)
+        if summary is not None:
+            set_table_summary(hwnd, element_id, summary)
+    return element_id
 
 def create_card(hwnd, parent_id, title="🧩 卡片", body="", shadow=1,
                 x=0, y=0, w=280, h=140):
@@ -6106,6 +6652,81 @@ def get_dropdown_state(hwnd, element_id):
         "level": level.value,
         "hover": hover.value,
     } if ok else None
+
+def set_dropdown_options(hwnd, element_id, trigger_mode=0, hide_on_click=True,
+                         split_button=False, button_variant=0, size=0, trigger_style=0):
+    dll.EU_SetDropdownOptions(
+        hwnd, element_id,
+        int(trigger_mode), 1 if hide_on_click else 0,
+        1 if split_button else 0, int(button_variant),
+        int(size), int(trigger_style),
+    )
+
+def get_dropdown_options(hwnd, element_id):
+    trigger_mode = ctypes.c_int()
+    hide_on_click = ctypes.c_int()
+    split_button = ctypes.c_int()
+    button_variant = ctypes.c_int()
+    size = ctypes.c_int()
+    trigger_style = ctypes.c_int()
+    ok = dll.EU_GetDropdownOptions(
+        hwnd, element_id,
+        ctypes.byref(trigger_mode), ctypes.byref(hide_on_click),
+        ctypes.byref(split_button), ctypes.byref(button_variant),
+        ctypes.byref(size), ctypes.byref(trigger_style),
+    )
+    return {
+        "trigger_mode": trigger_mode.value,
+        "hide_on_click": bool(hide_on_click.value),
+        "split_button": bool(split_button.value),
+        "button_variant": button_variant.value,
+        "size": size.value,
+        "trigger_style": trigger_style.value,
+    } if ok else None
+
+def set_dropdown_item_meta(hwnd, element_id, icons=None, commands=None, divided=None):
+    icons = icons or []
+    commands = commands or []
+    divided = divided or []
+    icons_data = make_utf8("|".join(icons))
+    commands_data = make_utf8("|".join(commands))
+    arr_type = ctypes.c_int * len(divided)
+    arr = arr_type(*divided) if divided else None
+    dll.EU_SetDropdownItemMeta(
+        hwnd, element_id,
+        bytes_arg(icons_data), len(icons_data),
+        bytes_arg(commands_data), len(commands_data),
+        arr, len(divided),
+    )
+
+def get_dropdown_item_meta(hwnd, element_id, item_index):
+    icon_buf = (ctypes.c_ubyte * 256)()
+    command_buf = (ctypes.c_ubyte * 256)()
+    divided = ctypes.c_int()
+    disabled = ctypes.c_int()
+    level = ctypes.c_int()
+    ok = dll.EU_GetDropdownItemMeta(
+        hwnd, element_id, item_index,
+        icon_buf, len(icon_buf), command_buf, len(command_buf),
+        ctypes.byref(divided), ctypes.byref(disabled), ctypes.byref(level),
+    )
+    if not ok:
+        return None
+    icon = bytes(icon_buf).split(b"\0", 1)[0].decode("utf-8", errors="replace")
+    command = bytes(command_buf).split(b"\0", 1)[0].decode("utf-8", errors="replace")
+    return {
+        "icon": icon,
+        "command": command,
+        "divided": bool(divided.value),
+        "disabled": bool(disabled.value),
+        "level": level.value,
+    }
+
+def set_dropdown_command_callback(hwnd, element_id, callback):
+    dll.EU_SetDropdownCommandCallback(hwnd, element_id, callback)
+
+def set_dropdown_main_click_callback(hwnd, element_id, callback):
+    dll.EU_SetDropdownMainClickCallback(hwnd, element_id, callback)
 
 def create_menu(hwnd, parent_id, items=None, active=0, orientation=0,
                 x=0, y=0, w=420, h=48):
@@ -7994,6 +8615,50 @@ def set_drawer_options(hwnd, element_id, placement=1, open=True,
         1 if modal else 0, 1 if closable else 0,
         1 if close_on_mask else 0, size
     )
+
+def set_drawer_advanced_options(hwnd, element_id, show_header=True, show_close=True,
+                                close_on_escape=True, content_padding=20,
+                                footer_height=58, size_mode=0, size_value=0):
+    dll.EU_SetDrawerAdvancedOptions(
+        hwnd, element_id,
+        1 if show_header else 0,
+        1 if show_close else 0,
+        1 if close_on_escape else 0,
+        content_padding,
+        footer_height,
+        size_mode,
+        size_value,
+    )
+
+def get_drawer_advanced_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(10)]
+    ok = dll.EU_GetDrawerAdvancedOptions(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "show_header", "show_close", "close_on_escape", "content_padding",
+        "footer_height", "size_mode", "size_value", "content_parent_id",
+        "footer_parent_id", "close_pending",
+    ]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("show_header", "show_close", "close_on_escape", "close_pending"):
+        state[key] = bool(state[key])
+    return state
+
+def get_drawer_content_parent(hwnd, element_id):
+    return dll.EU_GetDrawerContentParent(hwnd, element_id)
+
+def get_drawer_footer_parent(hwnd, element_id):
+    return dll.EU_GetDrawerFooterParent(hwnd, element_id)
+
+def set_drawer_before_close_callback(hwnd, element_id, callback):
+    dll.EU_SetDrawerBeforeCloseCallback(hwnd, element_id, callback)
+
+def confirm_drawer_close(hwnd, element_id, allow=True):
+    dll.EU_ConfirmDrawerClose(hwnd, element_id, 1 if allow else 0)
 
 def get_drawer_options(hwnd, element_id):
     placement = ctypes.c_int()

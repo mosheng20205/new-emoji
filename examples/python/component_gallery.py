@@ -960,6 +960,308 @@ def showcase_pagination(hwnd, stage, w, h):
     ui.create_table(hwnd, table, ["组件", "分类", "状态"], [["Pagination", "反馈流程", "当前页 3"], ["Table", "数据展示", "可分页"], ["Search", "业务场景", "结果 128 条"]], True, True, 30, 70, min(w - 116, 760), 120)
 
 
+def showcase_table(hwnd, stage, w, h):
+    add_text(hwnd, stage, "📊 Table 高级样式图库", 34, 28, 420, 30, TEXT)
+    status = add_text(hwnd, stage, "✅ 点击表格内按钮、开关、选择框、展开箭头可触发 TableCellCallback。", 34, h - 40, w - 80, 28, MUTED)
+    groups = []
+
+    def attach_click(table_id, label):
+        ui.set_table_cell_click_callback(hwnd, table_id, keep_callback(ui.TableCellCallback(
+            lambda table_id, row, col, action, value: ui.set_element_text(
+                hwnd, status, f"🖱️ {label}：Table #{table_id} 行 {row} 列 {col}"
+            )
+        )))
+        print(f"[Table] 已挂载点击回调：{label} #{table_id}")
+
+    def make_order_rows():
+        return [
+            {"cells": [{"type": "index"}, "2016-05-02", "王小虎 🎯", "上海市普陀区金沙江路 1518 弄", {"type": "tag", "value": "家 🏠"}]},
+            {"cells": [{"type": "index"}, "2016-05-04", "李小花 🌸", "上海市普陀区金沙江路 1517 弄", {"type": "tag", "value": "公司 🏢"}]},
+            {"cells": [{"type": "index"}, "2016-05-01", "陈小云 ☁️", "上海市普陀区金沙江路 1519 弄", {"type": "tag", "value": "家 🏠"}]},
+            {"cells": [{"type": "index"}, "2016-05-03", "赵小星 ⭐", "上海市普陀区金沙江路 1516 弄", {"type": "tag", "value": "公司 🏢"}]},
+        ]
+
+    def make_order_columns(extra=False):
+        cols = [
+            {"title": "序号", "key": "idx", "type": "index", "width": 64, "align": "center"},
+            {"title": "日期", "key": "date", "width": 150, "sortable": True, "filterable": True},
+            {"title": "姓名", "key": "name", "width": 130, "sortable": True},
+            {"title": "地址", "key": "address", "width": 360, "tooltip": True},
+            {"title": "标签", "key": "tag", "type": "tag", "width": 120, "align": "center"},
+        ]
+        if extra:
+            cols[0]["fixed"] = "left"
+            cols.extend([
+                {"title": "省份", "key": "province", "parent": "配送信息", "width": 130},
+                {"title": "市区", "key": "city", "parent": "配送信息", "width": 130},
+                {"title": "邮编", "key": "zip", "parent": "配送信息", "width": 130},
+                {"title": "操作", "key": "action", "type": "buttons", "width": 230, "fixed": "right", "align": "center"},
+            ])
+        return cols
+
+    def fill_basic(panel):
+        table_w = min((w - 132) // 2, 740)
+        t1 = ui.create_table_ex(hwnd, panel, make_order_columns(), make_order_rows(), False, False, 28, 76, table_w, 290, row_height=48, header_height=50)
+        t2 = ui.create_table_ex(hwnd, panel, make_order_columns(), make_order_rows(), True, True, 56 + table_w, 76, table_w, 290, row_height=48, header_height=50)
+        attach_click(t1, "基础样式")
+        attach_click(t2, "基础样式")
+        ui.set_table_row_style(hwnd, t2, 1, 0xFFFFF7E6, 0xFF7A4B00, 0, 0, 14)
+        ui.set_table_row_style(hwnd, t2, 3, 0xFFEAF8EF, 0xFF185A2F, 0, 1, 15)
+        ui.set_table_cell_style(hwnd, t2, 0, 3, 0xFFEAF2FF, 0xFF1F3D64, 0, 1, 15)
+        add_text(hwnd, panel, "覆盖基础表格、斑马纹、边框、行颜色、单元格颜色、对齐、粗体和字号。", 28, 368, 1040, 28, MUTED)
+
+    def fill_fixed(panel):
+        rows = []
+        for row in make_order_rows() * 4:
+            cells = row["cells"] + ["上海", "普陀区", "200333", {"type": "buttons", "value": ["查看 👀", "编辑 ✏️"]}]
+            rows.append({"cells": cells})
+        table = ui.create_table_ex(
+            hwnd, panel, make_order_columns(extra=True), rows,
+            True, True, 28, 76, min(w - 112, 1180), 430,
+            selection_mode=1, max_height=430, horizontal_scroll=True,
+            row_height=48, header_height=50,
+        )
+        attach_click(table, "固定滚动")
+        ui.set_table_scroll(hwnd, table, 3, 180)
+        add_text(hwnd, panel, "固定左列/右列、横向滚动、多级表头、固定表头和最大高度同时开启。", 28, 520, 1040, 28, MUTED)
+
+    def fill_select_filter(panel):
+        columns = [
+            {"title": "选择", "key": "sel", "type": "selection", "width": 56, "fixed": "left", "align": "center"},
+            {"title": "日期", "key": "date", "width": 148, "sortable": True, "filterable": True},
+            {"title": "姓名", "key": "name", "width": 140, "sortable": True, "searchable": True},
+            {"title": "地址", "key": "address", "width": 380, "tooltip": True},
+            {"title": "标签", "key": "tag", "type": "tag", "width": 120, "align": "center", "filterable": True},
+            {"title": "操作", "key": "action", "type": "buttons", "width": 230, "fixed": "right"},
+        ]
+        rows = []
+        for row in make_order_rows() + make_order_rows():
+            rows.append({"cells": [{"type": "selection"}] + row["cells"][1:] + [{"type": "buttons", "value": ["查看 👀", "删除 🗑️"]}]})
+        table = ui.create_table_ex(hwnd, panel, columns, rows, True, True, 28, 76, min(w - 112, 1380), 360, selection_mode=2, max_height=360, row_height=48, header_height=50)
+        attach_click(table, "选择筛选")
+        ui.set_table_selected_rows(hwnd, table, [0, 2, 4])
+        ui.set_table_filter(hwnd, table, 4, "家 🏠")
+        ui.set_table_search(hwnd, table, "王")
+        ui.set_table_sort(hwnd, table, 1, desc=True)
+        add_text(hwnd, panel, "多选列、单选/多选状态、排序、筛选、表头搜索语义和操作列在同一张表中展示。", 28, 438, 1100, 28, MUTED)
+
+    def fill_controls(panel):
+        columns = [
+            {"title": "任务", "key": "task", "width": 160, "fixed": "left"},
+            {"title": "组合款", "key": "combo", "type": "combo", "width": 200},
+            {"title": "开关", "key": "enabled", "type": "switch", "width": 80, "align": "center"},
+            {"title": "选择框", "key": "choice", "type": "select", "width": 180},
+            {"title": "进度", "key": "progress", "type": "progress", "width": 440},
+            {"title": "状态", "key": "status", "type": "status", "width": 100},
+            {"title": "标签提示", "key": "tag", "type": "popover_tag", "width": 170, "align": "center"},
+            {"title": "按钮组", "key": "buttons", "type": "buttons", "width": 220, "fixed": "right"},
+        ]
+        rows = [
+            {"cells": ["🍜 备菜", {"type": "combo", "value": ["待处理", "查看"]}, {"type": "switch", "value": "1", "options": {"checked": True}}, {"type": "select", "value": ["待处理 ⏳", "配送中 🚚", "已完成 ✅"]}, {"type": "progress", "value": 66}, {"type": "status", "value": 2, "options": {"status": 2}}, {"type": "popover_tag", "value": "备货 🧾"}, {"type": "buttons", "value": ["查看 👀", "编辑 ✏️"]}]},
+            {"cells": ["🚚 配送", {"type": "combo", "value": ["配送中", "催单"]}, {"type": "switch", "value": "0"}, {"type": "select", "value": ["同城 🚚", "自提 🛍️", "快递 📦"]}, {"type": "progress", "value": 88}, {"type": "status", "value": 1, "options": {"status": 1}}, {"type": "popover_tag", "value": "准时 ✅"}, {"type": "buttons", "value": ["跟踪 📍", "签收 ✅"]}]},
+            {"cells": ["🧾 复核", {"type": "combo", "value": ["已完成", "归档"]}, {"type": "switch", "value": "1"}, {"type": "select", "value": ["低 🌿", "中 🔶", "高 🔴"]}, {"type": "progress", "value": 100}, {"type": "status", "value": 1, "options": {"status": 1}}, {"type": "popover_tag", "value": "完成 🎉"}, {"type": "buttons", "value": ["详情 📄", "归档 🗃️"]}]},
+        ]
+        table = ui.create_table_ex(hwnd, panel, columns, rows, True, True, 28, 76, min(w - 96, 1540), 500, selection_mode=0, max_height=500, row_height=62, header_height=60)
+        attach_click(table, "单元格控件")
+        ui.set_table_cell_click_callback(hwnd, table, keep_callback(ui.TableCellCallback(
+            lambda table_id, row, col, action, value: print(f"[Table点击] table={table_id} row={row} col={col} action={action} value={value}")
+            or ui.set_element_text(hwnd, status, f"🖱️ Table #{table_id} 单元格点击：行 {row} 列 {col}")
+        )))
+        ui.set_table_cell_action_callback(hwnd, table, keep_callback(ui.TableCellCallback(
+            lambda table_id, row, col, action, value: print(f"[Table动作] table={table_id} row={row} col={col} action={action} value={value}")
+            or ui.set_element_text(hwnd, status, f"🖱️ Table #{table_id} 行 {row} 列 {col} 动作 {action} 值 {value}")
+        )))
+        add_text(hwnd, panel, "内置 text/index/selection/expand/button/buttons/combo/switch/select/progress/status/tag/popover_tag 都由 Table 原生绘制和命中。", 28, 592, 1120, 28, MUTED)
+
+    def fill_tree_summary(panel):
+        columns = [
+            {"title": "展开", "key": "open", "type": "expand", "width": 60, "fixed": "left", "align": "center"},
+            {"title": "序号", "key": "idx", "type": "index", "width": 64, "fixed": "left", "align": "center"},
+            {"title": "项目", "key": "name", "width": 200},
+            {"title": "说明", "key": "desc", "width": 380, "tooltip": True},
+            {"title": "进度", "key": "progress", "type": "progress", "width": 260},
+            {"title": "状态", "key": "status", "type": "status", "width": 110},
+        ]
+        rows = [
+            {"key": "a", "expanded": True, "children": True, "cells": [{"type": "expand"}, {"type": "index"}, "📦 华东仓", "默认展开，下面两行是子项", {"type": "progress", "value": 82}, {"type": "status", "value": 1, "options": {"status": 1}}]},
+            {"key": "a1", "parent": "a", "level": 1, "cells": [{"type": "expand"}, {"type": "index"}, "上海站", "子行：同层排序不会打乱父子结构", {"type": "progress", "value": 77}, {"type": "status", "value": 2, "options": {"status": 2}}]},
+            {"key": "a2", "parent": "a", "level": 1, "cells": [{"type": "expand"}, {"type": "index"}, "杭州站", "子行：支持独立样式", {"type": "progress", "value": 91}, {"type": "status", "value": 1, "options": {"status": 1}}]},
+            {"key": "b", "lazy": True, "children": True, "cells": [{"type": "expand"}, {"type": "index"}, "🚚 华南仓", "懒加载标记，点击展开会触发回调", {"type": "progress", "value": 36}, {"type": "status", "value": 0, "options": {"status": 0}}]},
+            {"key": "c", "cells": [{"type": "expand"}, {"type": "index"}, "🧾 合并示例", "这一行说明列向右合并，并单独设置字体。", {"type": "progress", "value": 58}, {"type": "status", "value": 2, "options": {"status": 2}}]},
+        ]
+        table = ui.create_table_ex(hwnd, panel, columns, rows, True, True, 28, 76, min(w - 112, 1380), 380, tree=True, lazy=True, max_height=380, summary=["合计 🧮", "", "3 个仓", "5 行数据", "344%", ""], row_height=52, header_height=54)
+        attach_click(table, "树形合计")
+        ui.set_table_row_style(hwnd, table, 2, 0xFFEAF8EF, 0xFF185A2F, 0, 1, 15)
+        ui.set_table_cell_style(hwnd, table, 4, 3, 0xFFEAF2FF, 0xFF1F3D64, 0, 1, 15)
+        ui.set_table_span(hwnd, table, 4, 3, 1, 2)
+        add_text(hwnd, panel, "展开行、树形行、懒加载标记、合计行、自定义合计、索引列和行列合并集中展示。", 28, 460, 1120, 28, MUTED)
+
+    def fill_virtual(panel):
+        columns = [
+            {"title": "序号", "key": "idx", "type": "index", "width": 68, "fixed": "left", "align": "center"},
+            {"title": "日期", "key": "date", "width": 140, "sortable": True},
+            {"title": "姓名", "key": "name", "width": 140, "searchable": True},
+            {"title": "地址", "key": "address", "width": 360, "tooltip": True},
+            {"title": "标签", "key": "tag", "type": "tag", "width": 124, "align": "center"},
+            {"title": "进度", "key": "progress", "type": "progress", "width": 220},
+            {"title": "状态", "key": "status", "type": "status", "width": 110, "align": "center"},
+            {"title": "操作", "key": "actions", "type": "buttons", "width": 180, "fixed": "right", "align": "center"},
+        ]
+        names = ["王小虎 🎯", "李小花 🌸", "陈小云 ☁️", "赵小星 ⭐", "周小宇 🎮", "孙小满 🍀"]
+
+        def provider(table_id, row):
+            day = 1 + (row % 28)
+            progress = 24 + (row * 11 % 72)
+            tag = "家 🏠" if row % 2 == 0 else "公司 🏢"
+            status = row % 4
+            actions = ["查看 👀", "编辑 ✏️"] if row % 3 else ["详情 📄", "归档 🗃️"]
+            return (
+                f"key=v{row}\t"
+                f"c0={row + 1}\t"
+                f"c1=2026-05-{day:02d}\t"
+                f"c2={names[row % len(names)]}\t"
+                f"c3=上海市普陀区金沙江路 {1516 + (row % 5)} 弄\t"
+                f"c4={tag}\t"
+                f"c5={progress}\t"
+                f"c6={status}\t"
+                f"c6_options=status={status}\t"
+                f"c7={'|'.join(actions)}"
+            )
+
+        table = ui.create_table_ex(
+            hwnd, panel, columns, [], True, True, 28, 76, min(w - 96, 1540), 500,
+            selection_mode=1, max_height=500, row_height=54, header_height=56,
+        )
+        attach_click(table, "虚表")
+        ui.set_table_virtual_options(hwnd, table, True, 240, 48)
+        ui.set_table_virtual_row_provider(hwnd, table, provider)
+        ui.set_table_selected_rows(hwnd, table, [0, 12, 24])
+        ui.set_table_scroll(hwnd, table, 18, 0)
+        add_text(hwnd, panel, "虚表模式：由 row provider 按行索引同步返回 UTF-8 高级行协议，支持缓存、滚动和原生单元格命中。", 28, 592, 1120, 28, MUTED)
+
+    def fill_excel_drag(panel):
+        excel_path = os.path.join(tempfile.gettempdir(), "new_emoji_table_gallery.xlsx")
+        drag_state = {"column": True, "header": True}
+
+        def apply_drag(table_id):
+            ui.set_table_header_drag_options(
+                hwnd, table_id,
+                drag_state["column"], drag_state["header"],
+                72, 360, 48, 132,
+            )
+
+        def update_header_button(button_id):
+            ui.set_element_text(
+                hwnd, button_id,
+                f"↔️ 列宽拖拽：{'开' if drag_state['column'] else '关'}" if button_id == btn_col
+                else f"↕️ 表头高度：{'开' if drag_state['header'] else '关'}"
+            )
+
+        def set_status(text):
+            ui.set_element_text(hwnd, status, text)
+
+        columns = [
+            {"title": "订单号", "key": "id", "type": "index", "width": 72, "fixed": "left", "align": "center"},
+            {"title": "客户", "key": "customer", "width": 130},
+            {"title": "订单时间", "key": "time", "parent": "订单信息", "width": 150},
+            {"title": "商品", "key": "product", "parent": "订单信息", "width": 180, "tooltip": True},
+            {"title": "城市", "key": "city", "parent": "配送信息", "width": 130},
+            {"title": "地址", "key": "address", "parent": "配送信息", "width": 300, "tooltip": True},
+            {"title": "标签", "key": "tag", "type": "tag", "width": 120, "align": "center"},
+            {"title": "金额", "key": "amount", "width": 120, "align": "right"},
+            {"title": "操作", "key": "actions", "type": "buttons", "width": 180, "fixed": "right", "align": "center"},
+        ]
+        rows = []
+        for i in range(1, 9):
+            rows.append({
+                "key": f"ord-{i}",
+                "cells": [
+                    {"type": "index"},
+                    f"王小{i}号",
+                    f"2026-05-{i:02d} 10:{10 + i:02d}",
+                    "办公套装 📦" if i % 2 else "茶具礼盒 🍵",
+                    "上海",
+                    f"上海市普陀区金沙江路 {1510 + i} 弄",
+                    {"type": "tag", "value": "家 🏠" if i % 2 else "公司 🏢"},
+                    f"{98 + i * 12}.00",
+                    {"type": "buttons", "value": ["导出 📤", "编辑 ✏️"] if i % 2 else ["导入 📥", "归档 🗃️"]},
+                ],
+            })
+
+        table = ui.create_table_ex(
+            hwnd, panel, columns, rows, True, True, 28, 118, min(w - 104, 1440), 430,
+            selection_mode=1, max_height=430, horizontal_scroll=True, row_height=50, header_height=62,
+        )
+        attach_click(table, "表头拖拽 + Excel")
+        apply_drag(table)
+
+        btn_col = ui.create_button(hwnd, panel, "↔️", "列宽拖拽：开", 30, 72, 170, 34)
+        btn_head = ui.create_button(hwnd, panel, "↕️", "表头高度：开", 214, 72, 170, 34)
+        btn_export = ui.create_button(hwnd, panel, "📤", "导出 Excel", 398, 72, 150, 34)
+        btn_import = ui.create_button(hwnd, panel, "📥", "导入 Excel", 562, 72, 150, 34)
+
+        def sync_state():
+            update_header_button(btn_col)
+            update_header_button(btn_head)
+            set_status(f"📗 表头拖拽：列宽{'开' if drag_state['column'] else '关'} / 高度{'开' if drag_state['header'] else '关'} ｜ 文件：{os.path.basename(excel_path)}")
+
+        def toggle_col(_eid):
+            drag_state["column"] = not drag_state["column"]
+            apply_drag(table)
+            sync_state()
+
+        def toggle_head(_eid):
+            drag_state["header"] = not drag_state["header"]
+            apply_drag(table)
+            sync_state()
+
+        def do_export(_eid):
+            ok = ui.export_table_excel(hwnd, table, excel_path)
+            sync_state()
+            set_status("📤 已导出 Excel：" + excel_path if ok else "📤 导出失败")
+
+        def do_import(_eid):
+            ok = ui.import_table_excel(hwnd, table, excel_path)
+            apply_drag(table)
+            sync_state()
+            set_status("📥 已导入 Excel：" + excel_path if ok else "📥 导入失败（请先导出）")
+
+        set_click(hwnd, btn_col, toggle_col)
+        set_click(hwnd, btn_head, toggle_head)
+        set_click(hwnd, btn_export, do_export)
+        set_click(hwnd, btn_import, do_import)
+        sync_state()
+        add_text(hwnd, panel, "支持列宽拖拽、表头总高度拖拽、多行表头合并导出/导入，Excel 里能直接看到父级表头和叶子表头。", 28, 582, 1240, 28, MUTED)
+
+    builders = [
+        ("基础样式 ✨", fill_basic),
+        ("固定滚动 🧭", fill_fixed),
+        ("选择筛选 🔎", fill_select_filter),
+        ("单元格控件 🎛️", fill_controls),
+        ("树形合计 🧮", fill_tree_summary),
+        ("虚表 🚀", fill_virtual),
+        ("表头拖拽 + Excel 📗", fill_excel_drag),
+    ]
+
+    panel_h = min(h - 132, 760)
+    for index, (title, builder) in enumerate(builders):
+        panel = add_demo_panel(hwnd, stage, title, 28, 88, w - 56, panel_h)
+        builder(panel)
+        ui.set_element_visible(hwnd, panel, index == 0)
+        groups.append(panel)
+
+    def show_group(active_index):
+        def handler(_eid):
+            for i, panel in enumerate(groups):
+                ui.set_element_visible(hwnd, panel, i == active_index)
+            ui.set_element_text(hwnd, status, f"📊 当前分组：{builders[active_index][0]}")
+        return handler
+
+    for index, (title, _builder) in enumerate(builders):
+        btn = ui.create_button(hwnd, stage, "📊", title, 34 + index * 180, 58, 160, 34)
+        set_click(hwnd, btn, show_group(index))
+
+
 def showcase_upload(hwnd, stage, w, h):
     img1, img2, img3, doc = upload_sample_files()
 
@@ -1706,6 +2008,216 @@ def showcase_dialog(hwnd, stage, w, h):
     ui.create_table(hwnd, bottom, ["能力", "状态", "说明"], [["content slot", "✅", "可挂载 Table/Input/Select"], ["footer slot", "✅", "可替换默认按钮区"], ["before-close", "✅", "支持拦截后继续关闭"]], True, True, 30, 198, min(w - 120, 760), 116)
 
 
+def showcase_drawer(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "📚 选择左侧入口打开抽屉；内容区、页脚区和关闭确认都是真实组件。", 36, 28, w - 72, 28, MUTED)
+    directions = add_demo_panel(hwnd, stage, "🧭 方向与尺寸", 28, 70, 760, 288)
+    slots = add_demo_panel(hwnd, stage, "📋 内容 slot：表格与表单", 820, 70, w - 848, 288)
+    closing = add_demo_panel(hwnd, stage, "🛡️ 关闭确认与嵌套抽屉", 28, 386, 820, 292)
+    style_panel = add_demo_panel(hwnd, stage, "🎨 桌面属性面板风格", 880, 386, w - 908, 292)
+    api_panel = add_demo_panel(hwnd, stage, "📌 Drawer 样式覆盖", 28, 706, w - 56, 330)
+
+    close_stats = {"count": 0}
+    confirm_holder = {"drawer": 0, "dialog": 0}
+
+    @ui.ValueCallback
+    def on_drawer_closed(element_id, close_count, placement, action):
+        close_stats["count"] = close_count
+        ui.set_element_text(hwnd, status, f"✅ 抽屉 #{element_id} 已关闭；方向={placement}，动作={action}，累计={close_count}")
+
+    @ui.BeforeCloseCallback
+    def before_close(element_id, action):
+        confirm_holder["drawer"] = element_id
+        ui.set_element_text(hwnd, status, f"🛡️ 抽屉 #{element_id} 请求关闭，动作={action}；等待确认 Dialog。")
+        old_dialog = confirm_holder.get("dialog", 0)
+        if old_dialog:
+            options = ui.get_dialog_options(hwnd, old_dialog)
+            if options and options[0]:
+                return 0
+        dlg = ui.create_dialog(hwnd, "🛡️ 确认关闭抽屉", "抽屉里还有未提交内容，确定关闭吗？", True, True, 480, 240)
+        confirm_holder["dialog"] = dlg
+        ui.set_dialog_buttons(hwnd, dlg, ["确认关闭 ✅", "继续编辑 ✍️"])
+        ui.set_dialog_advanced_options(hwnd, dlg, width_mode=0, width_value=480, center=True, footer_center=True, content_padding=22, footer_height=62)
+
+        @ui.ValueCallback
+        def on_confirm(_dialog_id, button_index, _count, _dialog_action):
+            target = confirm_holder.get("drawer", element_id)
+            allow = button_index == 0
+            ui.confirm_drawer_close(hwnd, target, allow)
+            ui.set_element_text(hwnd, status, "✅ 已确认关闭抽屉。" if allow else "✍️ 已取消关闭，继续编辑。")
+
+        keep_callback(on_confirm)
+        ui.set_dialog_button_callback(hwnd, dlg, on_confirm)
+        ui.set_dialog_options(hwnd, dlg, open=True, modal=True, closable=True, close_on_mask=False, draggable=True, w=480, h=240)
+        return 0
+
+    keep_callback(on_drawer_closed)
+    keep_callback(before_close)
+
+    def add_footer_buttons(drawer, ok_text="确定 ✅"):
+        footer = ui.get_drawer_footer_parent(hwnd, drawer)
+        cancel = ui.create_button(hwnd, footer, "❌", "取消", 36, 12, 92, 36)
+        ok = ui.create_button(hwnd, footer, "✅", ok_text, 144, 12, 118, 36)
+        set_click(hwnd, cancel, lambda _id: ui.trigger_drawer_close(hwnd, drawer))
+        set_click(hwnd, ok, lambda _id: ui.trigger_drawer_close(hwnd, drawer))
+
+    def open_direction(placement, size_mode, size_value, label):
+        drawer = ui.create_drawer(hwnd, f"🧭 {label}", "", placement, True, True, size_value if size_mode == 0 else 420)
+        ui.set_drawer_close_callback(hwnd, drawer, on_drawer_closed)
+        ui.set_drawer_options(hwnd, drawer, placement=placement, open=True, modal=True, closable=True, close_on_mask=True, size=size_value if size_mode == 0 else 420)
+        ui.set_drawer_advanced_options(hwnd, drawer, show_header=True, show_close=True, close_on_escape=True, content_padding=22, footer_height=58, size_mode=size_mode, size_value=size_value)
+        content = ui.get_drawer_content_parent(hwnd, drawer)
+        add_text(hwnd, content, f"{label}\n尺寸模式：{'百分比 50%' if size_mode == 1 else str(size_value) + 'px'}", 0, 0, 320, 58, TEXT)
+        ui.create_table(hwnd, content, ["项目", "状态"], [["中文标题", "✅"], ["emoji 渲染", "🌈"], ["遮罩关闭", "✅"]], True, True, 0, 76, 330, 122)
+        add_footer_buttons(drawer)
+        ui.set_element_text(hwnd, status, f"🧭 已打开：{label}")
+        return drawer
+
+    def open_no_header(_eid):
+        drawer = ui.create_drawer(hwnd, "", "", 1, True, True, 360)
+        ui.set_drawer_close_callback(hwnd, drawer, on_drawer_closed)
+        ui.set_drawer_options(hwnd, drawer, placement=1, open=True, modal=True, closable=True, close_on_mask=True, size=360)
+        ui.set_drawer_advanced_options(hwnd, drawer, show_header=False, show_close=False, close_on_escape=True, content_padding=24, footer_height=58, size_mode=0, size_value=360)
+        content = ui.get_drawer_content_parent(hwnd, drawer)
+        add_text(hwnd, content, "📚 无标题栏抽屉\n内容从顶部 padding 开始，程序仍可关闭。", 0, 0, 304, 76, TEXT)
+        done_btn = ui.create_button(hwnd, content, "✅", "完成并关闭", 0, 104, 150, 38)
+        set_click(hwnd, done_btn, lambda _id: ui.trigger_drawer_close(hwnd, drawer))
+        set_click(hwnd, ui.create_button(hwnd, content, "🧭", "更新状态", 162, 104, 134, 38), lambda _id: ui.set_element_text(hwnd, status, "🧭 无标题栏抽屉仍可响应内部按钮。"))
+        add_footer_buttons(drawer)
+        ui.set_element_text(hwnd, status, "📚 已打开无标题栏抽屉。")
+
+    def open_table_drawer(_eid):
+        drawer = ui.create_drawer(hwnd, "📦 收货地址", "", 1, True, True, 520)
+        ui.set_drawer_close_callback(hwnd, drawer, on_drawer_closed)
+        ui.set_drawer_options(hwnd, drawer, placement=1, open=True, modal=True, closable=True, close_on_mask=True, size=520)
+        ui.set_drawer_advanced_options(hwnd, drawer, content_padding=24, footer_height=62, size_mode=1, size_value=50)
+        content = ui.get_drawer_content_parent(hwnd, drawer)
+        ui.create_table(
+            hwnd, content,
+            ["日期", "姓名", "地址"],
+            [
+                ["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+                ["2016-05-04", "李小萌", "北京市朝阳区望京路 88 号"],
+                ["2016-05-01", "陈小南", "杭州市西湖区文三路 99 号"],
+                ["2016-05-03", "周小北", "深圳市南山区科技园 5 栋"],
+            ],
+            True, True, 0, 0, 690, 190,
+        )
+        add_text(hwnd, content, "📦 表格直接挂在 Drawer 内容 slot 中，可随抽屉一起滑入。", 0, 214, 620, 28, MUTED)
+        add_footer_buttons(drawer)
+        ui.set_element_text(hwnd, status, "📦 已打开真实表格抽屉。")
+
+    def open_form_drawer(_eid):
+        drawer = ui.create_drawer(hwnd, "🧾 活动表单", "", 0, True, True, 460)
+        ui.set_drawer_close_callback(hwnd, drawer, on_drawer_closed)
+        ui.set_drawer_options(hwnd, drawer, placement=0, open=True, modal=True, closable=True, close_on_mask=True, size=460)
+        ui.set_drawer_advanced_options(hwnd, drawer, content_padding=24, footer_height=66, size_mode=0, size_value=460)
+        content = ui.get_drawer_content_parent(hwnd, drawer)
+        add_text(hwnd, content, "活动名称", 0, 8, 100, 28, TEXT)
+        ui.create_input(hwnd, content, "", "请输入活动名称 🎉", x=112, y=2, w=270, h=38)
+        add_text(hwnd, content, "活动区域", 0, 66, 100, 28, TEXT)
+        ui.create_select(hwnd, content, "请选择活动区域", ["区域一：上海", "区域二：北京", "区域三：深圳"], 0, 112, 60, 270, 38)
+        add_text(hwnd, content, "备注", 0, 124, 100, 28, TEXT)
+        ui.create_input(hwnd, content, "", "补充说明，可留空 ✍️", x=112, y=118, w=270, h=38)
+        add_footer_buttons(drawer, "提交 ✅")
+        ui.set_element_text(hwnd, status, "🧾 已打开真实表单抽屉，页脚按钮挂在 footer slot。")
+
+    def open_confirm_drawer(_eid):
+        drawer = ui.create_drawer(hwnd, "🛡️ 关闭前确认", "", 1, True, True, 420)
+        ui.set_drawer_close_callback(hwnd, drawer, on_drawer_closed)
+        ui.set_drawer_before_close_callback(hwnd, drawer, before_close)
+        ui.set_drawer_options(hwnd, drawer, placement=1, open=True, modal=True, closable=True, close_on_mask=True, size=420)
+        ui.set_drawer_advanced_options(hwnd, drawer, content_padding=24, footer_height=62, size_mode=0, size_value=420)
+        content = ui.get_drawer_content_parent(hwnd, drawer)
+        add_text(hwnd, content, "🛡️ 点击右上角、遮罩、ESC 或页脚按钮时，会先弹出确认 Dialog。", 0, 0, 350, 72, TEXT)
+        ui.create_input(hwnd, content, "未保存的草稿", "请输入草稿内容", x=0, y=94, w=300, h=38)
+        add_footer_buttons(drawer, "尝试关闭 ✅")
+        ui.set_element_text(hwnd, status, "🛡️ 已打开 before-close 抽屉。")
+
+    def open_nested_drawer(_eid):
+        outer = ui.create_drawer(hwnd, "🧳 外层抽屉", "", 1, True, True, 500)
+        ui.set_drawer_close_callback(hwnd, outer, on_drawer_closed)
+        ui.set_drawer_options(hwnd, outer, placement=1, open=True, modal=True, closable=True, close_on_mask=True, size=500)
+        ui.set_drawer_advanced_options(hwnd, outer, content_padding=24, footer_height=62, size_mode=0, size_value=500)
+        outer_content = ui.get_drawer_content_parent(hwnd, outer)
+        add_text(hwnd, outer_content, "🧳 外层抽屉内容区中有一个按钮，点击后打开根级内层抽屉。", 0, 0, 410, 58, TEXT)
+        inner_btn = ui.create_button(hwnd, outer_content, "🪆", "打开里面的抽屉", 0, 86, 180, 40)
+        add_footer_buttons(outer)
+
+        def open_inner(_id):
+            inner = ui.create_drawer(hwnd, "🪆 内层抽屉", "内层抽屉作为窗口级浮层创建，显示在外层之上。", 1, True, True, 300)
+            ui.set_drawer_close_callback(hwnd, inner, on_drawer_closed)
+            ui.set_drawer_options(hwnd, inner, placement=1, open=True, modal=True, closable=True, close_on_mask=True, size=300)
+            ui.set_drawer_advanced_options(hwnd, inner, content_padding=22, footer_height=58, size_mode=0, size_value=300)
+            add_footer_buttons(inner, "知道了 ✅")
+            ui.set_element_text(hwnd, status, "🪆 已打开内层抽屉。")
+
+        set_click(hwnd, inner_btn, open_inner)
+        ui.set_element_text(hwnd, status, "🧳 已打开外层抽屉。")
+
+    def open_custom_drawer(_eid):
+        drawer = ui.create_drawer(hwnd, "🎨 属性面板", "", 1, False, True, 380)
+        ui.set_drawer_close_callback(hwnd, drawer, on_drawer_closed)
+        ui.set_drawer_options(hwnd, drawer, placement=1, open=True, modal=False, closable=True, close_on_mask=False, size=380)
+        ui.set_drawer_advanced_options(hwnd, drawer, show_header=True, show_close=True, close_on_escape=True, content_padding=22, footer_height=64, size_mode=0, size_value=380)
+        ui.set_element_color(hwnd, drawer, 0xFF27314D, 0xFFEAF2FF)
+        content = ui.get_drawer_content_parent(hwnd, drawer)
+        add_text(hwnd, content, "🎛️ 主题设置", 0, 0, 180, 28, TEXT)
+        ui.create_switch(hwnd, content, "启用通知 🔔", True, 0, 46, 220, 34)
+        ui.create_slider(hwnd, content, "透明度", 0, 100, 82, 0, 96, 260, 36)
+        ui.create_select(hwnd, content, "布局密度", ["紧凑", "常规", "宽松"], 1, 0, 150, 260, 38)
+        add_footer_buttons(drawer, "应用 ✅")
+        ui.set_element_text(hwnd, status, "🎨 已打开桌面属性面板风格抽屉。")
+
+    direction_buttons = [
+        ("⬅️", "从左打开", lambda _id: open_direction(0, 0, 360, "从左往右开")),
+        ("➡️", "从右打开 50%", lambda _id: open_direction(1, 1, 50, "从右往左开")),
+        ("⬇️", "从上打开 50%", lambda _id: open_direction(2, 1, 50, "从上往下开")),
+        ("⬆️", "从下打开", lambda _id: open_direction(3, 0, 300, "从下往上开")),
+    ]
+    for i, (emoji, label, handler) in enumerate(direction_buttons):
+        btn = ui.create_button(hwnd, directions, emoji, label, 30 + (i % 2) * 210, 76 + (i // 2) * 62, 180, 40)
+        set_click(hwnd, btn, handler)
+    no_header_btn = ui.create_button(hwnd, directions, "📚", "无标题栏", 462, 76, 150, 40)
+    set_click(hwnd, no_header_btn, open_no_header)
+    add_text(hwnd, directions, "方向按钮覆盖 ltr/rtl/ttb/btt；右侧和顶部按钮使用 50% 百分比尺寸。", 30, 210, 660, 32, MUTED)
+
+    table_btn = ui.create_button(hwnd, slots, "📦", "打开表格抽屉", 30, 78, 170, 40)
+    form_btn = ui.create_button(hwnd, slots, "🧾", "打开表单抽屉", 220, 78, 170, 40)
+    set_click(hwnd, table_btn, open_table_drawer)
+    set_click(hwnd, form_btn, open_form_drawer)
+    ui.create_table(hwnd, slots, ["内容", "挂载位置"], [["Table", "content slot"], ["Input", "content slot"], ["Button", "footer slot"]], True, True, 30, 150, min(w - 980, 560), 116)
+
+    confirm_btn = ui.create_button(hwnd, closing, "🛡️", "关闭确认", 30, 78, 150, 40)
+    nested_btn = ui.create_button(hwnd, closing, "🧳", "外层/内层抽屉", 206, 78, 180, 40)
+    set_click(hwnd, confirm_btn, open_confirm_drawer)
+    set_click(hwnd, nested_btn, open_nested_drawer)
+    add_text(hwnd, closing, "关闭确认使用 before-close 回调进入 pending，Dialog 确认后再调用 EU_ConfirmDrawerClose。", 30, 150, 720, 32, MUTED)
+    add_text(hwnd, closing, "内层抽屉作为根级 Drawer 创建，等价 append-to-body，后创建者显示在上层。", 30, 200, 720, 32, MUTED)
+
+    custom_btn = ui.create_button(hwnd, style_panel, "🎨", "打开属性面板", 30, 78, 170, 40)
+    set_click(hwnd, custom_btn, open_custom_drawer)
+    ui.create_switch(hwnd, style_panel, "紧凑模式 🎚️", True, 30, 150, 220, 34)
+    ui.create_slider(hwnd, style_panel, "面板宽度", 300, 520, 380, 30, 202, min(w - 1000, 360), 36)
+    add_text(hwnd, style_panel, "使用现有颜色/字体/表单组件组合出桌面端属性面板，不引入 CSS class。", 30, 242, max(300, w - 1010), 28, MUTED)
+
+    ui.create_table(
+        hwnd, api_panel,
+        ["样式", "API/能力", "状态"],
+        [
+            ["方向", "placement 0/1/2/3", "✅"],
+            ["无标题栏", "show_header=0 / show_close=0", "✅"],
+            ["百分比尺寸", "size_mode=1, size_value=50", "✅"],
+            ["内容区", "EU_GetDrawerContentParent", "✅"],
+            ["页脚区", "EU_GetDrawerFooterParent", "✅"],
+            ["关闭确认", "BeforeClose + ConfirmDrawerClose", "✅"],
+            ["嵌套抽屉", "根级 Drawer 覆盖外层", "✅"],
+        ],
+        True, True, 28, 72, min(w - 112, 980), 224,
+    )
+    add_text(hwnd, api_panel, "📚 所有示例均为中文文案并带 emoji；首次窗口尺寸已覆盖首屏按钮和状态区。", 1040, 86, max(260, w - 1130), 70, TEXT)
+    add_text(hwnd, api_panel, f"关闭回调计数：{close_stats['count']}", 1040, 176, max(260, w - 1130), 28, MUTED)
+
+
 def showcase_tooltip(hwnd, stage, w, h):
     status = add_text(hwnd, stage, "💭 Tooltip 覆盖 12 方位、深色/浅色、多行内容和禁用状态。", 36, 28, w - 72, 28, MUTED)
     matrix = add_demo_panel(hwnd, stage, "📍 12 方位矩阵", 28, 70, w - 56, 390)
@@ -1829,6 +2341,317 @@ def showcase_popconfirm(hwnd, stage, w, h):
     add_text(hwnd, result_panel, "程序触发会更新 result、confirm_count/cancel_count 和回调状态。", 34, 186, w - 120, 28, MUTED)
 
 
+def showcase_rate(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "⭐ Rate 评分覆盖默认、分段颜色、文字、表情图标、禁用分数、半星、清空、只读和分数模板。", 36, 28, w - 72, 28, MUTED)
+    form = add_demo_panel(hwnd, stage, "📝 评分设置表单", 28, 72, 740, 520)
+    preview = add_demo_panel(hwnd, stage, "📊 用户反馈预览", 796, 72, w - 824, 520)
+    matrix = add_demo_panel(hwnd, stage, "🎛️ 桌面端样式矩阵", 28, 622, w - 56, 420)
+
+    add_text(hwnd, form, "服务态度", 30, 70, 100, 28, MUTED)
+    default_rate = ui.create_rate(hwnd, form, "默认评分 ⭐", 3, 5, 146, 66, 430, 40)
+    ui.set_rate_texts(hwnd, default_rate, "待评分 🙂", "已评分 ⭐", True)
+
+    add_text(hwnd, form, "区分颜色", 30, 130, 100, 28, MUTED)
+    color_rate = ui.create_rate(hwnd, form, "体验评分", 4, 5, 146, 126, 430, 40)
+    ui.set_rate_colors(hwnd, color_rate, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+    ui.set_rate_texts(hwnd, color_rate, "请选择 🙂", "颜色分段 🎨", True)
+
+    add_text(hwnd, form, "显示文字", 30, 190, 100, 28, MUTED)
+    text_rate = ui.create_rate(hwnd, form, "满意度", 0, 5, 146, 186, 500, 40)
+    ui.set_rate_text_items(hwnd, text_rate, ["很差 😟", "较差 🙁", "一般 🙂", "满意 😄", "惊喜 🤩"])
+    ui.set_rate_display_options(hwnd, text_rate, show_text=True, show_score=False, text_color=0xFFFF9900)
+    ui.set_rate_value(hwnd, text_rate, 4)
+
+    add_text(hwnd, form, "表情图标", 30, 250, 100, 28, MUTED)
+    face_rate = ui.create_rate(hwnd, form, "心情反馈", 3, 5, 146, 246, 500, 40)
+    ui.set_rate_colors(hwnd, face_rate, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+    ui.set_rate_icons(hwnd, face_rate, full_icon="😊", void_icon="😶", low_icon="😟", mid_icon="🙂", high_icon="🤩")
+    ui.set_rate_display_options(hwnd, face_rate, show_text=True, show_score=False, text_color=0xFFFF9900)
+    ui.set_rate_text_items(hwnd, face_rate, ["失望 😟", "偏低 🙁", "还可以 🙂", "很好 😄", "超喜欢 🤩"])
+
+    add_text(hwnd, form, "禁用分数", 30, 310, 100, 28, MUTED)
+    disabled_rate = ui.create_rate(hwnd, form, "历史评分", 3, 5, 146, 306, 500, 40, value_x2=7)
+    ui.set_rate_options(hwnd, disabled_rate, allow_clear=False, allow_half=True, readonly=True)
+    ui.set_rate_display_options(hwnd, disabled_rate, show_text=False, show_score=True, text_color=0xFFFF9900, score_template="{value}")
+    ui.set_element_enabled(hwnd, disabled_rate, False)
+
+    add_text(hwnd, form, "半星评分", 30, 370, 100, 28, MUTED)
+    half_rate = ui.create_rate(hwnd, form, "细分体验", 3, 5, 146, 366, 500, 40, allow_half=True, value_x2=7)
+    ui.set_rate_colors(hwnd, half_rate, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+    ui.set_rate_display_options(hwnd, half_rate, show_text=False, show_score=True, text_color=0xFFFF9900, score_template="{value}/{max} 分")
+
+    add_text(hwnd, form, "可清空", 30, 430, 100, 28, MUTED)
+    clear_rate = ui.create_rate(hwnd, form, "二次点击清空", 2, 5, 146, 426, 500, 40, allow_clear=True)
+    ui.set_rate_texts(hwnd, clear_rate, "尚未选择 🫥", "再次点击当前分值可清空 🧹", True)
+
+    summary = ui.create_descriptions(
+        hwnd, preview, "📋 评分读回",
+        [
+            ("默认值", f"{ui.get_rate_value(hwnd, default_rate)}/5"),
+            ("半星值", f"{ui.get_rate_value_x2(hwnd, half_rate)}/10"),
+            ("颜色", "低 / 中 / 高三段"),
+            ("图标", "Unicode emoji"),
+            ("模板", "{value}/{max} 分"),
+            ("状态", "只读与禁用分离"),
+        ],
+        2, True, 30, 70, min(620, w - 920), 180,
+    )
+    ui.set_descriptions_options(hwnd, summary, columns=2, bordered=True, label_width=98, min_row_height=34, wrap_values=True)
+
+    note = ui.create_infobox(
+        hwnd, preview,
+        "💡 桌面端使用建议",
+        "评分通常放在表单行、评价详情、设置页和数据读回区域。这里避免网页式大段说明，直接展示可编辑项、只读项和业务状态。",
+        30, 282, min(640, w - 920), 116,
+    )
+    ui.set_infobox_options(hwnd, note, 0, 0, 0xFF7AA7FF, "⭐")
+
+    readback = add_text(hwnd, preview, "等待操作：点击下方按钮会同步读回半星值、颜色、图标和显示配置。", 30, 430, min(640, w - 920), 42, MUTED)
+
+    def refresh_status(_eid):
+        colors = ui.get_rate_colors(hwnd, color_rate)
+        icons = ui.get_rate_icons(hwnd, face_rate)
+        display = ui.get_rate_display_options(hwnd, half_rate)
+        ui.set_element_text(
+            hwnd, readback,
+            f"📌 半星值 {ui.get_rate_value_x2(hwnd, half_rate)}/10；颜色={colors}；图标={icons[:2]}；显示={display}"
+        )
+        ui.set_element_text(hwnd, status, "✅ Rate Set/Get 已读回，颜色、图标、模板和半星状态保持一致。")
+
+    refresh_btn = ui.create_button(hwnd, preview, "🔄", "读回当前评分", 30, 474, 150, 36)
+    set_click(hwnd, refresh_btn, refresh_status)
+
+    samples = [
+        ("默认不区分颜色", lambda parent, x, y: ui.create_rate(hwnd, parent, "产品质量 ⭐", 3, 5, x, y, 420, 40)),
+        ("三段颜色", lambda parent, x, y: _create_and(ui.create_rate(hwnd, parent, "服务态度 🎨", 5, 5, x, y, 420, 40), lambda rid: ui.set_rate_colors(hwnd, rid, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900))),
+        ("显示文字", lambda parent, x, y: _create_and(ui.create_rate(hwnd, parent, "满意度 💬", 4, 5, x, y, 480, 40), lambda rid: (ui.set_rate_text_items(hwnd, rid, ["很差 😟", "较差 🙁", "一般 🙂", "满意 😄", "惊喜 🤩"]), ui.set_rate_display_options(hwnd, rid, show_text=True, show_score=False, text_color=0xFFFF9900)))),
+        ("表情图标", lambda parent, x, y: _create_and(ui.create_rate(hwnd, parent, "心情反馈 😀", 5, 5, x, y, 480, 40), lambda rid: (ui.set_rate_icons(hwnd, rid, full_icon="😊", void_icon="😶", low_icon="😟", mid_icon="🙂", high_icon="🤩"), ui.set_rate_colors(hwnd, rid, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)))),
+        ("禁用显示分数", lambda parent, x, y: _create_and(ui.create_rate(hwnd, parent, "历史评分 🔒", 3, 5, x, y, 480, 40, value_x2=7), lambda rid: (ui.set_rate_options(hwnd, rid, allow_clear=False, allow_half=True, readonly=True), ui.set_rate_display_options(hwnd, rid, show_text=False, show_score=True, text_color=0xFFFF9900, score_template="{value}"), ui.set_element_enabled(hwnd, rid, False)))),
+        ("10 分制模板", lambda parent, x, y: _create_and(ui.create_rate(hwnd, parent, "专业评分 🧭", 8, 10, x, y, 560, 40), lambda rid: ui.set_rate_display_options(hwnd, rid, show_text=False, show_score=True, text_color=0xFFFF9900, score_template="{value}/{max} 分"))),
+    ]
+    for i, (title, builder) in enumerate(samples):
+        col = i % 2
+        row = i // 2
+        x = 30 + col * 700
+        y = 72 + row * 104
+        add_text(hwnd, matrix, f"⭐ {title}", x, y, 220, 24, TEXT)
+        builder(matrix, x, y + 34)
+
+
+def showcase_dropdown(hwnd, stage, w, h):
+    status = add_text(
+        hwnd, stage,
+        "📂 Dropdown 已补齐链接、按钮、split-button、hover/click/manual、hide-on-click、图标、禁用、分割线、command 和尺寸。",
+        36, 28, w - 72, 28, MUTED,
+    )
+
+    trigger_panel = add_demo_panel(hwnd, stage, "🔗 触发器样式", 28, 70, 790, 260)
+    button_panel = add_demo_panel(hwnd, stage, "🧰 按钮变体", 842, 70, w - 870, 260)
+    behavior_panel = add_demo_panel(hwnd, stage, "🧭 交互行为", 28, 350, 790, 410)
+    menu_panel = add_demo_panel(hwnd, stage, "🧾 菜单项样式", 842, 350, w - 870, 410)
+    size_panel = add_demo_panel(hwnd, stage, "📐 尺寸矩阵", 28, 780, w - 56, 240)
+    readback_panel = add_demo_panel(hwnd, stage, "🗂️ 状态读回", 28, 1030, w - 56, 210)
+
+    action_items = ["📄 复制", "✏️ 编辑", "🗑️ 删除"]
+    meta_items = [
+        "📄 复制",
+        "✏️ 编辑",
+        "> !🗑️ 删除",
+        "📤 导出",
+        "> 归档",
+        "> > 归档到项目",
+    ]
+    scroll_items = [f"📁 最近文件 {i:02d}" for i in range(1, 13)]
+
+    def make_dropdown(parent, text, items, x, y, bw, bh):
+        return ui.create_dropdown(hwnd, parent, text, items, 0, x, y, bw, bh)
+
+    link_hover = make_dropdown(trigger_panel, "文字链接", action_items, 34, 74, 160, 34)
+    ui.set_dropdown_options(hwnd, link_hover, trigger_mode=1, hide_on_click=True, split_button=False, button_variant=0, size=0, trigger_style=1)
+
+    link_click = make_dropdown(trigger_panel, "文字链接", action_items, 214, 74, 160, 34)
+    ui.set_dropdown_options(hwnd, link_click, trigger_mode=0, hide_on_click=True, split_button=False, button_variant=0, size=0, trigger_style=1)
+
+    btn_hover = make_dropdown(trigger_panel, "默认按钮", action_items, 394, 74, 160, 34)
+    ui.set_dropdown_options(hwnd, btn_hover, trigger_mode=1, hide_on_click=True, split_button=False, button_variant=0, size=0, trigger_style=0)
+
+    btn_click = make_dropdown(trigger_panel, "主要按钮", action_items, 574, 74, 160, 34)
+    ui.set_dropdown_options(hwnd, btn_click, trigger_mode=0, hide_on_click=True, split_button=False, button_variant=1, size=0, trigger_style=0)
+
+    add_text(hwnd, trigger_panel, "文字链接更轻，按钮更像桌面软件里的常用命令入口。", 34, 136, 720, 24, MUTED)
+    manual_status = add_text(hwnd, trigger_panel, "🧭 手动菜单：已关闭", 34, 160, 320, 24, TEXT)
+    ui.set_text_options(hwnd, manual_status, wrap=True, ellipsis=False)
+    manual_menu = make_dropdown(trigger_panel, "手动控制", ["开始", "暂停", "结束"], 34, 188, 220, 36)
+    ui.set_dropdown_options(hwnd, manual_menu, trigger_mode=2, hide_on_click=True, split_button=False, button_variant=6, size=0, trigger_style=0)
+    toggle_manual = ui.create_button(hwnd, trigger_panel, "🧭", "切换手动菜单", 280, 188, 150, 36)
+
+    variant_specs = [
+        ("默认", 0, 34),
+        ("主色", 1, 178),
+        ("成功", 2, 322),
+        ("警告", 3, 466),
+        ("危险", 4, 34),
+        ("文本", 5, 178),
+        ("信息", 6, 322),
+    ]
+    for label, variant, x in variant_specs:
+        y = 74 if variant < 4 else 142
+        dd = make_dropdown(button_panel, label, action_items, x, y, 120, 34)
+        ui.set_dropdown_options(hwnd, dd, trigger_mode=0, hide_on_click=True, split_button=False, button_variant=variant, size=0, trigger_style=0)
+
+    add_text(hwnd, button_panel, "同一组菜单动作，变体只改变按钮皮肤和语义强度。", 34, 198, 720, 24, MUTED)
+
+    command_status = add_text(hwnd, behavior_panel, "📨 最近命令：等待选择", 34, 42, 720, 24, TEXT)
+    ui.set_text_options(hwnd, command_status, wrap=True, ellipsis=False)
+    main_status = add_text(hwnd, behavior_panel, "🧭 主按钮：等待点击", 34, 64, 720, 24, TEXT)
+    ui.set_text_options(hwnd, main_status, wrap=True, ellipsis=False)
+
+    keep_open = make_dropdown(behavior_panel, "保持展开", meta_items, 34, 74, 220, 36)
+    ui.set_dropdown_options(hwnd, keep_open, trigger_mode=0, hide_on_click=False, split_button=False, button_variant=2, size=1, trigger_style=0)
+    ui.set_dropdown_item_meta(
+        hwnd, keep_open,
+        ["📄", "✏️", "🗑️", "📤", "🗂️", "🏷️"],
+        ["copy", "", "delete", "export", "archive", "archive_project"],
+        [3],
+    )
+    ui.set_dropdown_disabled(hwnd, keep_open, [4])
+
+    split_menu = make_dropdown(behavior_panel, "分裂按钮", action_items, 280, 74, 220, 36)
+    ui.set_dropdown_options(hwnd, split_menu, trigger_mode=0, hide_on_click=True, split_button=True, button_variant=1, size=0, trigger_style=0)
+
+    meta_status = add_text(hwnd, menu_panel, "🧾 图标、禁用、分割线、层级与 command 回调", 34, 42, 700, 24, TEXT)
+    ui.set_text_options(hwnd, meta_status, wrap=True, ellipsis=False)
+    meta_dropdown = make_dropdown(menu_panel, "项目样式", meta_items, 34, 74, 300, 36)
+    ui.set_dropdown_options(hwnd, meta_dropdown, trigger_mode=0, hide_on_click=True, split_button=False, button_variant=0, size=0, trigger_style=0)
+    ui.set_dropdown_item_meta(
+        hwnd, meta_dropdown,
+        ["📄", "✏️", "🗑️", "📤", "🗂️", "🏷️"],
+        ["copy", "", "delete", "export", "archive", "archive_project"],
+        [3],
+    )
+    ui.set_dropdown_disabled(hwnd, meta_dropdown, [2, 4])
+
+    scroll_dropdown = make_dropdown(menu_panel, "长列表滚动", scroll_items, 348, 74, 470, 36)
+    ui.set_dropdown_options(hwnd, scroll_dropdown, trigger_mode=0, hide_on_click=True, split_button=False, button_variant=0, size=2, trigger_style=0)
+    ui.set_dropdown_disabled(hwnd, scroll_dropdown, [4])
+
+    meta_read = ui.create_descriptions(
+        hwnd, menu_panel, "📚 元数据回读",
+        [
+            ("第 1 项", "icon=📄 command=copy level=0"),
+            ("第 3 项", "icon=🗑️ command=delete disabled=True level=1"),
+            ("第 6 项", "icon=🏷️ command=archive_project level=2"),
+            ("说明", "空 command 会回传显示文本"),
+        ],
+        2, True, 34, 328, 290, 70,
+    )
+    ui.set_descriptions_options(hwnd, meta_read, columns=2, bordered=True, label_width=84, min_row_height=28, wrap_values=True)
+
+    add_text(hwnd, menu_panel, "长列表默认只显示前 8 行，鼠标滚轮可继续翻页。", 348, 354, 470, 44, MUTED)
+
+    size_labels = [
+        ("默认", 0, 34),
+        ("medium", 1, 458),
+        ("small", 2, 882),
+        ("mini", 3, 1280),
+    ]
+    size_buttons = {}
+    for label, size_value, x in size_labels:
+        add_text(hwnd, size_panel, f"{label} 尺寸", x, 74, 120, 24, MUTED)
+        dd = make_dropdown(size_panel, label, action_items, x, 102, 180, 36)
+        ui.set_dropdown_options(hwnd, dd, trigger_mode=0, hide_on_click=True, split_button=True, button_variant=1, size=size_value, trigger_style=0)
+        size_buttons[size_value] = dd
+    size_note = add_text(hwnd, size_panel, "四种尺寸会一起缩放触发器字体、内边距和菜单行高。", 34, 162, w - 120, 24, MUTED)
+    ui.set_text_options(hwnd, size_note, wrap=True, ellipsis=False)
+
+    legend = ui.create_descriptions(
+        hwnd, readback_panel, "📚 枚举说明",
+        [
+            ("触发模式", "0 点击 / 1 悬停 / 2 手动"),
+            ("触发器样式", "0 按钮 / 1 文字链接"),
+            ("按钮变体", "0 默认 / 1 主色 / 2 成功 / 3 警告 / 4 危险 / 5 文本 / 6 信息"),
+            ("尺寸", "0 默认 / 1 medium / 2 small / 3 mini"),
+            ("元数据", "icon / command / divided / disabled / level"),
+        ],
+        2, True, 34, 74, w - 220, 104,
+    )
+    ui.set_descriptions_options(hwnd, legend, columns=2, bordered=True, label_width=108, min_row_height=30, wrap_values=True)
+
+    readback_button = ui.create_button(hwnd, readback_panel, "🔄", "刷新读回", w - 180, 74, 128, 36)
+    readback_text = add_text(hwnd, readback_panel, "📘 状态读回：等待刷新", 34, 142, w - 80, 40, TEXT)
+    ui.set_text_options(hwnd, readback_text, wrap=True, ellipsis=False)
+
+    state = {
+        "command_text": "等待选择",
+        "command_item": -1,
+        "main_clicks": 0,
+    }
+
+    def refresh_readback(_eid=None):
+        opts = ui.get_dropdown_options(hwnd, keep_open)
+        info = ui.get_dropdown_state(hwnd, keep_open)
+        meta3 = ui.get_dropdown_item_meta(hwnd, meta_dropdown, 2)
+        meta6 = ui.get_dropdown_item_meta(hwnd, meta_dropdown, 5)
+        scroll_state = ui.get_dropdown_state(hwnd, scroll_dropdown)
+        ui.set_element_text(
+            hwnd, readback_text,
+            "保持展开："
+            f"trigger={opts['trigger_mode']} hide={opts['hide_on_click']} split={opts['split_button']} "
+            f"variant={opts['button_variant']} size={opts['size']} style={opts['trigger_style']}\n"
+            f"状态：selected={info['selected']} count={info['count']} disabled={info['disabled']} "
+            f"level={info['level']} hover={info['hover']}\n"
+            f"第 3 项：icon={meta3['icon']} command={meta3['command']} divided={meta3['divided']} "
+            f"disabled={meta3['disabled']} level={meta3['level']}\n"
+            f"第 6 项：icon={meta6['icon']} command={meta6['command']} divided={meta6['divided']} "
+            f"disabled={meta6['disabled']} level={meta6['level']}\n"
+            f"长列表：count={scroll_state['count']} disabled={scroll_state['disabled']}"
+        )
+
+    @ui.DropdownCommandCallback
+    def on_command(element_id, item_index, command_ptr, command_len):
+        command = ""
+        if command_ptr and command_len > 0:
+            command = ctypes.string_at(command_ptr, command_len).decode("utf-8", errors="replace")
+        state["command_text"] = command
+        state["command_item"] = item_index
+        ui.set_element_text(hwnd, command_status, f"📨 最近命令：#{element_id} 第 {item_index + 1} 项 → {command}")
+        refresh_readback()
+
+    @ui.ClickCallback
+    def on_main_click(element_id):
+        state["main_clicks"] += 1
+        ui.set_element_text(hwnd, main_status, f"🧭 主按钮：#{element_id} 已点击 {state['main_clicks']} 次")
+        refresh_readback()
+
+    @ui.ClickCallback
+    def on_toggle_manual(_element_id):
+        now_open = not ui.get_dropdown_open(hwnd, manual_menu)
+        ui.set_dropdown_open(hwnd, manual_menu, now_open)
+        ui.set_element_text(hwnd, manual_status, f"🧭 手动菜单：{'已打开' if now_open else '已关闭'}")
+        refresh_readback()
+
+    keep_callback(on_command)
+    keep_callback(on_main_click)
+    keep_callback(on_toggle_manual)
+    ui.set_dropdown_command_callback(hwnd, keep_open, on_command)
+    ui.set_dropdown_command_callback(hwnd, manual_menu, on_command)
+    ui.set_dropdown_command_callback(hwnd, meta_dropdown, on_command)
+    ui.set_dropdown_command_callback(hwnd, scroll_dropdown, on_command)
+    ui.set_dropdown_command_callback(hwnd, split_menu, on_command)
+    ui.set_dropdown_main_click_callback(hwnd, split_menu, on_main_click)
+    set_click(hwnd, toggle_manual, on_toggle_manual)
+    set_click(hwnd, readback_button, lambda _eid: refresh_readback())
+
+    ui.set_dropdown_open(hwnd, keep_open, True)
+    ui.set_dropdown_open(hwnd, meta_dropdown, True)
+    ui.set_dropdown_open(hwnd, scroll_dropdown, True)
+    ui.set_dropdown_open(hwnd, split_menu, True)
+    refresh_readback()
+
+    add_text(hwnd, behavior_panel, "保持展开会让菜单项点击后不自动收起，适合连续选择。", 34, 368, 720, 24, MUTED)
+    add_text(hwnd, behavior_panel, "手动模式只响应程序开关，适合复杂流程或外部控制。", 34, 392, 720, 24, MUTED)
+    add_text(hwnd, button_panel, "同一组菜单动作，仅切换 button_variant 就能覆盖常见桌面风格。", 34, 224, 720, 24, MUTED)
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -1841,6 +2664,7 @@ SPECIAL_SHOWCASES = {
     "Input": showcase_input,
     "InputGroup": showcase_input_group,
     "InputNumber": showcase_inputnumber,
+    "Rate": showcase_rate,
     "Switch": showcase_switch,
     "DatePicker": showcase_datepicker,
     "DateRangePicker": showcase_daterangepicker,
@@ -1853,20 +2677,23 @@ SPECIAL_SHOWCASES = {
     "Tag": showcase_tag,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
+    "Table": showcase_table,
     "Upload": showcase_upload,
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
     "Notification": showcase_notification,
     "Dialog": showcase_dialog,
+    "Drawer": showcase_drawer,
     "Tooltip": showcase_tooltip,
     "Popover": showcase_popover,
     "Popconfirm": showcase_popconfirm,
+    "Dropdown": showcase_dropdown,
 }
 
 
 COMPACT_SHOWCASE = {
     "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
-    "Slider", "Input", "InputGroup", "Rate", "Tag", "Badge", "Progress", "Avatar", "Statistic",
+    "Slider", "Input", "InputGroup", "Tag", "Badge", "Progress", "Avatar", "Statistic",
     "StatusDot", "Backtop", "Segmented", "Scrollbar", "Breadcrumb", "Tabs", "Alert", "Loading",
     "Message", "MessageBox", "Tooltip", "Popover", "Popconfirm",
 }

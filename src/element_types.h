@@ -50,6 +50,10 @@ typedef void (__stdcall *ElementKeyCallback)(int element_id, int vk_code, int ke
 typedef void (__stdcall *ElementTextCallback)(int element_id, const unsigned char* utf8, int len);
 typedef void (__stdcall *ElementValueCallback)(int element_id, int value, int range_start, int range_end);
 typedef int  (__stdcall *ElementBeforeCloseCallback)(int element_id, int action);
+typedef void (__stdcall *TableCellCallback)(int table_id, int row, int col, int action, int value);
+typedef int  (__stdcall *TableVirtualRowCallback)(int table_id, int row, unsigned char* buffer, int buffer_size);
+typedef void (__stdcall *DropdownCommandCallback)(int element_id, int item_index,
+                                                 const unsigned char* command_utf8, int command_len);
 typedef void (__stdcall *WindowResizeCallback)(HWND hwnd, int width, int height);
 typedef void (__stdcall *WindowCloseCallback)(HWND hwnd);
 typedef void (__stdcall *WindowDestroyCallback)(HWND hwnd);

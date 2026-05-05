@@ -314,6 +314,13 @@ EXPORTS
     EU_SetRateOptions
     EU_GetRateOptions
     EU_SetRateTexts
+    EU_SetRateColors
+    EU_GetRateColors
+    EU_SetRateIcons
+    EU_GetRateIcons
+    EU_SetRateTextItems
+    EU_SetRateDisplayOptions
+    EU_GetRateDisplayOptions
     EU_SetRateChangeCallback
     EU_SetColorPickerColor
     EU_GetColorPickerColor
@@ -389,6 +396,33 @@ EXPORTS
     EU_SetTableScrollRow
     EU_SetTableColumnWidth
     EU_GetTableOptions
+    EU_SetTableColumnsEx
+    EU_SetTableRowsEx
+    EU_SetTableCellEx
+    EU_SetTableRowStyle
+    EU_SetTableCellStyle
+    EU_SetTableSelectionMode
+    EU_SetTableSelectedRows
+    EU_SetTableFilter
+    EU_ClearTableFilter
+    EU_SetTableSearch
+    EU_SetTableSpan
+    EU_ClearTableSpans
+    EU_SetTableSummary
+    EU_SetTableRowExpanded
+    EU_SetTableTreeOptions
+    EU_SetTableViewportOptions
+    EU_SetTableScroll
+    EU_SetTableHeaderDragOptions
+    EU_ExportTableExcel
+    EU_ImportTableExcel
+    EU_SetTableCellClickCallback
+    EU_SetTableCellActionCallback
+    EU_SetTableVirtualOptions
+    EU_SetTableVirtualRowProvider
+    EU_ClearTableVirtualCache
+    EU_GetTableCellValue
+    EU_GetTableFullState
     EU_SetCardBody
     EU_SetCardFooter
     EU_SetCardActions
@@ -650,6 +684,12 @@ EXPORTS
     EU_GetDropdownItemCount
     EU_SetDropdownDisabled
     EU_GetDropdownState
+    EU_SetDropdownOptions
+    EU_GetDropdownOptions
+    EU_SetDropdownItemMeta
+    EU_GetDropdownItemMeta
+    EU_SetDropdownCommandCallback
+    EU_SetDropdownMainClickCallback
     EU_SetMenuItems
     EU_SetMenuActive
     EU_GetMenuActive
@@ -891,6 +931,12 @@ EXPORTS
     EU_SetDrawerBody
     EU_SetDrawerPlacement
     EU_SetDrawerOptions
+    EU_SetDrawerAdvancedOptions
+    EU_GetDrawerAdvancedOptions
+    EU_GetDrawerContentParent
+    EU_GetDrawerFooterParent
+    EU_SetDrawerBeforeCloseCallback
+    EU_ConfirmDrawerClose
     EU_GetDrawerOpen
     EU_GetDrawerOptions
     EU_SetDrawerAnimation

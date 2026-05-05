@@ -53,6 +53,13 @@ def print_state(prefix):
 def on_click(element_id):
     if element_id == g_apply_id:
         ui.set_rate_options(g_hwnd, g_rate_id, allow_clear=True, allow_half=True, readonly=False)
+        ui.set_rate_colors(g_hwnd, g_rate_id, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+        ui.set_rate_icons(g_hwnd, g_rate_id, full_icon="😊", void_icon="😶", low_icon="😟", mid_icon="🙂", high_icon="🤩")
+        ui.set_rate_text_items(g_hwnd, g_rate_id, ["很差 😟", "较差 🙁", "一般 🙂", "满意 😄", "惊喜 🤩", "满分 🎉"])
+        ui.set_rate_display_options(g_hwnd, g_rate_id, show_text=True, show_score=True, text_color=0xFFFF9900, score_template="{value}/{max} 分")
+        assert ui.get_rate_colors(g_hwnd, g_rate_id) == (0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+        assert ui.get_rate_icons(g_hwnd, g_rate_id) == ("😊", "😶", "😟", "🙂", "🤩")
+        assert ui.get_rate_display_options(g_hwnd, g_rate_id) == (True, True, 0xFFFF9900, "{value}/{max} 分")
         ui.set_rate_texts(g_hwnd, g_rate_id, "待体验 💤", "很满意 🎉", True)
         ui.set_rate_value_x2(g_hwnd, g_rate_id, 7)
         ui.set_rate_max(g_hwnd, g_rate_id, 6)
@@ -96,6 +103,8 @@ def main():
         allow_clear=True, allow_half=True, readonly=False, value_x2=6,
     )
     ui.set_rate_texts(hwnd, g_rate_id, "待评分 😴", "已评分 🌟", True)
+    ui.set_rate_colors(hwnd, g_rate_id, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+    ui.set_rate_display_options(hwnd, g_rate_id, show_text=False, show_score=True, text_color=0xFFFF9900, score_template="{value}/{max} 分")
     ui.set_rate_change_callback(hwnd, g_rate_id, g_change_callback)
 
     g_readonly_id = ui.create_rate(

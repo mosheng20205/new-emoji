@@ -1,69 +1,66 @@
-# Rate 评分
+# Rate 评分 ⭐
 
 ## 简介
 
-`Rate` 是 new_emoji 的 表单/选择 组件。当前状态：**已完成**。
+`Rate` 是纯 D2D 的评分组件，支持默认星级、半星、可清空、只读/禁用、三段颜色、Unicode/emoji 图标、显示文字、显示分数、自定义分数模板和评分变化回调。
 
-已补半星、清除、hover 预览、只读/禁用、评分文案、变化回调、Python 封装和独立中文 emoji 验证
+当前状态：**已完成，已补齐 Element Plus Rate 常见样式能力**。
 
 ## 创建
 
 | 项目 | 值 |
 |---|---|
 | 创建导出 | `EU_CreateRate` |
-| 组件分类 | 表单/选择 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_rate` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
+| 组件分类 | 表单输入 |
+| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_rate` |
+| 易语言命令 | `创建评分` |
 
 ## 相关 API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateRate` | 当前组件相关导出 |
-| `EU_GetRateMax` | 当前组件相关导出 |
-| `EU_GetRateOptions` | 当前组件相关导出 |
-| `EU_GetRateValue` | 当前组件相关导出 |
-| `EU_GetRateValueX2` | 当前组件相关导出 |
-| `EU_SetRateChangeCallback` | 当前组件相关导出 |
-| `EU_SetRateMax` | 当前组件相关导出 |
-| `EU_SetRateOptions` | 当前组件相关导出 |
-| `EU_SetRateTexts` | 当前组件相关导出 |
-| `EU_SetRateValue` | 当前组件相关导出 |
-| `EU_SetRateValueX2` | 当前组件相关导出 |
+| `EU_CreateRate` | 创建评分组件 |
+| `EU_SetRateValue` / `EU_GetRateValue` | 设置/读取整数评分 |
+| `EU_SetRateValueX2` / `EU_GetRateValueX2` | 设置/读取半星值，实际评分乘以 2 |
+| `EU_SetRateMax` / `EU_GetRateMax` | 设置/读取最大评分，范围 1-10 |
+| `EU_SetRateOptions` / `EU_GetRateOptions` | 设置/读取可清空、半星、只读和显示状态 |
+| `EU_SetRateTexts` | 兼容旧接口，设置低分/高分文案并控制旧式评分文字 |
+| `EU_SetRateColors` / `EU_GetRateColors` | 设置/读取低/中/高三段颜色 |
+| `EU_SetRateIcons` / `EU_GetRateIcons` | 设置/读取满分、空值、低/中/高分 Unicode 图标 |
+| `EU_SetRateTextItems` | 设置每分对应文案，UTF-8 文本用换行分隔 |
+| `EU_SetRateDisplayOptions` / `EU_GetRateDisplayOptions` | 设置/读取 `show-text`、`show-score`、文字颜色和分数模板 |
+| `EU_SetRateChangeCallback` | 设置评分变化回调 |
 
-## Python 使用
+## 样式能力
+
+- 默认不区分颜色：不调用 `EU_SetRateColors` 时使用主题强调色。
+- 区分颜色：调用 `EU_SetRateColors(low, mid, high)`，按 `<=40%`、`<=80%`、`>80%` 分段。
+- 显示文字：调用 `EU_SetRateTextItems` 后，再用 `EU_SetRateDisplayOptions(show_text=1, show_score=0, ...)`。
+- 表情图标：调用 `EU_SetRateIcons` 传入 Unicode/emoji，例如 `😊`、`😶`、`😟`、`🙂`、`🤩`。
+- 禁用显示分数：调用 `EU_SetRateDisplayOptions(show_text=0, show_score=1, text_color, "{value}")`，再禁用元素。
+- 半星：`EU_SetRateOptions(..., allow_half=1, ...)`，半星值使用 `EU_SetRateValueX2`。
+- 自定义模板：模板支持 `{value}` 和 `{max}`，例如 `{value}/{max} 分`。
+
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
-
-hwnd = ui.create_window("✨ 评分 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Rate`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+rate = ui.create_rate(hwnd, parent, "体验评分 ⭐", 4, 5, 30, 60, 520, 40)
+ui.set_rate_colors(hwnd, rate, 0xFF99A9BF, 0xFFF7BA2A, 0xFFFF9900)
+ui.set_rate_icons(hwnd, rate, full_icon="😊", void_icon="😶", low_icon="😟", mid_icon="🙂", high_icon="🤩")
+ui.set_rate_text_items(hwnd, rate, ["很差 😟", "较差 🙁", "一般 🙂", "满意 😄", "惊喜 🤩"])
+ui.set_rate_display_options(hwnd, rate, show_text=True, show_score=True, text_color=0xFFFF9900, score_template="{value}/{max} 分")
 ```
 
-## 易语言调用
+## 维护要求
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
+修改 Rate API 时必须同步更新：
 
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
-
-## 测试
-
-优先运行对应完整测试文件，例如 `tests/python/test_rate_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Rate` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+- `src/exports.h`
+- `src/exports.cpp`
+- `src/new_emoji.def`
+- `examples/python/new_emoji_ui.py`
+- `tests/python/test_new_emoji.py`
+- `DLL命令/易语言DLL命令.md`
+- `docs/api-index.md`
+- `examples/python/component_gallery.py`
+- `组件封装进度.md`

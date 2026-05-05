@@ -30,7 +30,8 @@ def dump_state(prefix):
         f"描述选项={ui.get_descriptions_options(g_hwnd, g_desc_id)} "
         f"表格选项={ui.get_table_options(g_hwnd, g_table_id)} "
         f"表格行列=({ui.dll.EU_GetTableRowCount(g_hwnd, g_table_id)}, {ui.dll.EU_GetTableColumnCount(g_hwnd, g_table_id)}) "
-        f"选中行={ui.dll.EU_GetTableSelectedRow(g_hwnd, g_table_id)}"
+        f"选中行={ui.dll.EU_GetTableSelectedRow(g_hwnd, g_table_id)} "
+        f"高级状态={ui.get_table_full_state(g_hwnd, g_table_id)}"
     )
 
 
