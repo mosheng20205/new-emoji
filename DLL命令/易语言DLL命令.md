@@ -2722,7 +2722,7 @@
 .DLL命令 设置进度条选项, , "new_emoji.dll", "EU_SetProgressOptions", , 对应 C++ 导出命令 EU_SetProgressOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 进度类型, 整数型, , 0条形 1圆形
+    .参数 进度类型, 整数型, , 0条形 1圆形 2仪表盘
     .参数 线宽, 整数型
     .参数 是否显示文本, 整数型
 
@@ -2733,7 +2733,7 @@
     .参数 线宽指针, 整数型, , 输出整数指针
     .参数 是否显示文本指针, 整数型, , 输出整数指针
 
-.DLL命令 设置进度条格式选项, , "new_emoji.dll", "EU_SetProgressFormatOptions", , 对应 C++ 导出命令 EU_SetProgressFormatOptions；文本格式0百分比 1中文状态 2标签加百分比
+.DLL命令 设置进度条格式选项, , "new_emoji.dll", "EU_SetProgressFormatOptions", , 对应 C++ 导出命令 EU_SetProgressFormatOptions；文本格式0百分比 1中文状态+百分比 2标签+百分比 3满值文本 4模板文本
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 文本格式, 整数型
@@ -2744,6 +2744,70 @@
     .参数 元素ID, 整数型
     .参数 文本格式指针, 整数型, , 输出整数指针
     .参数 是否条纹指针, 整数型, , 输出整数指针
+
+.DLL命令 设置进度条文本内显, , "new_emoji.dll", "EU_SetProgressTextInside", , 对应 C++ 导出命令 EU_SetProgressTextInside；仅条形进度条使用
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否内显, 整数型
+
+.DLL命令 取进度条文本内显, 整数型, "new_emoji.dll", "EU_GetProgressTextInside", , 对应 C++ 导出命令 EU_GetProgressTextInside；返回 1内显 0不内显
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置进度条颜色, , "new_emoji.dll", "EU_SetProgressColors", , 对应 C++ 导出命令 EU_SetProgressColors；颜色为 ARGB，0 表示恢复主题默认
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 填充色, 整数型
+    .参数 轨道色, 整数型
+    .参数 文本色, 整数型
+
+.DLL命令 取进度条颜色, 整数型, "new_emoji.dll", "EU_GetProgressColors", , 对应 C++ 导出命令 EU_GetProgressColors；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 填充色指针, 整数型, , 输出整数指针
+    .参数 轨道色指针, 整数型, , 输出整数指针
+    .参数 文本色指针, 整数型, , 输出整数指针
+
+.DLL命令 设置进度条颜色分段, , "new_emoji.dll", "EU_SetProgressColorStops", , 对应 C++ 导出命令 EU_SetProgressColorStops；UTF-8：颜色<TAB>百分比|颜色<TAB>百分比
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 分段字节集指针, 整数型, , UTF-8
+    .参数 分段长度, 整数型
+
+.DLL命令 取进度条颜色分段数量, 整数型, "new_emoji.dll", "EU_GetProgressColorStopCount", , 对应 C++ 导出命令 EU_GetProgressColorStopCount；返回分段数量
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取进度条颜色分段项, 整数型, "new_emoji.dll", "EU_GetProgressColorStop", , 对应 C++ 导出命令 EU_GetProgressColorStop；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 索引, 整数型
+    .参数 颜色指针, 整数型, , 输出整数指针
+    .参数 百分比指针, 整数型, , 输出整数指针
+
+.DLL命令 设置进度条完成文本, , "new_emoji.dll", "EU_SetProgressCompleteText", , 对应 C++ 导出命令 EU_SetProgressCompleteText；文本格式为 3 时 100% 显示
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 取进度条完成文本, 整数型, "new_emoji.dll", "EU_GetProgressCompleteText", , 对应 C++ 导出命令 EU_GetProgressCompleteText；返回所需 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置进度条文本模板, , "new_emoji.dll", "EU_SetProgressTextTemplate", , 对应 C++ 导出命令 EU_SetProgressTextTemplate；支持 {percentage}、{percent}、{status}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 模板字节集指针, 整数型, , UTF-8
+    .参数 模板长度, 整数型
+
+.DLL命令 取进度条文本模板, 整数型, "new_emoji.dll", "EU_GetProgressTextTemplate", , 对应 C++ 导出命令 EU_GetProgressTextTemplate；返回所需 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 缓冲区大小, 整数型
 
 .DLL命令 设置头像形状, , "new_emoji.dll", "EU_SetAvatarShape", , 对应 C++ 导出命令 EU_SetAvatarShape
     .参数 窗口句柄, 整数型

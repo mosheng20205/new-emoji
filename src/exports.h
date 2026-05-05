@@ -782,6 +782,23 @@ void __stdcall EU_SetProgressFormatOptions(HWND hwnd, int element_id,
                                            int text_format, int striped);
 int  __stdcall EU_GetProgressFormatOptions(HWND hwnd, int element_id,
                                            int* text_format, int* striped);
+void __stdcall EU_SetProgressTextInside(HWND hwnd, int element_id, int text_inside);
+int  __stdcall EU_GetProgressTextInside(HWND hwnd, int element_id);
+void __stdcall EU_SetProgressColors(HWND hwnd, int element_id, Color fill, Color track, Color text);
+int  __stdcall EU_GetProgressColors(HWND hwnd, int element_id, Color* fill, Color* track, Color* text);
+void __stdcall EU_SetProgressColorStops(HWND hwnd, int element_id,
+                                        const unsigned char* stops_bytes, int stops_len);
+int  __stdcall EU_GetProgressColorStopCount(HWND hwnd, int element_id);
+int  __stdcall EU_GetProgressColorStop(HWND hwnd, int element_id, int index,
+                                       Color* color, int* percentage);
+void __stdcall EU_SetProgressCompleteText(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len);
+int  __stdcall EU_GetProgressCompleteText(HWND hwnd, int element_id,
+                                          unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetProgressTextTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len);
+int  __stdcall EU_GetProgressTextTemplate(HWND hwnd, int element_id,
+                                          unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetAvatarShape(HWND hwnd, int element_id, int shape);
 void __stdcall EU_SetAvatarSource(HWND hwnd, int element_id,
                                   const unsigned char* src_bytes, int src_len);

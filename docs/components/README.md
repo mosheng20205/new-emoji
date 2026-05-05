@@ -41,7 +41,7 @@
 |---|---|---|---|---|
 | `Tag` | 标签 | `EU_CreateTag` | 已完成 | [标签](./tag.md) |
 | `Badge` | 徽标 | `EU_CreateBadge` / `EU_SetBadgeType` | 已完成，覆盖数值、最大值、文本、dot、四角位置、独立徽标、语义配色和自定义色 | [徽标](./badge.md) |
-| `Progress` | 进度条 | `EU_CreateProgress` | 已完成 | [进度条](./progress.md) |
+| `Progress` | 进度条全样式 | `EU_CreateProgress` | 已完成 | [进度条](./progress.md) |
 | `Avatar` | 头像 | `EU_CreateAvatar` | 已完成 | [头像](./avatar.md) |
 | `Empty` | 空状态 | `EU_CreateEmpty` | 已完成 | [空状态](./empty.md) |
 | `Skeleton` | 骨架屏 | `EU_CreateSkeleton` | 已完成 | [骨架屏](./skeleton.md) |

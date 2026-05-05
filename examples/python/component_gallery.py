@@ -1145,6 +1145,174 @@ def showcase_badge(hwnd, stage, w, h):
     add_text(hwnd, semantic, "\u8bed\u4e49\u8272\u901a\u8fc7 BadgeType \u63d0\u4f9b\u9884\u8bbe\u914d\u8272\uff1bEU_SetElementColor \u4ecd\u53ef\u8986\u76d6\u6210\u4efb\u610f\u81ea\u5b9a\u4e49\u8272\u3002", 36, 242, 980, 24, MUTED)
 
 
+def showcase_progress(hwnd, stage, w, h):
+    stops = [
+        (0xFFF56C6C, 20),
+        (0xFFE6A23C, 40),
+        (0xFF5CB87A, 60),
+        (0xFF1989FA, 80),
+        (0xFF6F7AD3, 100),
+    ]
+    method_stops = [
+        (0xFF909399, 30),
+        (0xFFE6A23C, 70),
+        (0xFF67C23A, 100),
+    ]
+    col_gap = 20
+    col_w = (w - 56 - col_gap) // 2
+    left_x = 28
+    right_x = left_x + col_w + col_gap
+
+    def status_for(value):
+        if value >= 100:
+            return 1
+        if value >= 80:
+            return 2
+        if value <= 30:
+            return 3
+        return 0
+
+    basic = add_demo_panel(hwnd, stage, "📈 基础与状态", left_x, 30, col_w, 246)
+    basic_specs = [
+        ("默认进度", 50, 0, None, None),
+        ("完成文本", 100, 0, 3, "满"),
+        ("成功状态", 100, 1, None, None),
+        ("警告状态", 100, 2, None, None),
+        ("异常状态", 50, 3, None, None),
+    ]
+    for i, (label, pct, status, text_format, complete_text) in enumerate(basic_specs):
+        ui.create_progress(
+            hwnd, basic, label, pct, status,
+            24, 58 + i * 34, col_w - 60, 28,
+            text_format=text_format, complete_text=complete_text
+        )
+
+    inside = add_demo_panel(hwnd, stage, "🧱 文字内显与线宽", right_x, 30, col_w, 246)
+    inside_specs = [
+        ("发布任务", 70, 0, 26),
+        ("同步完成", 100, 1, 24),
+        ("容量预警", 80, 2, 22),
+        ("构建异常", 50, 3, 20),
+    ]
+    for i, (label, pct, status, stroke) in enumerate(inside_specs):
+        ui.create_progress(
+            hwnd, inside, label, pct, status,
+            24, 60 + i * 40, col_w - 60, 30,
+            stroke_width=stroke, text_inside=True
+        )
+
+    custom = add_demo_panel(hwnd, stage, "🎨 自定义颜色", left_x, 300, col_w, 238)
+    ui.create_progress(
+        hwnd, custom, "静态填充色", 20, 0, 24, 62, col_w - 60, 34,
+        fill_color=0xFF409EFF, track_color=0xFFE9EEF5
+    )
+    ui.create_progress(
+        hwnd, custom, "方法式阈值", 66, 0, 24, 110, col_w - 60, 34,
+        color_stops=method_stops
+    )
+    ui.create_progress(
+        hwnd, custom, "数组式分段", 88, 0, 24, 158, col_w - 60, 34,
+        color_stops=stops, text_format=4, text_template="进度 {percent}"
+    )
+    add_text(hwnd, custom, "颜色优先级：分段 > 静态色 > 状态色 > 主题默认。", 24, 200, col_w - 60, 24, MUTED)
+
+    interactive = add_demo_panel(hwnd, stage, "🎛️ 交互调节", right_x, 300, col_w, 238)
+    state = {"value": 20}
+    line = ui.create_progress(
+        hwnd, interactive, "部署进度", state["value"], status_for(state["value"]),
+        24, 64, col_w - 250, 34,
+        color_stops=stops, text_format=4, text_template="{status} {percent}"
+    )
+    dash = ui.create_progress(
+        hwnd, interactive, "仪表盘", state["value"], status_for(state["value"]),
+        col_w - 190, 52, 138, 138,
+        progress_type=2, stroke_width=12, color_stops=stops
+    )
+    readout = add_text(hwnd, interactive, "📋 当前：20% · 状态读回 3 · 分段 5", 24, 112, col_w - 260, 26, MUTED)
+    minus_btn = ui.create_button(hwnd, interactive, "➖", "", 24, 154, 42, 36, variant=1)
+    plus_btn = ui.create_button(hwnd, interactive, "➕", "", 76, 154, 42, 36, variant=1)
+
+    def refresh_interactive():
+        value = max(0, min(100, state["value"]))
+        state["value"] = value
+        status = status_for(value)
+        ui.set_progress_percentage(hwnd, line, value)
+        ui.set_progress_percentage(hwnd, dash, value)
+        ui.set_progress_status(hwnd, line, status)
+        ui.set_progress_status(hwnd, dash, status)
+        percent = ui.get_progress_percentage(hwnd, line)
+        read_status = ui.get_progress_status(hwnd, line)
+        stop_count = ui.get_progress_color_stop_count(hwnd, line)
+        ui.set_element_text(hwnd, readout, f"📋 当前：{percent}% · 状态读回 {read_status} · 分段 {stop_count}")
+
+    def decrease(_element_id):
+        state["value"] -= 10
+        refresh_interactive()
+
+    def increase(_element_id):
+        state["value"] += 10
+        refresh_interactive()
+
+    set_click(hwnd, minus_btn, decrease)
+    set_click(hwnd, plus_btn, increase)
+    refresh_interactive()
+
+    circle = add_demo_panel(hwnd, stage, "⭕ 圆形进度", left_x, 562, col_w, 242)
+    circle_specs = [
+        ("0%", 0, 0),
+        ("25%", 25, 0),
+        ("100% 成功", 100, 1),
+        ("70% 警告", 70, 2),
+        ("50% 异常", 50, 3),
+    ]
+    circle_gap = 18
+    circle_size = min(124, (col_w - 72 - circle_gap * 4) // 5)
+    for i, (label, pct, status) in enumerate(circle_specs):
+        x = 24 + i * (circle_size + circle_gap)
+        ui.create_progress(
+            hwnd, circle, label, pct, status, x, 66, circle_size, circle_size,
+            progress_type=1, stroke_width=10
+        )
+        add_text(hwnd, circle, label, x - 6, 66 + circle_size + 12, circle_size + 12, 24, MUTED)
+
+    dashboard = add_demo_panel(hwnd, stage, "📟 仪表盘进度", right_x, 562, col_w, 242)
+    dash_state = {"value": 10}
+    dash_main = ui.create_progress(
+        hwnd, dashboard, "主仪表盘", dash_state["value"], 0,
+        36, 54, 162, 148,
+        progress_type=2, stroke_width=13, color_stops=stops,
+        text_format=4, text_template="{percent}"
+    )
+    dash_text = add_text(hwnd, dashboard, "📊 阈值分段已启用：低红、中黄、高绿蓝紫。", 230, 72, col_w - 270, 28, MUTED)
+    dash_minus = ui.create_button(hwnd, dashboard, "➖", "", 230, 120, 42, 36, variant=1)
+    dash_plus = ui.create_button(hwnd, dashboard, "➕", "", 282, 120, 42, 36, variant=1)
+    for i, pct in enumerate([25, 60, 100]):
+        ui.create_progress(
+            hwnd, dashboard, f"{pct}%", pct, status_for(pct),
+            360 + i * 116, 108, 92, 84,
+            progress_type=2, stroke_width=8, color_stops=stops
+        )
+
+    def refresh_dashboard():
+        value = max(0, min(100, dash_state["value"]))
+        dash_state["value"] = value
+        ui.set_progress_percentage(hwnd, dash_main, value)
+        ui.set_progress_status(hwnd, dash_main, status_for(value))
+        ui.set_element_text(hwnd, dash_text, f"📊 仪表盘：{value}% · 分段 {ui.get_progress_color_stop_count(hwnd, dash_main)}")
+
+    def dash_decrease(_element_id):
+        dash_state["value"] -= 10
+        refresh_dashboard()
+
+    def dash_increase(_element_id):
+        dash_state["value"] += 10
+        refresh_dashboard()
+
+    set_click(hwnd, dash_minus, dash_decrease)
+    set_click(hwnd, dash_plus, dash_increase)
+    refresh_dashboard()
+
+
 def showcase_gauge(hwnd, stage, w, h):
     card = add_demo_panel(hwnd, stage, "🎯 质量仪表盘", 28, 30, w - 56, 270)
     ui.create_gauge(hwnd, card, "质量分", 92, "运行良好", 1, 30, 70, 320, 150)
@@ -3916,6 +4084,7 @@ SPECIAL_SHOWCASES = {
     "Autocomplete": showcase_autocomplete,
     "Tag": showcase_tag,
     "Badge": showcase_badge,
+    "Progress": showcase_progress,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
     "Steps": showcase_steps,

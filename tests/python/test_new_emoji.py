@@ -1249,6 +1249,32 @@ dll.EU_SetProgressFormatOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.
 dll.EU_GetProgressFormatOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetProgressFormatOptions.restype = ctypes.c_int
+dll.EU_SetProgressTextInside.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetProgressTextInside.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetProgressTextInside.restype = ctypes.c_int
+dll.EU_SetProgressColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetProgressColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                     ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetProgressColors.restype = ctypes.c_int
+dll.EU_SetProgressColorStops.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressColorStopCount.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetProgressColorStopCount.restype = ctypes.c_int
+dll.EU_GetProgressColorStop.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetProgressColorStop.restype = ctypes.c_int
+dll.EU_SetProgressCompleteText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressCompleteText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressCompleteText.restype = ctypes.c_int
+dll.EU_SetProgressTextTemplate.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressTextTemplate.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressTextTemplate.restype = ctypes.c_int
 dll.EU_SetAvatarShape.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAvatarSource.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -4829,10 +4855,21 @@ def get_badge_layout_options(hwnd, element_id):
         return None
     return placement.value, bool(standalone.value)
 
+def _progress_color_stops_text(color_stops):
+    if isinstance(color_stops, str):
+        return color_stops
+    rows = []
+    for color, percentage in (color_stops or []):
+        rows.append(f"0x{int(color) & 0xFFFFFFFF:08X}\t{int(percentage)}")
+    return "|".join(rows)
+
+
 def create_progress(hwnd, parent_id, text="Progress", percentage=70, status=0,
                     x=0, y=0, w=320, h=34,
                     progress_type=None, stroke_width=None, show_text=None,
-                    text_format=None, striped=None):
+                    text_format=None, striped=None,
+                    text_inside=None, fill_color=None, track_color=None, text_color=None,
+                    color_stops=None, complete_text=None, text_template=None):
     data = make_utf8(text)
     element_id = dll.EU_CreateProgress(
         hwnd, parent_id, bytes_arg(data), len(data),
@@ -4849,6 +4886,24 @@ def create_progress(hwnd, parent_id, text="Progress", percentage=70, status=0,
             0 if text_format is None else text_format,
             0 if striped is None else int(bool(striped))
         )
+    if element_id and text_inside is not None:
+        dll.EU_SetProgressTextInside(hwnd, element_id, 1 if text_inside else 0)
+    if element_id and (fill_color is not None or track_color is not None or text_color is not None):
+        dll.EU_SetProgressColors(
+            hwnd, element_id,
+            0 if fill_color is None else int(fill_color),
+            0 if track_color is None else int(track_color),
+            0 if text_color is None else int(text_color)
+        )
+    if element_id and color_stops is not None:
+        data = make_utf8(_progress_color_stops_text(color_stops))
+        dll.EU_SetProgressColorStops(hwnd, element_id, bytes_arg(data), len(data))
+    if element_id and complete_text is not None:
+        data = make_utf8(complete_text)
+        dll.EU_SetProgressCompleteText(hwnd, element_id, bytes_arg(data), len(data))
+    if element_id and text_template is not None:
+        data = make_utf8(text_template)
+        dll.EU_SetProgressTextTemplate(hwnd, element_id, bytes_arg(data), len(data))
     return element_id
 
 def set_progress_percentage(hwnd, element_id, percentage=0):
@@ -4893,6 +4948,57 @@ def get_progress_format_options(hwnd, element_id):
     if not ok:
         return None
     return text_format.value, bool(striped.value)
+
+def set_progress_text_inside(hwnd, element_id, text_inside=True):
+    dll.EU_SetProgressTextInside(hwnd, element_id, 1 if text_inside else 0)
+
+def get_progress_text_inside(hwnd, element_id):
+    return bool(dll.EU_GetProgressTextInside(hwnd, element_id))
+
+def set_progress_colors(hwnd, element_id, fill=0, track=0, text=0):
+    dll.EU_SetProgressColors(hwnd, element_id, int(fill), int(track), int(text))
+
+def get_progress_colors(hwnd, element_id):
+    fill = ctypes.c_uint32()
+    track = ctypes.c_uint32()
+    text = ctypes.c_uint32()
+    ok = dll.EU_GetProgressColors(hwnd, element_id, ctypes.byref(fill), ctypes.byref(track), ctypes.byref(text))
+    return (fill.value, track.value, text.value) if ok else None
+
+def set_progress_color_stops(hwnd, element_id, color_stops):
+    data = make_utf8(_progress_color_stops_text(color_stops))
+    dll.EU_SetProgressColorStops(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_progress_color_stop_count(hwnd, element_id):
+    return dll.EU_GetProgressColorStopCount(hwnd, element_id)
+
+def get_progress_color_stop(hwnd, element_id, index):
+    color = ctypes.c_uint32()
+    percentage = ctypes.c_int()
+    ok = dll.EU_GetProgressColorStop(hwnd, element_id, index, ctypes.byref(color), ctypes.byref(percentage))
+    return (color.value, percentage.value) if ok else None
+
+def set_progress_complete_text(hwnd, element_id, text="满"):
+    data = make_utf8(text)
+    dll.EU_SetProgressCompleteText(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_progress_complete_text(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    needed = dll.EU_GetProgressCompleteText(hwnd, element_id, buf, buffer_size)
+    if needed <= 0:
+        return ""
+    return bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
+
+def set_progress_text_template(hwnd, element_id, text="{percent}"):
+    data = make_utf8(text)
+    dll.EU_SetProgressTextTemplate(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_progress_text_template(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    needed = dll.EU_GetProgressTextTemplate(hwnd, element_id, buf, buffer_size)
+    if needed <= 0:
+        return ""
+    return bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
 
 def create_avatar(hwnd, parent_id, text="A", shape=0,
                   x=0, y=0, w=44, h=44, source="", fit=None):

@@ -2,6 +2,7 @@
 #include "factory.h"
 #include "window_state.h"
 #include <shellscalingapi.h>
+#include <algorithm>
 #include <set>
 
 extern HMODULE g_module;
@@ -5697,6 +5698,25 @@ int __stdcall EU_GetBadgeLayoutOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+static std::vector<std::pair<Color, int>> parse_progress_color_stops(const unsigned char* bytes, int len) {
+    std::vector<std::pair<Color, int>> stops;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+        if (trim_wide(entry).empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        if (fields.size() < 2) fields = split_wide_list(entry, L":,");
+        if (fields.size() < 2) continue;
+        Color color = parse_timeline_color(fields[0]);
+        int percentage = _wtoi(trim_wide(fields[1]).c_str());
+        if (percentage < 0) percentage = 0;
+        if (percentage > 100) percentage = 100;
+        if (color) stops.push_back({ color, percentage });
+    }
+    std::sort(stops.begin(), stops.end(),
+        [](const auto& a, const auto& b) { return a.second < b.second; });
+    return stops;
+}
+
 void __stdcall EU_SetProgressPercentage(HWND hwnd, int element_id, int percentage) {
     if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
         el->set_percentage(percentage);
@@ -5750,12 +5770,85 @@ void __stdcall EU_SetProgressFormatOptions(HWND hwnd, int element_id,
 }
 
 int __stdcall EU_GetProgressFormatOptions(HWND hwnd, int element_id,
-                                          int* text_format, int* striped) {
+                                           int* text_format, int* striped) {
     auto* el = find_typed_element<Progress>(hwnd, element_id);
     if (!el) return 0;
     if (text_format) *text_format = el->text_format;
     if (striped) *striped = el->striped ? 1 : 0;
     return 1;
+}
+
+void __stdcall EU_SetProgressTextInside(HWND hwnd, int element_id, int text_inside) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_text_inside(text_inside != 0);
+    }
+}
+
+int __stdcall EU_GetProgressTextInside(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return (el && el->text_inside) ? 1 : 0;
+}
+
+void __stdcall EU_SetProgressColors(HWND hwnd, int element_id, Color fill, Color track, Color text) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_colors(fill, track, text);
+    }
+}
+
+int __stdcall EU_GetProgressColors(HWND hwnd, int element_id, Color* fill, Color* track, Color* text) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    if (!el) return 0;
+    if (fill) *fill = el->fill_color;
+    if (track) *track = el->track_color;
+    if (text) *text = el->text_color;
+    return 1;
+}
+
+void __stdcall EU_SetProgressColorStops(HWND hwnd, int element_id,
+                                        const unsigned char* stops_bytes, int stops_len) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_color_stops(parse_progress_color_stops(stops_bytes, stops_len));
+    }
+}
+
+int __stdcall EU_GetProgressColorStopCount(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return el ? (int)el->color_stops.size() : 0;
+}
+
+int __stdcall EU_GetProgressColorStop(HWND hwnd, int element_id, int index,
+                                      Color* color, int* percentage) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    if (!el || index < 0 || index >= (int)el->color_stops.size()) return 0;
+    if (color) *color = el->color_stops[index].first;
+    if (percentage) *percentage = el->color_stops[index].second;
+    return 1;
+}
+
+void __stdcall EU_SetProgressCompleteText(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_complete_text(utf8_to_wide(bytes, len));
+    }
+}
+
+int __stdcall EU_GetProgressCompleteText(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->complete_text, buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetProgressTextTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_text_template(utf8_to_wide(bytes, len));
+    }
+}
+
+int __stdcall EU_GetProgressTextTemplate(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->text_template, buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetAvatarShape(HWND hwnd, int element_id, int shape) {
