@@ -537,6 +537,38 @@ EXPORTS
     EU_SetTreeSelectItemExpanded
     EU_ToggleTreeSelectItemExpanded
     EU_GetTreeSelectItemExpanded
+    EU_SetTreeDataJson
+    EU_GetTreeDataJson
+    EU_SetTreeOptionsJson
+    EU_GetTreeStateJson
+    EU_SetTreeCheckedKeysJson
+    EU_GetTreeCheckedKeysJson
+    EU_SetTreeExpandedKeysJson
+    EU_GetTreeExpandedKeysJson
+    EU_AppendTreeNodeJson
+    EU_UpdateTreeNodeJson
+    EU_RemoveTreeNodeByKey
+    EU_SetTreeNodeEventCallback
+    EU_SetTreeLazyLoadCallback
+    EU_SetTreeDragCallback
+    EU_SetTreeAllowDragCallback
+    EU_SetTreeAllowDropCallback
+    EU_SetTreeSelectDataJson
+    EU_GetTreeSelectDataJson
+    EU_SetTreeSelectOptionsJson
+    EU_GetTreeSelectStateJson
+    EU_SetTreeSelectSelectedKeysJson
+    EU_GetTreeSelectSelectedKeysJson
+    EU_SetTreeSelectExpandedKeysJson
+    EU_GetTreeSelectExpandedKeysJson
+    EU_AppendTreeSelectNodeJson
+    EU_UpdateTreeSelectNodeJson
+    EU_RemoveTreeSelectNodeByKey
+    EU_SetTreeSelectNodeEventCallback
+    EU_SetTreeSelectLazyLoadCallback
+    EU_SetTreeSelectDragCallback
+    EU_SetTreeSelectAllowDragCallback
+    EU_SetTreeSelectAllowDropCallback
     EU_SetTransferItems
     EU_TransferMoveRight
     EU_TransferMoveLeft

@@ -1077,6 +1077,64 @@ int  __stdcall EU_GetTreeSelectSelectedItem(HWND hwnd, int element_id, int posit
 void __stdcall EU_SetTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index, int expanded);
 void __stdcall EU_ToggleTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index);
 int  __stdcall EU_GetTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index);
+void __stdcall EU_SetTreeDataJson(HWND hwnd, int element_id,
+                                  const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeDataJson(HWND hwnd, int element_id,
+                                  unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeOptionsJson(HWND hwnd, int element_id,
+                                     const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeStateJson(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                         const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                          const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                          unsigned char* buffer, int buffer_size);
+void __stdcall EU_AppendTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* parent_key_bytes, int parent_key_len,
+                                     const unsigned char* json_bytes, int json_len);
+void __stdcall EU_UpdateTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* key_bytes, int key_len,
+                                     const unsigned char* json_bytes, int json_len);
+void __stdcall EU_RemoveTreeNodeByKey(HWND hwnd, int element_id,
+                                      const unsigned char* key_bytes, int key_len);
+void __stdcall EU_SetTreeNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb);
+void __stdcall EU_SetTreeAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb);
+void __stdcall EU_SetTreeSelectDataJson(HWND hwnd, int element_id,
+                                        const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectDataJson(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeSelectOptionsJson(HWND hwnd, int element_id,
+                                           const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectStateJson(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                                unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                                unsigned char* buffer, int buffer_size);
+void __stdcall EU_AppendTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* parent_key_bytes, int parent_key_len,
+                                           const unsigned char* json_bytes, int json_len);
+void __stdcall EU_UpdateTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* key_bytes, int key_len,
+                                           const unsigned char* json_bytes, int json_len);
+void __stdcall EU_RemoveTreeSelectNodeByKey(HWND hwnd, int element_id,
+                                            const unsigned char* key_bytes, int key_len);
+void __stdcall EU_SetTreeSelectNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeSelectLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeSelectDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeSelectAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb);
+void __stdcall EU_SetTreeSelectAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb);
 void __stdcall EU_SetTransferItems(HWND hwnd, int element_id,
                                    const unsigned char* left_bytes, int left_len,
                                    const unsigned char* right_bytes, int right_len);

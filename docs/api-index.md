@@ -515,6 +515,22 @@
 | `EU_SetTreeItemLazy` | |
 | `EU_GetTreeItemLazy` | |
 | `EU_GetTreeVisibleCount` | |
+| `EU_SetTreeDataJson` | 设置 Tree 嵌套 JSON 数据 |
+| `EU_GetTreeDataJson` | 读取 Tree 嵌套 JSON 数据 |
+| `EU_SetTreeOptionsJson` | 设置 Tree 高级 JSON 选项 |
+| `EU_GetTreeStateJson` | 读取 Tree 状态 JSON |
+| `EU_SetTreeCheckedKeysJson` | 按 key 设置 Tree 勾选节点 |
+| `EU_GetTreeCheckedKeysJson` | 读取 Tree 勾选 key 数组 JSON |
+| `EU_SetTreeExpandedKeysJson` | 按 key 设置 Tree 展开节点 |
+| `EU_GetTreeExpandedKeysJson` | 读取 Tree 展开 key 数组 JSON |
+| `EU_AppendTreeNodeJson` | 按 parentKey 追加 Tree 节点 JSON |
+| `EU_UpdateTreeNodeJson` | 按 key 更新 Tree 节点 JSON |
+| `EU_RemoveTreeNodeByKey` | 按 key 删除 Tree 节点及子树 |
+| `EU_SetTreeNodeEventCallback` | 设置 Tree 节点事件回调 |
+| `EU_SetTreeLazyLoadCallback` | 设置 Tree 懒加载回调 |
+| `EU_SetTreeDragCallback` | 设置 Tree 拖拽完成回调 |
+| `EU_SetTreeAllowDragCallback` | 设置 Tree 是否允许拖拽回调 |
+| `EU_SetTreeAllowDropCallback` | 设置 Tree 是否允许放置回调 |
 | `EU_SetTreeSelectItems` | |
 | `EU_SetTreeSelectSelected` | |
 | `EU_GetTreeSelectSelected` | |
@@ -531,6 +547,22 @@
 | `EU_SetTreeSelectItemExpanded` | |
 | `EU_ToggleTreeSelectItemExpanded` | |
 | `EU_GetTreeSelectItemExpanded` | |
+| `EU_SetTreeSelectDataJson` | 设置 TreeSelect 嵌套 JSON 数据 |
+| `EU_GetTreeSelectDataJson` | 读取 TreeSelect 嵌套 JSON 数据 |
+| `EU_SetTreeSelectOptionsJson` | 设置 TreeSelect 高级 JSON 选项 |
+| `EU_GetTreeSelectStateJson` | 读取 TreeSelect 状态 JSON |
+| `EU_SetTreeSelectSelectedKeysJson` | 按 key 设置 TreeSelect 选中值 |
+| `EU_GetTreeSelectSelectedKeysJson` | 读取 TreeSelect 选中 key 数组 JSON |
+| `EU_SetTreeSelectExpandedKeysJson` | 按 key 设置 TreeSelect 展开节点 |
+| `EU_GetTreeSelectExpandedKeysJson` | 读取 TreeSelect 展开 key 数组 JSON |
+| `EU_AppendTreeSelectNodeJson` | 按 parentKey 追加 TreeSelect 节点 JSON |
+| `EU_UpdateTreeSelectNodeJson` | 按 key 更新 TreeSelect 节点 JSON |
+| `EU_RemoveTreeSelectNodeByKey` | 按 key 删除 TreeSelect 节点及子树 |
+| `EU_SetTreeSelectNodeEventCallback` | 设置 TreeSelect 节点事件回调 |
+| `EU_SetTreeSelectLazyLoadCallback` | 设置 TreeSelect 懒加载回调 |
+| `EU_SetTreeSelectDragCallback` | 设置 TreeSelect 拖拽完成回调 |
+| `EU_SetTreeSelectAllowDragCallback` | 设置 TreeSelect 是否允许拖拽回调 |
+| `EU_SetTreeSelectAllowDropCallback` | 设置 TreeSelect 是否允许放置回调 |
 | `EU_SetTransferItems` | |
 | `EU_TransferMoveRight` | |
 | `EU_TransferMoveLeft` | |

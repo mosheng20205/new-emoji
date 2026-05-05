@@ -3121,6 +3121,285 @@ def showcase_tabs(hwnd, stage, w, h):
     set_click(hwnd, close_btn, lambda _eid: ui.close_tabs_item(hwnd, workspace, ui.get_tabs_full_state_ex(hwnd, workspace)["active_index"]))
 
 
+def tree_gallery_data():
+    return {
+        "props": {"label": "name", "children": "zones", "isLeaf": "leaf"},
+        "defaultExpandedKeys": ["root", "design", "remote"],
+        "defaultCheckedKeys": ["tree", "table"],
+        "currentKey": "tree",
+        "data": [
+            {
+                "key": "root",
+                "name": "📦 产品工作台",
+                "icon": "📦",
+                "tag": "根目录",
+                "actions": "查看|新增",
+                "zones": [
+                    {
+                        "key": "design",
+                        "name": "🎨 设计资源",
+                        "icon": "🎨",
+                        "tag": "默认展开",
+                        "actions": "追加|删除",
+                        "zones": [
+                            {"key": "button", "name": "🚀 按钮规范", "leaf": True, "tag": "完成"},
+                            {"key": "tree", "name": "🌳 Tree 高级样式", "leaf": True, "tag": "选中"},
+                            {"key": "disabled", "name": "🔒 冻结节点", "leaf": True, "disabled": True},
+                        ],
+                    },
+                    {
+                        "key": "data",
+                        "name": "📊 数据组件",
+                        "icon": "📊",
+                        "zones": [
+                            {"key": "table", "name": "📋 表格联动", "leaf": True, "tag": "半选"},
+                            {"key": "chart", "name": "📈 图表看板", "leaf": True},
+                        ],
+                    },
+                    {"key": "remote", "name": "⏳ 懒加载目录", "icon": "⏳", "lazy": True, "leaf": False},
+                ],
+            }
+        ],
+    }
+
+
+def showcase_tree(hwnd, stage, w, h):
+    left_w = 336
+    bottom_h = 122
+    body_h = h - bottom_h - 76
+    left = add_demo_panel(hwnd, stage, "🧰 操作区", 28, 30, left_w, body_h)
+    right = add_demo_panel(hwnd, stage, "🌳 Tree JSON 全样式", 388, 30, w - 416, body_h)
+    readback = add_demo_panel(hwnd, stage, "📤 状态读回", 28, h - bottom_h - 26, w - 56, bottom_h)
+    status_id = add_text(hwnd, readback, "", 20, 52, w - 96, 50, MUTED)
+
+    main_tree = ui.create_tree_json(
+        hwnd, right, tree_gallery_data(),
+        options={
+            "showCheckbox": True,
+            "keyboardNavigation": True,
+            "lazy": True,
+            "accordion": False,
+            "draggable": True,
+            "showActions": True,
+            "checkOnClickNode": True,
+        },
+        x=24, y=64, w=440, h=440,
+    )
+    ui.create_tree_json(
+        hwnd, right,
+        [
+            {"key": "base", "label": "🌱 基础嵌套树", "expanded": True, "children": [
+                {"key": "base-1", "label": "📄 默认展开", "leaf": True},
+                {"key": "base-2", "label": "🔒 禁用项", "leaf": True, "disabled": True},
+            ]},
+            {"key": "accordion", "label": "🪗 手风琴分组", "children": [
+                {"key": "accordion-a", "label": "同级只展开一个", "leaf": True},
+            ]},
+        ],
+        options={"showCheckbox": False, "accordion": True, "draggable": True},
+        x=500, y=64, w=330, h=210,
+    )
+    ui.create_tree_json(
+        hwnd, right,
+        {
+            "filterText": "配置",
+            "data": [
+                {"key": "filter-root", "label": "🔎 过滤根节点", "expanded": True, "children": [
+                    {"key": "filter-a", "label": "⚙️ 配置中心", "leaf": True, "tag": "匹配"},
+                    {"key": "filter-b", "label": "📦 资源仓库", "leaf": True},
+                ]},
+            ],
+        },
+        options={"showCheckbox": True, "filterText": "配置", "showActions": True},
+        x=500, y=304, w=330, h=200,
+    )
+    custom_tree = ui.create_tree_json(
+        hwnd, right,
+        [
+            {"key": "template", "label": "🧩 自定义节点模板", "icon": "🧩", "tag": "桌面模板", "expanded": True, "actions": "打开|归档", "children": [
+                {"key": "template-1", "label": "⭐ 图标 + 主文本 + 标签", "icon": "⭐", "tag": "右侧标签", "leaf": True, "actions": "处理"},
+                {"key": "template-2", "label": "🧹 支持追加 / 删除 / 更新", "icon": "🧹", "leaf": True, "actions": "清理"},
+            ]}
+        ],
+        options={"showCheckbox": True, "showActions": True},
+        x=864, y=64, w=max(320, w - 1320), h=440,
+    )
+    ui.set_tree_checked_keys_json(hwnd, custom_tree, ["template-1"])
+
+    add_text(hwnd, left, "🌳 主树覆盖：嵌套 JSON、props 映射、复选框、半选、默认 keys、禁用、懒加载、拖拽和固定节点模板。", 18, 54, left_w - 36, 82, MUTED)
+    counter = [1]
+
+    def refresh_state():
+        state = ui.get_tree_state_json(hwnd, main_tree)
+        ui.set_element_text(
+            hwnd, status_id,
+            f"当前 key：{state.get('currentKey')}  勾选：{state.get('checkedKeys')}  半选：{state.get('halfCheckedKeys')}\n"
+            f"展开：{state.get('expandedKeys')}  懒加载索引：{state.get('lastLazyIndex')}  拖拽次数：{state.get('dragEventCount')}"
+        )
+
+    def lazy_loader(_eid, _code, _index, payload_ptr, payload_len):
+        payload = ui.tree_callback_payload(payload_ptr, payload_len)
+        if isinstance(payload, dict) and payload.get("key") == "remote":
+            ui.append_tree_node_json(hwnd, main_tree, "remote", [
+                {"key": "remote-api", "label": "🌐 远程接口", "leaf": True, "tag": "懒加载"},
+                {"key": "remote-log", "label": "🧾 远程日志", "leaf": True},
+            ])
+        refresh_state()
+
+    ui.set_tree_lazy_load_callback(hwnd, main_tree, lazy_loader)
+
+    buttons = [
+        ("📤", "读取状态", lambda _eid: refresh_state()),
+        ("✅", "设置勾选", lambda _eid: (ui.set_tree_checked_keys_json(hwnd, main_tree, ["tree", "chart"]), refresh_state())),
+        ("📂", "展开懒加载", lambda _eid: (ui.set_tree_expanded_keys_json(hwnd, main_tree, ["root", "remote"]), refresh_state())),
+        ("🔎", "过滤配置", lambda _eid: (ui.set_tree_options_json(hwnd, main_tree, {"filterText": "资源"}), refresh_state())),
+        ("🪗", "切换手风琴", lambda _eid: (ui.set_tree_options_json(hwnd, main_tree, {"accordion": True}), refresh_state())),
+        ("➕", "追加节点", lambda _eid: (
+            ui.append_tree_node_json(hwnd, main_tree, "design", {"key": f"new-{counter[0]}", "label": f"✨ 新任务 {counter[0]}", "leaf": True, "tag": "新增"}),
+            counter.__setitem__(0, counter[0] + 1),
+            refresh_state(),
+        )),
+        ("✏️", "更新节点", lambda _eid: (ui.update_tree_node_json(hwnd, main_tree, "tree", {"key": "tree", "label": "🌳 Tree 高级样式已更新", "leaf": True, "tag": "更新"}), refresh_state())),
+        ("🧹", "删除追加", lambda _eid: (ui.remove_tree_node_by_key(hwnd, main_tree, f"new-{counter[0] - 1}"), refresh_state())),
+    ]
+    for i, (emoji, label, fn) in enumerate(buttons):
+        x = 18 + (i % 2) * 150
+        y = 154 + (i // 2) * 54
+        btn = ui.create_button(hwnd, left, emoji, label, x, y, 132, 38)
+        set_click(hwnd, btn, fn)
+
+    ui.create_descriptions(
+        hwnd, left, "📚 JSON 公共 API",
+        [
+            ("数据", "EU_SetTreeDataJson / EU_GetTreeDataJson"),
+            ("状态", "checkedKeys / halfCheckedKeys / expandedKeys"),
+            ("节点", "Append / Update / Remove by key"),
+            ("交互", "lazy / filter / accordion / drag callbacks"),
+        ],
+        1, True, 18, 394, left_w - 36, 150,
+    )
+    refresh_state()
+
+
+def showcase_tree_select(hwnd, stage, w, h):
+    left_w = 336
+    bottom_h = 122
+    body_h = h - bottom_h - 76
+    left = add_demo_panel(hwnd, stage, "🧰 操作区", 28, 30, left_w, body_h)
+    right = add_demo_panel(hwnd, stage, "🌲 TreeSelect JSON 高级组件", 388, 30, w - 416, body_h)
+    readback = add_demo_panel(hwnd, stage, "📤 状态读回", 28, h - bottom_h - 26, w - 56, bottom_h)
+    status_id = add_text(hwnd, readback, "", 20, 52, w - 96, 50, MUTED)
+
+    data = tree_gallery_data()
+    main_select = ui.create_tree_select_json(
+        hwnd, right, data,
+        options={
+            "multiple": True,
+            "clearable": True,
+            "searchable": True,
+            "open": True,
+            "accordion": False,
+            "draggable": True,
+            "showActions": True,
+            "searchText": "Tree",
+        },
+        selected_keys=["tree", "table"],
+        expanded_keys=["root", "design", "remote"],
+        x=24, y=70, w=420, h=40,
+    )
+    ui.create_tree_select_json(
+        hwnd, right,
+        [
+            {"key": "dept", "label": "🏢 部门", "expanded": True, "children": [
+                {"key": "rd", "label": "👩‍💻 研发中心", "leaf": True},
+                {"key": "ops", "label": "🛡️ 运维中心", "leaf": True, "disabled": True},
+            ]},
+        ],
+        options={"multiple": False, "clearable": True, "searchable": False},
+        selected_keys=["rd"],
+        x=500, y=70, w=340, h=40,
+    )
+    ui.create_tree_select_json(
+        hwnd, right,
+        {
+            "props": {"label": "name", "children": "zones", "isLeaf": "leaf"},
+            "data": [
+                {"key": "city", "name": "🌏 城市权限", "zones": [
+                    {"key": "sh", "name": "🏙️ 上海", "leaf": True, "tag": "默认"},
+                    {"key": "bj", "name": "🏛️ 北京", "leaf": True},
+                ]}
+            ],
+        },
+        options={"multiple": True, "clearable": True, "searchable": True, "searchText": "上"},
+        selected_keys=["sh"],
+        x=500, y=160, w=340, h=40,
+    )
+    ui.create_tree_select_json(
+        hwnd, right,
+        [
+            {"key": "template", "label": "🧩 模板节点", "icon": "🧩", "tag": "标签", "expanded": True, "actions": "打开|归档", "children": [
+                {"key": "template-a", "label": "⭐ 右侧操作按钮", "icon": "⭐", "leaf": True, "actions": "处理"},
+                {"key": "template-b", "label": "🔒 禁用模板项", "icon": "🔒", "leaf": True, "disabled": True},
+            ]}
+        ],
+        options={"multiple": True, "clearable": True, "showActions": True},
+        selected_keys=["template-a"],
+        x=500, y=250, w=340, h=40,
+    )
+    add_text(hwnd, right, "🌲 打开的主选择器展示：搜索框、多选勾选、祖先匹配、懒加载、禁用节点、拖拽标记和桌面模板。", 24, 128, 420, 62, MUTED)
+    add_text(hwnd, right, "🏢 单选、字段映射、多选模板分别放在右侧，模拟设置页和权限分配页的桌面端使用习惯。", 500, 318, 420, 62, MUTED)
+
+    def refresh_state():
+        state = ui.get_tree_select_state_json(hwnd, main_select)
+        ui.set_element_text(
+            hwnd, status_id,
+            f"打开：{state.get('open')}  搜索：{state.get('searchText')}  匹配：{state.get('matchedCount')}\n"
+            f"选中：{state.get('selectedKeys')}  展开：{state.get('expandedKeys')}  拖拽次数：{state.get('dragEventCount')}"
+        )
+
+    def lazy_loader(_eid, _code, _index, payload_ptr, payload_len):
+        payload = ui.tree_callback_payload(payload_ptr, payload_len)
+        if isinstance(payload, dict) and payload.get("key") == "remote":
+            ui.append_tree_select_node_json(hwnd, main_select, "remote", [
+                {"key": "remote-member", "label": "🧑‍💼 远程成员", "leaf": True, "tag": "加载"},
+                {"key": "remote-team", "label": "👥 远程小组", "leaf": True},
+            ])
+        refresh_state()
+
+    ui.set_tree_select_lazy_load_callback(hwnd, main_select, lazy_loader)
+
+    buttons = [
+        ("📂", "打开弹层", lambda _eid: (ui.set_tree_select_state_json(hwnd, main_select, {"open": True}), refresh_state())),
+        ("📕", "关闭弹层", lambda _eid: (ui.set_tree_select_state_json(hwnd, main_select, {"open": False}), refresh_state())),
+        ("🔎", "搜索资源", lambda _eid: (ui.set_tree_select_state_json(hwnd, main_select, {"open": True, "searchText": "资源"}), refresh_state())),
+        ("✅", "设置多选", lambda _eid: (ui.set_tree_select_selected_keys_json(hwnd, main_select, ["tree", "chart"]), refresh_state())),
+        ("🧹", "清空选择", lambda _eid: (ui.set_tree_select_selected_keys_json(hwnd, main_select, []), refresh_state())),
+        ("⏳", "展开远程", lambda _eid: (ui.set_tree_select_expanded_keys_json(hwnd, main_select, ["root", "remote"]), refresh_state())),
+        ("➕", "追加节点", lambda _eid: (ui.append_tree_select_node_json(hwnd, main_select, "design", {"key": "select-added", "label": "✨ 新候选项", "leaf": True, "tag": "新增"}), refresh_state())),
+        ("✏️", "更新节点", lambda _eid: (ui.update_tree_select_node_json(hwnd, main_select, "tree", {"key": "tree", "label": "🌳 TreeSelect 已更新", "leaf": True, "tag": "更新"}), refresh_state())),
+        ("🗑️", "删除追加", lambda _eid: (ui.remove_tree_select_node_by_key(hwnd, main_select, "select-added"), refresh_state())),
+        ("📤", "读取状态", lambda _eid: refresh_state()),
+    ]
+    add_text(hwnd, left, "🌲 TreeSelect 复用 Tree JSON 数据模型，并额外读写 selectedKeys、searchText、open。", 18, 54, left_w - 36, 70, MUTED)
+    for i, (emoji, label, fn) in enumerate(buttons):
+        x = 18 + (i % 2) * 150
+        y = 144 + (i // 2) * 54
+        btn = ui.create_button(hwnd, left, emoji, label, x, y, 132, 38)
+        set_click(hwnd, btn, fn)
+
+    ui.create_descriptions(
+        hwnd, left, "📚 TreeSelect API",
+        [
+            ("数据", "EU_SetTreeSelectDataJson"),
+            ("状态", "selectedKeys / expandedKeys / open / searchText"),
+            ("节点", "Append / Update / Remove by key"),
+            ("交互", "搜索、清空、多选、懒加载、拖拽"),
+        ],
+        1, True, 18, 448, left_w - 36, 150,
+    )
+    refresh_state()
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -3161,6 +3440,8 @@ SPECIAL_SHOWCASES = {
     "Menu": showcase_menu,
     "InfiniteScroll": showcase_infinite_scroll,
     "Tabs": showcase_tabs,
+    "Tree": showcase_tree,
+    "TreeSelect": showcase_tree_select,
 }
 
 

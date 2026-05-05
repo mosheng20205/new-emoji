@@ -3774,6 +3774,231 @@
     .参数 元素ID, 整数型
     .参数 项目索引, 整数型, , 从0开始
 
+## Tree / TreeSelect JSON 高级接口 🌳
+
+说明：以下接口是 Tree / TreeSelect 推荐公共 API。所有 JSON 文本均使用 UTF-8 字节集指针 + 长度传入；读取接口先传 `缓冲区指针=0`、`缓冲区大小=0` 可取所需长度，再分配字节集缓冲区读取。上方 `设置树项目`、`设置树选择器项目` 等索引/扁平格式接口保留为兼容接口。
+
+节点 JSON 字段：`key`、`label`、`children`、`disabled`、`leaf`、`checked`、`expanded`、`icon`、`tag`、`actions`、`lazy`。字段映射使用 `props`，例如：`{"label":"name","children":"zones","isLeaf":"leaf"}`。
+
+Tree 状态 JSON 返回：`currentKey`、`visibleCount`、`checkedKeys`、`halfCheckedKeys`、`expandedKeys`、`lastLazyIndex`、`lastLazyKey`、`dragEventCount`。
+TreeSelect 状态 JSON 返回：`selectedKeys`、`expandedKeys`、`open`、`multiple`、`clearable`、`searchable`、`searchText`、`matchedCount`、`lastLazyIndex`、`dragEventCount`。
+
+回调事件码：`1=点击/选中`、`2=勾选/选择变化`、`3=展开`、`4=折叠`、`10=懒加载请求`、`20=拖拽完成`。拖拽放置类型：`0=放到目标前`、`1=放入目标内`、`2=放到目标后`。
+
+JSON 示例：
+
+```json
+{
+  "props": {"label": "name", "children": "zones", "isLeaf": "leaf"},
+  "defaultExpandedKeys": ["root"],
+  "defaultCheckedKeys": ["task-tree"],
+  "currentKey": "task-tree",
+  "data": [
+    {
+      "key": "root",
+      "name": "📦 项目资源",
+      "icon": "📦",
+      "tag": "主目录",
+      "zones": [
+        {"key": "task-tree", "name": "🌳 Tree 高级样式", "leaf": true},
+        {"key": "locked", "name": "🔒 禁用节点", "leaf": true, "disabled": true},
+        {"key": "remote", "name": "⏳ 懒加载目录", "lazy": true, "leaf": false}
+      ]
+    }
+  ]
+}
+```
+
+.DLL命令 设置树JSON数据, , "new_emoji.dll", "EU_SetTreeDataJson", , 设置 Tree 嵌套 JSON 数据
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树JSON数据, 整数型, "new_emoji.dll", "EU_GetTreeDataJson", , 返回 UTF-8 JSON 所需长度或实际写入长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树JSON选项, , "new_emoji.dll", "EU_SetTreeOptionsJson", , 设置 showCheckbox/lazy/checkStrictly/accordion/filterText/draggable 等高级选项
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树JSON状态, 整数型, "new_emoji.dll", "EU_GetTreeStateJson", , 返回 Tree 状态 JSON 所需长度或实际写入长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树勾选键JSON, , "new_emoji.dll", "EU_SetTreeCheckedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树勾选键JSON, 整数型, "new_emoji.dll", "EU_GetTreeCheckedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树展开键JSON, , "new_emoji.dll", "EU_SetTreeExpandedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树展开键JSON, 整数型, "new_emoji.dll", "EU_GetTreeExpandedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 追加树节点JSON, , "new_emoji.dll", "EU_AppendTreeNodeJson", , parentKey 为空则追加根节点
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 父节点键字节集指针, 整数型, , UTF-8
+    .参数 父节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 更新树节点JSON, , "new_emoji.dll", "EU_UpdateTreeNodeJson", , 按 key 更新节点文本、图标、标签、状态等
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 删除树节点按键, , "new_emoji.dll", "EU_RemoveTreeNodeByKey", , 删除指定 key 的节点及子树
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+
+.DLL命令 设置树节点事件回调, , "new_emoji.dll", "EU_SetTreeNodeEventCallback", , 回调签名见 C++ TreeNodeEventCallback
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树懒加载回调, , "new_emoji.dll", "EU_SetTreeLazyLoadCallback", , 展开 lazy 节点时触发，调用方再追加子节点 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树拖拽回调, , "new_emoji.dll", "EU_SetTreeDragCallback", , 拖拽完成后触发
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树允许拖拽回调, , "new_emoji.dll", "EU_SetTreeAllowDragCallback", , 返回 0 禁止拖拽，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树允许放置回调, , "new_emoji.dll", "EU_SetTreeAllowDropCallback", , 返回 0 禁止放置，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器JSON数据, , "new_emoji.dll", "EU_SetTreeSelectDataJson", , 设置 TreeSelect 嵌套 JSON 数据
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器JSON数据, 整数型, "new_emoji.dll", "EU_GetTreeSelectDataJson", , 返回 UTF-8 JSON 所需长度或实际写入长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树选择器JSON选项, , "new_emoji.dll", "EU_SetTreeSelectOptionsJson", , 设置 multiple/clearable/searchable/open/searchText/accordion/draggable 等选项
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器JSON状态, 整数型, "new_emoji.dll", "EU_GetTreeSelectStateJson", , 返回 TreeSelect 状态 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树选择器选中键JSON, , "new_emoji.dll", "EU_SetTreeSelectSelectedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器选中键JSON, 整数型, "new_emoji.dll", "EU_GetTreeSelectSelectedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树选择器展开键JSON, , "new_emoji.dll", "EU_SetTreeSelectExpandedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器展开键JSON, 整数型, "new_emoji.dll", "EU_GetTreeSelectExpandedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 追加树选择器节点JSON, , "new_emoji.dll", "EU_AppendTreeSelectNodeJson", , parentKey 为空则追加根节点
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 父节点键字节集指针, 整数型, , UTF-8
+    .参数 父节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 更新树选择器节点JSON, , "new_emoji.dll", "EU_UpdateTreeSelectNodeJson", , 按 key 更新节点
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 删除树选择器节点按键, , "new_emoji.dll", "EU_RemoveTreeSelectNodeByKey", , 删除指定 key 的节点及子树
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+
+.DLL命令 设置树选择器节点事件回调, , "new_emoji.dll", "EU_SetTreeSelectNodeEventCallback", , 回调签名见 C++ TreeNodeEventCallback
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器懒加载回调, , "new_emoji.dll", "EU_SetTreeSelectLazyLoadCallback", , 展开 lazy 节点时触发
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器拖拽回调, , "new_emoji.dll", "EU_SetTreeSelectDragCallback", , 拖拽完成后触发
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器允许拖拽回调, , "new_emoji.dll", "EU_SetTreeSelectAllowDragCallback", , 返回 0 禁止拖拽，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器允许放置回调, , "new_emoji.dll", "EU_SetTreeSelectAllowDropCallback", , 返回 0 禁止放置，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
 .DLL命令 设置穿梭框项目, , "new_emoji.dll", "EU_SetTransferItems", , 对应 C++ 导出命令 EU_SetTransferItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型

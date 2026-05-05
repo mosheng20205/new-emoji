@@ -10,6 +10,7 @@ from ctypes import wintypes
 import sys
 import os
 import time
+import json
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -41,6 +42,14 @@ DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
 MenuSelectCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+TreeNodeEventCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+TreeNodeAllowDragCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+TreeNodeAllowDropCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                               ctypes.c_int)
 
 EXTENDED_PLACEMENTS = {
     "top-start": 0, "top": 1, "top-end": 2,
@@ -1616,6 +1625,72 @@ dll.EU_SetTreeSelectItemExpanded.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_ToggleTreeSelectItemExpanded.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTreeSelectItemExpanded.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTreeSelectItemExpanded.restype = ctypes.c_int
+dll.EU_SetTreeDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeDataJson.restype = ctypes.c_int
+dll.EU_SetTreeOptionsJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeStateJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeStateJson.restype = ctypes.c_int
+dll.EU_SetTreeCheckedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeCheckedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeCheckedKeysJson.restype = ctypes.c_int
+dll.EU_SetTreeExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeExpandedKeysJson.restype = ctypes.c_int
+dll.EU_AppendTreeNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_UpdateTreeNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_RemoveTreeNodeByKey.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTreeNodeEventCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeLazyLoadCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeAllowDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDragCallback]
+dll.EU_SetTreeAllowDropCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDropCallback]
+dll.EU_SetTreeSelectDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectDataJson.restype = ctypes.c_int
+dll.EU_SetTreeSelectOptionsJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectStateJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectStateJson.restype = ctypes.c_int
+dll.EU_SetTreeSelectSelectedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectSelectedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectSelectedKeysJson.restype = ctypes.c_int
+dll.EU_SetTreeSelectExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectExpandedKeysJson.restype = ctypes.c_int
+dll.EU_AppendTreeSelectNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_UpdateTreeSelectNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_RemoveTreeSelectNodeByKey.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTreeSelectNodeEventCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeSelectLazyLoadCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeSelectDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeSelectAllowDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDragCallback]
+dll.EU_SetTreeSelectAllowDropCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDropCallback]
 dll.EU_SetTransferItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -2825,6 +2900,50 @@ def bytes_arg(data: bytes):
     if not data:
         return None
     return (ctypes.c_ubyte * len(data))(*data)
+
+def json_bytes(value) -> bytes:
+    if value is None:
+        value = {}
+    if isinstance(value, bytes):
+        return value
+    if isinstance(value, bytearray):
+        return bytes(value)
+    if isinstance(value, str):
+        return make_utf8(value)
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+def read_json_result(fn, hwnd, element_id):
+    needed = fn(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return {}
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    copied = fn(hwnd, element_id, buf, needed + 1)
+    text = bytes(buf[:min(copied, needed)]).decode("utf-8", errors="replace")
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+def tree_callback_payload(payload_ptr, payload_len):
+    if not payload_ptr or payload_len <= 0:
+        return {}
+    text = bytes(payload_ptr[:payload_len]).decode("utf-8", errors="replace")
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+_tree_callback_refs = {}
+
+def _callback_key(hwnd, element_id, name):
+    return (int(hwnd) if hwnd else 0, int(element_id), name)
+
+def _wrap_callback(factory, callback):
+    if callback is None:
+        return None
+    if isinstance(callback, ctypes._CFuncPtr):
+        return callback
+    return factory(callback)
 
 def _extended_placement_value(placement, default="bottom"):
     if isinstance(placement, str):
@@ -5921,6 +6040,207 @@ def toggle_tree_select_item_expanded(hwnd, element_id, item_index=0):
 
 def get_tree_select_item_expanded(hwnd, element_id, item_index=0):
     return dll.EU_GetTreeSelectItemExpanded(hwnd, element_id, item_index)
+
+def _tree_data_payload(data=None, options=None):
+    if data is None:
+        payload = {"data": []}
+    elif isinstance(data, dict):
+        payload = dict(data)
+    elif isinstance(data, (list, tuple)):
+        payload = {"data": list(data)}
+    else:
+        return data
+    if options:
+        payload.update(options)
+    return payload
+
+def _tree_node_payload(node):
+    if isinstance(node, dict) and not any(k in node for k in ("data", "nodes")):
+        return {"data": [node]}
+    if isinstance(node, (list, tuple)):
+        return {"data": list(node)}
+    return node
+
+def _tree_keys_payload(keys):
+    if keys is None:
+        return []
+    if isinstance(keys, str):
+        text = keys.strip()
+        if text.startswith("[") or text.startswith("{"):
+            return keys
+        return [keys]
+    if isinstance(keys, (list, tuple, set)):
+        return list(keys)
+    return [keys]
+
+def create_tree_json(hwnd, parent_id, data=None, options=None, checked_keys=None,
+                     expanded_keys=None, x=0, y=0, w=320, h=260):
+    element_id = create_tree(hwnd, parent_id, [], 0, x, y, w, h)
+    set_tree_data_json(hwnd, element_id, _tree_data_payload(data, options))
+    if options:
+        set_tree_options_json(hwnd, element_id, options)
+    if checked_keys is not None:
+        set_tree_checked_keys_json(hwnd, element_id, checked_keys)
+    if expanded_keys is not None:
+        set_tree_expanded_keys_json(hwnd, element_id, expanded_keys)
+    return element_id
+
+def set_tree_data_json(hwnd, element_id, data):
+    raw = json_bytes(_tree_data_payload(data))
+    dll.EU_SetTreeDataJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_data_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeDataJson, hwnd, element_id)
+
+def set_tree_options_json(hwnd, element_id, options):
+    raw = json_bytes(options or {})
+    dll.EU_SetTreeOptionsJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_state_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeStateJson, hwnd, element_id)
+
+def set_tree_checked_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeCheckedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_checked_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeCheckedKeysJson, hwnd, element_id)
+
+def set_tree_expanded_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeExpandedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_expanded_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeExpandedKeysJson, hwnd, element_id)
+
+def append_tree_node_json(hwnd, element_id, parent_key, node):
+    key = make_utf8("" if parent_key is None else str(parent_key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_AppendTreeNodeJson(hwnd, element_id, bytes_arg(key), len(key), bytes_arg(raw), len(raw))
+
+def update_tree_node_json(hwnd, element_id, key, node):
+    key_data = make_utf8(str(key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_UpdateTreeNodeJson(hwnd, element_id, bytes_arg(key_data), len(key_data), bytes_arg(raw), len(raw))
+
+def remove_tree_node_by_key(hwnd, element_id, key):
+    key_data = make_utf8(str(key))
+    dll.EU_RemoveTreeNodeByKey(hwnd, element_id, bytes_arg(key_data), len(key_data))
+
+def _set_tree_callback(fn, factory, hwnd, element_id, name, callback):
+    key = _callback_key(hwnd, element_id, name)
+    if callback is None:
+        _tree_callback_refs.pop(key, None)
+        fn(hwnd, element_id, factory(0))
+        return None
+    wrapped = _wrap_callback(factory, callback)
+    _tree_callback_refs[key] = wrapped
+    fn(hwnd, element_id, wrapped)
+    return wrapped
+
+def set_tree_node_event_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeNodeEventCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "tree_event", callback)
+
+def set_tree_lazy_load_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeLazyLoadCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "tree_lazy", callback)
+
+def set_tree_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeDragCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "tree_drag", callback)
+
+def set_tree_allow_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeAllowDragCallback, TreeNodeAllowDragCallback,
+                              hwnd, element_id, "tree_allow_drag", callback)
+
+def set_tree_allow_drop_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeAllowDropCallback, TreeNodeAllowDropCallback,
+                              hwnd, element_id, "tree_allow_drop", callback)
+
+def create_tree_select_json(hwnd, parent_id, data=None, options=None, selected_keys=None,
+                            expanded_keys=None, x=0, y=0, w=320, h=38):
+    element_id = create_tree_select(hwnd, parent_id, [], 0, x, y, w, h)
+    set_tree_select_data_json(hwnd, element_id, _tree_data_payload(data, options))
+    if options:
+        set_tree_select_options_json(hwnd, element_id, options)
+    if selected_keys is not None:
+        set_tree_select_selected_keys_json(hwnd, element_id, selected_keys)
+    if expanded_keys is not None:
+        set_tree_select_expanded_keys_json(hwnd, element_id, expanded_keys)
+    return element_id
+
+def set_tree_select_data_json(hwnd, element_id, data):
+    raw = json_bytes(_tree_data_payload(data))
+    dll.EU_SetTreeSelectDataJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_data_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectDataJson, hwnd, element_id)
+
+def set_tree_select_options_json(hwnd, element_id, options):
+    raw = json_bytes(options or {})
+    dll.EU_SetTreeSelectOptionsJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_state_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectStateJson, hwnd, element_id)
+
+def set_tree_select_state_json(hwnd, element_id, state):
+    if isinstance(state, dict):
+        if "selectedKeys" in state:
+            set_tree_select_selected_keys_json(hwnd, element_id, state["selectedKeys"])
+        if "expandedKeys" in state:
+            set_tree_select_expanded_keys_json(hwnd, element_id, state["expandedKeys"])
+        if "searchText" in state:
+            set_tree_select_search(hwnd, element_id, state["searchText"])
+    set_tree_select_options_json(hwnd, element_id, state)
+
+def set_tree_select_selected_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeSelectSelectedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_selected_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectSelectedKeysJson, hwnd, element_id)
+
+def set_tree_select_expanded_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeSelectExpandedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_expanded_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectExpandedKeysJson, hwnd, element_id)
+
+def append_tree_select_node_json(hwnd, element_id, parent_key, node):
+    key = make_utf8("" if parent_key is None else str(parent_key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_AppendTreeSelectNodeJson(hwnd, element_id, bytes_arg(key), len(key), bytes_arg(raw), len(raw))
+
+def update_tree_select_node_json(hwnd, element_id, key, node):
+    key_data = make_utf8(str(key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_UpdateTreeSelectNodeJson(hwnd, element_id, bytes_arg(key_data), len(key_data), bytes_arg(raw), len(raw))
+
+def remove_tree_select_node_by_key(hwnd, element_id, key):
+    key_data = make_utf8(str(key))
+    dll.EU_RemoveTreeSelectNodeByKey(hwnd, element_id, bytes_arg(key_data), len(key_data))
+
+def set_tree_select_node_event_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectNodeEventCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "treeselect_event", callback)
+
+def set_tree_select_lazy_load_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectLazyLoadCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "treeselect_lazy", callback)
+
+def set_tree_select_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectDragCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "treeselect_drag", callback)
+
+def set_tree_select_allow_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectAllowDragCallback, TreeNodeAllowDragCallback,
+                              hwnd, element_id, "treeselect_allow_drag", callback)
+
+def set_tree_select_allow_drop_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectAllowDropCallback, TreeNodeAllowDropCallback,
+                              hwnd, element_id, "treeselect_allow_drop", callback)
 
 def set_transfer_items(hwnd, element_id, left_items=None, right_items=None):
     if left_items is None:

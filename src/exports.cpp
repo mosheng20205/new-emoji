@@ -645,8 +645,14 @@ static std::vector<TreeViewItem> parse_tree_items(const unsigned char* bytes, in
         if (fields.size() >= 3 && !fields[2].empty()) item.expanded = _wtoi(fields[2].c_str()) != 0;
         if (fields.size() >= 4 && !fields[3].empty()) item.checked = _wtoi(fields[3].c_str()) != 0;
         if (fields.size() >= 5 && !fields[4].empty()) item.lazy = _wtoi(fields[4].c_str()) != 0;
+        if (fields.size() >= 6 && !fields[5].empty()) item.key = fields[5];
+        if (fields.size() >= 7 && !fields[6].empty()) item.disabled = _wtoi(fields[6].c_str()) != 0;
+        if (fields.size() >= 8 && !fields[7].empty()) item.leaf = _wtoi(fields[7].c_str()) != 0;
+        if (fields.size() >= 9) item.icon = fields[8];
+        if (fields.size() >= 10) item.tag = fields[9];
+        if (fields.size() >= 11) item.actions = fields[10];
         if (item.level < 0) item.level = 0;
-        if (item.level > 6) item.level = 6;
+        if (item.level > 12) item.level = 12;
         items.push_back(item);
     }
     return items;
@@ -6885,6 +6891,200 @@ void __stdcall EU_ToggleTreeSelectItemExpanded(HWND hwnd, int element_id, int it
 int __stdcall EU_GetTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index) {
     auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
     return (el && el->get_item_expanded(item_index)) ? 1 : 0;
+}
+
+void __stdcall EU_SetTreeDataJson(HWND hwnd, int element_id,
+                                  const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_data_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeDataJson(HWND hwnd, int element_id,
+                                 unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->data_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeOptionsJson(HWND hwnd, int element_id,
+                                     const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_options_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeStateJson(HWND hwnd, int element_id,
+                                  unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->state_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                         const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_checked_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->checked_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                          const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_expanded_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->expanded_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_AppendTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* parent_key_bytes, int parent_key_len,
+                                     const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->append_node_json(utf8_to_wide(parent_key_bytes, parent_key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_UpdateTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* key_bytes, int key_len,
+                                     const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->update_node_json(utf8_to_wide(key_bytes, key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_RemoveTreeNodeByKey(HWND hwnd, int element_id,
+                                      const unsigned char* key_bytes, int key_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->remove_node_by_key(utf8_to_wide(key_bytes, key_len));
+    }
+}
+
+void __stdcall EU_SetTreeNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->event_cb = cb;
+}
+
+void __stdcall EU_SetTreeLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->lazy_cb = cb;
+}
+
+void __stdcall EU_SetTreeDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->allow_drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->allow_drop_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectDataJson(HWND hwnd, int element_id,
+                                        const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_data_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeSelectDataJson(HWND hwnd, int element_id,
+                                       unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->data_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeSelectOptionsJson(HWND hwnd, int element_id,
+                                           const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_options_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeSelectStateJson(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->state_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_selected_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                               unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->selected_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_expanded_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                               unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->expanded_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_AppendTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* parent_key_bytes, int parent_key_len,
+                                           const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->append_node_json(utf8_to_wide(parent_key_bytes, parent_key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_UpdateTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* key_bytes, int key_len,
+                                           const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->update_node_json(utf8_to_wide(key_bytes, key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_RemoveTreeSelectNodeByKey(HWND hwnd, int element_id,
+                                            const unsigned char* key_bytes, int key_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->remove_node_by_key(utf8_to_wide(key_bytes, key_len));
+    }
+}
+
+void __stdcall EU_SetTreeSelectNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->event_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->lazy_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->allow_drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->allow_drop_cb = cb;
 }
 
 void __stdcall EU_SetTransferItems(HWND hwnd, int element_id,

@@ -78,8 +78,8 @@
 ## 🌲 复杂选择
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
-| `Tree` | 树 | `EU_CreateTree` | 已完成 | [树](./tree.md) |
-| `TreeSelect` | 树选择 | `EU_CreateTreeSelect` | 已完成 | [树选择](./tree-select.md) |
+| `Tree` | 树 | `EU_CreateTree` | 高级 JSON 全样式完成，兼容旧扁平接口 | [树](./tree.md) |
+| `TreeSelect` | 树选择 | `EU_CreateTreeSelect` | 高级 JSON 全样式完成，兼容旧扁平接口 | [树选择](./tree-select.md) |
 | `Transfer` | 穿梭框 | `EU_CreateTransfer` | 已完成，支持筛选占位 / 多选勾选 / 字段模板 / 底部操作区 | [穿梭框](./transfer.md) |
 | `Autocomplete` | 自动补全 | `EU_CreateAutocomplete` | 已完成，支持 placeholder / trigger_on_focus / 图标 / 双行建议项 | [自动补全](./autocomplete.md) |
 | `Mentions` | 提及 | `EU_CreateMentions` | 已完成 | [提及](./mentions.md) |
