@@ -809,6 +809,12 @@ int  __stdcall EU_GetProgressTextTemplate(HWND hwnd, int element_id,
 void __stdcall EU_SetAvatarShape(HWND hwnd, int element_id, int shape);
 void __stdcall EU_SetAvatarSource(HWND hwnd, int element_id,
                                   const unsigned char* src_bytes, int src_len);
+void __stdcall EU_SetAvatarFallbackSource(HWND hwnd, int element_id,
+                                          const unsigned char* src_bytes, int src_len);
+void __stdcall EU_SetAvatarIcon(HWND hwnd, int element_id,
+                                const unsigned char* icon_bytes, int icon_len);
+void __stdcall EU_SetAvatarErrorText(HWND hwnd, int element_id,
+                                     const unsigned char* text_bytes, int text_len);
 void __stdcall EU_SetAvatarFit(HWND hwnd, int element_id, int fit);
 int  __stdcall EU_GetAvatarImageStatus(HWND hwnd, int element_id);
 int  __stdcall EU_GetAvatarOptions(HWND hwnd, int element_id, int* shape, int* fit);

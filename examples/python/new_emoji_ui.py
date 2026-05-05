@@ -1291,6 +1291,12 @@ dll.EU_GetProgressTextTemplate.restype = ctypes.c_int
 dll.EU_SetAvatarShape.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAvatarSource.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAvatarFallbackSource.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAvatarIcon.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAvatarErrorText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAvatarFit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetAvatarImageStatus.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetAvatarImageStatus.restype = ctypes.c_int
@@ -5068,7 +5074,8 @@ def get_progress_text_template(hwnd, element_id, buffer_size=256):
     return bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
 
 def create_avatar(hwnd, parent_id, text="A", shape=0,
-                  x=0, y=0, w=44, h=44, source="", fit=None):
+                  x=0, y=0, w=44, h=44, source="", fit=None,
+                  fallback_source="", icon="", error_text=""):
     data = make_utf8(text)
     element_id = dll.EU_CreateAvatar(
         hwnd, parent_id, bytes_arg(data), len(data),
@@ -5077,8 +5084,17 @@ def create_avatar(hwnd, parent_id, text="A", shape=0,
     if element_id and source:
         src_data = make_utf8(source)
         dll.EU_SetAvatarSource(hwnd, element_id, bytes_arg(src_data), len(src_data))
+    if element_id and fallback_source:
+        fallback_data = make_utf8(fallback_source)
+        dll.EU_SetAvatarFallbackSource(hwnd, element_id, bytes_arg(fallback_data), len(fallback_data))
+    if element_id and icon:
+        icon_data = make_utf8(icon)
+        dll.EU_SetAvatarIcon(hwnd, element_id, bytes_arg(icon_data), len(icon_data))
+    if element_id and error_text:
+        error_data = make_utf8(error_text)
+        dll.EU_SetAvatarErrorText(hwnd, element_id, bytes_arg(error_data), len(error_data))
     if element_id and fit is not None:
-        dll.EU_SetAvatarFit(hwnd, element_id, fit)
+        dll.EU_SetAvatarFit(hwnd, element_id, _image_fit_value(fit))
     return element_id
 
 def set_avatar_shape(hwnd, element_id, shape=0):
@@ -5088,8 +5104,20 @@ def set_avatar_source(hwnd, element_id, source=""):
     data = make_utf8(source)
     dll.EU_SetAvatarSource(hwnd, element_id, bytes_arg(data), len(data))
 
+def set_avatar_fallback_source(hwnd, element_id, source=""):
+    data = make_utf8(source)
+    dll.EU_SetAvatarFallbackSource(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_avatar_icon(hwnd, element_id, icon=""):
+    data = make_utf8(icon)
+    dll.EU_SetAvatarIcon(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_avatar_error_text(hwnd, element_id, text=""):
+    data = make_utf8(text)
+    dll.EU_SetAvatarErrorText(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_avatar_fit(hwnd, element_id, fit=0):
-    dll.EU_SetAvatarFit(hwnd, element_id, fit)
+    dll.EU_SetAvatarFit(hwnd, element_id, _image_fit_value(fit))
 
 def get_avatar_image_status(hwnd, element_id):
     return dll.EU_GetAvatarImageStatus(hwnd, element_id)

@@ -1870,6 +1870,85 @@ def showcase_image(hwnd, stage, w, h):
     refresh_status()
 
 
+def showcase_avatar(hwnd, stage, w, h):
+    wide, tall, small = image_sample_files()
+    missing = os.path.join(tempfile.gettempdir(), "new_emoji_gallery_missing_avatar.bmp")
+    remote = "https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png"
+
+    size_panel = add_demo_panel(hwnd, stage, "😀 基础形状与尺寸", 28, 30, w - 56, 220)
+    size_specs = [
+        ("圆形 50", 0, 50, "圆"),
+        ("圆形 large", 0, 64, "大"),
+        ("圆形 medium", 0, 48, "中"),
+        ("圆形 small", 0, 36, "小"),
+        ("方形 50", 1, 50, "方"),
+        ("方形 large", 1, 64, "大"),
+        ("方形 medium", 1, 48, "中"),
+        ("方形 small", 1, 36, "小"),
+    ]
+    for index, (label, shape, size, text) in enumerate(size_specs):
+        x = 28 + index * 138
+        ui.create_avatar(hwnd, size_panel, text, shape, x + 28, 68, size, size)
+        add_text(hwnd, size_panel, label, x, 146, 120, 24, MUTED)
+
+    type_panel = add_demo_panel(hwnd, stage, "👤 内容类型：图标、图片、文字与 emoji", 28, 278, w - 56, 220)
+    type_specs = [
+        ("用户图标", {"icon": "👤", "text": "", "shape": 0}),
+        ("本地图片", {"source": wide, "text": "", "shape": 0, "fit": "cover"}),
+        ("远程图片", {"source": remote, "text": "", "shape": 0, "fit": "cover", "icon": "🌐"}),
+        ("中文文字", {"text": "小易", "shape": 0}),
+        ("emoji 内容", {"text": "🚀", "shape": 1}),
+    ]
+    for index, (label, options) in enumerate(type_specs):
+        x = 36 + index * 210
+        ui.create_avatar(
+            hwnd, type_panel,
+            options.get("text", ""),
+            options.get("shape", 0),
+            x, 70, 78, 78,
+            source=options.get("source", ""),
+            fit=options.get("fit", "contain"),
+            icon=options.get("icon", ""),
+        )
+        add_text(hwnd, type_panel, f"✨ {label}", x - 14, 160, 136, 26, MUTED)
+
+    fallback_panel = add_demo_panel(hwnd, stage, "🛟 加载失败与回退", 28, 526, w - 56, 220)
+    ui.create_avatar(
+        hwnd, fallback_panel, "", 0, 42, 72, 82, 82,
+        source=missing, icon="👤", error_text="!"
+    )
+    add_text(hwnd, fallback_panel, "失败后显示错误文本", 20, 164, 160, 26, MUTED)
+    ui.create_avatar(
+        hwnd, fallback_panel, "", 0, 246, 72, 82, 82,
+        source=missing, fallback_source=small, fit="scale-down", icon="🛟"
+    )
+    add_text(hwnd, fallback_panel, "失败后显示备用图片", 218, 164, 170, 26, MUTED)
+    ui.create_avatar(
+        hwnd, fallback_panel, "访客", 1, 450, 72, 82, 82,
+        source=missing, error_text="离线"
+    )
+    add_text(hwnd, fallback_panel, "失败后显示中文占位", 420, 164, 180, 26, MUTED)
+    ui.create_avatar(
+        hwnd, fallback_panel, "", 0, 654, 72, 82, 82,
+        icon="🧑‍💼"
+    )
+    add_text(hwnd, fallback_panel, "无图片时显示图标", 628, 164, 160, 26, MUTED)
+
+    fit_panel = add_demo_panel(hwnd, stage, "🖼️ 图片适配方式", 28, 774, w - 56, 270)
+    fit_specs = [
+        ("fill", "拉伸填满"),
+        ("contain", "完整包含"),
+        ("cover", "覆盖裁切"),
+        ("none", "原图居中"),
+        ("scale-down", "按需缩小"),
+    ]
+    for index, (fit, label) in enumerate(fit_specs):
+        x = 34 + index * 216
+        ui.create_avatar(hwnd, fit_panel, "", 1, x + 28, 72, 100, 100, source=tall, fit=fit)
+        add_text(hwnd, fit_panel, f"🖼️ {label}", x, 184, 170, 26, MUTED)
+        add_text(hwnd, fit_panel, fit, x, 214, 170, 24, MUTED)
+
+
 def showcase_alert(hwnd, stage, w, h):
     type_names = {0: "信息", 1: "成功", 2: "警告", 3: "错误"}
     action_names = {0: "无", 1: "设置", 2: "鼠标", 3: "键盘", 4: "程序"}
@@ -4358,6 +4437,7 @@ SPECIAL_SHOWCASES = {
     "Tag": showcase_tag,
     "Badge": showcase_badge,
     "Progress": showcase_progress,
+    "Avatar": showcase_avatar,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
     "Steps": showcase_steps,

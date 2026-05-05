@@ -3,6 +3,9 @@
 #include <d2d1.h>
 #include <vector>
 
+bool is_shared_remote_image_source(const std::wstring& value);
+int resolve_shared_image_source(HWND hwnd, const std::wstring& source, std::wstring& local_path);
+
 class Image : public Element {
 public:
     std::wstring src;

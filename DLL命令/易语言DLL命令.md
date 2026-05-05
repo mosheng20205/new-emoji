@@ -2832,20 +2832,38 @@
 .DLL命令 设置头像形状, , "new_emoji.dll", "EU_SetAvatarShape", , 对应 C++ 导出命令 EU_SetAvatarShape
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 形状, 整数型
+    .参数 形状, 整数型, , 0圆形 1方形/圆角方形
 
 .DLL命令 设置头像图片源, , "new_emoji.dll", "EU_SetAvatarSource", , 对应 C++ 导出命令 EU_SetAvatarSource
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 图片路径字节集指针, 整数型, , UTF-8
+    .参数 图片路径字节集指针, 整数型, , UTF-8，本地路径或 http/https 图片地址
     .参数 图片路径长度, 整数型
+
+.DLL命令 设置头像备用图片源, , "new_emoji.dll", "EU_SetAvatarFallbackSource", , 对应 C++ 导出命令 EU_SetAvatarFallbackSource
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图片路径字节集指针, 整数型, , UTF-8，主图片失败后使用，本地路径或 http/https 图片地址
+    .参数 图片路径长度, 整数型
+
+.DLL命令 设置头像图标, , "new_emoji.dll", "EU_SetAvatarIcon", , 对应 C++ 导出命令 EU_SetAvatarIcon
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标文本字节集指针, 整数型, , UTF-8，可传 emoji 或图标字符
+    .参数 图标文本长度, 整数型
+
+.DLL命令 设置头像错误文本, , "new_emoji.dll", "EU_SetAvatarErrorText", , 对应 C++ 导出命令 EU_SetAvatarErrorText
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 错误文本字节集指针, 整数型, , UTF-8，图片失败且无备用图时显示
+    .参数 错误文本长度, 整数型
 
 .DLL命令 设置头像适配方式, , "new_emoji.dll", "EU_SetAvatarFit", , 对应 C++ 导出命令 EU_SetAvatarFit
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 适配方式, 整数型, , 0包含 1覆盖 2拉伸
+    .参数 适配方式, 整数型, , 0包含 1覆盖 2拉伸 3原图居中 4按需缩小
 
-.DLL命令 取头像图片状态, 整数型, "new_emoji.dll", "EU_GetAvatarImageStatus", , 对应 C++ 导出命令 EU_GetAvatarImageStatus；返回 0未加载 1成功 2失败
+.DLL命令 取头像图片状态, 整数型, "new_emoji.dll", "EU_GetAvatarImageStatus", , 对应 C++ 导出命令 EU_GetAvatarImageStatus；返回 0空/未加载 1成功 2失败 3加载中
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 

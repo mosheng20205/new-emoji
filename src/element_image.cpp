@@ -385,6 +385,22 @@ static int remote_source_state(HWND hwnd, const std::wstring& source, std::wstri
     return state;
 }
 
+bool is_shared_remote_image_source(const std::wstring& value) {
+    return is_remote_source(value);
+}
+
+int resolve_shared_image_source(HWND hwnd, const std::wstring& source, std::wstring& local_path) {
+    if (source.empty()) {
+        local_path.clear();
+        return 0;
+    }
+    if (!is_remote_source(source)) {
+        local_path = source;
+        return 1;
+    }
+    return remote_source_state(hwnd, source, local_path);
+}
+
 static void release_bitmap_slot(ID2D1Bitmap*& bitmap, ID2D1RenderTarget*& rt,
                                 std::wstring& cached_src, int* out_w, int* out_h) {
     if (bitmap) {

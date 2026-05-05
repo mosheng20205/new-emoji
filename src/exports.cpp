@@ -5895,6 +5895,27 @@ void __stdcall EU_SetAvatarSource(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetAvatarFallbackSource(HWND hwnd, int element_id,
+                                          const unsigned char* src_bytes, int src_len) {
+    if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
+        el->set_fallback_source(utf8_to_wide(src_bytes, src_len));
+    }
+}
+
+void __stdcall EU_SetAvatarIcon(HWND hwnd, int element_id,
+                                const unsigned char* icon_bytes, int icon_len) {
+    if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
+        el->set_icon(utf8_to_wide(icon_bytes, icon_len));
+    }
+}
+
+void __stdcall EU_SetAvatarErrorText(HWND hwnd, int element_id,
+                                     const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
+        el->set_error_text(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
 void __stdcall EU_SetAvatarFit(HWND hwnd, int element_id, int fit) {
     if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
         el->set_fit(fit);
@@ -5904,9 +5925,7 @@ void __stdcall EU_SetAvatarFit(HWND hwnd, int element_id, int fit) {
 int __stdcall EU_GetAvatarImageStatus(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Avatar>(hwnd, element_id);
     if (!el) return 0;
-    if (el->image_loaded) return 1;
-    if (el->image_failed) return 2;
-    return 0;
+    return el->image_status;
 }
 
 int __stdcall EU_GetAvatarOptions(HWND hwnd, int element_id, int* shape, int* fit) {
