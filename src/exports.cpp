@@ -9740,6 +9740,60 @@ void __stdcall EU_SetCarouselOptions(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetCarouselBehavior(HWND hwnd, int element_id,
+                                      int trigger_mode, int arrow_mode,
+                                      int direction, int carousel_type,
+                                      int pause_on_hover) {
+    if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
+        el->set_behavior(trigger_mode, arrow_mode, direction, carousel_type, pause_on_hover);
+    }
+}
+
+int __stdcall EU_GetCarouselBehavior(HWND hwnd, int element_id,
+                                     int* trigger_mode, int* arrow_mode,
+                                     int* direction, int* carousel_type,
+                                     int* pause_on_hover) {
+    auto* el = find_typed_element<Carousel>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_mode) *trigger_mode = el->trigger_mode;
+    if (arrow_mode) *arrow_mode = el->arrow_mode;
+    if (direction) *direction = el->direction;
+    if (carousel_type) *carousel_type = el->carousel_type;
+    if (pause_on_hover) *pause_on_hover = el->pause_on_hover ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetCarouselVisual(HWND hwnd, int element_id,
+                                    Color text_color, int text_alpha, int text_font_size,
+                                    Color odd_bg, Color even_bg, Color panel_bg,
+                                    Color active_indicator, Color inactive_indicator,
+                                    int card_scale_percent) {
+    if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
+        el->set_visual(text_color, text_alpha, text_font_size,
+                       odd_bg, even_bg, panel_bg,
+                       active_indicator, inactive_indicator, card_scale_percent);
+    }
+}
+
+int __stdcall EU_GetCarouselVisual(HWND hwnd, int element_id,
+                                   Color* text_color, int* text_alpha, int* text_font_size,
+                                   Color* odd_bg, Color* even_bg, Color* panel_bg,
+                                   Color* active_indicator, Color* inactive_indicator,
+                                   int* card_scale_percent) {
+    auto* el = find_typed_element<Carousel>(hwnd, element_id);
+    if (!el) return 0;
+    if (text_color) *text_color = el->text_color;
+    if (text_alpha) *text_alpha = el->text_alpha;
+    if (text_font_size) *text_font_size = el->text_font_size;
+    if (odd_bg) *odd_bg = el->odd_bg;
+    if (even_bg) *even_bg = el->even_bg;
+    if (panel_bg) *panel_bg = el->panel_bg;
+    if (active_indicator) *active_indicator = el->active_indicator;
+    if (inactive_indicator) *inactive_indicator = el->inactive_indicator;
+    if (card_scale_percent) *card_scale_percent = el->card_scale_percent;
+    return 1;
+}
+
 void __stdcall EU_SetCarouselAutoplay(HWND hwnd, int element_id, int enabled, int interval_ms) {
     if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
         el->set_autoplay(enabled, interval_ms);

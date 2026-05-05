@@ -847,6 +847,10 @@
 | `EU_SetCarouselItems` | |
 | `EU_SetCarouselActive` | |
 | `EU_SetCarouselOptions` | |
+| `EU_SetCarouselBehavior` | 设置走马灯触发方式、箭头模式、方向、普通/卡片类型和悬停暂停 |
+| `EU_GetCarouselBehavior` | 读取走马灯触发方式、箭头模式、方向、普通/卡片类型和悬停暂停 |
+| `EU_SetCarouselVisual` | 设置走马灯文字、背景、指示器颜色和卡片缩放比例 |
+| `EU_GetCarouselVisual` | 读取走马灯文字、背景、指示器颜色和卡片缩放比例 |
 | `EU_SetCarouselAutoplay` | |
 | `EU_SetCarouselAnimation` | |
 | `EU_CarouselAdvance` | |

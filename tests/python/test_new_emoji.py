@@ -62,6 +62,11 @@ TRIGGER_MODES = {
     "manual": 3,
 }
 
+CAROUSEL_TRIGGER_MODES = {"hover": 0, "click": 1}
+CAROUSEL_ARROW_MODES = {"hover": 0, "always": 1, "never": 2}
+CAROUSEL_DIRECTIONS = {"horizontal": 0, "vertical": 1}
+CAROUSEL_TYPES = {"normal": 0, "card": 1}
+
 # 鈹€鈹€ Export signatures 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 def ptr(s): return ctypes.c_char_p(s) if isinstance(s, bytes) else ctypes.c_char_p(s.encode('utf-8'))
@@ -2392,6 +2397,29 @@ dll.EU_SetCarouselItems.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetCarouselActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetCarouselOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetCarouselBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int]
+dll.EU_GetCarouselBehavior.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetCarouselBehavior.restype = ctypes.c_int
+dll.EU_SetCarouselVisual.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.c_uint32, ctypes.c_int, ctypes.c_int,
+    ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+    ctypes.c_uint32, ctypes.c_uint32, ctypes.c_int,
+]
+dll.EU_GetCarouselVisual.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+    ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetCarouselVisual.restype = ctypes.c_int
 dll.EU_SetCarouselAutoplay.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.c_int, ctypes.c_int]
 dll.EU_SetCarouselAnimation.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -3172,6 +3200,27 @@ def _trigger_mode_value(trigger_mode, default="click"):
     except (TypeError, ValueError):
         value = TRIGGER_MODES[default]
     return max(0, min(3, value))
+
+def _carousel_enum_value(value, mapping, default):
+    if isinstance(value, str):
+        return mapping.get(value, mapping[default])
+    try:
+        raw = int(value)
+    except (TypeError, ValueError):
+        raw = mapping[default]
+    return max(0, min(max(mapping.values()), raw))
+
+def _carousel_trigger_value(value):
+    return _carousel_enum_value(value, CAROUSEL_TRIGGER_MODES, "click")
+
+def _carousel_arrow_value(value):
+    return _carousel_enum_value(value, CAROUSEL_ARROW_MODES, "always")
+
+def _carousel_direction_value(value):
+    return _carousel_enum_value(value, CAROUSEL_DIRECTIONS, "horizontal")
+
+def _carousel_type_value(value):
+    return _carousel_enum_value(value, CAROUSEL_TYPES, "normal")
 
 def _autocomplete_suggestions_data(suggestions):
     if suggestions is None:
@@ -8833,6 +8882,84 @@ def set_carousel_options(hwnd, element_id, loop=True, indicator_position=0,
         1 if show_arrows else 0,
         1 if show_indicators else 0,
     )
+
+def set_carousel_behavior(hwnd, element_id, trigger_mode="click", arrow_mode="always",
+                          direction="horizontal", carousel_type="normal",
+                          pause_on_hover=False):
+    dll.EU_SetCarouselBehavior(
+        hwnd, element_id,
+        _carousel_trigger_value(trigger_mode),
+        _carousel_arrow_value(arrow_mode),
+        _carousel_direction_value(direction),
+        _carousel_type_value(carousel_type),
+        1 if pause_on_hover else 0,
+    )
+
+def get_carousel_behavior(hwnd, element_id):
+    trigger_mode = ctypes.c_int()
+    arrow_mode = ctypes.c_int()
+    direction = ctypes.c_int()
+    carousel_type = ctypes.c_int()
+    pause_on_hover = ctypes.c_int()
+    ok = dll.EU_GetCarouselBehavior(
+        hwnd, element_id,
+        ctypes.byref(trigger_mode), ctypes.byref(arrow_mode),
+        ctypes.byref(direction), ctypes.byref(carousel_type),
+        ctypes.byref(pause_on_hover),
+    )
+    return {
+        "trigger_mode": trigger_mode.value,
+        "arrow_mode": arrow_mode.value,
+        "direction": direction.value,
+        "carousel_type": carousel_type.value,
+        "pause_on_hover": bool(pause_on_hover.value),
+    } if ok else None
+
+def set_carousel_visual(hwnd, element_id, text_color=0, text_alpha=255, text_font_size=0,
+                        odd_bg=0, even_bg=0, panel_bg=0,
+                        active_indicator=0, inactive_indicator=0,
+                        card_scale_percent=82):
+    dll.EU_SetCarouselVisual(
+        hwnd, element_id,
+        int(text_color) & 0xFFFFFFFF,
+        int(text_alpha),
+        int(text_font_size),
+        int(odd_bg) & 0xFFFFFFFF,
+        int(even_bg) & 0xFFFFFFFF,
+        int(panel_bg) & 0xFFFFFFFF,
+        int(active_indicator) & 0xFFFFFFFF,
+        int(inactive_indicator) & 0xFFFFFFFF,
+        int(card_scale_percent),
+    )
+
+def get_carousel_visual(hwnd, element_id):
+    text_color = ctypes.c_uint32()
+    text_alpha = ctypes.c_int()
+    text_font_size = ctypes.c_int()
+    odd_bg = ctypes.c_uint32()
+    even_bg = ctypes.c_uint32()
+    panel_bg = ctypes.c_uint32()
+    active_indicator = ctypes.c_uint32()
+    inactive_indicator = ctypes.c_uint32()
+    card_scale_percent = ctypes.c_int()
+    ok = dll.EU_GetCarouselVisual(
+        hwnd, element_id,
+        ctypes.byref(text_color), ctypes.byref(text_alpha), ctypes.byref(text_font_size),
+        ctypes.byref(odd_bg), ctypes.byref(even_bg), ctypes.byref(panel_bg),
+        ctypes.byref(active_indicator), ctypes.byref(inactive_indicator),
+        ctypes.byref(card_scale_percent),
+    )
+    return {
+        "text_color": text_color.value,
+        "text_alpha": text_alpha.value,
+        "text_font_size": text_font_size.value,
+        "odd_bg": odd_bg.value,
+        "even_bg": even_bg.value,
+        "panel_bg": panel_bg.value,
+        "active_indicator": active_indicator.value,
+        "inactive_indicator": inactive_indicator.value,
+        "card_scale_percent": card_scale_percent.value,
+    } if ok else None
 
 def set_carousel_autoplay(hwnd, element_id, enabled=True, interval_ms=3000):
     dll.EU_SetCarouselAutoplay(hwnd, element_id, 1 if enabled else 0, interval_ms)

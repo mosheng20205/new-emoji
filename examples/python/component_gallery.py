@@ -4650,6 +4650,97 @@ def showcase_descriptions(hwnd, stage, w, h):
     add_text(hwnd, style_panel, "同一组件覆盖 label 图标、内容标签、右对齐、逐项背景色和全局主题色覆盖；适合桌面端属性面板。", 24, 158, w - 104, 24, MUTED)
 
 
+def showcase_carousel(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "🎠 走马灯全样式：Hover / Click 指示器、外置指示器、箭头模式、卡片、纵向和自动播放都由 C++ Carousel 绘制。", 32, 24, w - 64, 28, MUTED)
+
+    def items(label):
+        return [
+            f"🚀 {label} 第一屏",
+            f"🎨 {label} 第二屏",
+            f"🧭 {label} 第三屏",
+            f"✅ {label} 第四屏",
+        ]
+
+    def plus_visual(eid, font=18, scale=82):
+        ui.set_carousel_visual(
+            hwnd, eid,
+            text_color=0xFF475669,
+            text_alpha=191,
+            text_font_size=font,
+            odd_bg=0xFFD3DCE6,
+            even_bg=0xFF99A9BF,
+            panel_bg=0xFFF5F7FA,
+            active_indicator=0xFF409EFF,
+            inactive_indicator=0x6678909C,
+            card_scale_percent=scale,
+        )
+
+    trigger_panel = add_demo_panel(hwnd, stage, "🎯 指示器触发方式", 28, 70, w - 56, 250)
+    hover = ui.create_carousel(hwnd, trigger_panel, items("Hover"), 0, 0, 28, 62, 620, 150)
+    ui.set_carousel_behavior(hwnd, hover, trigger_mode="hover", arrow_mode="hover", direction="horizontal", carousel_type="normal", pause_on_hover=True)
+    ui.set_carousel_autoplay(hwnd, hover, False, 3000)
+    plus_visual(hover, 14)
+    add_text(hwnd, trigger_panel, "🖱️ 默认 Hover 指示器触发", 28, 218, 260, 24, MUTED)
+
+    click = ui.create_carousel(hwnd, trigger_panel, items("Click"), 0, 0, 690, 62, 620, 150)
+    ui.set_carousel_behavior(hwnd, click, trigger_mode="click", arrow_mode="hover", direction="horizontal", carousel_type="normal", pause_on_hover=True)
+    ui.set_carousel_autoplay(hwnd, click, False, 3000)
+    plus_visual(click, 14)
+    add_text(hwnd, trigger_panel, "👆 Click 指示器触发", 690, 218, 260, 24, MUTED)
+
+    mode_panel = add_demo_panel(hwnd, stage, "🧩 指示器位置与箭头模式", 28, 344, w - 56, 240)
+    outside = ui.create_carousel(hwnd, mode_panel, items("外置"), 0, 1, 28, 62, 390, 140)
+    ui.set_carousel_behavior(hwnd, outside, trigger_mode="click", arrow_mode="hover", direction="horizontal", carousel_type="normal", pause_on_hover=True)
+    plus_visual(outside, 18)
+    add_text(hwnd, mode_panel, "📍 indicator-position=outside", 28, 204, 300, 24, MUTED)
+
+    always = ui.create_carousel(hwnd, mode_panel, items("常显"), 0, 0, 448, 62, 390, 140)
+    ui.set_carousel_behavior(hwnd, always, trigger_mode="click", arrow_mode="always", direction="horizontal", carousel_type="normal", pause_on_hover=False)
+    ui.set_carousel_autoplay(hwnd, always, True, 5000)
+    plus_visual(always, 18)
+    add_text(hwnd, mode_panel, "➡️ arrow=always / interval=5000", 448, 204, 330, 24, MUTED)
+
+    never = ui.create_carousel(hwnd, mode_panel, items("无箭头"), 0, 0, 868, 62, 390, 140)
+    ui.set_carousel_behavior(hwnd, never, trigger_mode="click", arrow_mode="never", direction="horizontal", carousel_type="normal", pause_on_hover=False)
+    plus_visual(never, 18)
+    add_text(hwnd, mode_panel, "🚫 arrow=never，仅保留指示器", 868, 204, 310, 24, MUTED)
+
+    layout_panel = add_demo_panel(hwnd, stage, "🃏 卡片模式与纵向模式", 28, 612, w - 56, 330)
+    card = ui.create_carousel(hwnd, layout_panel, [
+        "📊 运营看板", "🧾 审批队列", "📦 库存预警", "✅ 发布完成", "🎨 主题配置", "🧭 导航入口"
+    ], 0, 0, 28, 62, 780, 220)
+    ui.set_carousel_behavior(hwnd, card, trigger_mode="click", arrow_mode="always", direction="horizontal", carousel_type="card", pause_on_hover=False)
+    ui.set_carousel_autoplay(hwnd, card, True, 4000)
+    plus_visual(card, 14, 76)
+    add_text(hwnd, layout_panel, "🃏 type=card：上一项、当前项、下一项同屏展示，侧项可点击切换。", 28, 288, 680, 24, MUTED)
+
+    vertical = ui.create_carousel(hwnd, layout_panel, items("纵向"), 0, 0, 848, 62, 360, 220)
+    ui.set_carousel_behavior(hwnd, vertical, trigger_mode="click", arrow_mode="always", direction="vertical", carousel_type="normal", pause_on_hover=False)
+    ui.set_carousel_autoplay(hwnd, vertical, False, 4000)
+    plus_visual(vertical, 14)
+    add_text(hwnd, layout_panel, "↕️ direction=vertical / autoplay=false", 848, 288, 360, 24, MUTED)
+
+    control_panel = add_demo_panel(hwnd, stage, "⏯️ 自动播放控制", 28, 970, w - 56, 130)
+    live = ui.create_carousel(hwnd, control_panel, items("自动播放"), 0, 0, 28, 50, 520, 62)
+    ui.set_carousel_behavior(hwnd, live, trigger_mode="click", arrow_mode="always", direction="horizontal", carousel_type="normal", pause_on_hover=True)
+    ui.set_carousel_autoplay(hwnd, live, True, 1200)
+    plus_visual(live, 14)
+
+    def pause_live(_eid):
+        ui.set_carousel_autoplay(hwnd, live, False, 1200)
+        ui.set_element_text(hwnd, status, "⏸️ 已暂停自动播放；配置仍保持 interval=1200，点击继续会从当前项恢复。")
+
+    def resume_live(_eid):
+        ui.set_carousel_autoplay(hwnd, live, True, 1200)
+        ui.set_element_text(hwnd, status, "▶️ 已继续自动播放；鼠标悬停时会按 pause-on-hover 暂停推进。")
+
+    pause_btn = ui.create_button(hwnd, control_panel, "⏸️", "暂停", 590, 62, 112, 38)
+    resume_btn = ui.create_button(hwnd, control_panel, "▶️", "继续", 722, 62, 112, 38)
+    set_click(hwnd, pause_btn, pause_live)
+    set_click(hwnd, resume_btn, resume_live)
+    add_text(hwnd, control_panel, "🧪 这一组用于桌面软件里常见的暂停/继续操作；状态栏会实时说明当前动作。", 862, 62, max(360, w - 960), 38, MUTED)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -4687,6 +4778,7 @@ SPECIAL_SHOWCASES = {
     "Statistic": showcase_statistic,
     "Upload": showcase_upload,
     "Image": showcase_image,
+    "Carousel": showcase_carousel,
     "Alert": showcase_alert,
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,

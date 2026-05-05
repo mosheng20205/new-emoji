@@ -106,7 +106,7 @@
 | `Watermark` | 水印 | `EU_CreateWatermark` | 已完成 | [水印](./watermark.md) |
 | `Tour` | 漫游引导 | `EU_CreateTour` | 已完成 | [漫游引导](./tour.md) |
 | `Image` | 图片 | `EU_CreateImage` | 已完成，支持五种 fit、占位/失败自定义、懒加载、远程图片和预览列表 | [图片](./image.md) |
-| `Carousel` | 轮播 | `EU_CreateCarousel` | 已完成 | [轮播](./carousel.md) |
+| `Carousel` | 轮播 | `EU_CreateCarousel` | 已完成，支持 hover/click 指示器、inside/outside、箭头模式、自动播放、普通/卡片、水平/垂直和视觉样式 | [轮播](./carousel.md) |
 | `Upload` | 上传 | `EU_CreateUpload` | 已完成，支持普通列表、头像、图片卡片、图片列表、拖拽、手动上传、系统文件选择和类型过滤 | [上传](./upload.md) |
 
 ## 💬 反馈/浮层

@@ -1725,6 +1725,24 @@ void __stdcall EU_SetCarouselActive(HWND hwnd, int element_id, int active_index)
 void __stdcall EU_SetCarouselOptions(HWND hwnd, int element_id,
                                      int loop, int indicator_position,
                                      int show_arrows, int show_indicators);
+void __stdcall EU_SetCarouselBehavior(HWND hwnd, int element_id,
+                                      int trigger_mode, int arrow_mode,
+                                      int direction, int carousel_type,
+                                      int pause_on_hover);
+int  __stdcall EU_GetCarouselBehavior(HWND hwnd, int element_id,
+                                      int* trigger_mode, int* arrow_mode,
+                                      int* direction, int* carousel_type,
+                                      int* pause_on_hover);
+void __stdcall EU_SetCarouselVisual(HWND hwnd, int element_id,
+                                    Color text_color, int text_alpha, int text_font_size,
+                                    Color odd_bg, Color even_bg, Color panel_bg,
+                                    Color active_indicator, Color inactive_indicator,
+                                    int card_scale_percent);
+int  __stdcall EU_GetCarouselVisual(HWND hwnd, int element_id,
+                                    Color* text_color, int* text_alpha, int* text_font_size,
+                                    Color* odd_bg, Color* even_bg, Color* panel_bg,
+                                    Color* active_indicator, Color* inactive_indicator,
+                                    int* card_scale_percent);
 void __stdcall EU_SetCarouselAutoplay(HWND hwnd, int element_id, int enabled, int interval_ms);
 void __stdcall EU_SetCarouselAnimation(HWND hwnd, int element_id, int transition_ms);
 void __stdcall EU_CarouselAdvance(HWND hwnd, int element_id, int delta);

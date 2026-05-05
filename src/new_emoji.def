@@ -879,6 +879,10 @@ EXPORTS
     EU_SetCarouselItems
     EU_SetCarouselActive
     EU_SetCarouselOptions
+    EU_SetCarouselBehavior
+    EU_GetCarouselBehavior
+    EU_SetCarouselVisual
+    EU_GetCarouselVisual
     EU_SetCarouselAutoplay
     EU_SetCarouselAnimation
     EU_CarouselAdvance
