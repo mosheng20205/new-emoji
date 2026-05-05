@@ -444,6 +444,8 @@ EXPORTS
     EU_SetTimelineOptions
     EU_GetTimelineItemCount
     EU_GetTimelineOptions
+    EU_SetTimelineAdvancedOptions
+    EU_GetTimelineAdvancedOptions
     EU_SetStatisticValue
     EU_SetStatisticFormat
     EU_SetStatisticOptions

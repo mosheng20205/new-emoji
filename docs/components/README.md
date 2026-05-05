@@ -50,7 +50,7 @@
 | `InfiniteScroll` | 无限滚动 | `EU_CreateInfiniteScroll` | 已完成 | [无限滚动](./infinite-scroll.md) |
 | `Card` | 卡片 | `EU_CreateCard` | 已完成 | [卡片](./card.md) |
 | `Collapse` | 折叠面板 | `EU_CreateCollapse` | 已完成 | [折叠面板](./collapse.md) |
-| `Timeline` | 时间线 | `EU_CreateTimeline` | 已完成 | [时间线](./timeline.md) |
+| `Timeline` | 时间线 | `EU_CreateTimeline` / `EU_SetTimelineAdvancedOptions` | 已完成，覆盖倒序、节点图标、类型色、自定义颜色、大尺寸节点、顶部/底部时间戳、卡片式项目和三种位置 | [时间线](./timeline.md) |
 | `Statistic` | 统计数值 | `EU_CreateStatistic` | 已完成 | [统计数值](./statistic.md) |
 
 ## 📈 指标/图表

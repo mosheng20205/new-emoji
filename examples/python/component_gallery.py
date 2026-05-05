@@ -1390,6 +1390,72 @@ def showcase_table(hwnd, stage, w, h):
         set_click(hwnd, btn, show_group(index))
 
 
+def showcase_timeline(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "🕒 当前排序：倒序；节点、卡片和位置样式都在同一页展示。", 36, 28, w - 72, 28, MUTED)
+    toolbar = add_demo_panel(hwnd, stage, "🔁 排序与基础时间线", 28, 70, w - 56, 132)
+
+    base_items = [
+        {"timestamp": "2018-04-15", "content": "🎉 活动按期开始", "type": 1, "icon": "✅"},
+        {"timestamp": "2018-04-13", "content": "🧾 通过审核", "type": 0, "icon": "📌"},
+        {"timestamp": "2018-04-11", "content": "🚀 创建成功", "type": 0, "icon": "🚀"},
+    ]
+    base_timeline = ui.create_timeline(hwnd, toolbar, base_items, 34, 58, min(560, w - 540), 64)
+    ui.set_timeline_advanced_options(hwnd, base_timeline, position=0, show_time=True, reverse=True, default_placement="top")
+
+    def set_reverse(value):
+        def handler(_eid):
+            ui.set_timeline_advanced_options(hwnd, base_timeline, position=0, show_time=True, reverse=value, default_placement="top")
+            ui.set_element_text(hwnd, status, "🕒 当前排序：倒序；最新事项在上方。" if value else "🕒 当前排序：正序；创建事项在上方。")
+        return handler
+
+    forward_btn = ui.create_button(hwnd, toolbar, "⬆️", "正序", 650, 66, 118, 38)
+    reverse_btn = ui.create_button(hwnd, toolbar, "⬇️", "倒序", 788, 66, 118, 38)
+    set_click(hwnd, forward_btn, set_reverse(False))
+    set_click(hwnd, reverse_btn, set_reverse(True))
+    add_text(hwnd, toolbar, "左侧为同一个 Timeline；按钮只切换 reverse，不重排原始数据。", 934, 72, max(260, w - 1020), 34, MUTED)
+
+    left_w = min(640, max(560, (w - 84) // 2))
+    right_x = left_w + 56
+    right_w = max(520, w - right_x - 28)
+    node_panel = add_demo_panel(hwnd, stage, "🎨 节点图标、颜色与尺寸", 28, 222, left_w, 238)
+    card_panel = add_demo_panel(hwnd, stage, "🪪 顶部时间戳卡片", right_x, 222, right_w, 238)
+
+    node_items = [
+        {"timestamp": "2018-04-12 20:46", "content": "✨ 支持使用图标", "type": 0, "size": "large", "icon": "el-icon-more"},
+        {"timestamp": "2018-04-03 20:46", "content": "🟢 支持自定义颜色", "color": "#0bbd87"},
+        {"timestamp": "2018-04-03 20:46", "content": "📏 支持自定义尺寸", "size": "large", "type": 2},
+        {"timestamp": "2018-04-03 20:46", "content": "⚪ 默认样式的节点", "type": 0},
+    ]
+    node_timeline = ui.create_timeline(hwnd, node_panel, node_items, 34, 60, left_w - 68, 156)
+    ui.set_timeline_advanced_options(hwnd, node_timeline, position=0, show_time=True, reverse=False, default_placement="bottom")
+
+    card_items = [
+        {"timestamp": "2018/4/12", "content": "更新模板", "type": 0, "icon": "🧩", "placement": "top",
+         "card_title": "更新项目模板 🧩", "card_body": "王小虎 提交于 2018/4/12 20:46"},
+        {"timestamp": "2018/4/3", "content": "同步文档", "type": 1, "icon": "📚", "placement": "top",
+         "card_title": "同步组件文档 📚", "card_body": "王小虎 提交于 2018/4/3 20:46"},
+    ]
+    card_timeline = ui.create_timeline(hwnd, card_panel, card_items, 34, 60, right_w - 68, 156)
+    ui.set_timeline_advanced_options(hwnd, card_timeline, position=0, show_time=True, reverse=False, default_placement="top")
+
+    position_panel = add_demo_panel(hwnd, stage, "🧭 左侧、右侧与交替布局", 28, 488, w - 56, 250)
+    compact_items = [
+        {"timestamp": "09:00", "content": "🚀 创建任务", "type": 0, "icon": "🚀"},
+        {"timestamp": "10:30", "content": "✅ 完成复核", "type": 1, "icon": "✅"},
+        {"timestamp": "14:20", "content": "📦 发布版本", "type": 2, "icon": "📦"},
+    ]
+    col_w = max(300, (w - 134) // 3)
+    left_tl = ui.create_timeline(hwnd, position_panel, compact_items, 34, 62, col_w, 152)
+    right_tl = ui.create_timeline(hwnd, position_panel, compact_items, 64 + col_w, 62, col_w, 152)
+    alt_tl = ui.create_timeline(hwnd, position_panel, compact_items, 94 + col_w * 2, 62, col_w, 152)
+    ui.set_timeline_advanced_options(hwnd, left_tl, position=0, show_time=True, reverse=False, default_placement="top")
+    ui.set_timeline_advanced_options(hwnd, right_tl, position=1, show_time=True, reverse=False, default_placement="top")
+    ui.set_timeline_advanced_options(hwnd, alt_tl, position=2, show_time=True, reverse=False, default_placement="top")
+    add_text(hwnd, position_panel, "左侧", 34, 214, 100, 24, MUTED)
+    add_text(hwnd, position_panel, "右侧", 64 + col_w, 214, 100, 24, MUTED)
+    add_text(hwnd, position_panel, "交替", 94 + col_w * 2, 214, 100, 24, MUTED)
+
+
 def showcase_upload(hwnd, stage, w, h):
     img1, img2, img3, doc = upload_sample_files()
 
@@ -3743,6 +3809,7 @@ SPECIAL_SHOWCASES = {
     "Pagination": showcase_pagination,
     "Steps": showcase_steps,
     "Table": showcase_table,
+    "Timeline": showcase_timeline,
     "Upload": showcase_upload,
     "Image": showcase_image,
     "Message": showcase_message,
@@ -4123,7 +4190,7 @@ def build_pages(hwnd, root):
         ("InfiniteScroll", "♾️", "无限滚动", lambda h, p, x, y, w, hh: ui.create_infinite_scroll(h, p, [("📌 任务 01", "触底自动加载", "进行中"), ("📌 任务 02", "支持状态读回", "已同步")], x, y, w, 112)),
         ("Card", "🪪", "卡片", lambda h, p, x, y, w, hh: ui.create_card(h, p, "🪪 项目卡片", "用于组织信息块", 1, x, y, w, 84)),
         ("Collapse", "📂", "折叠面板", lambda h, p, x, y, w, hh: ui.create_collapse(h, p, [("基础组件", "按钮/文本/面板"), ("反馈组件", "弹窗/提示/通知")], 0, True, x, y, w, 84)),
-        ("Timeline", "🕒", "时间线", lambda h, p, x, y, w, hh: ui.create_timeline(h, p, ["启动", "封装", "开源"], x, y, w, 84)),
+        ("Timeline", "🕒", "时间线", lambda h, p, x, y, w, hh: ui.create_timeline(h, p, [("09:00", "🚀 启动", 0, "🚀"), ("10:30", "✅ 封装", 1, "✅"), ("14:20", "📦 开源", 2, "📦")], x, y, w, 84)),
         ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "84", suffix="个", x=x, y=y, w=w, h=62)),
         ("KPI Card", "🎯", "指标卡", lambda h, p, x, y, w, hh: ui.create_kpi_card(h, p, "完成率", "100%", "全部组件已封装", x=x, y=y, w=w, h=76)),
         ("Trend", "📈", "趋势", lambda h, p, x, y, w, hh: ui.create_trend(h, p, "星标增长", "+128", "12%", "本周", 1, x, y, w, 62)),

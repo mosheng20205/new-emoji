@@ -3206,7 +3206,7 @@
 .DLL命令 设置时间线项目, , "new_emoji.dll", "EU_SetTimelineItems", , 对应 C++ 导出命令 EU_SetTimelineItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔，格式：时间<TAB>内容<TAB>类型<TAB>图标
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔；旧格式：时间<TAB>内容<TAB>类型<TAB>图标；完整格式：时间<TAB>内容<TAB>类型<TAB>图标<TAB>颜色<TAB>尺寸<TAB>时间位置<TAB>卡片标题<TAB>卡片正文
     .参数 项目长度, 整数型
 
 .DLL命令 设置时间线选项, , "new_emoji.dll", "EU_SetTimelineOptions", , 对应 C++ 导出命令 EU_SetTimelineOptions
@@ -3214,6 +3214,14 @@
     .参数 元素ID, 整数型
     .参数 位置模式, 整数型, , 0左侧 1右侧 2交替
     .参数 是否显示时间, 整数型
+
+.DLL命令 设置时间线高级选项, , "new_emoji.dll", "EU_SetTimelineAdvancedOptions", , 对应 C++ 导出命令 EU_SetTimelineAdvancedOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 位置模式, 整数型, , 0左侧 1右侧 2交替
+    .参数 是否显示时间, 整数型
+    .参数 是否倒序, 整数型
+    .参数 默认时间位置, 整数型, , 0顶部 1底部
 
 .DLL命令 取时间线项目数, 整数型, "new_emoji.dll", "EU_GetTimelineItemCount", , 对应 C++ 导出命令 EU_GetTimelineItemCount；返回项目数量
     .参数 窗口句柄, 整数型
@@ -3224,6 +3232,14 @@
     .参数 元素ID, 整数型
     .参数 位置模式指针, 整数型, , 传址接收，0左侧 1右侧 2交替
     .参数 是否显示时间指针, 整数型, , 传址接收
+
+.DLL命令 取时间线高级选项, 整数型, "new_emoji.dll", "EU_GetTimelineAdvancedOptions", , 对应 C++ 导出命令 EU_GetTimelineAdvancedOptions；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 位置模式指针, 整数型, , 传址接收，0左侧 1右侧 2交替
+    .参数 是否显示时间指针, 整数型, , 传址接收
+    .参数 是否倒序指针, 整数型, , 传址接收
+    .参数 默认时间位置指针, 整数型, , 传址接收，0顶部 1底部
 
 .DLL命令 设置统计数值值, , "new_emoji.dll", "EU_SetStatisticValue", , 对应 C++ 导出命令 EU_SetStatisticValue
     .参数 窗口句柄, 整数型
@@ -5939,7 +5955,7 @@ JSON 示例：
 .DLL命令 设置标签页项目, , "new_emoji.dll", "EU_SetTabsItems", , 对应 C++ 导出命令 EU_SetTabsItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 项目字节集指针, 整数型, , UTF-8, separated by | or newline when applicable
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔，完整格式：时间<TAB>内容<TAB>类型<TAB>图标<TAB>颜色<TAB>尺寸<TAB>时间位置<TAB>卡片标题<TAB>卡片正文
     .参数 项目长度, 整数型
 
 .DLL命令 设置标签页扩展项目, , "new_emoji.dll", "EU_SetTabsItemsEx", , 对应 C++ 导出命令 EU_SetTabsItemsEx；每项格式：标签\t名称\t内容\t图标\t禁用\t可关闭

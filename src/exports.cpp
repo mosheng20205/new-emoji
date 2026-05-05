@@ -95,6 +95,7 @@ extern HMODULE g_module;
 #include <vector>
 #include <cstring>
 #include <cmath>
+#include <cstdlib>
 
 static int scale_to_px(int v, float scale) {
     return (int)std::lround((float)v * scale);
@@ -564,25 +565,84 @@ static std::vector<CollapseItem> parse_collapse_items(const unsigned char* bytes
     return items;
 }
 
+static std::wstring trim_wide(const std::wstring& value) {
+    const wchar_t* ws = L" \t\r\n";
+    size_t first = value.find_first_not_of(ws);
+    if (first == std::wstring::npos) return L"";
+    size_t last = value.find_last_not_of(ws);
+    return value.substr(first, last - first + 1);
+}
+
+static int parse_timeline_placement(const std::wstring& value, int fallback) {
+    std::wstring v = trim_wide(value);
+    if (v.empty()) return fallback;
+    if (v == L"top" || v == L"顶部" || v == L"上方") return 0;
+    if (v == L"bottom" || v == L"底部" || v == L"下方") return 1;
+    int parsed = _wtoi(v.c_str());
+    return parsed == 1 ? 1 : 0;
+}
+
+static int parse_timeline_size(const std::wstring& value) {
+    std::wstring v = trim_wide(value);
+    if (v == L"large" || v == L"大" || v == L"大号") return 1;
+    return _wtoi(v.c_str()) > 0 ? 1 : 0;
+}
+
+static Color parse_timeline_color(const std::wstring& value) {
+    std::wstring v = trim_wide(value);
+    if (v.empty()) return 0;
+    int base = 10;
+    if (!v.empty() && v[0] == L'#') {
+        v = v.substr(1);
+        base = 16;
+    } else if (v.size() > 2 && v[0] == L'0' && (v[1] == L'x' || v[1] == L'X')) {
+        v = v.substr(2);
+        base = 16;
+    }
+    wchar_t* end = nullptr;
+    unsigned long parsed = std::wcstoul(v.c_str(), &end, base);
+    if (!end || *end != L'\0') return 0;
+    Color color = (Color)parsed;
+    if (base == 16 && v.size() <= 6) color |= 0xFF000000;
+    if ((color >> 24) == 0) color |= 0xFF000000;
+    return color;
+}
+
+static std::wstring normalize_timeline_icon(const std::wstring& value) {
+    std::wstring icon = trim_wide(value);
+    if (icon == L"el-icon-more") return L"⋯";
+    return icon;
+}
+
 static std::vector<TimelineItem> parse_timeline_items(const unsigned char* bytes, int len) {
     std::vector<TimelineItem> items;
     std::wstring full = utf8_to_wide(bytes, len);
     for (const auto& entry : split_wide_list(full, L"|\n\r")) {
         if (entry.empty()) continue;
         std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
-        if (fields.size() < 2) fields = split_wide_list(entry, L":");
+        bool colon_fallback = false;
+        if (fields.size() < 2) {
+            fields = split_wide_list(entry, L":");
+            colon_fallback = true;
+        }
         TimelineItem item;
         if (!fields.empty()) item.time = fields[0];
         if (fields.size() >= 2) item.content = fields[1];
         if (fields.size() >= 3 && !fields[2].empty()) {
             item.item_type = _wtoi(fields[2].c_str());
         }
-        if (fields.size() >= 4) item.icon = fields[3];
-        if (fields.size() > 4) {
+        if (fields.size() >= 4) item.icon = normalize_timeline_icon(fields[3]);
+        if (colon_fallback && fields.size() > 4) {
             for (size_t i = 4; i < fields.size(); ++i) {
                 item.content += L":";
                 item.content += fields[i];
             }
+        } else {
+            if (fields.size() >= 5) item.color = parse_timeline_color(fields[4]);
+            if (fields.size() >= 6) item.size = parse_timeline_size(fields[5]);
+            if (fields.size() >= 7) item.placement = parse_timeline_placement(fields[6], -1);
+            if (fields.size() >= 8) item.card_title = fields[7];
+            if (fields.size() >= 9) item.card_body = fields[8];
         }
         items.push_back(item);
     }
@@ -6235,6 +6295,27 @@ int __stdcall EU_GetTimelineOptions(HWND hwnd, int element_id,
     if (!el) return 0;
     if (position) *position = el->position;
     if (show_time) *show_time = el->show_time ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                             int position, int show_time,
+                                             int reverse, int default_placement) {
+    if (auto* el = find_typed_element<Timeline>(hwnd, element_id)) {
+        el->set_advanced_options(position, show_time != 0,
+                                 reverse != 0, default_placement);
+    }
+}
+
+int __stdcall EU_GetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                            int* position, int* show_time,
+                                            int* reverse, int* default_placement) {
+    auto* el = find_typed_element<Timeline>(hwnd, element_id);
+    if (!el) return 0;
+    if (position) *position = el->position;
+    if (show_time) *show_time = el->show_time ? 1 : 0;
+    if (reverse) *reverse = el->reverse ? 1 : 0;
+    if (default_placement) *default_placement = el->default_placement;
     return 1;
 }
 

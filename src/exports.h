@@ -918,8 +918,14 @@ void __stdcall EU_SetTimelineOptions(HWND hwnd, int element_id, int position, in
 int  __stdcall EU_GetTimelineItemCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetTimelineOptions(HWND hwnd, int element_id,
                                      int* position, int* show_time);
+void __stdcall EU_SetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                             int position, int show_time,
+                                             int reverse, int default_placement);
+int  __stdcall EU_GetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                             int* position, int* show_time,
+                                             int* reverse, int* default_placement);
 void __stdcall EU_SetStatisticValue(HWND hwnd, int element_id,
-                                    const unsigned char* value_bytes, int value_len);
+                                     const unsigned char* value_bytes, int value_len);
 void __stdcall EU_SetStatisticFormat(HWND hwnd, int element_id,
                                      const unsigned char* title_bytes, int title_len,
                                      const unsigned char* prefix_bytes, int prefix_len,

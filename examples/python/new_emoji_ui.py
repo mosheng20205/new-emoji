@@ -1405,6 +1405,13 @@ dll.EU_GetTimelineItemCount.restype = ctypes.c_int
 dll.EU_GetTimelineOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimelineOptions.restype = ctypes.c_int
+dll.EU_SetTimelineAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.c_int, ctypes.c_int,
+                                              ctypes.c_int, ctypes.c_int]
+dll.EU_GetTimelineAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTimelineAdvancedOptions.restype = ctypes.c_int
 dll.EU_SetStatisticValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetStatisticFormat.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -5407,17 +5414,37 @@ def create_collapse(hwnd, parent_id, items=None, active=0, accordion=True,
         active, 1 if accordion else 0, x, y, w, h
     )
 
+def _timeline_placement_value(value):
+    if isinstance(value, str):
+        return 1 if value.lower() in ("bottom", "下方", "底部") else 0
+    return int(value or 0)
+
+def _timeline_item_row(item):
+    if isinstance(item, dict):
+        timestamp = item.get("timestamp", item.get("time", ""))
+        content = item.get("content", "")
+        item_type = item.get("type", item.get("item_type", 0))
+        icon = item.get("icon", "")
+        color = item.get("color", "")
+        size = item.get("size", 0)
+        placement = item.get("placement", "")
+        card_title = item.get("card_title", item.get("title", ""))
+        card_body = item.get("card_body", item.get("body", ""))
+        fields = [timestamp, content, item_type, icon, color, size, placement, card_title, card_body]
+    elif isinstance(item, (list, tuple)):
+        fields = list(item[:9])
+        while len(fields) < 3:
+            fields.append("")
+        while len(fields) < 9:
+            fields.append("")
+    else:
+        fields = ["", str(item), 0, "", "", 0, "", "", ""]
+    return "\t".join(str(field) for field in fields)
+
 def create_timeline(hwnd, parent_id, items=None, x=0, y=0, w=360, h=220):
     if items is None:
         items = [("09:00", "🚀 启动", 0, "🚀"), ("10:30", "✅ 复核", 1, "✅")]
-    item_rows = []
-    for item in items:
-        if len(item) >= 4:
-            item_rows.append(f"{item[0]}\t{item[1]}\t{item[2]}\t{item[3]}")
-        elif len(item) >= 3:
-            item_rows.append(f"{item[0]}\t{item[1]}\t{item[2]}")
-        else:
-            item_rows.append(f"{item[0]}\t{item[1]}\t0")
+    item_rows = [_timeline_item_row(item) for item in items]
     items_data = make_utf8("|".join(item_rows))
     return dll.EU_CreateTimeline(
         hwnd, parent_id, bytes_arg(items_data), len(items_data),
@@ -7990,6 +8017,13 @@ def get_collapse_options(hwnd, element_id):
 def set_timeline_options(hwnd, element_id, position=0, show_time=True):
     dll.EU_SetTimelineOptions(hwnd, element_id, position, 1 if show_time else 0)
 
+def set_timeline_advanced_options(hwnd, element_id, position=0, show_time=True,
+                                  reverse=False, default_placement="top"):
+    dll.EU_SetTimelineAdvancedOptions(
+        hwnd, element_id, int(position), 1 if show_time else 0,
+        1 if reverse else 0, _timeline_placement_value(default_placement)
+    )
+
 def get_timeline_item_count(hwnd, element_id):
     return dll.EU_GetTimelineItemCount(hwnd, element_id)
 
@@ -7998,6 +8032,23 @@ def get_timeline_options(hwnd, element_id):
     show_time = ctypes.c_int()
     ok = dll.EU_GetTimelineOptions(hwnd, element_id, ctypes.byref(position), ctypes.byref(show_time))
     return (position.value, bool(show_time.value)) if ok else None
+
+def get_timeline_advanced_options(hwnd, element_id):
+    position = ctypes.c_int()
+    show_time = ctypes.c_int()
+    reverse = ctypes.c_int()
+    default_placement = ctypes.c_int()
+    ok = dll.EU_GetTimelineAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(position), ctypes.byref(show_time),
+        ctypes.byref(reverse), ctypes.byref(default_placement)
+    )
+    return {
+        "position": position.value,
+        "show_time": bool(show_time.value),
+        "reverse": bool(reverse.value),
+        "default_placement": "bottom" if default_placement.value == 1 else "top",
+    } if ok else None
 
 def set_statistic_format(hwnd, element_id, title="📊 统计数值", prefix="", suffix=""):
     title_data = make_utf8(title)

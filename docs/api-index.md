@@ -46,7 +46,7 @@
 | `EU_CreateTable` | 创建表格；兼容旧基础表格协议，高级能力通过 `EU_SetTableColumnsEx` / `EU_SetTableRowsEx` 补齐 |
 | `EU_CreateCard` | |
 | `EU_CreateCollapse` | |
-| `EU_CreateTimeline` | |
+| `EU_CreateTimeline` | 创建 Timeline 时间线，支持中文和 emoji 项目 |
 | `EU_CreateStatistic` | |
 | `EU_CreateKpiCard` | |
 | `EU_CreateTrend` | |
@@ -434,10 +434,12 @@
 | `EU_SetCollapseOptions` | |
 | `EU_SetCollapseAdvancedOptions` | |
 | `EU_GetCollapseOptions` | |
-| `EU_SetTimelineItems` | |
-| `EU_SetTimelineOptions` | |
-| `EU_GetTimelineItemCount` | |
-| `EU_GetTimelineOptions` | |
+| `EU_SetTimelineItems` | 设置 Timeline 项目，支持类型、图标、颜色、尺寸、时间位置和卡片字段 |
+| `EU_SetTimelineOptions` | 设置 Timeline 基础选项：位置和显示时间 |
+| `EU_GetTimelineItemCount` | 读取 Timeline 项目数量 |
+| `EU_GetTimelineOptions` | 读取 Timeline 基础选项 |
+| `EU_SetTimelineAdvancedOptions` | 设置 Timeline 高级选项：位置、显示时间、倒序和默认时间位置 |
+| `EU_GetTimelineAdvancedOptions` | 读取 Timeline 高级选项 |
 | `EU_SetStatisticValue` | |
 | `EU_SetStatisticFormat` | |
 | `EU_SetStatisticOptions` | |
