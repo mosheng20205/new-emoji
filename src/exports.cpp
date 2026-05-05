@@ -6531,6 +6531,90 @@ int __stdcall EU_GetStatisticOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetStatisticNumberOptions(HWND hwnd, int element_id,
+                                            int precision, int animated, int use_group_separator,
+                                            const unsigned char* group_separator_bytes, int group_separator_len,
+                                            const unsigned char* decimal_separator_bytes, int decimal_separator_len) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        std::wstring group = utf8_to_wide(group_separator_bytes, group_separator_len);
+        std::wstring decimal = utf8_to_wide(decimal_separator_bytes, decimal_separator_len);
+        wchar_t group_ch = group.empty() ? L',' : group[0];
+        wchar_t decimal_ch = decimal.empty() ? L'.' : decimal[0];
+        el->set_number_options(precision, animated != 0, use_group_separator != 0,
+                               group_ch, decimal_ch);
+    }
+}
+
+void __stdcall EU_SetStatisticAffixOptions(HWND hwnd, int element_id,
+                                           const unsigned char* prefix_bytes, int prefix_len,
+                                           const unsigned char* suffix_bytes, int suffix_len,
+                                           Color prefix_color, Color suffix_color, Color value_color,
+                                           int suffix_clickable) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_affix_options(utf8_to_wide(prefix_bytes, prefix_len),
+                              utf8_to_wide(suffix_bytes, suffix_len),
+                              prefix_color, suffix_color, value_color,
+                              suffix_clickable != 0);
+    }
+}
+
+void __stdcall EU_SetStatisticDisplayText(HWND hwnd, int element_id,
+                                          const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_display_text(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+void __stdcall EU_SetStatisticCountdown(HWND hwnd, int element_id,
+                                        long long target_unix_ms,
+                                        const unsigned char* format_bytes, int format_len) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_countdown(target_unix_ms, utf8_to_wide(format_bytes, format_len));
+    }
+}
+
+void __stdcall EU_SetStatisticCountdownState(HWND hwnd, int element_id, int paused) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_countdown_paused(paused != 0);
+    }
+}
+
+void __stdcall EU_AddStatisticCountdownTime(HWND hwnd, int element_id, long long delta_ms) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->add_countdown_time(delta_ms);
+    }
+}
+
+void __stdcall EU_SetStatisticFinishCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->finish_cb = cb;
+    }
+}
+
+void __stdcall EU_SetStatisticSuffixClickCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->suffix_click_cb = cb;
+    }
+}
+
+int __stdcall EU_GetStatisticFullState(HWND hwnd, int element_id,
+                                       int* mode, int* precision, int* animated,
+                                       int* use_group_separator, int* countdown_paused,
+                                       int* countdown_finished, int* suffix_click_count,
+                                       long long* remaining_ms) {
+    auto* el = find_typed_element<Statistic>(hwnd, element_id);
+    if (!el) return 0;
+    if (mode) *mode = el->mode;
+    if (precision) *precision = el->precision;
+    if (animated) *animated = el->animated ? 1 : 0;
+    if (use_group_separator) *use_group_separator = el->group_separator ? 1 : 0;
+    if (countdown_paused) *countdown_paused = el->countdown_paused ? 1 : 0;
+    if (countdown_finished) *countdown_finished = el->countdown_finished ? 1 : 0;
+    if (suffix_click_count) *suffix_click_count = el->suffix_click_count;
+    if (remaining_ms) *remaining_ms = el->remaining_ms();
+    return 1;
+}
+
 void __stdcall EU_SetKpiCardData(HWND hwnd, int element_id,
                                  const unsigned char* value_bytes, int value_len,
                                  const unsigned char* subtitle_bytes, int subtitle_len,

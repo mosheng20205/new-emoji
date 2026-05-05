@@ -4411,6 +4411,85 @@ def showcase_loading(hwnd, stage, w, h):
     refresh_status()
 
 
+def showcase_statistic(hwnd, stage, w, h):
+    now_ms = int(time.time() * 1000)
+    state = {"liked": True, "paused": False}
+    status_id = add_text(hwnd, stage, "📊 统计数值：数值格式、前后缀、formatter、可点击后缀和倒计时均由 C++ Statistic 绘制。", 44, 28, w - 88, 28, MUTED)
+
+    grid = add_demo_panel(hwnd, stage, "📌 数值统计样式矩阵", 28, 68, w - 56, 330)
+    card_w = max(250, (w - 56 - 72) // 4)
+    gap = 16
+
+    growth = ui.create_statistic(hwnd, grid, "📈 增长人数", "1314", "", " 人", 24, 70, card_w, 122)
+    ui.set_statistic_number_options(hwnd, growth, precision=2, animated=True, group_separator=True)
+    ui.set_statistic_affix_options(hwnd, growth, "", " 人", 0, 0xFF67C23A, 0xFF67C23A)
+
+    ratio = ui.create_statistic(hwnd, grid, "👥 男女比", "0", "", "", 24 + (card_w + gap), 70, card_w, 122)
+    ui.set_statistic_display_text(hwnd, ratio, "456/2")
+    ui.set_statistic_affix_options(hwnd, ratio, "", "", 0, 0, 0xFFE6A23C)
+
+    flags = ui.create_statistic(hwnd, grid, "🚩 活跃金额", "4154.564", "🚩 ", " 🚩", 24 + (card_w + gap) * 2, 70, card_w, 122)
+    ui.set_statistic_number_options(hwnd, flags, precision=2, animated=True, group_separator=True, decimal_separator=".")
+    ui.set_statistic_affix_options(hwnd, flags, "🚩 ", " 🚩", 0xFFF56C6C, 0xFF409EFF, 0xFFEAF0FF)
+
+    feedback = ui.create_statistic(hwnd, grid, "⭐ 用户反馈", "521", "", " ★", 24 + (card_w + gap) * 3, 70, card_w, 122)
+    ui.set_statistic_number_options(hwnd, feedback, precision=0, animated=True)
+    ui.set_statistic_affix_options(hwnd, feedback, "", " ★", 0, 0xFFFFC107, 0xFFEAF0FF, suffix_clickable=True)
+
+    @ui.ClickCallback
+    def on_feedback_suffix(_eid):
+        state["liked"] = not state["liked"]
+        ui.dll.EU_SetStatisticValue(hwnd, feedback, ui.bytes_arg(ui.make_utf8("521" if state["liked"] else "520")), len(ui.make_utf8("521" if state["liked"] else "520")))
+        ui.set_statistic_affix_options(hwnd, feedback, "", " ★" if state["liked"] else " ☆", 0, 0xFFFFC107, 0xFFEAF0FF, suffix_clickable=True)
+        ui.set_element_text(hwnd, status_id, "⭐ 已切换反馈星标：收藏" if state["liked"] else "☆ 已切换反馈星标：取消收藏")
+
+    ui.set_statistic_suffix_click_callback(hwnd, feedback, keep_callback(on_feedback_suffix))
+
+    add_text(hwnd, grid, "上排覆盖 group-separator、precision、decimal-separator、formatter 文本、前后缀 emoji 与独立颜色。点击“用户反馈”的星标后缀可切换状态。", 24, 218, w - 112, 46, MUTED)
+
+    timers = add_demo_panel(hwnd, stage, "⏱️ 倒计时模式与桌面端操作", 28, 426, w - 56, 520)
+    left_w = max(600, (w - 88) // 2)
+    right_x = 42 + left_w
+    stat_w = left_w - 56
+
+    sale = ui.create_statistic(hwnd, timers, "🎉 商品降价 🎉", "0", "", " 抢购即将开始", 24, 68, stat_w, 118)
+    ui.set_statistic_countdown(hwnd, sale, now_ms + 1000 * 60 * 60 * 8)
+    ui.set_statistic_affix_options(hwnd, sale, "", " 抢购即将开始", 0, 0xFFF56C6C, 0xFF67C23A)
+
+    game = ui.create_statistic(hwnd, timers, "🎮 时间游戏", "0", "", " 后结束", 24, 214, stat_w, 118)
+    ui.set_statistic_countdown(hwnd, game, now_ms + 1000 * 60 * 30)
+    ui.set_statistic_affix_options(hwnd, game, "", " 后结束", 0, 0xFF7AA7FF, 0xFFEAF0FF)
+
+    @ui.ClickCallback
+    def on_game_finish(_eid):
+        ui.set_element_text(hwnd, status_id, "⏰ 时间游戏已到点，finish 回调已触发。")
+
+    ui.set_statistic_finish_callback(hwnd, game, keep_callback(on_game_finish))
+
+    add_btn = ui.create_button(hwnd, timers, "➕", "增加 10 秒", 34, 350, 156, 38, variant=1)
+    set_click(hwnd, add_btn, lambda _eid: (ui.add_statistic_countdown_time(hwnd, game, 10000), ui.set_element_text(hwnd, status_id, "➕ 已给时间游戏增加 10 秒")))
+
+    solar = ui.create_statistic(hwnd, timers, "🚩 距离立夏还有", "0", "", "", right_x, 68, stat_w, 118)
+    ui.set_statistic_countdown(hwnd, solar, now_ms + 1000 * 60 * 60 * 24 * 18, "DD天HH小时mm分钟")
+    ui.set_statistic_affix_options(hwnd, solar, "", "", 0, 0, 0xFFE6A23C)
+
+    tomorrow = ui.create_statistic(hwnd, timers, "📜 距离明日", "0", "", "", right_x, 214, stat_w, 118)
+    ui.set_statistic_countdown(hwnd, tomorrow, now_ms + 1000 * 60 * 60 * 6, "HH:mm:ss")
+    ui.set_statistic_affix_options(hwnd, tomorrow, "", "", 0, 0, 0xFF67C23A)
+
+    pause_btn = ui.create_button(hwnd, timers, "⏸️", "暂停", right_x + 10, 350, 132, 38, variant=6)
+
+    def toggle_pause(_eid):
+        state["paused"] = not state["paused"]
+        ui.set_statistic_countdown_state(hwnd, tomorrow, state["paused"])
+        ui.set_element_text(hwnd, pause_btn, "继续" if state["paused"] else "暂停")
+        ui.set_element_text(hwnd, status_id, "⏸️ 距离明日倒计时已暂停" if state["paused"] else "▶️ 距离明日倒计时已继续")
+
+    set_click(hwnd, pause_btn, toggle_pause)
+
+    add_text(hwnd, timers, "倒计时卡片支持默认中文时分秒、DD天HH小时mm分钟、HH:mm:ss、增加时间、暂停/继续和结束回调。", 24, 426, w - 112, 34, MUTED)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -4443,6 +4522,7 @@ SPECIAL_SHOWCASES = {
     "Steps": showcase_steps,
     "Table": showcase_table,
     "Timeline": showcase_timeline,
+    "Statistic": showcase_statistic,
     "Upload": showcase_upload,
     "Image": showcase_image,
     "Alert": showcase_alert,

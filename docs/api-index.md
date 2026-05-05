@@ -47,7 +47,7 @@
 | `EU_CreateCard` | |
 | `EU_CreateCollapse` | |
 | `EU_CreateTimeline` | 创建 Timeline 时间线，支持中文和 emoji 项目 |
-| `EU_CreateStatistic` | |
+| `EU_CreateStatistic` | 创建统计数值组件 |
 | `EU_CreateKpiCard` | |
 | `EU_CreateTrend` | |
 | `EU_CreateStatusDot` | |
@@ -459,10 +459,19 @@
 | `EU_GetTimelineOptions` | 读取 Timeline 基础选项 |
 | `EU_SetTimelineAdvancedOptions` | 设置 Timeline 高级选项：位置、显示时间、倒序和默认时间位置 |
 | `EU_GetTimelineAdvancedOptions` | 读取 Timeline 高级选项 |
-| `EU_SetStatisticValue` | |
-| `EU_SetStatisticFormat` | |
-| `EU_SetStatisticOptions` | |
-| `EU_GetStatisticOptions` | |
+| `EU_SetStatisticValue` | 设置统计数值普通值 |
+| `EU_SetStatisticFormat` | 设置统计数值标题、前缀和后缀 |
+| `EU_SetStatisticOptions` | 设置统计数值精度与数字动画（兼容旧接口） |
+| `EU_GetStatisticOptions` | 读回统计数值精度与动画选项 |
+| `EU_SetStatisticNumberOptions` | 设置统计数值精度、动画、千分位和小数分隔符 |
+| `EU_SetStatisticAffixOptions` | 设置统计数值前后缀、颜色和后缀可点击 |
+| `EU_SetStatisticDisplayText` | 设置统计数值 formatter 风格自定义文本 |
+| `EU_SetStatisticCountdown` | 设置统计数值倒计时目标时间和显示格式 |
+| `EU_SetStatisticCountdownState` | 暂停或继续统计数值倒计时 |
+| `EU_AddStatisticCountdownTime` | 增加或减少统计数值倒计时毫秒数 |
+| `EU_SetStatisticFinishCallback` | 设置统计数值倒计时完成回调 |
+| `EU_SetStatisticSuffixClickCallback` | 设置统计数值后缀点击回调 |
+| `EU_GetStatisticFullState` | 读回统计数值完整状态 |
 | `EU_SetKpiCardData` | |
 | `EU_SetKpiCardOptions` | |
 | `EU_GetKpiCardOptions` | |

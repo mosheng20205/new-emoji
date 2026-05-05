@@ -1468,6 +1468,29 @@ dll.EU_SetStatisticOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int
 dll.EU_GetStatisticOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetStatisticOptions.restype = ctypes.c_int
+dll.EU_SetStatisticNumberOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStatisticAffixOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                            ctypes.c_int]
+dll.EU_SetStatisticDisplayText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStatisticCountdown.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_longlong,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStatisticCountdownState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_AddStatisticCountdownTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_longlong]
+dll.EU_SetStatisticFinishCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
+dll.EU_SetStatisticSuffixClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
+dll.EU_GetStatisticFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_longlong)]
+dll.EU_GetStatisticFullState.restype = ctypes.c_int
 dll.EU_SetKpiCardData.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -8254,6 +8277,79 @@ def get_statistic_options(hwnd, element_id):
     animated = ctypes.c_int()
     ok = dll.EU_GetStatisticOptions(hwnd, element_id, ctypes.byref(precision), ctypes.byref(animated))
     return (precision.value, bool(animated.value)) if ok else None
+
+def set_statistic_number_options(hwnd, element_id, precision=-1, animated=True,
+                                 group_separator=False, group_separator_text=",",
+                                 decimal_separator="."):
+    group_data = make_utf8(group_separator_text)
+    decimal_data = make_utf8(decimal_separator)
+    dll.EU_SetStatisticNumberOptions(
+        hwnd, element_id,
+        precision, 1 if animated else 0, 1 if group_separator else 0,
+        bytes_arg(group_data), len(group_data),
+        bytes_arg(decimal_data), len(decimal_data),
+    )
+
+def set_statistic_affix_options(hwnd, element_id, prefix="", suffix="",
+                                prefix_color=0, suffix_color=0, value_color=0,
+                                suffix_clickable=False):
+    prefix_data = make_utf8(prefix)
+    suffix_data = make_utf8(suffix)
+    dll.EU_SetStatisticAffixOptions(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+        prefix_color, suffix_color, value_color,
+        1 if suffix_clickable else 0,
+    )
+
+def set_statistic_display_text(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetStatisticDisplayText(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_statistic_countdown(hwnd, element_id, target_unix_ms, format_text=""):
+    data = make_utf8(format_text)
+    dll.EU_SetStatisticCountdown(hwnd, element_id, int(target_unix_ms), bytes_arg(data), len(data))
+
+def set_statistic_countdown_state(hwnd, element_id, paused):
+    dll.EU_SetStatisticCountdownState(hwnd, element_id, 1 if paused else 0)
+
+def add_statistic_countdown_time(hwnd, element_id, delta_ms):
+    dll.EU_AddStatisticCountdownTime(hwnd, element_id, int(delta_ms))
+
+def set_statistic_finish_callback(hwnd, element_id, callback):
+    dll.EU_SetStatisticFinishCallback(hwnd, element_id, callback)
+
+def set_statistic_suffix_click_callback(hwnd, element_id, callback):
+    dll.EU_SetStatisticSuffixClickCallback(hwnd, element_id, callback)
+
+def get_statistic_full_state(hwnd, element_id):
+    mode = ctypes.c_int()
+    precision = ctypes.c_int()
+    animated = ctypes.c_int()
+    group = ctypes.c_int()
+    paused = ctypes.c_int()
+    finished = ctypes.c_int()
+    suffix_clicks = ctypes.c_int()
+    remaining = ctypes.c_longlong()
+    ok = dll.EU_GetStatisticFullState(
+        hwnd, element_id,
+        ctypes.byref(mode), ctypes.byref(precision), ctypes.byref(animated),
+        ctypes.byref(group), ctypes.byref(paused), ctypes.byref(finished),
+        ctypes.byref(suffix_clicks), ctypes.byref(remaining),
+    )
+    if not ok:
+        return None
+    return {
+        "mode": mode.value,
+        "precision": precision.value,
+        "animated": bool(animated.value),
+        "group_separator": bool(group.value),
+        "countdown_paused": bool(paused.value),
+        "countdown_finished": bool(finished.value),
+        "suffix_click_count": suffix_clicks.value,
+        "remaining_ms": remaining.value,
+    }
 
 def set_tour_steps(hwnd, element_id, steps):
     rows = []

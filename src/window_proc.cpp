@@ -18,6 +18,7 @@
 #include "element_loading.h"
 #include "element_drawer.h"
 #include "element_tooltip.h"
+#include "element_statistic.h"
 #include "theme.h"
 #include "dpi_context.h"
 #include "utf8_helpers.h"
@@ -30,6 +31,7 @@ std::map<HWND, WindowState*> g_windows;
 static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
 extern std::map<UINT_PTR, Button*> g_button_timer_map;
+extern std::map<UINT_PTR, Statistic*> g_statistic_timer_map;
 extern std::map<UINT_PTR, Carousel*> g_carousel_timer_map;
 extern std::map<UINT_PTR, Message*> g_message_timer_map;
 extern std::map<UINT_PTR, MessageBoxElement*> g_messagebox_timer_map;
@@ -412,6 +414,10 @@ void register_window_class() {
             }
             if (auto it = g_button_timer_map.find((UINT_PTR)wp); it != g_button_timer_map.end()) {
                 if (it->second) it->second->tick(33);
+                return 0;
+            }
+            if (auto it = g_statistic_timer_map.find((UINT_PTR)wp); it != g_statistic_timer_map.end()) {
+                if (it->second) it->second->tick(200);
                 return 0;
             }
             if (auto it = g_drawer_timer_map.find((UINT_PTR)wp); it != g_drawer_timer_map.end()) {

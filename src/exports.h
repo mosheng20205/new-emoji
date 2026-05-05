@@ -972,6 +972,29 @@ void __stdcall EU_SetStatisticOptions(HWND hwnd, int element_id,
                                       int precision, int animated);
 int  __stdcall EU_GetStatisticOptions(HWND hwnd, int element_id,
                                       int* precision, int* animated);
+void __stdcall EU_SetStatisticNumberOptions(HWND hwnd, int element_id,
+                                            int precision, int animated, int use_group_separator,
+                                            const unsigned char* group_separator_bytes, int group_separator_len,
+                                            const unsigned char* decimal_separator_bytes, int decimal_separator_len);
+void __stdcall EU_SetStatisticAffixOptions(HWND hwnd, int element_id,
+                                           const unsigned char* prefix_bytes, int prefix_len,
+                                           const unsigned char* suffix_bytes, int suffix_len,
+                                           Color prefix_color, Color suffix_color, Color value_color,
+                                           int suffix_clickable);
+void __stdcall EU_SetStatisticDisplayText(HWND hwnd, int element_id,
+                                          const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetStatisticCountdown(HWND hwnd, int element_id,
+                                        long long target_unix_ms,
+                                        const unsigned char* format_bytes, int format_len);
+void __stdcall EU_SetStatisticCountdownState(HWND hwnd, int element_id, int paused);
+void __stdcall EU_AddStatisticCountdownTime(HWND hwnd, int element_id, long long delta_ms);
+void __stdcall EU_SetStatisticFinishCallback(HWND hwnd, int element_id, ElementClickCallback cb);
+void __stdcall EU_SetStatisticSuffixClickCallback(HWND hwnd, int element_id, ElementClickCallback cb);
+int  __stdcall EU_GetStatisticFullState(HWND hwnd, int element_id,
+                                       int* mode, int* precision, int* animated,
+                                       int* use_group_separator, int* countdown_paused,
+                                       int* countdown_finished, int* suffix_click_count,
+                                       long long* remaining_ms);
 void __stdcall EU_SetKpiCardData(HWND hwnd, int element_id,
                                  const unsigned char* value_bytes, int value_len,
                                  const unsigned char* subtitle_bytes, int subtitle_len,

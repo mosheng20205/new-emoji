@@ -469,6 +469,15 @@ EXPORTS
     EU_SetStatisticFormat
     EU_SetStatisticOptions
     EU_GetStatisticOptions
+    EU_SetStatisticNumberOptions
+    EU_SetStatisticAffixOptions
+    EU_SetStatisticDisplayText
+    EU_SetStatisticCountdown
+    EU_SetStatisticCountdownState
+    EU_AddStatisticCountdownTime
+    EU_SetStatisticFinishCallback
+    EU_SetStatisticSuffixClickCallback
+    EU_GetStatisticFullState
     EU_SetKpiCardData
     EU_SetKpiCardOptions
     EU_GetKpiCardOptions

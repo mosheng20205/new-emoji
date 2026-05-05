@@ -345,7 +345,7 @@
     "zh": "统计数值",
     "create": "EU_CreateStatistic",
     "status": "已完成",
-    "summary": "已补前后缀、精度格式化、动画数字、选项读回、Python 封装和独立中文 emoji 验证",
+    "summary": "已补格式化数值、前后缀样式、formatter、后缀点击、倒计时、暂停继续、完成回调和完整状态读回",
     "category": "数据展示",
     "slug": "statistic"
   },
