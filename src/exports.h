@@ -748,6 +748,12 @@ int  __stdcall EU_GetColorPickerOpen(HWND hwnd, int element_id);
 void __stdcall EU_SetColorPickerPalette(HWND hwnd, int element_id,
                                         const Color* colors, int count);
 int  __stdcall EU_GetColorPickerPaletteCount(HWND hwnd, int element_id);
+void __stdcall EU_SetColorPickerOptions(HWND hwnd, int element_id,
+                                        int show_alpha, int size_mode, int clearable);
+int  __stdcall EU_GetColorPickerOptions(HWND hwnd, int element_id,
+                                        int* show_alpha, int* size_mode, int* clearable);
+void __stdcall EU_ClearColorPicker(HWND hwnd, int element_id);
+int  __stdcall EU_GetColorPickerHasValue(HWND hwnd, int element_id);
 void __stdcall EU_SetColorPickerChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTagType(HWND hwnd, int element_id, int tag_type);
 void __stdcall EU_SetTagEffect(HWND hwnd, int element_id, int effect);

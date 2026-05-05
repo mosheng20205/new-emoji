@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：1071。
+当前导出命令数量：1075。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -2556,7 +2556,7 @@
     .参数 元素ID, 整数型
     .参数 颜色, 整数型, , ARGB 0xAARRGGBB
 
-.DLL命令 取颜色选择器颜色, 整数型, "new_emoji.dll", "EU_GetColorPickerColor", , 对应 C++ 导出命令 EU_GetColorPickerColor；返回整数结果或写入输出参数
+.DLL命令 取颜色选择器颜色, 整数型, "new_emoji.dll", "EU_GetColorPickerColor", , 对应 C++ 导出命令 EU_GetColorPickerColor；空值态返回 0
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
@@ -2575,7 +2575,7 @@
     .参数 颜色文本字节集指针, 整数型, , UTF-8，支持 #RRGGBB 或 #AARRGGBB
     .参数 颜色文本长度, 整数型
 
-.DLL命令 取颜色选择器十六进制文本, 整数型, "new_emoji.dll", "EU_GetColorPickerHex", , 对应 C++ 导出命令 EU_GetColorPickerHex；返回所需 UTF-8 字节数
+.DLL命令 取颜色选择器十六进制文本, 整数型, "new_emoji.dll", "EU_GetColorPickerHex", , 对应 C++ 导出命令 EU_GetColorPickerHex；返回所需 UTF-8 字节数，空值态返回 0
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 输出缓冲区指针, 整数型, , UTF-8 输出缓冲区，可传 0 查询长度
@@ -2600,10 +2600,32 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
+.DLL命令 设置颜色选择器选项, , "new_emoji.dll", "EU_SetColorPickerOptions", , 对应 C++ 导出命令 EU_SetColorPickerOptions；设置透明度开关、尺寸和清空按钮
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示透明度, 整数型, , 0隐藏 1显示；隐藏时不绘制透明度条
+    .参数 尺寸模式, 整数型, , 0默认 1中等 2小型 3超小
+    .参数 是否可清空, 整数型, , 0否 1是；为 1 时有值态主框显示清空按钮
+
+.DLL命令 取颜色选择器选项, 整数型, "new_emoji.dll", "EU_GetColorPickerOptions", , 对应 C++ 导出命令 EU_GetColorPickerOptions；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示透明度指针, 整数型, , 输出整数指针，0隐藏 1显示
+    .参数 尺寸模式指针, 整数型, , 输出整数指针，0默认 1中等 2小型 3超小
+    .参数 是否可清空指针, 整数型, , 输出整数指针，0否 1是
+
+.DLL命令 清空颜色选择器, , "new_emoji.dll", "EU_ClearColorPicker", , 对应 C++ 导出命令 EU_ClearColorPicker；进入空值态，颜色读回为 0，十六进制文本读回为空
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取颜色选择器是否有值, 整数型, "new_emoji.dll", "EU_GetColorPickerHasValue", , 对应 C++ 导出命令 EU_GetColorPickerHasValue；返回 0空值 1有值
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 设置颜色选择器变化回调, , "new_emoji.dll", "EU_SetColorPickerChangeCallback", , 对应 C++ 导出命令 EU_SetColorPickerChangeCallback
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 回调函数, 整数型, , 回调签名：子程序(元素ID, ARGB颜色, 透明度, 预设色数量)
+    .参数 回调函数, 整数型, , 回调签名：子程序(元素ID, ARGB颜色, 透明度, 预设色数量)，空值态颜色与透明度均为 0
 
 .DLL命令 设置标签类型, , "new_emoji.dll", "EU_SetTagType", , 对应 C++ 导出命令 EU_SetTagType
     .参数 窗口句柄, 整数型

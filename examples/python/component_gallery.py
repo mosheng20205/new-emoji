@@ -4786,6 +4786,123 @@ def button_action(hwnd, title, body):
     return action
 
 
+def showcase_colorpicker(hwnd, stage, w, h):
+    status = add_text(hwnd, stage, "🎨 ColorPicker 覆盖默认值、空值、透明度、预设色和四种桌面端尺寸。", 36, 28, w - 72, 28, MUTED)
+
+    predefine_colors = [
+        0xFFFF4500, 0xFFFF8C00, 0xFFFFD700, 0xFF90EE90,
+        0xFF00CED1, 0xFF1E90FF, 0xFFC71585, 0xADFF4500,
+        0xFFFF7800, 0xFFFAE900, 0x8FFFE699, 0xFF00BBC0,
+        0xBA1F8EFF, 0x77C71585,
+    ]
+
+    left = add_demo_panel(hwnd, stage, "🧾 基础表单", 28, 72, 500, 320)
+    add_text(hwnd, left, "有默认值", 28, 58, 112, 28, MUTED)
+    cp_default = ui.create_colorpicker(hwnd, left, "主题色", 0xFF409EFF, 150, 52, 300, 42)
+    add_text(hwnd, left, "无默认值", 28, 120, 112, 28, MUTED)
+    cp_empty = ui.create_colorpicker(hwnd, left, "可选色", None, 150, 114, 300, 42)
+    add_text(hwnd, left, "弹层状态", 28, 182, 112, 28, MUTED)
+    cp_open = ui.create_colorpicker(hwnd, left, "品牌色", 0xFF1E90FF, 150, 176, 300, 42, open_panel=True)
+    add_text(hwnd, left, "桌面表单中空值不会伪装成白色，读回为空字符串和颜色 0。", 28, 252, 430, 44, MUTED)
+
+    middle = add_demo_panel(hwnd, stage, "🌈 透明度与预设色", 552, 72, 560, 320)
+    cp_alpha = ui.create_colorpicker(
+        hwnd,
+        middle,
+        "半透明色",
+        0xADFF4500,
+        28,
+        54,
+        360,
+        42,
+        show_alpha=True,
+        palette=predefine_colors,
+        open_panel=True,
+    )
+    add_text(hwnd, middle, "预设色：Element Plus 示例中的 14 个颜色已转换为 ARGB。", 28, 232, 480, 26, MUTED)
+    add_text(hwnd, middle, "关闭 show-alpha 时弹层不绘制透明度条，只显示 #RRGGBB。", 28, 264, 480, 26, MUTED)
+
+    right_w = max(420, w - 1164)
+    right = add_demo_panel(hwnd, stage, "📏 尺寸矩阵", 1136, 72, right_w, 320)
+    size_specs = [
+        ("默认", 0, 42, "表单行"),
+        ("中等", 1, 38, "工具区"),
+        ("小型", 2, 34, "属性面板"),
+        ("超小", 3, 30, "紧凑栏"),
+    ]
+    size_ids = []
+    for index, (label, size, height, scene) in enumerate(size_specs):
+        y = 52 + index * 58
+        add_text(hwnd, right, scene, 26, y + 6, 88, 24, MUTED)
+        picker_id = ui.create_colorpicker(
+            hwnd,
+            right,
+            f"{label}色",
+            0xFF3B82F6,
+            118,
+            y,
+            min(310, right_w - 150),
+            height,
+            size=size,
+        )
+        size_ids.append(picker_id)
+
+    readback = add_demo_panel(hwnd, stage, "📋 状态读回与操作", 28, 424, w - 56, 250)
+    readback_text = add_text(hwnd, readback, "等待操作。", 28, 56, w - 112, 60, MUTED)
+
+    def color_state(label, picker_id):
+        options = ui.get_colorpicker_options(hwnd, picker_id) or {}
+        color = ui.get_colorpicker_color(hwnd, picker_id) & 0xFFFFFFFF
+        return (
+            f"{label}: 有值={ui.get_colorpicker_has_value(hwnd, picker_id)} "
+            f"颜色=0x{color:08X} 文本={ui.get_colorpicker_hex(hwnd, picker_id) or '空'} "
+            f"alpha={ui.get_colorpicker_alpha(hwnd, picker_id)} "
+            f"打开={ui.get_colorpicker_open(hwnd, picker_id)} "
+            f"预设={ui.get_colorpicker_palette_count(hwnd, picker_id)} "
+            f"尺寸={options.get('size', '-')}"
+        )
+
+    def refresh_status(message="📌 已刷新 ColorPicker 状态。"):
+        lines = [
+            message,
+            color_state("默认值", cp_default),
+            color_state("空值", cp_empty),
+            color_state("透明度", cp_alpha),
+        ]
+        ui.set_element_text(hwnd, readback_text, "\n".join(lines))
+        ui.set_element_text(hwnd, status, message)
+
+    def clear_selected(_eid):
+        ui.clear_colorpicker(hwnd, cp_alpha)
+        refresh_status("🧹 已清空透明度选择器，空值态读回颜色 0。")
+
+    def set_brand(_eid):
+        ui.set_colorpicker_hex(hwnd, cp_empty, "#8843A047")
+        ui.set_colorpicker_open(hwnd, cp_empty, True)
+        refresh_status("✅ 已把空值选择器设为半透明品牌绿，并打开面板。")
+
+    def open_panel(_eid):
+        ui.set_colorpicker_open(hwnd, cp_default, True)
+        ui.set_colorpicker_open(hwnd, cp_alpha, True)
+        refresh_status("📂 已打开默认值与透明度选择器面板。")
+
+    clear_btn = ui.create_button(hwnd, readback, "🧹", "清空透明度", 28, 148, 150, 40)
+    brand_btn = ui.create_button(hwnd, readback, "✅", "设为品牌色", 198, 148, 150, 40)
+    open_btn = ui.create_button(hwnd, readback, "📂", "打开面板", 368, 148, 132, 40)
+    set_click(hwnd, clear_btn, clear_selected)
+    set_click(hwnd, brand_btn, set_brand)
+    set_click(hwnd, open_btn, open_panel)
+
+    for picker_id in (cp_default, cp_empty, cp_open, cp_alpha, *size_ids):
+        cb = keep_callback(ui.ValueCallback(lambda _id, _color, _alpha, _count: refresh_status("🎨 颜色状态已变化。")))
+        ui.set_colorpicker_change_callback(hwnd, picker_id, cb)
+
+    refresh_status("✅ ColorPicker 全样式演示已加载。")
+
+
+SPECIAL_SHOWCASES["ColorPicker"] = showcase_colorpicker
+
+
 def demo_button(hwnd, parent, x, y, w, h):
     btn = ui.create_button(hwnd, parent, "🚀", "立即体验", x, y, min(w, 150), 38)
     set_click(hwnd, btn, button_action(hwnd, "按钮回调 🚀", "Button 点击事件正常触发。"))

@@ -26,24 +26,48 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+float ColorPicker::size_factor() const {
+    switch (size_mode) {
+    case 1: return 0.96f;  // medium
+    case 2: return 0.88f;  // small
+    case 3: return 0.78f;  // mini
+    default: return 1.0f;
+    }
+}
+
+float ColorPicker::effective_font_size() const {
+    float s = style.font_size * size_factor();
+    return s < 11.0f ? 11.0f : s;
+}
+
+int ColorPicker::control_padding() const {
+    int p = round_px(8.0f * size_factor());
+    return p < 4 ? 4 : p;
+}
+
 int ColorPicker::cell_size() const {
-    int s = round_px(style.font_size * 1.6f);
-    return s < 22 ? 22 : s;
+    int s = round_px(effective_font_size() * 1.6f);
+    int min_size = size_mode == 3 ? 16 : (size_mode == 2 ? 18 : 22);
+    return s < min_size ? min_size : s;
 }
 
 int ColorPicker::cell_gap() const {
-    int g = round_px(style.font_size * 0.45f);
-    return g < 6 ? 6 : g;
+    int g = round_px(effective_font_size() * 0.45f);
+    int min_gap = size_mode == 3 ? 4 : 6;
+    return g < min_gap ? min_gap : g;
 }
 
 int ColorPicker::alpha_bar_height() const {
-    int h = round_px(style.font_size * 1.2f);
-    return h < 16 ? 16 : h;
+    int h = round_px(effective_font_size() * 1.2f);
+    int min_h = size_mode == 3 ? 12 : (size_mode == 2 ? 14 : 16);
+    return h < min_h ? min_h : h;
 }
 
 int ColorPicker::panel_height() const {
     int rows = ((int)m_palette.size() + kColumns - 1) / kColumns;
-    return cell_gap() * 3 + rows * cell_size() + (rows - 1) * cell_gap() + alpha_bar_height();
+    int h = cell_gap() * 2 + rows * cell_size() + (rows - 1) * cell_gap();
+    if (show_alpha) h += cell_gap() + alpha_bar_height();
+    return h;
 }
 
 int ColorPicker::panel_y() const {
@@ -55,8 +79,9 @@ int ColorPicker::panel_y() const {
 }
 
 std::wstring ColorPicker::hex_text() const {
+    if (!has_value) return L"未选择";
     wchar_t buf[32] = {};
-    if (alpha() < 255) {
+    if (show_alpha && alpha() < 255) {
         swprintf_s(buf, L"#%02X%02X%02X %d%%",
                    (unsigned)((value >> 16) & 0xFF),
                    (unsigned)((value >> 8) & 0xFF),
@@ -74,18 +99,22 @@ std::wstring ColorPicker::hex_text() const {
 void ColorPicker::set_color(Color color) {
     if ((color >> 24) == 0) color |= 0xFF000000;
     Color old = value;
+    bool old_has_value = has_value;
     value = color;
+    has_value = true;
     invalidate();
-    if (old != value) notify_changed();
+    if (old != value || old_has_value != has_value) notify_changed();
 }
 
 void ColorPicker::set_alpha(int alpha_value) {
     if (alpha_value < 0) alpha_value = 0;
     if (alpha_value > 255) alpha_value = 255;
     Color old = value;
+    bool old_has_value = has_value;
     value = (value & 0x00FFFFFF) | ((Color)alpha_value << 24);
+    has_value = true;
     invalidate();
-    if (old != value) notify_changed();
+    if (old != value || old_has_value != has_value) notify_changed();
 }
 
 static int colorpicker_hex_digit(wchar_t ch) {
@@ -126,6 +155,24 @@ void ColorPicker::set_open(bool is_open) {
     invalidate();
 }
 
+void ColorPicker::set_options(bool show_alpha_value, int size_value, bool clearable_value) {
+    show_alpha = show_alpha_value;
+    size_mode = (std::max)(0, (std::min)(3, size_value));
+    clearable = clearable_value;
+    invalidate();
+}
+
+void ColorPicker::clear_value() {
+    bool changed = has_value || value != 0;
+    has_value = false;
+    open = false;
+    value = 0;
+    m_hover_index = -1;
+    m_press_index = -1;
+    invalidate();
+    if (changed) notify_changed();
+}
+
 void ColorPicker::set_palette(const std::vector<Color>& colors) {
     if (colors.empty()) return;
     m_palette = colors;
@@ -139,7 +186,7 @@ int ColorPicker::palette_count() const {
 }
 
 void ColorPicker::notify_changed() {
-    if (change_cb) change_cb(id, (int)value, alpha(), palette_count());
+    if (change_cb) change_cb(id, has_value ? (int)value : 0, has_value ? alpha() : 0, palette_count());
 }
 
 int ColorPicker::color_at(int x, int y) const {
@@ -166,7 +213,7 @@ int ColorPicker::color_at(int x, int y) const {
 }
 
 int ColorPicker::alpha_at(int x, int y) const {
-    if (!open) return -1;
+    if (!open || !show_alpha) return -1;
     int ph = panel_height();
     int py = panel_y();
     if (x < 0 || x >= bounds.w || y < py || y >= py + ph) return -1;
@@ -179,6 +226,16 @@ int ColorPicker::alpha_at(int x, int y) const {
     if (x < bar_x || x >= bar_x + bar_w || y < bar_y || y >= bar_y + bar_h) return -1;
     int alpha_value = (x - bar_x) * 255 / (std::max)(1, bar_w - 1);
     return (std::max)(0, (std::min)(255, alpha_value));
+}
+
+bool ColorPicker::clear_at(int x, int y) const {
+    if (!clearable || !has_value || x < 0 || y < 0 || x >= bounds.w || y >= bounds.h) return false;
+    int pad = control_padding();
+    int size = round_px(effective_font_size() * 1.15f);
+    if (size < 14) size = 14;
+    int cx = bounds.w - pad - size;
+    int cy = (bounds.h - size) / 2;
+    return x >= cx && x < cx + size && y >= cy && y < cy + size;
 }
 
 Element* ColorPicker::hit_test(int x, int y) {
@@ -210,6 +267,8 @@ void ColorPicker::paint(RenderContext& ctx) {
     Color border = open || has_focus ? t->edit_focus : (style.border_color ? style.border_color : t->edit_border);
     Color fg = style.fg_color ? style.fg_color : t->text_primary;
     float radius = style.corner_radius > 0.0f ? style.corner_radius : 4.0f;
+    ElementStyle text_style = style;
+    text_style.font_size = effective_font_size();
 
     D2D1_RECT_F field = { 0, 0, (float)bounds.w, (float)bounds.h };
     ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(field, radius, radius), ctx.get_brush(bg));
@@ -218,24 +277,54 @@ void ColorPicker::paint(RenderContext& ctx) {
         ctx.get_brush(border), open || has_focus ? 1.5f : 1.0f);
 
     float label_w = text.empty() ? 0.0f : (float)((std::min)(round_px(bounds.w * 0.34f), round_px(120.0f * style.font_size / 14.0f)));
-    float pad_l = (float)style.pad_left;
-    float pad_r = (float)style.pad_right;
+    float pad_l = (float)control_padding();
+    float pad_r = (float)control_padding();
+    if (clearable && has_value) {
+        pad_r += (float)round_px(effective_font_size() * 1.45f);
+    }
     if (!text.empty()) {
-        draw_text(ctx, text, style, t->text_secondary, pad_l, 0.0f, label_w, (float)bounds.h);
+        draw_text(ctx, text, text_style, t->text_secondary, pad_l, 0.0f, label_w, (float)bounds.h);
     }
 
-    int swatch = round_px(style.font_size * 1.45f);
-    if (swatch < 20) swatch = 20;
+    int swatch = round_px(effective_font_size() * 1.45f);
+    int min_swatch = size_mode == 3 ? 14 : (size_mode == 2 ? 16 : 20);
+    if (swatch < min_swatch) swatch = min_swatch;
     float swatch_x = pad_l + label_w + (label_w > 0.0f ? 8.0f : 0.0f);
     float swatch_y = ((float)bounds.h - (float)swatch) * 0.5f;
     D2D1_RECT_F swatch_rect = { swatch_x, swatch_y, swatch_x + (float)swatch, swatch_y + (float)swatch };
-    ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(swatch_rect, 4.0f, 4.0f), ctx.get_brush(value));
+    if (has_value) {
+        ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(swatch_rect, 4.0f, 4.0f), ctx.get_brush(value));
+    } else {
+        ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(swatch_rect, 4.0f, 4.0f), ctx.get_brush(t->edit_bg));
+        ctx.rt->DrawLine(D2D1::Point2F(swatch_rect.left + 3.0f, swatch_rect.bottom - 3.0f),
+                         D2D1::Point2F(swatch_rect.right - 3.0f, swatch_rect.top + 3.0f),
+                         ctx.get_brush(t->text_secondary), 1.2f);
+    }
     ctx.rt->DrawRoundedRectangle(D2D1::RoundedRect(swatch_rect, 4.0f, 4.0f),
                                  ctx.get_brush(t->border_default), 1.0f);
 
     float hex_x = swatch_x + (float)swatch + 8.0f;
-    draw_text(ctx, hex_text(), style, fg, hex_x, 0.0f,
+    draw_text(ctx, hex_text(), text_style, has_value ? fg : t->text_secondary, hex_x, 0.0f,
               (float)bounds.w - hex_x - pad_r, (float)bounds.h);
+
+    if (clearable && has_value) {
+        int clear_size = round_px(effective_font_size() * 1.15f);
+        if (clear_size < 14) clear_size = 14;
+        float cx = (float)(bounds.w - control_padding() - clear_size);
+        float cy = ((float)bounds.h - (float)clear_size) * 0.5f;
+        D2D1_RECT_F clear_rect = { cx, cy, cx + (float)clear_size, cy + (float)clear_size };
+        Color clear_bg = m_press_clear ? t->edit_focus : (hovered ? t->edit_border : 0x00000000);
+        if (clear_bg) {
+            ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(clear_rect, clear_size / 2.0f, clear_size / 2.0f),
+                                         ctx.get_brush(clear_bg));
+        }
+        ctx.rt->DrawLine(D2D1::Point2F(clear_rect.left + 4.0f, clear_rect.top + 4.0f),
+                         D2D1::Point2F(clear_rect.right - 4.0f, clear_rect.bottom - 4.0f),
+                         ctx.get_brush(t->text_secondary), 1.4f);
+        ctx.rt->DrawLine(D2D1::Point2F(clear_rect.right - 4.0f, clear_rect.top + 4.0f),
+                         D2D1::Point2F(clear_rect.left + 4.0f, clear_rect.bottom - 4.0f),
+                         ctx.get_brush(t->text_secondary), 1.4f);
+    }
 
     ctx.rt->SetTransform(saved);
 }
@@ -269,26 +358,29 @@ void ColorPicker::paint_palette(RenderContext& ctx) {
         float cy = (float)(start_y + row * (cs + gap));
         D2D1_RECT_F cell = { cx, cy, cx + (float)cs, cy + (float)cs };
         ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(cell, 4.0f, 4.0f), ctx.get_brush(m_palette[i]));
-        Color normalized = (m_palette[i] & 0x00FFFFFF) | ((Color)alpha() << 24);
+        Color normalized = (m_palette[i] & 0x00FFFFFF) | ((Color)(show_alpha && has_value ? alpha() : 255) << 24);
         Color cell_border = (normalized == value || i == m_hover_index) ? t->accent : t->border_default;
         ctx.rt->DrawRoundedRectangle(D2D1::RoundedRect(cell, 4.0f, 4.0f),
                                      ctx.get_brush(cell_border),
                                      (normalized == value || i == m_hover_index) ? 2.0f : 1.0f);
     }
 
-    int bar_h = alpha_bar_height();
-    int bar_x = gap;
-    int bar_y = py + ph - gap - bar_h;
-    int bar_w = bounds.w - gap * 2;
-    D2D1_RECT_F bar = { (float)bar_x, (float)bar_y, (float)(bar_x + bar_w), (float)(bar_y + bar_h) };
-    ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(bar, 4.0f, 4.0f), ctx.get_brush(0xFFE5E7EB));
-    D2D1_RECT_F fill = { (float)bar_x, (float)bar_y,
-                         (float)(bar_x + bar_w * alpha() / 255), (float)(bar_y + bar_h) };
-    if (fill.right > fill.left) {
-        ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(fill, 4.0f, 4.0f), ctx.get_brush(value));
+    if (show_alpha) {
+        int bar_h = alpha_bar_height();
+        int bar_x = gap;
+        int bar_y = py + ph - gap - bar_h;
+        int bar_w = bounds.w - gap * 2;
+        D2D1_RECT_F bar = { (float)bar_x, (float)bar_y, (float)(bar_x + bar_w), (float)(bar_y + bar_h) };
+        ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(bar, 4.0f, 4.0f), ctx.get_brush(0xFFE5E7EB));
+        D2D1_RECT_F fill = { (float)bar_x, (float)bar_y,
+                             (float)(bar_x + bar_w * alpha() / 255), (float)(bar_y + bar_h) };
+        if (fill.right > fill.left) {
+            Color alpha_fill = has_value ? value : 0xFF909399;
+            ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(fill, 4.0f, 4.0f), ctx.get_brush(alpha_fill));
+        }
+        ctx.rt->DrawRoundedRectangle(D2D1::RoundedRect(bar, 4.0f, 4.0f),
+                                     ctx.get_brush(t->border_default), 1.0f);
     }
-    ctx.rt->DrawRoundedRectangle(D2D1::RoundedRect(bar, 4.0f, 4.0f),
-                                 ctx.get_brush(t->border_default), 1.0f);
 }
 
 void ColorPicker::paint_overlay(RenderContext& ctx) {
@@ -319,6 +411,7 @@ void ColorPicker::on_mouse_leave() {
 }
 
 void ColorPicker::on_mouse_down(int x, int y, MouseButton) {
+    m_press_clear = clear_at(x, y);
     m_press_index = color_at(x, y);
     int alpha_value = alpha_at(x, y);
     if (alpha_value >= 0) set_alpha(alpha_value);
@@ -330,8 +423,10 @@ void ColorPicker::on_mouse_down(int x, int y, MouseButton) {
 void ColorPicker::on_mouse_up(int x, int y, MouseButton) {
     int idx = color_at(x, y);
     int alpha_value = alpha_at(x, y);
-    if (idx >= 0 && idx == m_press_index) {
-        set_color((m_palette[idx] & 0x00FFFFFF) | ((Color)alpha() << 24));
+    if (m_press_clear && clear_at(x, y)) {
+        clear_value();
+    } else if (idx >= 0 && idx == m_press_index) {
+        set_color((m_palette[idx] & 0x00FFFFFF) | ((Color)(show_alpha && has_value ? alpha() : 255) << 24));
         open = false;
     } else if (alpha_value >= 0) {
         set_alpha(alpha_value);
@@ -340,6 +435,7 @@ void ColorPicker::on_mouse_up(int x, int y, MouseButton) {
     }
     m_press_index = -1;
     m_press_main = false;
+    m_press_clear = false;
     pressed = false;
     invalidate();
 }
@@ -347,6 +443,7 @@ void ColorPicker::on_mouse_up(int x, int y, MouseButton) {
 void ColorPicker::on_key_down(int vk, int) {
     if (vk == VK_RETURN || vk == VK_SPACE) open = !open;
     else if (vk == VK_ESCAPE) open = false;
+    else if ((vk == VK_DELETE || vk == VK_BACK) && clearable) clear_value();
     invalidate();
 }
 

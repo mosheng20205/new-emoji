@@ -34,7 +34,7 @@
 | `Select` | 选择器 | `EU_CreateSelect` | 已完成 | [选择器](./select.md) |
 | `SelectV2` | 虚拟选择器 | `EU_CreateSelectV2` | 已完成 | [虚拟选择器](./selectv2.md) |
 | `Rate` | 评分 | `EU_CreateRate` | 已完成 | [评分](./rate.md) |
-| `ColorPicker` | 颜色选择器 | `EU_CreateColorPicker` | 已完成 | [颜色选择器](./color-picker.md) |
+| `ColorPicker` | 颜色选择器（默认值/空值/透明度/预设色/四尺寸） | `EU_CreateColorPicker` | 已完成 | [颜色选择器](./color-picker.md) |
 
 ## 📊 数据展示
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |

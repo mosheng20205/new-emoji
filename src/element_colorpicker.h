@@ -5,7 +5,11 @@
 class ColorPicker : public Element {
 public:
     Color value = 0xFF1E66F5;
+    bool has_value = true;
     bool open = false;
+    bool show_alpha = false;
+    bool clearable = true;
+    int size_mode = 0;  // 0 default, 1 medium, 2 small, 3 mini
     ElementValueCallback change_cb = nullptr;
 
     const wchar_t* type_name() const override { return L"ColorPicker"; }
@@ -26,6 +30,8 @@ public:
     std::wstring get_hex_text() const;
     int alpha() const;
     void set_open(bool is_open);
+    void set_options(bool show_alpha_value, int size_value, bool clearable_value);
+    void clear_value();
     void set_palette(const std::vector<Color>& colors);
     int palette_count() const;
 
@@ -39,7 +45,11 @@ private:
     int m_hover_index = -1;
     int m_press_index = -1;
     bool m_press_main = false;
+    bool m_press_clear = false;
 
+    float size_factor() const;
+    float effective_font_size() const;
+    int control_padding() const;
     int cell_size() const;
     int cell_gap() const;
     int alpha_bar_height() const;
@@ -47,6 +57,7 @@ private:
     int panel_y() const;
     int color_at(int x, int y) const;
     int alpha_at(int x, int y) const;
+    bool clear_at(int x, int y) const;
     std::wstring hex_text() const;
     void notify_changed();
     void paint_palette(RenderContext& ctx);

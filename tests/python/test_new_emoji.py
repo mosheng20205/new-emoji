@@ -1203,6 +1203,16 @@ dll.EU_SetColorPickerPalette.argtypes = [wintypes.HWND, ctypes.c_int,
                                          ctypes.POINTER(ctypes.c_uint32), ctypes.c_int]
 dll.EU_GetColorPickerPaletteCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetColorPickerPaletteCount.restype = ctypes.c_int
+dll.EU_SetColorPickerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetColorPickerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetColorPickerOptions.restype = ctypes.c_int
+dll.EU_ClearColorPicker.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetColorPickerHasValue.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetColorPickerHasValue.restype = ctypes.c_int
 dll.EU_SetColorPickerChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTagType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTagEffect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -4754,14 +4764,24 @@ def get_rate_display_options(hwnd, element_id):
         return None
     return bool(show_text.value), bool(show_score.value), text_color.value, template.value.decode("utf-8")
 
-def create_colorpicker(hwnd, parent_id, text="Color", color=0xFF1E66F5,
+def create_colorpicker(hwnd, parent_id, text="颜色", color=0xFF1E66F5,
                        x=0, y=0, w=220, h=36, alpha=None, open_panel=None,
-                       palette=None):
+                       palette=None, show_alpha=False, size=0, clearable=True):
     data = make_utf8(text)
+    initial_color = 0xFF1E66F5 if color is None else color
     element_id = dll.EU_CreateColorPicker(
         hwnd, parent_id, bytes_arg(data), len(data),
-        color, x, y, w, h
+        initial_color, x, y, w, h
     )
+    if element_id:
+        dll.EU_SetColorPickerOptions(
+            hwnd, element_id,
+            1 if show_alpha else 0,
+            int(size),
+            1 if clearable else 0,
+        )
+    if element_id and color is None:
+        dll.EU_ClearColorPicker(hwnd, element_id)
     if element_id and palette:
         arr = (ctypes.c_uint32 * len(palette))(*palette)
         dll.EU_SetColorPickerPalette(hwnd, element_id, arr, len(palette))
@@ -4809,6 +4829,36 @@ def set_colorpicker_palette(hwnd, element_id, palette=None):
 
 def get_colorpicker_palette_count(hwnd, element_id):
     return dll.EU_GetColorPickerPaletteCount(hwnd, element_id)
+
+def set_colorpicker_options(hwnd, element_id, show_alpha=False, size=0, clearable=True):
+    dll.EU_SetColorPickerOptions(
+        hwnd, element_id,
+        1 if show_alpha else 0,
+        int(size),
+        1 if clearable else 0,
+    )
+
+def get_colorpicker_options(hwnd, element_id):
+    show_alpha = ctypes.c_int()
+    size = ctypes.c_int()
+    clearable = ctypes.c_int()
+    ok = dll.EU_GetColorPickerOptions(
+        hwnd, element_id,
+        ctypes.byref(show_alpha), ctypes.byref(size), ctypes.byref(clearable)
+    )
+    if not ok:
+        return None
+    return {
+        "show_alpha": bool(show_alpha.value),
+        "size": size.value,
+        "clearable": bool(clearable.value),
+    }
+
+def clear_colorpicker(hwnd, element_id):
+    dll.EU_ClearColorPicker(hwnd, element_id)
+
+def get_colorpicker_has_value(hwnd, element_id):
+    return bool(dll.EU_GetColorPickerHasValue(hwnd, element_id))
 
 def set_colorpicker_change_callback(hwnd, element_id, callback):
     dll.EU_SetColorPickerChangeCallback(hwnd, element_id, callback)

@@ -5569,7 +5569,7 @@ void __stdcall EU_SetColorPickerColor(HWND hwnd, int element_id, Color color) {
 
 int __stdcall EU_GetColorPickerColor(HWND hwnd, int element_id) {
     auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
-    return el ? (int)el->value : 0;
+    return (el && el->has_value) ? (int)el->value : 0;
 }
 
 void __stdcall EU_SetColorPickerAlpha(HWND hwnd, int element_id, int alpha) {
@@ -5594,6 +5594,7 @@ int __stdcall EU_GetColorPickerHex(HWND hwnd, int element_id,
                                    unsigned char* buffer, int buffer_size) {
     auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
     if (!el) return 0;
+    if (!el->has_value) return 0;
     std::string utf8 = wide_to_utf8(el->get_hex_text());
     int needed = (int)utf8.size();
     if (!buffer || buffer_size <= 0) return needed;
@@ -5632,6 +5633,34 @@ void __stdcall EU_SetColorPickerPalette(HWND hwnd, int element_id, const Color* 
 int __stdcall EU_GetColorPickerPaletteCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
     return el ? el->palette_count() : 0;
+}
+
+void __stdcall EU_SetColorPickerOptions(HWND hwnd, int element_id,
+                                        int show_alpha, int size_mode, int clearable) {
+    if (auto* el = find_typed_element<ColorPicker>(hwnd, element_id)) {
+        el->set_options(show_alpha != 0, size_mode, clearable != 0);
+    }
+}
+
+int __stdcall EU_GetColorPickerOptions(HWND hwnd, int element_id,
+                                       int* show_alpha, int* size_mode, int* clearable) {
+    auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_alpha) *show_alpha = el->show_alpha ? 1 : 0;
+    if (size_mode) *size_mode = el->size_mode;
+    if (clearable) *clearable = el->clearable ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_ClearColorPicker(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<ColorPicker>(hwnd, element_id)) {
+        el->clear_value();
+    }
+}
+
+int __stdcall EU_GetColorPickerHasValue(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
+    return (el && el->has_value) ? 1 : 0;
 }
 
 void __stdcall EU_SetColorPickerChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {

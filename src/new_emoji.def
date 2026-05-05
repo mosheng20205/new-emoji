@@ -337,6 +337,10 @@ EXPORTS
     EU_GetColorPickerOpen
     EU_SetColorPickerPalette
     EU_GetColorPickerPaletteCount
+    EU_SetColorPickerOptions
+    EU_GetColorPickerOptions
+    EU_ClearColorPicker
+    EU_GetColorPickerHasValue
     EU_SetColorPickerChangeCallback
     EU_SetTagType
     EU_SetTagEffect

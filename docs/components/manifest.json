@@ -225,7 +225,7 @@
     "zh": "颜色选择器",
     "create": "EU_CreateColorPicker",
     "status": "已完成",
-    "summary": "已补面板、透明度、预设色、十六进制输入校验、读回、变化回调、Python 封装和独立中文 emoji 验证",
+    "summary": "已补默认值、空值、透明度开关、预设色、四种尺寸、清空、十六进制校验、读回、变化回调、Python 封装和中文 emoji gallery 验证",
     "category": "表单/选择",
     "slug": "color-picker"
   },

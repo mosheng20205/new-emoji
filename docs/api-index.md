@@ -337,6 +337,10 @@
 | `EU_GetColorPickerOpen` | |
 | `EU_SetColorPickerPalette` | |
 | `EU_GetColorPickerPaletteCount` | |
+| `EU_SetColorPickerOptions` | 设置 ColorPicker 透明度开关、尺寸和可清空状态 |
+| `EU_GetColorPickerOptions` | 读取 ColorPicker 透明度开关、尺寸和可清空状态 |
+| `EU_ClearColorPicker` | 清空 ColorPicker，进入无默认值/空值态 |
+| `EU_GetColorPickerHasValue` | 读取 ColorPicker 是否有当前颜色值 |
 | `EU_SetColorPickerChangeCallback` | |
 | `EU_SetTagType` | |
 | `EU_SetTagEffect` | |
