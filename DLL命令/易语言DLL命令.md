@@ -6200,6 +6200,12 @@ JSON 示例：
     .参数 项目字节集指针, 整数型, , 每项格式：标题<TAB>描述，项目用 | 分隔
     .参数 项目长度, 整数型
 
+.DLL命令 设置步骤条图标项目, , "new_emoji.dll", "EU_SetStepsIconItems", , 对应 C++ 导出命令 EU_SetStepsIconItems
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目字节集指针, 整数型, , 每项格式：标题<TAB>描述<TAB>图标，图标可用 emoji 或 el-icon-edit/el-icon-upload/el-icon-picture
+    .参数 项目长度, 整数型
+
 .DLL命令 设置步骤条激活项, , "new_emoji.dll", "EU_SetStepsActive", , 对应 C++ 导出命令 EU_SetStepsActive
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -6209,6 +6215,24 @@ JSON 示例：
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 方向, 整数型, , 0横向 1纵向
+
+.DLL命令 设置步骤条样式, , "new_emoji.dll", "EU_SetStepsOptions", , 对应 C++ 导出命令 EU_SetStepsOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 固定间距, 整数型, , 0自动等分，大于0表示每步逻辑间距
+    .参数 是否居中, 整数型, , 0否 1是，对应 align-center
+    .参数 是否简洁模式, 整数型, , 0普通 1简洁，对应 simple
+    .参数 完成状态, 整数型, , 默认2，0等待 1进行中 2完成/成功 3失败
+    .参数 进行中状态, 整数型, , 默认1，0等待 1进行中 2完成/成功 3失败
+
+.DLL命令 取步骤条样式, 整数型, "new_emoji.dll", "EU_GetStepsOptions", , 对应 C++ 导出命令 EU_GetStepsOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 固定间距指针, 整数型, , 传址接收
+    .参数 是否居中指针, 整数型, , 传址接收
+    .参数 是否简洁模式指针, 整数型, , 传址接收
+    .参数 完成状态指针, 整数型, , 传址接收
+    .参数 进行中状态指针, 整数型, , 传址接收
 
 .DLL命令 设置步骤条状态列表, , "new_emoji.dll", "EU_SetStepsStatuses", , 对应 C++ 导出命令 EU_SetStepsStatuses
     .参数 窗口句柄, 整数型
@@ -6258,6 +6282,16 @@ JSON 示例：
     .参数 最近动作指针, 整数型, , 1设置 2鼠标 3键盘 4程序触发
     .参数 激活状态指针, 整数型, , 0等待 1进行中 2完成 3失败
     .参数 失败数量指针, 整数型, , 传址接收
+
+.DLL命令 取步骤条视觉状态, 整数型, "new_emoji.dll", "EU_GetStepsVisualState", , 对应 C++ 导出命令 EU_GetStepsVisualState；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 固定间距指针, 整数型, , 传址接收
+    .参数 是否居中指针, 整数型, , 传址接收
+    .参数 是否简洁模式指针, 整数型, , 传址接收
+    .参数 完成状态指针, 整数型, , 传址接收
+    .参数 进行中状态指针, 整数型, , 传址接收
+    .参数 图标项目数指针, 整数型, , 传址接收非空图标数量
 
 .DLL命令 设置步骤条变化回调, , "new_emoji.dll", "EU_SetStepsChangeCallback", , 对应 C++ 导出命令 EU_SetStepsChangeCallback
     .参数 窗口句柄, 整数型

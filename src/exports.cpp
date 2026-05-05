@@ -746,6 +746,21 @@ parse_pair_items(const unsigned char* bytes, int len) {
     return items;
 }
 
+static std::vector<StepsVisualItem> parse_steps_visual_items(const unsigned char* bytes, int len) {
+    std::vector<StepsVisualItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+        if (entry.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        StepsVisualItem item;
+        item.title = fields.empty() ? entry : fields[0];
+        if (fields.size() >= 2) item.description = fields[1];
+        if (fields.size() >= 3) item.icon = fields[2];
+        if (!item.title.empty()) items.push_back(item);
+    }
+    return items;
+}
+
 static std::vector<InfiniteScrollItem> parse_infinite_scroll_items(const unsigned char* bytes, int len) {
     std::vector<InfiniteScrollItem> items;
     std::wstring full = utf8_to_wide(bytes, len);
@@ -9888,6 +9903,13 @@ void __stdcall EU_SetStepsDetailItems(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetStepsIconItems(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
+        el->set_icon_items(parse_steps_visual_items(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetStepsActive(HWND hwnd, int element_id, int active_index) {
     if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
         el->set_active_index(active_index);
@@ -9898,6 +9920,28 @@ void __stdcall EU_SetStepsDirection(HWND hwnd, int element_id, int direction) {
     if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
         el->set_direction(direction);
     }
+}
+
+void __stdcall EU_SetStepsOptions(HWND hwnd, int element_id, int space,
+                                  int align_center, int simple,
+                                  int finish_status, int process_status) {
+    if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
+        el->set_options(space, align_center != 0, simple != 0,
+                        finish_status, process_status);
+    }
+}
+
+int __stdcall EU_GetStepsOptions(HWND hwnd, int element_id, int* space,
+                                 int* align_center, int* simple,
+                                 int* finish_status, int* process_status) {
+    auto* el = find_typed_element<Steps>(hwnd, element_id);
+    if (!el) return 0;
+    if (space) *space = el->space;
+    if (align_center) *align_center = el->align_center ? 1 : 0;
+    if (simple) *simple = el->simple ? 1 : 0;
+    if (finish_status) *finish_status = el->finish_status;
+    if (process_status) *process_status = el->process_status;
+    return 1;
 }
 
 void __stdcall EU_SetStepsStatuses(HWND hwnd, int element_id, const int* statuses, int count) {
@@ -9967,6 +10011,25 @@ int __stdcall EU_GetStepsFullState(HWND hwnd, int element_id,
     if (last_action) *last_action = el->last_action;
     if (active_status) *active_status = el->status_at(el->active_index);
     if (failed_count) *failed_count = el->failed_count();
+    return 1;
+}
+
+int __stdcall EU_GetStepsVisualState(HWND hwnd, int element_id,
+                                     int* space, int* align_center, int* simple,
+                                     int* finish_status, int* process_status,
+                                     int* icon_count) {
+    auto* el = find_typed_element<Steps>(hwnd, element_id);
+    if (!el) return 0;
+    if (space) *space = el->space;
+    if (align_center) *align_center = el->align_center ? 1 : 0;
+    if (simple) *simple = el->simple ? 1 : 0;
+    if (finish_status) *finish_status = el->finish_status;
+    if (process_status) *process_status = el->process_status;
+    int count = 0;
+    for (const auto& icon : el->icons) {
+        if (!icon.empty()) ++count;
+    }
+    if (icon_count) *icon_count = count;
     return 1;
 }
 

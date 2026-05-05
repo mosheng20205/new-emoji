@@ -2504,8 +2504,20 @@ dll.EU_SetStepsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetStepsDetailItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStepsIconItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetStepsActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetStepsDirection.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetStepsOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int]
+dll.EU_GetStepsOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetStepsOptions.restype = ctypes.c_int
 dll.EU_SetStepsStatuses.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.c_int]
 dll.EU_TriggerStepsClick.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2530,6 +2542,13 @@ dll.EU_GetStepsFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int),
 ]
 dll.EU_GetStepsFullState.restype = ctypes.c_int
+dll.EU_GetStepsVisualState.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetStepsVisualState.restype = ctypes.c_int
 dll.EU_SetStepsChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetAlertDescription.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -8686,14 +8705,27 @@ def create_pagination(hwnd, parent_id, total=120, page_size=10, current=1,
     )
 
 def create_steps(hwnd, parent_id, items=None, active=1,
-                 x=0, y=0, w=420, h=80):
+                 x=0, y=0, w=420, h=80,
+                 space=None, align_center=False, simple=False,
+                 finish_status=2, process_status=1):
     if items is None:
         items = ["开始", "处理", "完成"]
     items_data = make_utf8("|".join(items))
-    return dll.EU_CreateSteps(
+    element_id = dll.EU_CreateSteps(
         hwnd, parent_id, bytes_arg(items_data), len(items_data),
         active, x, y, w, h
     )
+    if element_id and (space is not None or align_center or simple or
+                       finish_status != 2 or process_status != 1):
+        set_steps_options(
+            hwnd, element_id,
+            0 if space is None else int(space),
+            align_center=align_center,
+            simple=simple,
+            finish_status=finish_status,
+            process_status=process_status,
+        )
+    return element_id
 
 def set_breadcrumb_items(hwnd, element_id, items):
     data = make_utf8("|".join(items))
@@ -8933,11 +8965,49 @@ def set_steps_detail_items(hwnd, element_id, items):
     data = make_utf8("|".join(rows))
     dll.EU_SetStepsDetailItems(hwnd, element_id, bytes_arg(data), len(data))
 
+def set_steps_icon_items(hwnd, element_id, items):
+    rows = []
+    for item in items:
+        if isinstance(item, dict):
+            title = str(item.get("title", ""))
+            desc = str(item.get("description", item.get("desc", "")))
+            icon = str(item.get("icon", ""))
+        else:
+            title = str(item[0]) if len(item) > 0 else ""
+            desc = str(item[1]) if len(item) > 1 else ""
+            icon = str(item[2]) if len(item) > 2 else ""
+        rows.append(f"{title}\t{desc}\t{icon}")
+    data = make_utf8("|".join(rows))
+    dll.EU_SetStepsIconItems(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_steps_direction(hwnd, element_id, direction):
     dll.EU_SetStepsDirection(hwnd, element_id, direction)
 
 def set_steps_active(hwnd, element_id, active):
     dll.EU_SetStepsActive(hwnd, element_id, active)
+
+def set_steps_options(hwnd, element_id, space=0, align_center=False, simple=False,
+                      finish_status=2, process_status=1):
+    dll.EU_SetStepsOptions(
+        hwnd, element_id, int(space),
+        1 if align_center else 0,
+        1 if simple else 0,
+        int(finish_status), int(process_status),
+    )
+
+def get_steps_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(5)]
+    ok = dll.EU_GetStepsOptions(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = ["space", "align_center", "simple", "finish_status", "process_status"]
+    data = {key: value.value for key, value in zip(keys, values)}
+    data["align_center"] = bool(data["align_center"])
+    data["simple"] = bool(data["simple"])
+    return data
 
 def set_steps_statuses(hwnd, element_id, statuses):
     values = [int(v) for v in statuses]
@@ -8979,6 +9049,20 @@ def get_steps_full_state(hwnd, element_id):
         "active_status", "failed_count",
     ]
     return {key: value.value for key, value in zip(keys, values)}
+
+def get_steps_visual_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetStepsVisualState(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = ["space", "align_center", "simple", "finish_status", "process_status", "icon_count"]
+    data = {key: value.value for key, value in zip(keys, values)}
+    data["align_center"] = bool(data["align_center"])
+    data["simple"] = bool(data["simple"])
+    return data
 
 def set_steps_change_callback(hwnd, element_id, callback):
     dll.EU_SetStepsChangeCallback(hwnd, element_id, callback)

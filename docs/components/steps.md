@@ -2,9 +2,9 @@
 
 ## 简介
 
-`Steps` 是 new_emoji 的 导航 组件。当前状态：**已完成**。
+`Steps` 是 new_emoji 的导航组件。当前状态：**已完成**。
 
-已补等待/进行中/完成/失败状态、横向/纵向方向、点击/键盘/程序触发切换、描述文本、变化回调、项目标题/描述读回、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证
+已补等待/进行中/完成/失败状态、横向/纵向方向、固定间距、居中对齐、自定义图标、简洁模式、点击/键盘/程序触发切换、描述文本、变化回调、项目标题/描述读回、完整状态读回、Python 封装、易语言命令文档、`component_gallery.py` 桌面端全样式演示和独立中文 emoji 验证。
 
 ## 创建
 
@@ -29,9 +29,13 @@
 | `EU_SetStepsChangeCallback` | 当前组件相关导出 |
 | `EU_SetStepsDetailItems` | 当前组件相关导出 |
 | `EU_SetStepsDirection` | 当前组件相关导出 |
+| `EU_SetStepsIconItems` | 设置标题、描述和每步图标，图标支持 emoji / Unicode / 常见 Element 图标名 |
 | `EU_SetStepsItems` | 当前组件相关导出 |
+| `EU_SetStepsOptions` | 设置固定间距、居中、简洁模式、完成状态和进行中状态 |
 | `EU_SetStepsStatuses` | 当前组件相关导出 |
 | `EU_TriggerStepsClick` | 当前组件相关导出 |
+| `EU_GetStepsOptions` | 读回固定间距、居中、简洁模式和状态配置 |
+| `EU_GetStepsVisualState` | 读回视觉状态和非空图标数量 |
 
 ## Python 使用
 
@@ -43,8 +47,31 @@ import new_emoji_ui as ui
 
 hwnd = ui.create_window("✨ 步骤条 示例", 240, 120, 860, 560)
 root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Steps`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
+
+steps = ui.create_steps(
+    hwnd, root,
+    ["📝 填写", "🔍 审核", "🚀 发布"],
+    active=1, x=36, y=72, w=680, h=112,
+    space=200, align_center=True,
+)
+ui.set_steps_icon_items(hwnd, steps, [
+    ("编辑资料", "填写中文表单", "el-icon-edit"),
+    ("上传素材", "等待审核", "el-icon-upload"),
+    ("图片确认", "准备发布", "el-icon-picture"),
+])
+ui.set_steps_statuses(hwnd, steps, [2, 1, 0])
+
+simple = ui.create_steps(
+    hwnd, root,
+    ["创建", "校验", "完成"],
+    active=1, x=36, y=230, w=680, h=58,
+    simple=True,
+)
+ui.set_steps_icon_items(hwnd, simple, [
+    ("创建", "", "🧱"),
+    ("校验", "", "🔎"),
+    ("完成", "", "✅"),
+])
 ui.dll.EU_ShowWindow(hwnd, 1)
 ```
 
@@ -54,7 +81,7 @@ ui.dll.EU_ShowWindow(hwnd, 1)
 
 ## 状态与交互
 
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
+- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装、桌面端 gallery 全样式演示和独立中文 emoji 验证。
 - 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
 - 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
 
@@ -68,4 +95,4 @@ ui.dll.EU_ShowWindow(hwnd, 1)
 
 ## 文档维护
 
-如果 `Steps` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+如果 `Steps` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py`、`examples/python/component_gallery.py` 和 `DLL命令/易语言DLL命令.md`。

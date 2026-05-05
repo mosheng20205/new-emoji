@@ -98,7 +98,7 @@
 | `Breadcrumb` | 面包屑 | `EU_CreateBreadcrumb` | 已完成 | [面包屑](./breadcrumb.md) |
 | `Tabs` | 标签页 | `EU_CreateTabs` | 已完成 | [标签页](./tabs.md) |
 | `Pagination` | 分页 | `EU_CreatePagination` | 已完成 | [分页](./pagination.md) |
-| `Steps` | 步骤条 | `EU_CreateSteps` | 已完成 | [步骤条](./steps.md) |
+| `Steps` | 步骤条 | `EU_CreateSteps` | 已完成，支持固定间距、居中、自定义图标、纵向和简洁模式 | [步骤条](./steps.md) |
 
 ## 🖼️ 媒体/工具
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |

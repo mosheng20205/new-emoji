@@ -915,8 +915,11 @@ EXPORTS
     EU_SetPaginationChangeCallback
     EU_SetStepsItems
     EU_SetStepsDetailItems
+    EU_SetStepsIconItems
     EU_SetStepsActive
     EU_SetStepsDirection
+    EU_SetStepsOptions
+    EU_GetStepsOptions
     EU_SetStepsStatuses
     EU_TriggerStepsClick
     EU_GetStepsActive
@@ -924,6 +927,7 @@ EXPORTS
     EU_GetStepsState
     EU_GetStepsItem
     EU_GetStepsFullState
+    EU_GetStepsVisualState
     EU_SetStepsChangeCallback
     EU_SetAlertDescription
     EU_SetAlertType

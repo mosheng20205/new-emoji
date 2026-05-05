@@ -3537,6 +3537,184 @@ def showcase_tree_select(hwnd, stage, w, h):
     refresh_state()
 
 
+def showcase_steps(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "👣 Steps 步骤条覆盖基础流程、固定间距、长描述、居中、自定义图标、纵向审批和简洁模式。",
+        36, 28, w - 72, 28, MUTED,
+    )
+    matrix_w = min(1088, w - 628)
+    side_w = w - matrix_w - 84
+    matrix = add_demo_panel(hwnd, stage, "🧩 桌面端样式矩阵", 28, 70, matrix_w, 940)
+    inspector = add_demo_panel(hwnd, stage, "📋 交互与状态读回", 52 + matrix_w, 70, side_w, 940)
+
+    state_text = add_text(hwnd, inspector, "等待步骤条交互...", 26, 62, side_w - 52, 96, TEXT)
+    hint_text = add_text(
+        hwnd, inspector,
+        "左侧示例按桌面软件常见流程组织：主流程放在工作区，右侧保留当前状态、程序触发和辅助审批流程。",
+        26, 166, side_w - 52, 70, MUTED,
+    )
+    ui.set_text_options(hwnd, hint_text, align=0, valign=0, wrap=True, ellipsis=False)
+
+    basic = ui.create_steps(
+        hwnd, matrix,
+        ["📝 填写", "🔍 审核", "🚀 发布"],
+        0, 34, 62, 620, 102,
+    )
+    ui.set_steps_detail_items(
+        hwnd, basic,
+        [("📝 填写资料", "基础步骤条"), ("🔍 审核内容", "下一步按钮驱动"), ("🚀 发布上线", "自动回到开头")],
+    )
+    ui.set_steps_statuses(hwnd, basic, [1, 0, 0])
+    basic_label = add_text(hwnd, matrix, "基础交互：点击“下一步”循环切换 active。", 680, 82, matrix_w - 716, 48, MUTED)
+    ui.set_text_options(hwnd, basic_label, align=0, valign=0, wrap=True, ellipsis=False)
+
+    fixed = ui.create_steps(
+        hwnd, matrix,
+        ["已完成", "进行中", "步骤 3"],
+        1, 34, 198, 680, 86,
+        space=200,
+    )
+    ui.set_steps_statuses(hwnd, fixed, [2, 1, 0])
+    add_text(hwnd, matrix, "固定间距：space=200", 740, 220, matrix_w - 776, 28, MUTED)
+
+    long_desc = ui.create_steps(
+        hwnd, matrix,
+        ["步骤 1", "步骤 2", "步骤 3"],
+        1, 34, 324, 820, 122,
+    )
+    ui.set_steps_detail_items(
+        hwnd, long_desc,
+        [
+            ("步骤 1", "这是一段很长很长很长的描述性文字"),
+            ("步骤 2", "这是一段很长很长很长的描述性文字"),
+            ("步骤 3", "这段就没那么长了"),
+        ],
+    )
+    ui.set_steps_statuses(hwnd, long_desc, [2, 1, 0])
+
+    centered = ui.create_steps(
+        hwnd, matrix,
+        ["步骤1", "步骤2", "步骤3", "步骤4"],
+        2, 34, 486, 820, 122,
+        align_center=True,
+    )
+    ui.set_steps_detail_items(
+        hwnd, centered,
+        [
+            ("步骤1", "这是一段很长很长很长的描述性文字"),
+            ("步骤2", "这是一段很长很长很长的描述性文字"),
+            ("步骤3", "这是一段很长很长很长的描述性文字"),
+            ("步骤4", "这是一段很长很长很长的描述性文字"),
+        ],
+    )
+    ui.set_steps_statuses(hwnd, centered, [2, 2, 1, 0])
+
+    icons = ui.create_steps(
+        hwnd, matrix,
+        ["步骤 1", "步骤 2", "步骤 3"],
+        1, 34, 648, 700, 98,
+        space=200,
+    )
+    ui.set_steps_icon_items(
+        hwnd, icons,
+        [
+            ("编辑资料", "", "el-icon-edit"),
+            ("上传文件", "", "el-icon-upload"),
+            ("图片确认", "", "el-icon-picture"),
+        ],
+    )
+    ui.set_steps_statuses(hwnd, icons, [2, 1, 0])
+    add_text(hwnd, matrix, "自定义图标：兼容 Element 图标名，也可直接传 emoji。", 760, 670, matrix_w - 796, 48, MUTED)
+
+    simple = ui.create_steps(
+        hwnd, matrix,
+        ["步骤 1", "步骤 2", "步骤 3"],
+        1, 34, 800, 760, 58,
+        simple=True,
+    )
+    ui.set_steps_icon_items(hwnd, simple, [("步骤 1", "", "✏️"), ("步骤 2", "", "⬆️"), ("步骤 3", "", "🖼️")])
+    ui.set_steps_statuses(hwnd, simple, [2, 1, 0])
+    simple_success = ui.create_steps(
+        hwnd, matrix,
+        ["收集", "处理", "完成"],
+        2, 34, 872, 760, 48,
+        simple=True,
+    )
+    ui.set_steps_icon_items(hwnd, simple_success, [("收集", "", "📥"), ("处理", "", "🧭"), ("完成", "", "✅")])
+    ui.set_steps_statuses(hwnd, simple_success, [2, 2, 1])
+
+    vertical = ui.create_steps(
+        hwnd, inspector,
+        ["提交", "主管审批", "归档"],
+        1, 34, 336, 260, 250,
+    )
+    ui.set_steps_icon_items(
+        hwnd, vertical,
+        [("提交", "申请已提交", "📨"), ("主管审批", "等待负责人确认", "👤"), ("归档", "自动生成记录", "🗂️")],
+    )
+    ui.set_steps_direction(hwnd, vertical, 1)
+    ui.set_steps_statuses(hwnd, vertical, [2, 1, 0])
+
+    side_simple = ui.create_steps(
+        hwnd, inspector,
+        ["创建", "校验", "完成"],
+        1, 34, 650, side_w - 68, 54,
+        simple=True,
+    )
+    ui.set_steps_icon_items(hwnd, side_simple, [("创建", "", "🧱"), ("校验", "", "🔎"), ("完成", "", "✅")])
+    ui.set_steps_statuses(hwnd, side_simple, [2, 1, 0])
+
+    def refresh_state():
+        state = ui.get_steps_full_state(hwnd, basic) or {}
+        fixed_options = ui.get_steps_options(hwnd, fixed) or {}
+        icon_visual = ui.get_steps_visual_state(hwnd, icons) or {}
+        simple_visual = ui.get_steps_visual_state(hwnd, simple) or {}
+        ui.set_element_text(
+            hwnd, state_text,
+            "📍 主流程状态\n"
+            f"active={state.get('active_index')} / count={state.get('item_count')} / action={state.get('last_action')}\n"
+            f"space={fixed_options.get('space')} / align={fixed_options.get('align_center')}\n"
+            f"icons={icon_visual.get('icon_count')} / simple={simple_visual.get('simple')}"
+        )
+
+    @ui.ValueCallback
+    def on_basic_change(_element_id, _value, _count, _action):
+        refresh_state()
+
+    keep_callback(on_basic_change)
+    ui.set_steps_change_callback(hwnd, basic, on_basic_change)
+
+    def next_step(_element_id):
+        state = ui.get_steps_full_state(hwnd, basic)
+        if not state:
+            return
+        next_index = state["active_index"] + 1
+        if next_index >= state["item_count"]:
+            next_index = 0
+        ui.set_steps_active(hwnd, basic, next_index)
+        refresh_state()
+
+    def mark_error(_element_id):
+        ui.set_steps_statuses(hwnd, basic, [2, 3, 1])
+        refresh_state()
+
+    def reset_flow(_element_id):
+        ui.set_steps_active(hwnd, basic, 0)
+        ui.set_steps_statuses(hwnd, basic, [1, 0, 0])
+        refresh_state()
+
+    next_btn = ui.create_button(hwnd, inspector, "➡️", "下一步", 34, 250, 112, 38)
+    error_btn = ui.create_button(hwnd, inspector, "⚠️", "标记异常", 166, 250, 126, 38)
+    reset_btn = ui.create_button(hwnd, inspector, "🔄", "重置流程", 312, 250, 126, 38)
+    set_click(hwnd, next_btn, next_step)
+    set_click(hwnd, error_btn, mark_error)
+    set_click(hwnd, reset_btn, reset_flow)
+    add_text(hwnd, inspector, "纵向审批流程", 34, 304, side_w - 68, 28, TEXT)
+    add_text(hwnd, inspector, "简洁模式适合顶部工具区、发布向导和属性面板。", 34, 722, side_w - 68, 44, MUTED)
+    refresh_state()
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -3563,6 +3741,7 @@ SPECIAL_SHOWCASES = {
     "Badge": showcase_badge,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
+    "Steps": showcase_steps,
     "Table": showcase_table,
     "Upload": showcase_upload,
     "Image": showcase_image,
@@ -3970,7 +4149,7 @@ def build_pages(hwnd, root):
 
     make_page(hwnd, root, "反馈流程", "提示、弹层、确认、引导、分页和步骤条，覆盖常见业务反馈流程。", [
         ("Pagination", "📚", "分页", lambda h, p, x, y, w, hh: ui.create_pagination(h, p, 128, 10, 3, x, y, w, 38)),
-        ("Steps", "👣", "步骤条", lambda h, p, x, y, w, hh: ui.create_steps(h, p, ["创建", "构建", "发布"], 1, x, y, w, 70)),
+        ("Steps", "👣", "步骤条全样式", lambda h, p, x, y, w, hh: ui.create_steps(h, p, ["创建", "构建", "发布"], 1, x, y, w, 70)),
         ("Alert", "🚨", "警告提示", lambda h, p, x, y, w, hh: ui.create_alert(h, p, "保存成功", "配置已经同步", 1, 0, True, x, y, w, 58)),
         ("Result", "✅", "结果页", lambda h, p, x, y, w, hh: ui.create_result(h, p, "操作成功", "所有组件加载完成", 1, x, y, w, 86)),
         ("Message", "💬", "消息提示", demo_message_service),

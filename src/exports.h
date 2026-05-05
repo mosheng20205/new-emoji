@@ -1800,8 +1800,16 @@ void __stdcall EU_SetStepsItems(HWND hwnd, int element_id,
                                 const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetStepsDetailItems(HWND hwnd, int element_id,
                                       const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetStepsIconItems(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetStepsActive(HWND hwnd, int element_id, int active_index);
 void __stdcall EU_SetStepsDirection(HWND hwnd, int element_id, int direction);
+void __stdcall EU_SetStepsOptions(HWND hwnd, int element_id, int space,
+                                  int align_center, int simple,
+                                  int finish_status, int process_status);
+int  __stdcall EU_GetStepsOptions(HWND hwnd, int element_id, int* space,
+                                  int* align_center, int* simple,
+                                  int* finish_status, int* process_status);
 void __stdcall EU_SetStepsStatuses(HWND hwnd, int element_id, const int* statuses, int count);
 void __stdcall EU_TriggerStepsClick(HWND hwnd, int element_id, int item_index);
 int  __stdcall EU_GetStepsActive(HWND hwnd, int element_id);
@@ -1812,10 +1820,14 @@ int  __stdcall EU_GetStepsItem(HWND hwnd, int element_id, int item_index, int te
                                unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetStepsFullState(HWND hwnd, int element_id,
                                     int* active_index, int* item_count, int* direction,
-                                    int* hover_index, int* press_index,
-                                    int* last_clicked_index, int* click_count,
-                                    int* change_count, int* last_action,
-                                    int* active_status, int* failed_count);
+                                   int* hover_index, int* press_index,
+                                   int* last_clicked_index, int* click_count,
+                                   int* change_count, int* last_action,
+                                   int* active_status, int* failed_count);
+int  __stdcall EU_GetStepsVisualState(HWND hwnd, int element_id,
+                                      int* space, int* align_center, int* simple,
+                                      int* finish_status, int* process_status,
+                                      int* icon_count);
 void __stdcall EU_SetStepsChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetAlertDescription(HWND hwnd, int element_id,
                                       const unsigned char* desc_bytes, int desc_len);
