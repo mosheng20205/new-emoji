@@ -18,7 +18,7 @@
 | `Container` | 容器 | `EU_CreateContainer` | 已完成 | [容器](./container.md) |
 | `Layout` | 布局 | `EU_CreateLayout` | 已完成 | [布局](./layout.md) |
 | `Border` | 边框 | `EU_CreateBorder` | 已完成 | [边框](./border.md) |
-| `Divider` | 分割线 | `EU_CreateDivider` | 已完成 | [分割线](./divider.md) |
+| `Divider` | 分割线 | `EU_CreateDivider` | 已完成，支持横/竖向、文本位置、图标内容、实线/虚线/点线/双线、颜色、线宽和间距 | [分割线](./divider.md) |
 
 ## 📝 表单/选择
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |

@@ -155,6 +155,10 @@ EXPORTS
     EU_GetDividerOptions
     EU_SetDividerSpacing
     EU_GetDividerSpacing
+    EU_SetDividerLineStyle
+    EU_GetDividerLineStyle
+    EU_SetDividerContent
+    EU_GetDividerContent
     EU_SetButtonEmoji
     EU_SetButtonVariant
     EU_GetButtonState

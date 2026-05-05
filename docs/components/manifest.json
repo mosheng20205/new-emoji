@@ -445,7 +445,7 @@
     "zh": "分割线",
     "create": "EU_CreateDivider",
     "status": "已完成",
-    "summary": "已补文本位置、方向、虚线、颜色、线宽、动态文本、间距语义、读回、Python 封装和独立中文 emoji 验证",
+    "summary": "已补横/竖向、文本左中右、图标内容、实线/虚线/点线/双线、颜色、线宽、间距、读回、Python 封装和桌面端全样式演示",
     "category": "基础/布局",
     "slug": "divider"
   },

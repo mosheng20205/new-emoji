@@ -57,7 +57,7 @@
 | `EU_CreateLineChart` | |
 | `EU_CreateBarChart` | |
 | `EU_CreateDonutChart` | |
-| `EU_CreateDivider` | |
+| `EU_CreateDivider` | 创建 Divider 分割线，支持横向/纵向与文本位置 |
 | `EU_CreateCalendar` | 创建 Calendar 日历，支持基础绑定、可选范围、显示范围、自定义单元格和状态样式 |
 | `EU_CreateTree` | |
 | `EU_CreateTreeSelect` | |
@@ -161,10 +161,14 @@
 | `EU_GetInfoBoxPreferredHeight` | |
 | `EU_SetSpaceSize` | |
 | `EU_GetSpaceSize` | |
-| `EU_SetDividerOptions` | |
-| `EU_GetDividerOptions` | |
-| `EU_SetDividerSpacing` | |
-| `EU_GetDividerSpacing` | |
+| `EU_SetDividerOptions` | 设置 Divider 方向、文本位置、颜色、线宽、兼容虚线和文本 |
+| `EU_GetDividerOptions` | 读回 Divider 方向、文本位置、颜色、线宽和兼容虚线状态 |
+| `EU_SetDividerSpacing` | 设置 Divider 线条外边距和文本间隙 |
+| `EU_GetDividerSpacing` | 读回 Divider 线条外边距和文本间隙 |
+| `EU_SetDividerLineStyle` | 设置 Divider 线型：0实线 1虚线 2点线 3双线 |
+| `EU_GetDividerLineStyle` | 读回 Divider 线型 |
+| `EU_SetDividerContent` | 设置 Divider 图标/emoji 与文本内容 |
+| `EU_GetDividerContent` | 读回 Divider 图标/emoji 与文本内容 |
 | `EU_SetButtonEmoji` | |
 | `EU_SetButtonVariant` | |
 | `EU_GetButtonState` | |

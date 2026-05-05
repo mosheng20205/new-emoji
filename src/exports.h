@@ -458,6 +458,14 @@ int  __stdcall EU_GetDividerOptions(HWND hwnd, int element_id,
                                     float* width, int* dashed);
 void __stdcall EU_SetDividerSpacing(HWND hwnd, int element_id, int margin, int gap);
 int  __stdcall EU_GetDividerSpacing(HWND hwnd, int element_id, int* margin, int* gap);
+void __stdcall EU_SetDividerLineStyle(HWND hwnd, int element_id, int line_style);
+int  __stdcall EU_GetDividerLineStyle(HWND hwnd, int element_id, int* line_style);
+void __stdcall EU_SetDividerContent(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    const unsigned char* text_bytes, int text_len);
+int  __stdcall EU_GetDividerContent(HWND hwnd, int element_id,
+                                    unsigned char* icon_buffer, int icon_buffer_size,
+                                    unsigned char* text_buffer, int text_buffer_size);
 void __stdcall EU_SetButtonEmoji(HWND hwnd, int element_id, const unsigned char* bytes, int len);
 void __stdcall EU_SetButtonVariant(HWND hwnd, int element_id, int variant);
 int  __stdcall EU_GetButtonState(HWND hwnd, int element_id, int* pressed, int* focused, int* variant);

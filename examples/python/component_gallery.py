@@ -528,6 +528,88 @@ def showcase_layout(hwnd, stage, w, h):
     add_text(hwnd, tip, "这里展示横排、竖排和间距控制。", 18, 104, 260, 24, MUTED)
 
 
+def showcase_divider(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "➗ Divider 覆盖横线、文字位置、图标内容、竖向分隔、线型、颜色、线宽和间距，适合桌面端表单、工具栏和属性面板。",
+        36, 28, w - 72, 28, MUTED,
+    )
+
+    basics = add_demo_panel(hwnd, stage, "🧾 基础横向样式", 28, 70, w - 56, 240)
+    ui.create_text(hwnd, basics, "青春是一个短暂的美梦，当你醒来时，它早已消失无踪", 36, 58, w - 128, 28)
+    plain = ui.create_divider(hwnd, basics, "", 0, 1, 36, 94, w - 128, 26)
+    ui.set_divider_options(hwnd, plain, 0, 1, palette()["border_soft"], 1.0, False, "")
+    ui.create_text(hwnd, basics, "少量的邪恶足以抵消全部高贵的品质，害得人声名狼藉", 36, 126, w - 128, 28)
+
+    left = ui.create_divider(hwnd, basics, "少年包青天", 0, 0, 36, 166, 440, 34)
+    ui.set_divider_options(hwnd, left, 0, 0, 0xFF409EFF, 1.5, False, "少年包青天")
+    ui.set_divider_content(hwnd, left, "⚖️", "少年包青天")
+    center_icon = ui.create_divider(hwnd, basics, "", 0, 1, 500, 166, 280, 34)
+    ui.set_divider_options(hwnd, center_icon, 0, 1, 0xFF67C23A, 2.0, False, "")
+    ui.set_divider_content(hwnd, center_icon, "📱", "")
+    right = ui.create_divider(hwnd, basics, "阿里云", 0, 2, 810, 166, 440, 34)
+    ui.set_divider_options(hwnd, right, 0, 2, 0xFFE6A23C, 1.5, False, "阿里云")
+    ui.set_divider_content(hwnd, right, "☁️", "阿里云")
+
+    vertical = add_demo_panel(hwnd, stage, "↕️ 竖向与工具栏分隔", 28, 330, 800, 260)
+    ui.create_text(hwnd, vertical, "雨纷纷", 36, 72, 86, 30)
+    v1 = ui.create_divider(hwnd, vertical, "", 1, 1, 132, 58, 24, 62)
+    ui.set_divider_options(hwnd, v1, 1, 1, 0xFF909399, 1.0, False, "")
+    ui.create_text(hwnd, vertical, "旧故里", 166, 72, 86, 30)
+    v2 = ui.create_divider(hwnd, vertical, "", 1, 1, 262, 58, 24, 62)
+    ui.set_divider_options(hwnd, v2, 1, 1, 0xFF909399, 1.0, False, "")
+    ui.create_text(hwnd, vertical, "草木深", 296, 72, 86, 30)
+
+    toolbar = add_themed_panel(hwnd, vertical, 36, 142, 700, 74, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    ui.create_button(hwnd, toolbar, "📄", "新建", 18, 18, 92, 36)
+    tv1 = ui.create_divider(hwnd, toolbar, "", 1, 1, 126, 16, 20, 42)
+    ui.set_divider_options(hwnd, tv1, 1, 1, 0xFFC0C4CC, 1.0, False, "")
+    ui.create_button(hwnd, toolbar, "💾", "保存", 162, 18, 92, 36)
+    tv2 = ui.create_divider(hwnd, toolbar, "", 1, 1, 270, 16, 20, 42)
+    ui.set_divider_options(hwnd, tv2, 1, 1, 0xFFC0C4CC, 1.0, False, "")
+    ui.create_button(hwnd, toolbar, "🚀", "发布", 306, 18, 92, 36)
+    tv3 = ui.create_divider(hwnd, toolbar, "", 1, 1, 414, 16, 20, 42)
+    ui.set_divider_options(hwnd, tv3, 1, 1, 0xFFC0C4CC, 1.0, False, "")
+    ui.create_button(hwnd, toolbar, "⚙️", "设置", 450, 18, 92, 36)
+
+    styles = add_demo_panel(hwnd, stage, "🎨 线型颜色矩阵", 856, 330, w - 884, 260)
+    style_specs = [
+        ("实线", "🎯", 0, 0xFF409EFF, 1.0),
+        ("虚线", "🧵", 1, 0xFFE6A23C, 1.5),
+        ("点线", "✨", 2, 0xFF67C23A, 2.0),
+        ("双线", "🛤️", 3, 0xFFF56C6C, 1.2),
+    ]
+    for i, (label, icon, style, color, width_value) in enumerate(style_specs):
+        y = 62 + i * 42
+        add_text(hwnd, styles, f"{icon} {label}", 36, y + 2, 92, 24, TEXT)
+        divider = ui.create_divider(hwnd, styles, label, 0, 1, 128, y, w - 1060, 30)
+        ui.set_divider_options(hwnd, divider, 0, 1, color, width_value, False, label)
+        ui.set_divider_line_style(hwnd, divider, style)
+        ui.set_divider_content(hwnd, divider, icon, label)
+
+    spacing = add_demo_panel(hwnd, stage, "📐 线宽、边距与文本间隙", 28, 620, w - 56, 250)
+    spacing_specs = [
+        ("细线小间距", "📏", 0xFF409EFF, 1.0, 0, 6, 62),
+        ("粗线大间距", "🧱", 0xFFE6A23C, 3.0, 32, 18, 112),
+        ("点线留白", "🌟", 0xFF67C23A, 2.0, 56, 24, 162),
+    ]
+    last_spacing = 0
+    for label, icon, color, width_value, margin, gap, y in spacing_specs:
+        add_text(hwnd, spacing, f"{icon} {label}：外边距 {margin}，文本间隙 {gap}", 36, y + 2, 360, 24, TEXT)
+        last_spacing = ui.create_divider(hwnd, spacing, label, 0, 1, 430, y, w - 548, 34)
+        ui.set_divider_options(hwnd, last_spacing, 0, 1, color, width_value, False, label)
+        ui.set_divider_content(hwnd, last_spacing, icon, label)
+        ui.set_divider_spacing(hwnd, last_spacing, margin=margin, gap=gap)
+        if label == "点线留白":
+            ui.set_divider_line_style(hwnd, last_spacing, 2)
+
+    readback = add_demo_panel(hwnd, stage, "📤 状态读回", 28, 890, w - 56, 190)
+    ui.create_text(hwnd, readback, "当前选项读回用于确认易语言/Python 调用拿到的是逻辑尺寸和值枚举。", 32, 56, w - 120, 28)
+    ui.create_text(hwnd, readback, f"左侧标题选项：{ui.get_divider_options(hwnd, left)}", 32, 92, 620, 28)
+    ui.create_text(hwnd, readback, f"图标内容：{ui.get_divider_content(hwnd, center_icon)}", 680, 92, 520, 28)
+    ui.create_text(hwnd, readback, f"点线线型：{ui.get_divider_line_style(hwnd, last_spacing)}，间距：{ui.get_divider_spacing(hwnd, last_spacing)}", 32, 128, 740, 28)
+
+
 def showcase_watermark(hwnd, stage, w, h):
     card = add_demo_panel(hwnd, stage, "💧 水印背景", 28, 30, w - 56, 330)
     sample = ui.create_panel(hwnd, card, 36, 92, w - 128, 176)
@@ -3788,6 +3870,7 @@ SPECIAL_SHOWCASES = {
     "Radio": showcase_radio,
     "Container": showcase_container,
     "Layout": showcase_layout,
+    "Divider": showcase_divider,
     "Watermark": showcase_watermark,
     "Checkbox": showcase_checkbox,
     "Input": showcase_input,

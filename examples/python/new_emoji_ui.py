@@ -823,6 +823,17 @@ dll.EU_SetDividerSpacing.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, 
 dll.EU_GetDividerSpacing.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDividerSpacing.restype = ctypes.c_int
+dll.EU_SetDividerLineStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDividerLineStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDividerLineStyle.restype = ctypes.c_int
+dll.EU_SetDividerContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDividerContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDividerContent.restype = ctypes.c_int
 dll.EU_SetButtonEmoji.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetButtonVariant.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -3527,6 +3538,34 @@ def get_divider_spacing(hwnd, element_id):
     gap = ctypes.c_int()
     ok = dll.EU_GetDividerSpacing(hwnd, element_id, ctypes.byref(margin), ctypes.byref(gap))
     return (margin.value, gap.value) if ok else None
+
+def set_divider_line_style(hwnd, element_id, line_style=0):
+    dll.EU_SetDividerLineStyle(hwnd, element_id, line_style)
+
+def get_divider_line_style(hwnd, element_id):
+    line_style = ctypes.c_int()
+    ok = dll.EU_GetDividerLineStyle(hwnd, element_id, ctypes.byref(line_style))
+    return line_style.value if ok else None
+
+def set_divider_content(hwnd, element_id, icon="", text=""):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetDividerContent(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+    )
+
+def get_divider_content(hwnd, element_id, buffer_size=512):
+    icon = (ctypes.c_ubyte * buffer_size)()
+    text = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetDividerContent(hwnd, element_id, icon, buffer_size, text, buffer_size)
+    if not ok:
+        return None
+    def decode(buf):
+        raw = bytes(buf).split(b"\0", 1)[0]
+        return raw.decode("utf-8", errors="replace")
+    return decode(icon), decode(text)
 
 def create_checkbox(hwnd, parent_id, text="复选框", checked=False, x=0, y=0, w=220, h=30,
                     border=False, size=0):

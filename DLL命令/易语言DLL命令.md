@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：1012。
+当前导出命令数量：1071。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -622,8 +622,8 @@
     .参数 父元素ID, 整数型
     .参数 文本字节集指针, 整数型, , UTF-8
     .参数 文本长度, 整数型
-    .参数 方向, 整数型
-    .参数 content_position, 整数型
+    .参数 方向, 整数型, , 0横向 1纵向
+    .参数 文本位置, 整数型, , 0左/上 1居中 2右/下
     .参数 X坐标, 整数型, , 逻辑坐标
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
@@ -1489,6 +1489,32 @@
     .参数 元素ID, 整数型
     .参数 线条外边距指针, 整数型, , 输出整数指针
     .参数 文本间隙指针, 整数型, , 输出整数指针
+
+.DLL命令 设置分割线线型, , "new_emoji.dll", "EU_SetDividerLineStyle", , 对应 C++ 导出命令 EU_SetDividerLineStyle；0实线 1虚线 2点线 3双线
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 线型, 整数型, , 0实线 1虚线 2点线 3双线
+
+.DLL命令 取分割线线型, 整数型, "new_emoji.dll", "EU_GetDividerLineStyle", , 对应 C++ 导出命令 EU_GetDividerLineStyle；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 线型指针, 整数型, , 输出整数指针；0实线 1虚线 2点线 3双线
+
+.DLL命令 设置分割线内容, , "new_emoji.dll", "EU_SetDividerContent", , 对应 C++ 导出命令 EU_SetDividerContent；设置图标/emoji 和文本内容
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8，可为空，可传 emoji
+    .参数 图标长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8，可为空
+    .参数 文本长度, 整数型
+
+.DLL命令 取分割线内容, 整数型, "new_emoji.dll", "EU_GetDividerContent", , 对应 C++ 导出命令 EU_GetDividerContent；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 图标缓冲区长度, 整数型
+    .参数 文本缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 文本缓冲区长度, 整数型
 
 .DLL命令 设置按钮表情, , "new_emoji.dll", "EU_SetButtonEmoji", , 对应 C++ 导出命令 EU_SetButtonEmoji
     .参数 窗口句柄, 整数型

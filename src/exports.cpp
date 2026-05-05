@@ -4080,6 +4080,41 @@ int __stdcall EU_GetDividerSpacing(HWND hwnd, int element_id, int* margin, int* 
     return 1;
 }
 
+void __stdcall EU_SetDividerLineStyle(HWND hwnd, int element_id, int line_style) {
+    if (auto* el = find_typed_element<Divider>(hwnd, element_id)) {
+        el->set_line_style(line_style);
+    }
+}
+
+int __stdcall EU_GetDividerLineStyle(HWND hwnd, int element_id, int* line_style) {
+    auto* el = find_typed_element<Divider>(hwnd, element_id);
+    if (!el) return 0;
+    if (line_style) *line_style = el->line_style;
+    return 1;
+}
+
+void __stdcall EU_SetDividerContent(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Divider>(hwnd, element_id)) {
+        el->set_content(utf8_to_wide(icon_bytes, icon_len),
+                        utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+int __stdcall EU_GetDividerContent(HWND hwnd, int element_id,
+                                   unsigned char* icon_buffer, int icon_buffer_size,
+                                   unsigned char* text_buffer, int text_buffer_size) {
+    auto* el = find_typed_element<Divider>(hwnd, element_id);
+    if (!el) return 0;
+    std::wstring icon;
+    std::wstring label;
+    el->get_content(icon, label);
+    copy_wide_as_utf8(icon, icon_buffer, icon_buffer_size);
+    copy_wide_as_utf8(label, text_buffer, text_buffer_size);
+    return 1;
+}
+
 void __stdcall EU_SetButtonEmoji(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return;
