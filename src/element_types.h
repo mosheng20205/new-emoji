@@ -54,6 +54,9 @@ typedef void (__stdcall *TableCellCallback)(int table_id, int row, int col, int 
 typedef int  (__stdcall *TableVirtualRowCallback)(int table_id, int row, unsigned char* buffer, int buffer_size);
 typedef void (__stdcall *DropdownCommandCallback)(int element_id, int item_index,
                                                  const unsigned char* command_utf8, int command_len);
+typedef void (__stdcall *MenuSelectCallback)(int element_id, int item_index,
+                                             const unsigned char* path_utf8, int path_len,
+                                             const unsigned char* command_utf8, int command_len);
 typedef void (__stdcall *WindowResizeCallback)(HWND hwnd, int width, int height);
 typedef void (__stdcall *WindowCloseCallback)(HWND hwnd);
 typedef void (__stdcall *WindowDestroyCallback)(HWND hwnd);

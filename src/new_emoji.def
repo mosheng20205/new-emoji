@@ -77,7 +77,7 @@ EXPORTS
     EU_CreateImage
     EU_CreateCarousel
     EU_CreateUpload
-    EU_CreateScrollbar
+    EU_CreateInfiniteScroll
     EU_CreateBreadcrumb
     EU_CreateTabs
     EU_CreatePagination
@@ -345,10 +345,12 @@ EXPORTS
     EU_SetTagCloseCallback
     EU_SetBadgeValue
     EU_SetBadgeMax
+    EU_SetBadgeType
     EU_SetBadgeDot
     EU_SetBadgeOptions
     EU_GetBadgeHidden
     EU_GetBadgeOptions
+    EU_GetBadgeType
     EU_SetBadgeLayoutOptions
     EU_GetBadgeLayoutOptions
     EU_SetProgressPercentage
@@ -699,6 +701,13 @@ EXPORTS
     EU_SetMenuExpanded
     EU_GetMenuState
     EU_GetMenuActivePath
+    EU_SetMenuColors
+    EU_GetMenuColors
+    EU_SetMenuCollapsed
+    EU_GetMenuCollapsed
+    EU_SetMenuItemMeta
+    EU_GetMenuItemMeta
+    EU_SetMenuSelectCallback
     EU_SetAnchorItems
     EU_SetAnchorActive
     EU_GetAnchorActive
@@ -797,18 +806,15 @@ EXPORTS
     EU_GetUploadFullState
     EU_SetUploadSelectCallback
     EU_SetUploadActionCallback
-    EU_SetScrollbarValue
-    EU_SetScrollbarRange
-    EU_SetScrollbarOptions
-    EU_SetScrollbarWheelStep
-    EU_BindScrollbarContent
-    EU_ScrollbarScroll
-    EU_ScrollbarWheel
-    EU_GetScrollbarValue
-    EU_GetScrollbarMaxValue
-    EU_GetScrollbarOptions
-    EU_GetScrollbarFullState
-    EU_SetScrollbarChangeCallback
+    EU_SetInfiniteScrollItems
+    EU_AppendInfiniteScrollItems
+    EU_ClearInfiniteScrollItems
+    EU_SetInfiniteScrollState
+    EU_SetInfiniteScrollOptions
+    EU_SetInfiniteScrollTexts
+    EU_SetInfiniteScrollScroll
+    EU_GetInfiniteScrollFullState
+    EU_SetInfiniteScrollLoadCallback
     EU_SetBreadcrumbItems
     EU_SetBreadcrumbSeparator
     EU_SetBreadcrumbCurrent
@@ -820,9 +826,14 @@ EXPORTS
     EU_GetBreadcrumbFullState
     EU_SetBreadcrumbSelectCallback
     EU_SetTabsItems
+    EU_SetTabsItemsEx
     EU_SetTabsActive
+    EU_SetTabsActiveName
     EU_SetTabsType
+    EU_SetTabsPosition
     EU_SetTabsOptions
+    EU_SetTabsEditable
+    EU_SetTabsContentVisible
     EU_AddTabsItem
     EU_CloseTabsItem
     EU_SetTabsScroll
@@ -831,7 +842,10 @@ EXPORTS
     EU_GetTabsItemCount
     EU_GetTabsState
     EU_GetTabsItem
+    EU_GetTabsActiveName
+    EU_GetTabsItemContent
     EU_GetTabsFullState
+    EU_GetTabsFullStateEx
     EU_SetTabsChangeCallback
     EU_SetTabsCloseCallback
     EU_SetTabsAddCallback

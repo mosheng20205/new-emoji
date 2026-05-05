@@ -291,9 +291,9 @@ int __stdcall EU_CreateUpload(HWND hwnd, int parent_id,
                               const unsigned char* tip_bytes, int tip_len,
                               const unsigned char* files_bytes, int files_len,
                               int x, int y, int w, int h);
-int __stdcall EU_CreateScrollbar(HWND hwnd, int parent_id,
-                                 int value, int max_value, int orientation,
-                                 int x, int y, int w, int h);
+int __stdcall EU_CreateInfiniteScroll(HWND hwnd, int parent_id,
+                                      const unsigned char* items_bytes, int items_len,
+                                      int x, int y, int w, int h);
 int __stdcall EU_CreateBreadcrumb(HWND hwnd, int parent_id,
                                   const unsigned char* items_bytes, int items_len,
                                   const unsigned char* separator_bytes, int separator_len,
@@ -749,12 +749,14 @@ void __stdcall EU_SetTagCloseCallback(HWND hwnd, int element_id, ElementClickCal
 void __stdcall EU_SetBadgeValue(HWND hwnd, int element_id,
                                 const unsigned char* value_bytes, int value_len);
 void __stdcall EU_SetBadgeMax(HWND hwnd, int element_id, int max_value);
+void __stdcall EU_SetBadgeType(HWND hwnd, int element_id, int badge_type);
 void __stdcall EU_SetBadgeDot(HWND hwnd, int element_id, int dot);
 void __stdcall EU_SetBadgeOptions(HWND hwnd, int element_id,
                                   int dot, int show_zero, int offset_x, int offset_y);
 int  __stdcall EU_GetBadgeHidden(HWND hwnd, int element_id);
 int  __stdcall EU_GetBadgeOptions(HWND hwnd, int element_id,
                                   int* max_value, int* dot, int* show_zero, int* offset_x, int* offset_y);
+int  __stdcall EU_GetBadgeType(HWND hwnd, int element_id);
 void __stdcall EU_SetBadgeLayoutOptions(HWND hwnd, int element_id,
                                         int placement, int standalone);
 int  __stdcall EU_GetBadgeLayoutOptions(HWND hwnd, int element_id,
@@ -1344,6 +1346,27 @@ int  __stdcall EU_GetMenuState(HWND hwnd, int element_id,
                                int* hover_index);
 int  __stdcall EU_GetMenuActivePath(HWND hwnd, int element_id,
                                     unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetMenuColors(HWND hwnd, int element_id,
+                                Color bg, Color text_color, Color active_text_color,
+                                Color hover_bg, Color disabled_text_color, Color border);
+int  __stdcall EU_GetMenuColors(HWND hwnd, int element_id,
+                                Color* bg, Color* text_color, Color* active_text_color,
+                                Color* hover_bg, Color* disabled_text_color, Color* border);
+void __stdcall EU_SetMenuCollapsed(HWND hwnd, int element_id, int collapsed);
+int  __stdcall EU_GetMenuCollapsed(HWND hwnd, int element_id);
+void __stdcall EU_SetMenuItemMeta(HWND hwnd, int element_id,
+                                  const unsigned char* icons_bytes, int icons_len,
+                                  const int* group_indices, int group_count,
+                                  const unsigned char* hrefs_bytes, int hrefs_len,
+                                  const unsigned char* targets_bytes, int targets_len,
+                                  const unsigned char* commands_bytes, int commands_len);
+int  __stdcall EU_GetMenuItemMeta(HWND hwnd, int element_id, int item_index,
+                                  unsigned char* icon_buffer, int icon_buffer_size,
+                                  unsigned char* href_buffer, int href_buffer_size,
+                                  unsigned char* target_buffer, int target_buffer_size,
+                                  unsigned char* command_buffer, int command_buffer_size,
+                                  int* is_group, int* disabled, int* level);
+void __stdcall EU_SetMenuSelectCallback(HWND hwnd, int element_id, MenuSelectCallback cb);
 void __stdcall EU_SetAnchorItems(HWND hwnd, int element_id,
                                  const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetAnchorActive(HWND hwnd, int element_id, int active_index);
@@ -1543,29 +1566,30 @@ int  __stdcall EU_GetUploadFullState(HWND hwnd, int element_id,
                                      int* auto_upload);
 void __stdcall EU_SetUploadSelectCallback(HWND hwnd, int element_id, ElementTextCallback cb);
 void __stdcall EU_SetUploadActionCallback(HWND hwnd, int element_id, ElementValueCallback cb);
-void __stdcall EU_SetScrollbarValue(HWND hwnd, int element_id, int value);
-void __stdcall EU_SetScrollbarRange(HWND hwnd, int element_id, int max_value, int page_size);
-void __stdcall EU_SetScrollbarOptions(HWND hwnd, int element_id,
-                                      int max_value, int page_size, int orientation, int auto_hide);
-void __stdcall EU_SetScrollbarWheelStep(HWND hwnd, int element_id, int step);
-void __stdcall EU_BindScrollbarContent(HWND hwnd, int element_id, int target_element_id,
-                                       int content_size, int viewport_size);
-void __stdcall EU_ScrollbarScroll(HWND hwnd, int element_id, int delta);
-void __stdcall EU_ScrollbarWheel(HWND hwnd, int element_id, int wheel_delta);
-int  __stdcall EU_GetScrollbarValue(HWND hwnd, int element_id);
-int  __stdcall EU_GetScrollbarMaxValue(HWND hwnd, int element_id);
-int  __stdcall EU_GetScrollbarOptions(HWND hwnd, int element_id,
-                                      int* value, int* max_value, int* page_size,
-                                      int* orientation, int* auto_hide, int* wheel_step);
-int  __stdcall EU_GetScrollbarFullState(HWND hwnd, int element_id,
-                                        int* value, int* max_value, int* page_size,
-                                        int* orientation, int* auto_hide, int* wheel_step,
-                                        int* bound_element_id, int* content_size,
-                                        int* viewport_size, int* content_offset,
-                                        int* wheel_event_count, int* drag_event_count,
-                                        int* change_count, int* last_action,
-                                        int* last_wheel_delta);
-void __stdcall EU_SetScrollbarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+void __stdcall EU_SetInfiniteScrollItems(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len);
+void __stdcall EU_AppendInfiniteScrollItems(HWND hwnd, int element_id,
+                                            const unsigned char* items_bytes, int items_len);
+void __stdcall EU_ClearInfiniteScrollItems(HWND hwnd, int element_id);
+void __stdcall EU_SetInfiniteScrollState(HWND hwnd, int element_id,
+                                         int loading, int no_more, int disabled);
+void __stdcall EU_SetInfiniteScrollOptions(HWND hwnd, int element_id,
+                                           int item_height, int gap, int threshold,
+                                           int style_mode, int show_scrollbar, int show_index);
+void __stdcall EU_SetInfiniteScrollTexts(HWND hwnd, int element_id,
+                                         const unsigned char* loading_bytes, int loading_len,
+                                         const unsigned char* no_more_bytes, int no_more_len,
+                                         const unsigned char* empty_bytes, int empty_len);
+void __stdcall EU_SetInfiniteScrollScroll(HWND hwnd, int element_id, int scroll_y);
+int  __stdcall EU_GetInfiniteScrollFullState(HWND hwnd, int element_id,
+                                             int* item_count, int* scroll_y, int* max_scroll,
+                                             int* content_height, int* viewport_height,
+                                             int* loading, int* no_more, int* disabled,
+                                             int* load_count, int* change_count,
+                                             int* last_action, int* threshold,
+                                             int* style_mode, int* show_scrollbar,
+                                             int* show_index);
+void __stdcall EU_SetInfiniteScrollLoadCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetBreadcrumbItems(HWND hwnd, int element_id,
                                      const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetBreadcrumbSeparator(HWND hwnd, int element_id,
@@ -1586,10 +1610,17 @@ int  __stdcall EU_GetBreadcrumbFullState(HWND hwnd, int element_id,
 void __stdcall EU_SetBreadcrumbSelectCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTabsItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetTabsItemsEx(HWND hwnd, int element_id,
+                                 const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetTabsActive(HWND hwnd, int element_id, int active_index);
+void __stdcall EU_SetTabsActiveName(HWND hwnd, int element_id,
+                                    const unsigned char* name_bytes, int name_len);
 void __stdcall EU_SetTabsType(HWND hwnd, int element_id, int tab_type);
+void __stdcall EU_SetTabsPosition(HWND hwnd, int element_id, int tab_position);
 void __stdcall EU_SetTabsOptions(HWND hwnd, int element_id,
                                  int tab_type, int closable, int addable);
+void __stdcall EU_SetTabsEditable(HWND hwnd, int element_id, int editable);
+void __stdcall EU_SetTabsContentVisible(HWND hwnd, int element_id, int visible);
 void __stdcall EU_AddTabsItem(HWND hwnd, int element_id,
                               const unsigned char* text_bytes, int text_len);
 void __stdcall EU_CloseTabsItem(HWND hwnd, int element_id, int item_index);
@@ -1601,6 +1632,10 @@ int  __stdcall EU_GetTabsState(HWND hwnd, int element_id,
                                int* active_index, int* item_count, int* tab_type);
 int  __stdcall EU_GetTabsItem(HWND hwnd, int element_id, int item_index,
                               unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTabsActiveName(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTabsItemContent(HWND hwnd, int element_id, int item_index,
+                                     unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
                                    int* active_index, int* item_count, int* tab_type,
                                    int* closable, int* addable,
@@ -1611,6 +1646,18 @@ int  __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
                                    int* close_count, int* add_count,
                                    int* select_count, int* scroll_count,
                                    int* last_action);
+int  __stdcall EU_GetTabsFullStateEx(HWND hwnd, int element_id,
+                                     int* active_index, int* item_count, int* tab_type,
+                                     int* closable, int* addable,
+                                     int* scroll_offset, int* max_scroll_offset,
+                                     int* hover_index, int* press_index,
+                                     int* hover_part, int* press_part,
+                                     int* last_closed_index, int* last_added_index,
+                                     int* close_count, int* add_count,
+                                     int* select_count, int* scroll_count,
+                                     int* last_action, int* tab_position,
+                                     int* editable, int* content_visible,
+                                     int* active_disabled, int* active_closable);
 void __stdcall EU_SetTabsChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTabsCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTabsAddCallback(HWND hwnd, int element_id, ElementValueCallback cb);

@@ -1,10 +1,21 @@
 # Badge 徽标
 
-## 简介
+## 概述
 
-`Badge` 是 new_emoji 的 数据展示 组件。当前状态：**已完成**。
+`Badge` 是 new_emoji 的徽标组件，用于消息数、状态点、文本提示和菜单计数。当前状态：**已完成**。
 
-已补最大值、dot、偏移、隐藏零值、四角定位、独立角标布局、状态读回、Python 封装和独立中文 emoji 验证
+已支持的能力：
+
+- 数值徽标
+- `max` 超限截断
+- 文本徽标
+- `dot` 圆点模式
+- 四角定位
+- 独立徽标
+- 语义类型配色
+- 自定义 `bg/fg` 覆盖
+- Python 封装
+- 独立测试文件
 
 ## 创建
 
@@ -12,24 +23,26 @@
 |---|---|
 | 创建导出 | `EU_CreateBadge` |
 | 组件分类 | 数据展示 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_badge` 或同类 helper |
+| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_badge` |
 | 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
 
 ## 相关 API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateBadge` | 当前组件相关导出 |
-| `EU_GetBadgeHidden` | 当前组件相关导出 |
-| `EU_GetBadgeLayoutOptions` | 当前组件相关导出 |
-| `EU_GetBadgeOptions` | 当前组件相关导出 |
-| `EU_SetBadgeDot` | 当前组件相关导出 |
-| `EU_SetBadgeLayoutOptions` | 当前组件相关导出 |
-| `EU_SetBadgeMax` | 当前组件相关导出 |
-| `EU_SetBadgeOptions` | 当前组件相关导出 |
-| `EU_SetBadgeValue` | 当前组件相关导出 |
+| `EU_CreateBadge` | 创建徽标 |
+| `EU_SetBadgeValue` | 设置徽标值 |
+| `EU_SetBadgeMax` | 设置最大值 |
+| `EU_SetBadgeType` | 设置语义类型 |
+| `EU_SetBadgeDot` | 设置圆点模式 |
+| `EU_SetBadgeOptions` | 设置圆点、显示零值和偏移 |
+| `EU_GetBadgeHidden` | 获取隐藏状态 |
+| `EU_GetBadgeOptions` | 获取基础选项 |
+| `EU_GetBadgeType` | 获取语义类型 |
+| `EU_SetBadgeLayoutOptions` | 设置角标位置和独立模式 |
+| `EU_GetBadgeLayoutOptions` | 获取角标位置和独立模式 |
 
-## Python 使用
+## Python 用法
 
 ```python
 import sys
@@ -37,31 +50,57 @@ import sys
 sys.path.insert(0, "examples/python")
 import new_emoji_ui as ui
 
-hwnd = ui.create_window("✨ 徽标 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Badge`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
+hwnd = ui.create_window("徽标示例 🔂", 240, 120, 920, 560)
+root = ui.create_container(hwnd, 0, 0, 0, 900, 500)
+
+badge = ui.create_badge(
+    hwnd, root,
+    "消息中心", "200", 99, False,
+    40, 40, 220, 40,
+    badge_type=3, placement=0, standalone=False
+)
+ui.set_badge_type(hwnd, badge, 1)
+ui.set_badge_max(hwnd, badge, 99)
 ui.dll.EU_ShowWindow(hwnd, 1)
 ```
 
 ## 易语言调用
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
+易语言侧请使用中文命令名，右侧绑定真实的 `EU_` 导出名。`BadgeType` 建议从 `0` 开始按语义色选择：
+
+- `0` 默认
+- `1` 主色
+- `2` 成功
+- `3` 警告
+- `4` 信息
 
 ## 状态与交互
 
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+- `Badge` 以单一 HWND / 纯 D2D 绘制。
+- `set_element_color` 仍然可以覆盖任意背景色和前景色。
+- `placement` 控制角标落点，`standalone` 控制是否按独立徽标布局。
+- 文本徽标和 `dot` 圆点都应该在 `component_gallery.py` 中作为首屏可见样式演示。
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_badge_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
+建议优先运行：
+
+`tests/python/test_badge_complete_components.py`
+
+如果 Badge 的 API、默认值或视觉布局变化，还要同步检查：
+
+- `tests/python/test_new_emoji.py`
+- `examples/python/new_emoji_ui.py`
+- `examples/python/component_gallery.py`
+- `DLL命令/易语言DLL命令.md`
 
 ## 文档维护
 
-如果 `Badge` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+如果 Badge 新增或修改 API，请同步更新：
+
+- `docs/components/README.md`
+- `docs/api-index.md`
+- `docs/components/manifest.json`
+- `examples/python/new_emoji_ui.py`
+- `tests/python/test_new_emoji.py`
+- `DLL命令/易语言DLL命令.md`

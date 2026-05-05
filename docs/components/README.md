@@ -40,13 +40,14 @@
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
 | `Tag` | 标签 | `EU_CreateTag` | 已完成 | [标签](./tag.md) |
-| `Badge` | 徽标 | `EU_CreateBadge` | 已完成 | [徽标](./badge.md) |
+| `Badge` | 徽标 | `EU_CreateBadge` / `EU_SetBadgeType` | 已完成，覆盖数值、最大值、文本、dot、四角位置、独立徽标、语义配色和自定义色 | [徽标](./badge.md) |
 | `Progress` | 进度条 | `EU_CreateProgress` | 已完成 | [进度条](./progress.md) |
 | `Avatar` | 头像 | `EU_CreateAvatar` | 已完成 | [头像](./avatar.md) |
 | `Empty` | 空状态 | `EU_CreateEmpty` | 已完成 | [空状态](./empty.md) |
 | `Skeleton` | 骨架屏 | `EU_CreateSkeleton` | 已完成 | [骨架屏](./skeleton.md) |
 | `Descriptions` | 描述列表 | `EU_CreateDescriptions` | 已完成 | [描述列表](./descriptions.md) |
 | `Table` | 高级表格：固定列、多级表头、纵横滚动条、表头拖拽、Excel 导入导出、单元格点击回调、筛选搜索、树形、合计、内置单元格控件、虚表 | `EU_CreateTable` | 高级样式完成 | [表格](./table.md) |
+| `InfiniteScroll` | 无限滚动 | `EU_CreateInfiniteScroll` | 已完成 | [无限滚动](./infinite-scroll.md) |
 | `Card` | 卡片 | `EU_CreateCard` | 已完成 | [卡片](./card.md) |
 | `Collapse` | 折叠面板 | `EU_CreateCollapse` | 已完成 | [折叠面板](./collapse.md) |
 | `Timeline` | 时间线 | `EU_CreateTimeline` | 已完成 | [时间线](./timeline.md) |
@@ -88,7 +89,7 @@
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
 | `Dropdown` | 下拉菜单 | `EU_CreateDropdown` | 已完成 | [下拉菜单](./dropdown.md) |
-| `Menu` | 菜单 | `EU_CreateMenu` | 已完成 | [菜单](./menu.md) |
+| `Menu` | 菜单 / NavMenu 导航菜单 | `EU_CreateMenu` | 已完成 | [菜单 / NavMenu 导航菜单](./menu.md) |
 | `Anchor` | 锚点 | `EU_CreateAnchor` | 已完成 | [锚点](./anchor.md) |
 | `Backtop` | 回到顶部 | `EU_CreateBacktop` | 已完成 | [回到顶部](./backtop.md) |
 | `Segmented` | 分段控制器 | `EU_CreateSegmented` | 已完成 | [分段控制器](./segmented.md) |
@@ -107,7 +108,6 @@
 | `Image` | 图片 | `EU_CreateImage` | 已完成 | [图片](./image.md) |
 | `Carousel` | 轮播 | `EU_CreateCarousel` | 已完成 | [轮播](./carousel.md) |
 | `Upload` | 上传 | `EU_CreateUpload` | 已完成，支持普通列表、头像、图片卡片、图片列表、拖拽、手动上传、系统文件选择和类型过滤 | [上传](./upload.md) |
-| `Scrollbar` | 滚动条 | `EU_CreateScrollbar` | 已完成 | [滚动条](./scrollbar.md) |
 
 ## 💬 反馈/浮层
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |

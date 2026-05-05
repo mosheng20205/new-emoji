@@ -935,6 +935,93 @@ def showcase_tag(hwnd, stage, w, h):
     add_text(hwnd, filters, "把 Tag 放成筛选条，比单个标签更接近真实业务界面。", 30, 128, w - 116, 28, MUTED)
 
 
+def showcase_badge(hwnd, stage, w, h):
+    basics = add_demo_panel(hwnd, stage, "\U0001F516 Badge \u6837\u5f0f\u4e0e\u5c42\u6b21", 28, 30, w - 56, 176)
+    buy_btn = ui.create_button(hwnd, basics, "\U0001F4E9", "\u65b0\u589e\u6d88\u606f", 36, 72, 160, 38)
+    buy_badge = ui.create_badge(hwnd, buy_btn, "", "12", 99, False, 112, 4, 42, 24, placement=0, standalone=True, badge_type=1)
+    reply_btn = ui.create_button(hwnd, basics, "\U0001F4AC", "\u65b0\u56de\u590d\u6d88\u606f", 220, 72, 180, 38)
+    reply_badge = ui.create_badge(hwnd, reply_btn, "", "200", 99, False, 128, 4, 54, 24, placement=0, standalone=True, badge_type=3)
+    ui.create_badge(hwnd, basics, "\u5173\u6ce8", "new", 99, False, 436, 72, 160, 38, badge_type=2)
+    ui.create_badge(hwnd, basics, "\u8ba2\u5355", "hot", 99, False, 618, 72, 160, 38, badge_type=3)
+    ui.create_badge(hwnd, basics, "\u5168\u90e8\u6d88\u606f", "", 99, True, 800, 72, 210, 38)
+    action_state = {"buy": 12, "reply": 200}
+    action_status = add_text(hwnd, basics, "\U0001F4CC \u5f53\u524d\u72b6\u6001\uff1a\u5f85\u5904\u7406\u6d88\u606f 12 \u6761\uff0c\u56de\u590d 200 \u6761", 36, 124, w - 116, 28, MUTED)
+
+    def on_buy_click(_eid):
+        action_state["buy"] += 1
+        ui.set_badge_value(hwnd, buy_badge, str(action_state["buy"]))
+        ui.set_element_text(hwnd, action_status, f"\U0001F4E9 \u5df2\u6536\u5230\u65b0\u6d88\u606f\uff1a{action_state['buy']} \u6761")
+
+    def on_reply_click(_eid):
+        action_state["reply"] += 5
+        ui.set_badge_value(hwnd, reply_badge, str(action_state["reply"]))
+        ui.set_element_text(hwnd, action_status, f"\U0001F4AC \u56de\u590d\u961f\u5217\u5df2\u66f4\u65b0\uff1a{action_state['reply']} \u6761")
+
+    set_click(hwnd, buy_btn, on_buy_click)
+    set_click(hwnd, reply_btn, on_reply_click)
+
+    layout = add_demo_panel(hwnd, stage, "\U0001F4CD \u89d2\u6807\u4f4d\u7f6e\u4e0e\u72ec\u7acb\u5fbd\u6807", 28, 224, w - 56, 224)
+    ui.create_badge(hwnd, layout, "\u53f3\u4e0a\u89d2", "9", 99, False, 36, 68, 180, 40, placement=0, standalone=False, badge_type=1)
+    ui.create_badge(hwnd, layout, "\u5de6\u4e0a\u89d2", "9", 99, False, 248, 68, 180, 40, placement=1, standalone=False, badge_type=2)
+    ui.create_badge(hwnd, layout, "\u53f3\u4e0b\u89d2", "9", 99, False, 460, 68, 180, 40, placement=2, standalone=False, badge_type=3)
+    ui.create_badge(hwnd, layout, "\u5de6\u4e0b\u89d2", "9", 99, False, 672, 68, 180, 40, placement=3, standalone=False, badge_type=4)
+    ui.create_badge(hwnd, layout, "", "1", 99, False, 884, 62, 54, 28, placement=0, standalone=True, badge_type=0)
+    ui.create_badge(hwnd, layout, "", "2", 99, False, 948, 62, 54, 28, placement=0, standalone=True, badge_type=1)
+    ui.create_badge(hwnd, layout, "", "3", 99, False, 1012, 62, 54, 28, placement=0, standalone=True, badge_type=2)
+    ui.create_badge(hwnd, layout, "", "4", 99, False, 1076, 62, 54, 28, placement=0, standalone=True, badge_type=3)
+    add_text(hwnd, layout, "\u72ec\u7acb\u5fbd\u6807\u9002\u5408\u5355\u72ec\u4fe1\u606f\u70b9\uff1bplacement \u63a7\u5236\u89d2\u6807\u843d\u70b9\uff0cstandalone \u63a7\u5236\u5fbd\u6807\u81ea\u8eab\u5bbd\u5ea6\u8ba1\u7b97\u3002", 36, 132, 980, 28, MUTED)
+
+    semantic = add_demo_panel(hwnd, stage, "\U0001F3A8 \u8bed\u4e49\u914d\u8272 / dropdown mark", 28, 468, w - 56, 270)
+    dropdown_id = ui.create_dropdown(hwnd, semantic, "\u70b9\u6211\u67e5\u770b", ["\u8bc4\u8bba", "\u56de\u590d", "\u5df2\u8bfb", "\u672a\u8bfb"], 0, 36, 72, 180, 36)
+    ui.set_dropdown_item_meta(hwnd, dropdown_id, ["\U0001F4AC", "\U0001F501", "\u2705", "\U0001F534"], ["comment", "reply", "read", "unread"], [])
+    mark_panel = ui.create_panel(hwnd, semantic, 246, 60, 416, 156)
+    ui.set_panel_style(hwnd, mark_panel, 0xFF2B3149, BORDER_SOFT, 1.0, 8.0, 10)
+    register_panel(mark_panel, "surface_2", "border_soft", 1.0, 8.0, 10)
+    comment_mark = ui.create_badge(hwnd, mark_panel, "\u8bc4\u8bba", "12", 99, False, 20, 20, 170, 34, badge_type=1)
+    reply_mark = ui.create_badge(hwnd, mark_panel, "\u56de\u590d", "3", 99, False, 20, 62, 170, 34, badge_type=3)
+    notice_mark = ui.create_badge(hwnd, mark_panel, "\u901a\u77e5", "new", 99, False, 208, 20, 170, 34, badge_type=2)
+    status_mark = ui.create_badge(hwnd, mark_panel, "\u72b6\u6001", "hot", 99, False, 208, 62, 170, 34, badge_type=4)
+    custom = ui.create_badge(hwnd, mark_panel, "\u81ea\u5b9a\u4e49", "42", 99, False, 20, 104, 170, 34, badge_type=0)
+    ui.set_element_color(hwnd, custom, 0xFFEEE8FF, 0xFF6D28D9)
+    dropdown_status = add_text(hwnd, semantic, "\U0001F4CB \u4e0b\u62c9\u9009\u62e9\uff1a\u8bc4\u8bba", 36, 220, 980, 24, MUTED)
+
+    dropdown_rows = [
+        ("\u8bc4\u8bba", "12", "3", "new", "hot", "42", 1, 3, 2, 4),
+        ("\u56de\u590d", "8", "16", "reply", "todo", "18", 3, 1, 3, 4),
+        ("\u5df2\u8bfb", "0", "0", "ok", "done", "99", 2, 2, 2, 4),
+        ("\u672a\u8bfb", "24", "5", "new", "!", "128", 0, 3, 2, 0),
+    ]
+
+    def apply_dropdown_selection(item_index):
+        if item_index < 0 or item_index >= len(dropdown_rows):
+            item_index = 0
+        label, comments, replies, notice, status, custom_value, comment_type, reply_type, notice_type, status_type = dropdown_rows[item_index]
+        ui.set_element_text(hwnd, dropdown_id, f"\u5f53\u524d\uff1a{label}")
+        ui.set_badge_value(hwnd, comment_mark, comments)
+        ui.set_badge_value(hwnd, reply_mark, replies)
+        ui.set_badge_value(hwnd, notice_mark, notice)
+        ui.set_badge_value(hwnd, status_mark, status)
+        ui.set_badge_value(hwnd, custom, custom_value)
+        ui.set_badge_type(hwnd, comment_mark, comment_type)
+        ui.set_badge_type(hwnd, reply_mark, reply_type)
+        ui.set_badge_type(hwnd, notice_mark, notice_type)
+        ui.set_badge_type(hwnd, status_mark, status_type)
+        ui.set_element_text(hwnd, dropdown_status, f"\U0001F4CB \u4e0b\u62c9\u9009\u62e9\uff1a{label}\uff0c\u53f3\u4fa7 mark \u5df2\u540c\u6b65")
+
+    @ui.DropdownCommandCallback
+    def on_badge_dropdown(_element_id, item_index, _command_bytes, _command_len):
+        apply_dropdown_selection(item_index)
+
+    def on_badge_dropdown_click(_element_id):
+        if not ui.get_dropdown_open(hwnd, dropdown_id):
+            apply_dropdown_selection(ui.get_dropdown_selected(hwnd, dropdown_id))
+
+    keep_callback(on_badge_dropdown)
+    ui.set_dropdown_command_callback(hwnd, dropdown_id, on_badge_dropdown)
+    set_click(hwnd, dropdown_id, on_badge_dropdown_click)
+    add_text(hwnd, semantic, "\u8bed\u4e49\u8272\u901a\u8fc7 BadgeType \u63d0\u4f9b\u9884\u8bbe\u914d\u8272\uff1bEU_SetElementColor \u4ecd\u53ef\u8986\u76d6\u6210\u4efb\u610f\u81ea\u5b9a\u4e49\u8272\u3002", 36, 242, 980, 24, MUTED)
+
+
 def showcase_gauge(hwnd, stage, w, h):
     card = add_demo_panel(hwnd, stage, "🎯 质量仪表盘", 28, 30, w - 56, 270)
     ui.create_gauge(hwnd, card, "质量分", 92, "运行良好", 1, 30, 70, 320, 150)
@@ -2652,6 +2739,388 @@ def showcase_dropdown(hwnd, stage, w, h):
     add_text(hwnd, behavior_panel, "手动模式只响应程序开关，适合复杂流程或外部控制。", 34, 392, 720, 24, MUTED)
     add_text(hwnd, button_panel, "同一组菜单动作，仅切换 button_variant 就能覆盖常见桌面风格。", 34, 224, 720, 24, MUTED)
 
+
+def showcase_menu(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "🧭 Menu / NavMenu 覆盖横向默认、横向暗色、纵向默认、纵向暗色、多级子菜单、分组、禁用、链接项和侧栏收起。",
+        36, 28, w - 72, 28, MUTED,
+    )
+
+    top_panel = add_demo_panel(hwnd, stage, "🧭 顶部横向导航", 28, 70, w - 56, 230)
+    side_panel = add_demo_panel(hwnd, stage, "📚 侧边导航与分组", 28, 324, 820, 520)
+    collapse_panel = add_demo_panel(hwnd, stage, "📌 收起侧栏", 872, 324, 330, 520)
+    state_panel = add_demo_panel(hwnd, stage, "📋 状态读回", 1228, 324, w - 1256, 520)
+
+    top_items = ["处理中心", "我的工作台", "> 选项1", "> 选项2", "> 选项3", "!消息中心", "订单管理"]
+    side_items = [
+        "导航一",
+        "> 分组一",
+        "> > 选项1",
+        "> > 选项2",
+        "> 分组二",
+        "> > 选项3",
+        "> 选项4",
+        "> > 选项1",
+        "导航二",
+        "!导航三",
+        "导航四",
+    ]
+
+    def apply_nav_meta(menu_id, items, groups=None, href_index=None):
+        groups = groups or []
+        icons = [""] * len(items)
+        hrefs = [""] * len(items)
+        targets = [""] * len(items)
+        commands = [""] * len(items)
+        for i, text in enumerate(items):
+            clean = text.replace(">", "").replace("!", "").strip()
+            if "处理" in clean or "首页" in clean:
+                icons[i] = "🏠"
+            elif "工作台" in clean or "导航一" in clean:
+                icons[i] = "🧭"
+            elif "消息" in clean:
+                icons[i] = "💬"
+            elif "订单" in clean:
+                icons[i] = "🧾"
+            elif "导航二" in clean:
+                icons[i] = "📊"
+            elif "导航三" in clean:
+                icons[i] = "📄"
+            elif "导航四" in clean:
+                icons[i] = "⚙️"
+            elif "选项" in clean:
+                icons[i] = "•"
+            commands[i] = f"menu_{i}"
+        if href_index is not None:
+            hrefs[href_index] = "https://www.ele.me"
+            targets[href_index] = "_blank"
+            commands[href_index] = "open_orders"
+        ui.set_menu_item_meta(hwnd, menu_id, icons, groups, hrefs, targets, commands)
+
+    add_text(hwnd, top_panel, "默认颜色", 32, 48, 160, 24, MUTED)
+    default_top = ui.create_menu(hwnd, top_panel, top_items, 0, 0, 32, 78, 760, 48)
+    apply_nav_meta(default_top, top_items, href_index=6)
+
+    add_text(hwnd, top_panel, "自定义暗色", 836, 48, 160, 24, MUTED)
+    dark_top = ui.create_menu(hwnd, top_panel, top_items, 0, 0, 836, 78, 760, 48)
+    ui.set_menu_colors(hwnd, dark_top, 0xFF545C64, 0xFFFFFFFF, 0xFFFFD04B, 0xFF646E78, 0xFF9CA3AF, 0xFF545C64)
+    apply_nav_meta(dark_top, top_items, href_index=6)
+
+    add_text(hwnd, top_panel, "横向菜单保持桌面工具栏高度，激活项以下划线强调，禁用项会跳过选择。", 32, 154, w - 160, 28, MUTED)
+
+    add_text(hwnd, side_panel, "默认颜色", 32, 48, 160, 24, MUTED)
+    default_side = ui.create_menu(hwnd, side_panel, side_items, 2, 1, 32, 78, 230, 390)
+    apply_nav_meta(default_side, side_items, groups=[1, 4])
+    ui.set_menu_expanded(hwnd, default_side, [0, 6])
+    ui.set_menu_active(hwnd, default_side, 2)
+
+    add_text(hwnd, side_panel, "自定义暗色", 300, 48, 160, 24, MUTED)
+    dark_side = ui.create_menu(hwnd, side_panel, side_items, 8, 1, 300, 78, 230, 390)
+    ui.set_menu_colors(hwnd, dark_side, 0xFF545C64, 0xFFFFFFFF, 0xFFFFD04B, 0xFF646E78, 0xFF9CA3AF, 0xFF545C64)
+    apply_nav_meta(dark_side, side_items, groups=[1, 4])
+    ui.set_menu_expanded(hwnd, dark_side, [0, 6])
+    ui.set_menu_active(hwnd, dark_side, 8)
+
+    add_text(hwnd, side_panel, "多级分组", 568, 48, 160, 24, MUTED)
+    group_side = ui.create_menu(hwnd, side_panel, side_items, 5, 1, 568, 78, 220, 390)
+    apply_nav_meta(group_side, side_items, groups=[1, 4])
+    ui.set_menu_expanded(hwnd, group_side, [0, 6])
+    ui.set_menu_active(hwnd, group_side, 5)
+
+    collapsed_menu = ui.create_menu(hwnd, collapse_panel, side_items, 8, 1, 36, 72, 72, 390)
+    apply_nav_meta(collapsed_menu, side_items, groups=[1, 4])
+    ui.set_menu_expanded(hwnd, collapsed_menu, [0, 6])
+    ui.set_menu_active(hwnd, collapsed_menu, 8)
+    ui.set_menu_collapsed(hwnd, collapsed_menu, True)
+    full_menu = ui.create_menu(hwnd, collapse_panel, side_items, 8, 1, 132, 72, 170, 390)
+    apply_nav_meta(full_menu, side_items, groups=[1, 4])
+    ui.set_menu_expanded(hwnd, full_menu, [0, 6])
+    ui.set_menu_active(hwnd, full_menu, 8)
+
+    state_text = add_text(hwnd, state_panel, "🧭 最近选择：等待点击菜单项", 28, 52, w - 1320, 36, TEXT)
+    readback_text = add_text(hwnd, state_panel, "📌 状态：等待读回", 28, 92, w - 1320, 82, MUTED)
+    meta_text = add_text(hwnd, state_panel, "🔗 链接项：订单管理 -> https://www.ele.me", 28, 178, w - 1320, 54, MUTED)
+
+    def refresh_state():
+        state = ui.get_menu_state(hwnd, group_side)
+        path = ui.get_menu_active_path(hwnd, group_side)
+        colors = ui.get_menu_colors(hwnd, dark_top)
+        collapsed = ui.get_menu_collapsed(hwnd, collapsed_menu)
+        link_meta = ui.get_menu_item_meta(hwnd, default_top, 6)
+        ui.set_element_text(
+            hwnd, readback_text,
+            f"📌 激活={state['active']} 路径={path} 方向={state['orientation']} 可见={state['visible']} 展开={state['expanded']} 收起={collapsed}"
+        )
+        ui.set_element_text(
+            hwnd, meta_text,
+            f"🔗 链接={link_meta['href']} 目标={link_meta['target']} 颜色={tuple(hex(c) for c in colors[:3])}"
+        )
+
+    @ui.MenuSelectCallback
+    def on_menu_select(element_id, item_index, path_ptr, path_len, command_ptr, command_len):
+        path = bytes(path_ptr[:path_len]).decode("utf-8", errors="replace") if path_len > 0 else ""
+        command = bytes(command_ptr[:command_len]).decode("utf-8", errors="replace") if command_len > 0 else ""
+        ui.set_element_text(hwnd, state_text, f"🧭 最近选择：菜单 {element_id} / 第 {item_index} 项 / {path} / {command}")
+        refresh_state()
+
+    keep_callback(on_menu_select)
+    for mid in (default_top, dark_top, default_side, dark_side, group_side, collapsed_menu, full_menu):
+        ui.set_menu_select_callback(hwnd, mid, on_menu_select)
+
+    toggle_btn = ui.create_button(hwnd, collapse_panel, "↔", "切换收起", 36, 472, 130, 36)
+    read_btn = ui.create_button(hwnd, state_panel, "🔄", "读回状态", 28, 260, 130, 36)
+
+    def toggle_collapsed(_eid):
+        now = not ui.get_menu_collapsed(hwnd, collapsed_menu)
+        ui.set_menu_collapsed(hwnd, collapsed_menu, now)
+        refresh_state()
+
+    set_click(hwnd, toggle_btn, toggle_collapsed)
+    set_click(hwnd, read_btn, lambda _eid: refresh_state())
+    refresh_state()
+
+
+def _infinite_demo_items(prefix, count, tag, start=1):
+    owners = ["设计组", "研发组", "测试组", "运营组"]
+    rows = []
+    for i in range(start, start + count):
+        owner = owners[(i - 1) % len(owners)]
+        rows.append((
+            f"📌 {prefix} {i:02d}",
+            f"{owner} · 更新时间 09:{(i * 7) % 60:02d} · 双击可进入详情",
+            tag,
+        ))
+    return rows
+
+
+def showcase_infinite_scroll(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "♾️ InfiniteScroll 覆盖基础无限追加、加载中、禁用、没有更多、空状态、卡片列表、紧凑业务列表和状态读回。",
+        36, 28, w - 72, 28, MUTED,
+    )
+
+    nav = add_demo_panel(hwnd, stage, "🧭 桌面端样式导航", 28, 70, 250, 500)
+    main = add_demo_panel(hwnd, stage, "♾️ 触底加载与状态读回", 300, 70, 650, 500)
+    cards = add_demo_panel(hwnd, stage, "🪪 卡片列表", 980, 70, w - 1008, 240)
+    compact = add_demo_panel(hwnd, stage, "🧾 紧凑业务列表", 980, 330, w - 1008, 240)
+    states = add_demo_panel(hwnd, stage, "⏳ 状态矩阵", 28, 600, w - 56, 230)
+    readback = add_demo_panel(hwnd, stage, "📚 状态说明", 28, 860, w - 56, 170)
+
+    add_text(hwnd, nav, "常见桌面软件会把长数据流放在主工作区，旁边保留筛选、状态和快捷动作。", 24, 66, 200, 70, MUTED)
+    add_text(hwnd, nav, "当前页使用同一个原生组件演示四种列表密度与三类结束状态。", 24, 156, 200, 58, MUTED)
+
+    main_list = ui.create_infinite_scroll(
+        hwnd, main,
+        _infinite_demo_items("发布任务", 10, "进行中"),
+        24, 78, 596, 306,
+    )
+    ui.set_infinite_scroll_options(hwnd, main_list, item_height=62, gap=8, threshold=96,
+                                   style_mode=3, show_scrollbar=True, show_index=True)
+    ui.set_infinite_scroll_texts(hwnd, main_list, "⏳ 正在加载下一批记录...", "✅ 没有更多任务了", "📭 暂无任务")
+
+    status = add_text(hwnd, main, "📘 状态读回：等待触发", 24, 398, 596, 28, TEXT)
+    ui.set_text_options(hwnd, status, wrap=True, ellipsis=False)
+
+    state = {"manual": 0, "disabled": False}
+
+    def refresh_state(_eid=None):
+        info = ui.get_infinite_scroll_full_state(hwnd, main_list) or {}
+        ui.set_element_text(
+            hwnd, status,
+            "📘 状态读回："
+            f"项目 {info.get('item_count', 0)} · 滚动 {info.get('scroll_y', 0)}/{info.get('max_scroll', 0)} · "
+            f"加载 {info.get('loading', False)} · 到底 {info.get('no_more', False)} · "
+            f"禁用 {info.get('disabled', False)} · 触发 {info.get('load_count', 0)}"
+        )
+
+    @ui.ValueCallback
+    def on_load(element_id, item_count, scroll_y, max_scroll):
+        if item_count >= 18:
+            ui.set_infinite_scroll_state(hwnd, element_id, loading=False, no_more=True, disabled=False)
+        else:
+            ui.append_infinite_scroll_items(
+                hwnd, element_id,
+                _infinite_demo_items("追加任务", 4, "新加载", item_count + 1),
+            )
+            ui.set_infinite_scroll_state(hwnd, element_id, loading=False, no_more=False, disabled=False)
+        refresh_state()
+
+    keep_callback(on_load)
+    ui.set_infinite_scroll_load_callback(hwnd, main_list, on_load)
+
+    def scroll_to_bottom(_eid=None):
+        ui.set_infinite_scroll_scroll(hwnd, main_list, 999999)
+        refresh_state()
+
+    def append_manual(_eid=None):
+        state["manual"] += 1
+        info = ui.get_infinite_scroll_full_state(hwnd, main_list) or {}
+        ui.append_infinite_scroll_items(
+            hwnd, main_list,
+            _infinite_demo_items(f"手动补录 {state['manual']}", 2, "手动", info.get("item_count", 0) + 1),
+        )
+        ui.set_infinite_scroll_state(hwnd, main_list, loading=False, no_more=False, disabled=state["disabled"])
+        refresh_state()
+
+    def reset_main(_eid=None):
+        state["manual"] = 0
+        state["disabled"] = False
+        ui.set_infinite_scroll_items(hwnd, main_list, _infinite_demo_items("发布任务", 10, "进行中"))
+        ui.set_infinite_scroll_state(hwnd, main_list, loading=False, no_more=False, disabled=False)
+        ui.set_infinite_scroll_scroll(hwnd, main_list, 0)
+        refresh_state()
+
+    def toggle_disabled(_eid=None):
+        state["disabled"] = not state["disabled"]
+        ui.set_infinite_scroll_state(hwnd, main_list, loading=False, no_more=False, disabled=state["disabled"])
+        refresh_state()
+
+    btn_bottom = ui.create_button(hwnd, main, "⬇️", "滚到底部", 24, 436, 126, 34)
+    btn_append = ui.create_button(hwnd, main, "➕", "追加两项", 164, 436, 126, 34)
+    btn_reset = ui.create_button(hwnd, main, "🔄", "重置列表", 304, 436, 126, 34)
+    btn_disabled = ui.create_button(hwnd, main, "⏸️", "禁用加载", 444, 436, 126, 34)
+    set_click(hwnd, btn_bottom, scroll_to_bottom)
+    set_click(hwnd, btn_append, append_manual)
+    set_click(hwnd, btn_reset, reset_main)
+    set_click(hwnd, btn_disabled, toggle_disabled)
+
+    card_list = ui.create_infinite_scroll(
+        hwnd, cards,
+        [
+            ("🪪 客户工单 A-1024", "华东一区 · 今日 13:40 · 优先级高", "待确认"),
+            ("🧩 组件回归清单", "84 个组件 · Release x64 构建", "检查中"),
+            ("📦 物料同步任务", "3 个仓库 · 12 条记录", "已排队"),
+        ],
+        24, 70, max(220, w - 1068), 132,
+    )
+    ui.set_infinite_scroll_options(hwnd, card_list, item_height=62, gap=10, threshold=40,
+                                   style_mode=1, show_scrollbar=True, show_index=False)
+    ui.set_infinite_scroll_texts(hwnd, card_list, "⏳ 正在同步...", "✅ 卡片已经到底", "📭 暂无卡片")
+
+    compact_list = ui.create_infinite_scroll(
+        hwnd, compact,
+        [
+            ("🧾 订单 20260505001", "北京 · 已付款", "正常"),
+            ("🧾 订单 20260505002", "上海 · 待开票", "提醒"),
+            ("🧾 订单 20260505003", "深圳 · 售后跟进", "售后"),
+            ("🧾 订单 20260505004", "杭州 · 等待出库", "仓库"),
+        ],
+        24, 70, max(220, w - 1068), 132,
+    )
+    ui.set_infinite_scroll_options(hwnd, compact_list, item_height=38, gap=0, threshold=32,
+                                   style_mode=2, show_scrollbar=True, show_index=True)
+    ui.set_infinite_scroll_texts(hwnd, compact_list, "⏳ 加载订单...", "✅ 订单到底", "📭 暂无订单")
+
+    loading_list = ui.create_infinite_scroll(
+        hwnd, states,
+        _infinite_demo_items("加载状态", 3, "等待"),
+        24, 70, 320, 122,
+    )
+    ui.set_infinite_scroll_options(hwnd, loading_list, item_height=44, gap=6, threshold=30,
+                                   style_mode=0, show_scrollbar=False, show_index=False)
+    ui.set_infinite_scroll_texts(hwnd, loading_list, "⏳ 加载中...", "✅ 没有更多了", "📭 暂无数据")
+    ui.set_infinite_scroll_state(hwnd, loading_list, loading=True, no_more=False, disabled=False)
+
+    no_more_list = ui.create_infinite_scroll(
+        hwnd, states,
+        _infinite_demo_items("归档记录", 2, "完成"),
+        374, 70, 320, 122,
+    )
+    ui.set_infinite_scroll_options(hwnd, no_more_list, item_height=42, gap=6, threshold=30,
+                                   style_mode=3, show_scrollbar=False, show_index=True)
+    ui.set_infinite_scroll_texts(hwnd, no_more_list, "⏳ 读取归档...", "✅ 没有更多归档", "📭 暂无归档")
+    ui.set_infinite_scroll_state(hwnd, no_more_list, loading=False, no_more=True, disabled=False)
+
+    disabled_list = ui.create_infinite_scroll(
+        hwnd, states,
+        _infinite_demo_items("冻结队列", 3, "暂停"),
+        724, 70, 320, 122,
+    )
+    ui.set_infinite_scroll_options(hwnd, disabled_list, item_height=40, gap=6, threshold=30,
+                                   style_mode=2, show_scrollbar=True, show_index=False)
+    ui.set_infinite_scroll_texts(hwnd, disabled_list, "⏳ 等待恢复...", "✅ 队列到底", "📭 暂无队列")
+    ui.set_infinite_scroll_state(hwnd, disabled_list, loading=False, no_more=False, disabled=True)
+
+    empty_list = ui.create_infinite_scroll(hwnd, states, [], 1074, 70, 320, 122)
+    ui.set_infinite_scroll_options(hwnd, empty_list, item_height=44, gap=8, threshold=30,
+                                   style_mode=0, show_scrollbar=False, show_index=False)
+    ui.set_infinite_scroll_texts(hwnd, empty_list, "⏳ 正在加载...", "✅ 没有更多了", "📭 当前筛选没有数据")
+
+    ui.create_descriptions(
+        hwnd, readback, "📚 API 覆盖",
+        [
+            ("创建", "EU_CreateInfiniteScroll"),
+            ("数据", "设置 / 追加 / 清空项目"),
+            ("状态", "loading / no_more / disabled"),
+            ("滚动", "滚轮、拖拽、轨道、Home/End/PageUp/PageDown"),
+            ("样式", "item_height / gap / threshold / style_mode / index"),
+            ("回调", "触底后自动 loading，回调追加数据后结束加载"),
+        ],
+        2, True, 24, 64, w - 112, 82,
+    )
+    refresh_state()
+
+
+def showcase_tabs(hwnd, stage, w, h):
+    common_items = [
+        {"label": "用户管理", "name": "users", "content": "👥 用户列表、权限状态和最近登录记录集中在这里。", "icon": "👥"},
+        {"label": "配置管理", "name": "config", "content": "⚙️ 系统配置、主题、通知策略和安全选项。", "icon": "⚙️"},
+        {"label": "角色管理", "name": "roles", "content": "🛡️ 角色授权、菜单访问范围和数据权限。", "icon": "🛡️"},
+        {"label": "定时任务补偿", "name": "jobs", "content": "⏰ 失败任务补偿、重试队列和执行日志。", "icon": "⏰"},
+    ]
+
+    top = add_demo_panel(hwnd, stage, "📑 默认线形与卡片式", 28, 30, w - 56, 170)
+    ui.create_tabs_ex(hwnd, top, common_items, active=1, tab_type=0, tab_position="top",
+                      content_visible=True, x=28, y=62, w=(w - 140) // 2, h=82)
+    ui.create_tabs_ex(hwnd, top, [
+        {"label": "预览", "name": "preview", "content": "🖥️ 当前窗口预览与状态面板。", "icon": "🖥️"},
+        {"label": "代码", "name": "code", "content": "🧩 C++ 与 Python 封装片段。", "icon": "🧩"},
+        {"label": "文档", "name": "docs", "content": "📚 组件文档和易语言命令说明。", "icon": "📚"},
+        {"label": "设置", "name": "settings", "content": "⚙️ 工具栏、主题和布局设置。", "icon": "⚙️"},
+    ], active=0, tab_type=1, tab_position="top", content_visible=True,
+        x=(w - 140) // 2 + 56, y=62, w=(w - 140) // 2, h=82)
+
+    border = add_demo_panel(hwnd, stage, "🧾 边框卡片、图标标签与禁用项", 28, 220, w - 56, 205)
+    ui.create_tabs_ex(hwnd, border, [
+        {"label": "我的行程", "name": "trip", "content": "📅 今天 14:00 评审会议；16:30 发布检查。", "icon": "📅"},
+        {"label": "消息中心", "name": "message", "content": "💬 3 条待处理消息，2 条来自构建服务。", "icon": "💬"},
+        {"label": "角色管理", "name": "role", "content": "🛡️ 当前角色：管理员、审核员、观察者。", "icon": "🛡️"},
+        {"label": "禁用标签", "name": "locked", "content": "🔒 此标签不可选择。", "icon": "🔒", "disabled": True},
+    ], active=0, tab_type=2, tab_position="top", closable=True, content_visible=True,
+        x=28, y=64, w=w - 112, h=112)
+
+    positions = add_demo_panel(hwnd, stage, "🧭 桌面设置页四方向标签", 28, 454, w - 56, 300)
+    settings_items = [
+        {"label": "概览", "name": "overview", "content": "🏠 账户、设备和同步状态。", "icon": "🏠"},
+        {"label": "安全", "name": "security", "content": "🔐 登录保护、密钥和设备信任。", "icon": "🔐"},
+        {"label": "通知", "name": "notice", "content": "🔔 消息提醒、声音和免打扰。", "icon": "🔔"},
+    ]
+    ui.create_tabs_ex(hwnd, positions, settings_items, active=0, tab_type=2, tab_position="left",
+                      content_visible=True, x=28, y=64, w=330, h=180)
+    ui.create_tabs_ex(hwnd, positions, settings_items, active=1, tab_type=2, tab_position="right",
+                      content_visible=True, x=384, y=64, w=330, h=180)
+    ui.create_tabs_ex(hwnd, positions, settings_items, active=2, tab_type=1, tab_position="bottom",
+                      content_visible=True, x=740, y=64, w=390, h=180)
+    ui.create_tabs_ex(hwnd, positions, settings_items, active=0, tab_type=0, tab_position="top",
+                      content_visible=True, x=1156, y=64, w=max(300, w - 1240), h=180)
+
+    edit = add_demo_panel(hwnd, stage, "✏️ 可编辑标签与多文档工作区", 28, 784, w - 56, 220)
+    workspace = ui.create_tabs_ex(hwnd, edit, [
+        {"label": "订单看板", "name": "orders", "content": "📦 订单看板：待处理 18，配送中 42。", "icon": "📦"},
+        {"label": "客户资料", "name": "customers", "content": "👤 客户资料：最近更新 2026-05-05。", "icon": "👤"},
+        {"label": "报表中心", "name": "reports", "content": "📊 报表中心：本周营收增长 12%。", "icon": "📊"},
+        {"label": "发布日志", "name": "release", "content": "🚀 发布日志：Tabs 全样式封装。", "icon": "🚀"},
+        {"label": "巡检记录", "name": "audit", "content": "✅ 巡检记录：所有核心服务正常。", "icon": "✅"},
+    ], active=0, tab_type=1, tab_position="top", closable=True, addable=True,
+        editable=True, content_visible=True, x=28, y=64, w=w - 260, h=118)
+    add_btn = ui.create_button(hwnd, edit, "➕", "新增工作页", w - 206, 70, 150, 38)
+    close_btn = ui.create_button(hwnd, edit, "✖️", "关闭当前页", w - 206, 122, 150, 38)
+    set_click(hwnd, add_btn, lambda _eid: ui.add_tabs_item(hwnd, workspace, "✨ 临时任务"))
+    set_click(hwnd, close_btn, lambda _eid: ui.close_tabs_item(hwnd, workspace, ui.get_tabs_full_state_ex(hwnd, workspace)["active_index"]))
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -2675,6 +3144,7 @@ SPECIAL_SHOWCASES = {
     "TimeSelect": showcase_timeselect,
     "Autocomplete": showcase_autocomplete,
     "Tag": showcase_tag,
+    "Badge": showcase_badge,
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
     "Table": showcase_table,
@@ -2688,13 +3158,16 @@ SPECIAL_SHOWCASES = {
     "Popover": showcase_popover,
     "Popconfirm": showcase_popconfirm,
     "Dropdown": showcase_dropdown,
+    "Menu": showcase_menu,
+    "InfiniteScroll": showcase_infinite_scroll,
+    "Tabs": showcase_tabs,
 }
 
 
 COMPACT_SHOWCASE = {
     "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
-    "Slider", "Input", "InputGroup", "Tag", "Badge", "Progress", "Avatar", "Statistic",
-    "StatusDot", "Backtop", "Segmented", "Scrollbar", "Breadcrumb", "Tabs", "Alert", "Loading",
+    "Slider", "Input", "InputGroup", "Tag", "Progress", "Avatar", "Statistic",
+    "StatusDot", "Backtop", "Segmented", "InfiniteScroll", "Breadcrumb", "Tabs", "Alert", "Loading",
     "Message", "MessageBox", "Tooltip", "Popover", "Popconfirm",
 }
 
@@ -2948,6 +3421,7 @@ def build_pages(hwnd, root):
         ("Skeleton", "💀", "骨架屏", lambda h, p, x, y, w, hh: ui.create_skeleton(h, p, 3, True, x, y, w, 76)),
         ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "84"), ("许可", "MIT")], 2, True, x, y, w, 76)),
         ("Table", "📊", "表格", lambda h, p, x, y, w, hh: ui.create_table(h, p, ["组件", "状态"], [["Button", "完成"], ["Tabs", "完成"]], True, True, x, y, w, 84)),
+        ("InfiniteScroll", "♾️", "无限滚动", lambda h, p, x, y, w, hh: ui.create_infinite_scroll(h, p, [("📌 任务 01", "触底自动加载", "进行中"), ("📌 任务 02", "支持状态读回", "已同步")], x, y, w, 112)),
         ("Card", "🪪", "卡片", lambda h, p, x, y, w, hh: ui.create_card(h, p, "🪪 项目卡片", "用于组织信息块", 1, x, y, w, 84)),
         ("Collapse", "📂", "折叠面板", lambda h, p, x, y, w, hh: ui.create_collapse(h, p, [("基础组件", "按钮/文本/面板"), ("反馈组件", "弹窗/提示/通知")], 0, True, x, y, w, 84)),
         ("Timeline", "🕒", "时间线", lambda h, p, x, y, w, hh: ui.create_timeline(h, p, ["启动", "封装", "开源"], x, y, w, 84)),
@@ -2957,7 +3431,7 @@ def build_pages(hwnd, root):
         ("StatusDot", "🟢", "状态点", lambda h, p, x, y, w, hh: ui.create_status_dot(h, p, "运行正常", "DLL 已加载", 1, x, y, w, 48)),
     ])
 
-    make_page(hwnd, root, "图表导航", "图表、菜单、锚点、页头、滚动与标签页，展示复杂信息组织能力。", [
+    make_page(hwnd, root, "图表导航", "图表、菜单、锚点、页头和标签页，展示复杂信息组织能力。", [
         ("Gauge", "🎯", "仪表盘", lambda h, p, x, y, w, hh: ui.create_gauge(h, p, "质量分", 92, "运行良好", 1, x, y, w, 86)),
         ("RingProgress", "⭕", "环形进度", lambda h, p, x, y, w, hh: ui.create_ring_progress(h, p, "完成度", 82, "组件完成", 1, x, y, w, 86)),
         ("BulletProgress", "🧭", "子弹进度", lambda h, p, x, y, w, hh: ui.create_bullet_progress(h, p, "目标", "发布准备", 72, 90, 1, x, y, w, 60)),
@@ -2970,7 +3444,6 @@ def build_pages(hwnd, root):
         ("Backtop", "⬆️", "返回顶部", lambda h, p, x, y, w, hh: ui.create_backtop(h, p, "⬆️", x, y, 44, 44)),
         ("Segmented", "🔀", "分段控制", lambda h, p, x, y, w, hh: ui.create_segmented(h, p, ["日", "周", "月"], 1, x, y, w, 36)),
         ("PageHeader", "📄", "页头", lambda h, p, x, y, w, hh: ui.create_pageheader(h, p, "组件详情", "返回总览", "返回", x, y, w, 62)),
-        ("Scrollbar", "🧵", "滚动条", lambda h, p, x, y, w, hh: ui.create_scrollbar(h, p, 35, 100, 0, x, y, w, 28)),
         ("Breadcrumb", "🍞", "面包屑", lambda h, p, x, y, w, hh: ui.create_breadcrumb(h, p, ["首页", "组件", "导航"], "/", 2, x, y, w, 32)),
         ("Tabs", "📑", "标签页", lambda h, p, x, y, w, hh: ui.create_tabs(h, p, ["预览", "代码", "文档"], 0, 0, x, y, w, 38)),
     ])

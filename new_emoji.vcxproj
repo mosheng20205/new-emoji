@@ -244,7 +244,7 @@
     <ClInclude Include="src\element_image.h" />
     <ClInclude Include="src\element_carousel.h" />
     <ClInclude Include="src\element_upload.h" />
-    <ClInclude Include="src\element_scrollbar.h" />
+    <ClInclude Include="src\element_infinite_scroll.h" />
     <ClInclude Include="src\element_breadcrumb.h" />
     <ClInclude Include="src\element_tabs.h" />
     <ClInclude Include="src\element_pagination.h" />
@@ -340,7 +340,7 @@
     <ClCompile Include="src\element_image.cpp" />
     <ClCompile Include="src\element_carousel.cpp" />
     <ClCompile Include="src\element_upload.cpp" />
-    <ClCompile Include="src\element_scrollbar.cpp" />
+    <ClCompile Include="src\element_infinite_scroll.cpp" />
     <ClCompile Include="src\element_breadcrumb.cpp" />
     <ClCompile Include="src\element_tabs.cpp" />
     <ClCompile Include="src\element_pagination.cpp" />

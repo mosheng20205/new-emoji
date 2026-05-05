@@ -73,7 +73,7 @@ extern HMODULE g_module;
 #include "element_image.h"
 #include "element_carousel.h"
 #include "element_upload.h"
-#include "element_scrollbar.h"
+#include "element_infinite_scroll.h"
 #include "element_breadcrumb.h"
 #include "element_tabs.h"
 #include "element_pagination.h"
@@ -384,6 +384,51 @@ static std::vector<std::wstring> split_option_list_keep_empty(const unsigned cha
     return items;
 }
 
+static std::vector<std::wstring> split_tab_fields(const std::wstring& line) {
+    std::vector<std::wstring> fields;
+    std::wstring current;
+    for (wchar_t ch : line) {
+        if (ch == L'\t') {
+            fields.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(ch);
+        }
+    }
+    fields.push_back(current);
+    return fields;
+}
+
+static bool parse_bool_field(const std::wstring& value) {
+    return value == L"1" || value == L"true" || value == L"True" ||
+           value == L"TRUE" || value == L"是" || value == L"真";
+}
+
+static std::vector<TabsItem> parse_tabs_items_ex(const unsigned char* bytes, int len) {
+    std::vector<TabsItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    std::wstring line;
+    auto flush = [&]() {
+        if (line.empty()) return;
+        auto fields = split_tab_fields(line);
+        TabsItem item;
+        if (fields.size() > 0) item.label = fields[0];
+        if (fields.size() > 1) item.name = fields[1];
+        if (fields.size() > 2) item.content = fields[2];
+        if (fields.size() > 3) item.icon = fields[3];
+        if (fields.size() > 4) item.disabled = parse_bool_field(fields[4]);
+        if (fields.size() > 5) item.closable = parse_bool_field(fields[5]);
+        items.push_back(item);
+        line.clear();
+    };
+    for (wchar_t ch : full) {
+        if (ch == L'|' || ch == L'\n' || ch == L'\r') flush();
+        else line.push_back(ch);
+    }
+    flush();
+    return items;
+}
+
 static std::vector<std::wstring> split_wide_list(const std::wstring& full,
                                                  const std::wstring& separators) {
     std::vector<std::wstring> items;
@@ -670,6 +715,21 @@ parse_pair_items(const unsigned char* bytes, int len) {
         std::wstring title = fields.empty() ? entry : fields[0];
         std::wstring desc = fields.size() >= 2 ? fields[1] : L"";
         items.push_back({ title, desc });
+    }
+    return items;
+}
+
+static std::vector<InfiniteScrollItem> parse_infinite_scroll_items(const unsigned char* bytes, int len) {
+    std::vector<InfiniteScrollItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"|\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        InfiniteScrollItem item;
+        item.title = fields.empty() ? row : fields[0];
+        item.subtitle = fields.size() >= 2 ? fields[1] : L"";
+        item.tag = fields.size() >= 3 ? fields[2] : L"";
+        if (!item.title.empty()) items.push_back(item);
     }
     return items;
 }
@@ -1372,10 +1432,12 @@ int __stdcall EU_CreateBadge(HWND hwnd, int parent_id,
     Element* parent = find_parent_or_root(st, parent_id);
     auto el = std::make_unique<Badge>();
     el->set_logical_bounds({ x, y, w, h });
+    el->mouse_passthrough = true;
     el->text = utf8_to_wide(text_bytes, text_len);
     el->set_value(utf8_to_wide(value_bytes, value_len));
     el->set_max_value(max_value);
     el->set_dot(dot != 0);
+    el->set_type(0);
 
     ElementStyle logical_style = el->style;
     logical_style.bg_color = 0;
@@ -2693,28 +2755,28 @@ int __stdcall EU_CreateUpload(HWND hwnd, int parent_id,
     return raw->id;
 }
 
-int __stdcall EU_CreateScrollbar(HWND hwnd, int parent_id,
-                                 int value, int max_value, int orientation,
-                                 int x, int y, int w, int h) {
+int __stdcall EU_CreateInfiniteScroll(HWND hwnd, int parent_id,
+                                      const unsigned char* items_bytes, int items_len,
+                                      int x, int y, int w, int h) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return 0;
 
     Element* parent = find_parent_or_root(st, parent_id);
-    auto el = std::make_unique<Scrollbar>();
+    auto el = std::make_unique<InfiniteScroll>();
     el->set_logical_bounds({ x, y, w, h });
-    el->set_max_value(max_value);
-    el->set_value(value);
-    el->set_orientation(orientation);
+    el->set_items(parse_infinite_scroll_items(items_bytes, items_len));
 
     ElementStyle logical_style = el->style;
-    logical_style.bg_color = 0;
+    logical_style.bg_color = 0x00000000;
     logical_style.border_color = 0;
+    logical_style.border_width = 1.0f;
+    logical_style.corner_radius = 8.0f;
     logical_style.fg_color = 0;
     logical_style.font_size = 14.0f;
-    logical_style.pad_left = 4;
-    logical_style.pad_top = 4;
-    logical_style.pad_right = 4;
-    logical_style.pad_bottom = 4;
+    logical_style.pad_left = 12;
+    logical_style.pad_top = 12;
+    logical_style.pad_right = 12;
+    logical_style.pad_bottom = 12;
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
@@ -5441,6 +5503,12 @@ void __stdcall EU_SetBadgeMax(HWND hwnd, int element_id, int max_value) {
     }
 }
 
+void __stdcall EU_SetBadgeType(HWND hwnd, int element_id, int badge_type) {
+    if (auto* el = find_typed_element<Badge>(hwnd, element_id)) {
+        el->set_type(badge_type);
+    }
+}
+
 void __stdcall EU_SetBadgeDot(HWND hwnd, int element_id, int dot) {
     if (auto* el = find_typed_element<Badge>(hwnd, element_id)) {
         el->set_dot(dot != 0);
@@ -5469,6 +5537,11 @@ int __stdcall EU_GetBadgeOptions(HWND hwnd, int element_id,
     if (offset_x) *offset_x = el->offset_x;
     if (offset_y) *offset_y = el->offset_y;
     return 1;
+}
+
+int __stdcall EU_GetBadgeType(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Badge>(hwnd, element_id);
+    return el ? el->get_type() : 0;
 }
 
 void __stdcall EU_SetBadgeLayoutOptions(HWND hwnd, int element_id,
@@ -8013,6 +8086,83 @@ int __stdcall EU_GetMenuActivePath(HWND hwnd, int element_id,
     return needed;
 }
 
+void __stdcall EU_SetMenuColors(HWND hwnd, int element_id,
+                                Color bg, Color text_color, Color active_text_color,
+                                Color hover_bg, Color disabled_text_color, Color border) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        el->set_colors(bg, text_color, active_text_color, hover_bg, disabled_text_color, border);
+    }
+}
+
+int __stdcall EU_GetMenuColors(HWND hwnd, int element_id,
+                               Color* bg, Color* text_color, Color* active_text_color,
+                               Color* hover_bg, Color* disabled_text_color, Color* border) {
+    auto* el = find_typed_element<Menu>(hwnd, element_id);
+    if (!el) return 0;
+    if (bg) *bg = el->menu_bg_color;
+    if (text_color) *text_color = el->menu_text_color;
+    if (active_text_color) *active_text_color = el->menu_active_text_color;
+    if (hover_bg) *hover_bg = el->menu_hover_bg_color;
+    if (disabled_text_color) *disabled_text_color = el->menu_disabled_text_color;
+    if (border) *border = el->menu_border_color;
+    return 1;
+}
+
+void __stdcall EU_SetMenuCollapsed(HWND hwnd, int element_id, int collapsed) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        el->set_collapsed(collapsed != 0);
+    }
+}
+
+int __stdcall EU_GetMenuCollapsed(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Menu>(hwnd, element_id);
+    return (el && el->collapsed) ? 1 : 0;
+}
+
+void __stdcall EU_SetMenuItemMeta(HWND hwnd, int element_id,
+                                  const unsigned char* icons_bytes, int icons_len,
+                                  const int* group_indices, int group_count,
+                                  const unsigned char* hrefs_bytes, int hrefs_len,
+                                  const unsigned char* targets_bytes, int targets_len,
+                                  const unsigned char* commands_bytes, int commands_len) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        std::vector<int> groups;
+        if (group_indices && group_count > 0) {
+            groups.assign(group_indices, group_indices + group_count);
+        }
+        el->set_item_meta(split_option_list_keep_empty(icons_bytes, icons_len),
+                          groups,
+                          split_option_list_keep_empty(hrefs_bytes, hrefs_len),
+                          split_option_list_keep_empty(targets_bytes, targets_len),
+                          split_option_list_keep_empty(commands_bytes, commands_len));
+    }
+}
+
+int __stdcall EU_GetMenuItemMeta(HWND hwnd, int element_id, int item_index,
+                                 unsigned char* icon_buffer, int icon_buffer_size,
+                                 unsigned char* href_buffer, int href_buffer_size,
+                                 unsigned char* target_buffer, int target_buffer_size,
+                                 unsigned char* command_buffer, int command_buffer_size,
+                                 int* is_group, int* disabled, int* level) {
+    auto* el = find_typed_element<Menu>(hwnd, element_id);
+    if (!el || item_index < 0 || item_index >= el->item_count()) return 0;
+    copy_wide_as_utf8(el->item_icon(item_index), icon_buffer, icon_buffer_size);
+    copy_wide_as_utf8(el->item_href(item_index), href_buffer, href_buffer_size);
+    copy_wide_as_utf8(el->item_target(item_index), target_buffer, target_buffer_size);
+    copy_wide_as_utf8(el->item_command(item_index), command_buffer, command_buffer_size);
+    if (is_group) *is_group = el->is_group(item_index) ? 1 : 0;
+    if (disabled) *disabled = (item_index < (int)el->disabled_items.size() &&
+                               (el->disabled_items[item_index] || el->is_group(item_index))) ? 1 : 0;
+    if (level) *level = (item_index < (int)el->item_levels.size()) ? el->item_levels[item_index] : 0;
+    return 1;
+}
+
+void __stdcall EU_SetMenuSelectCallback(HWND hwnd, int element_id, MenuSelectCallback cb) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        el->select_cb = cb;
+    }
+}
+
 void __stdcall EU_SetAnchorItems(HWND hwnd, int element_id,
                                  const unsigned char* items_bytes, int items_len) {
     if (auto* el = find_typed_element<Anchor>(hwnd, element_id)) {
@@ -8856,109 +9006,92 @@ void __stdcall EU_SetUploadActionCallback(HWND hwnd, int element_id, ElementValu
     }
 }
 
-void __stdcall EU_SetScrollbarValue(HWND hwnd, int element_id, int value) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_value(value);
+void __stdcall EU_SetInfiniteScrollItems(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_items(parse_infinite_scroll_items(items_bytes, items_len));
     }
 }
 
-void __stdcall EU_SetScrollbarRange(HWND hwnd, int element_id, int max_value, int page_size) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_range(max_value, page_size);
+void __stdcall EU_AppendInfiniteScrollItems(HWND hwnd, int element_id,
+                                            const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->append_items(parse_infinite_scroll_items(items_bytes, items_len));
     }
 }
 
-void __stdcall EU_SetScrollbarOptions(HWND hwnd, int element_id,
-                                      int max_value, int page_size, int orientation, int auto_hide) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_options(max_value, page_size, orientation, auto_hide);
+void __stdcall EU_ClearInfiniteScrollItems(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->clear_items();
     }
 }
 
-void __stdcall EU_SetScrollbarWheelStep(HWND hwnd, int element_id, int step) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_wheel_step(step);
+void __stdcall EU_SetInfiniteScrollState(HWND hwnd, int element_id,
+                                         int loading, int no_more, int disabled) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_state(loading != 0, no_more != 0, disabled != 0);
     }
 }
 
-void __stdcall EU_BindScrollbarContent(HWND hwnd, int element_id, int target_element_id,
-                                       int content_size, int viewport_size) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
+void __stdcall EU_SetInfiniteScrollOptions(HWND hwnd, int element_id,
+                                           int item_height, int gap, int threshold,
+                                           int style_mode, int show_scrollbar, int show_index) {
     WindowState* st = window_state(hwnd);
-    if (!el || !st || !st->element_tree) return;
-    Element* target = st->element_tree->find_by_id(target_element_id);
-    if (!target) return;
-    Rect base = target->has_logical_bounds ? target->logical_bounds : target->bounds;
-    el->bind_content(target_element_id, base, content_size, viewport_size);
-}
-
-void __stdcall EU_ScrollbarScroll(HWND hwnd, int element_id, int delta) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->scroll_delta(delta);
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_options(item_height, gap, threshold, style_mode,
+                        show_scrollbar != 0, show_index != 0,
+                        st ? st->dpi_scale : 1.0f);
     }
 }
 
-void __stdcall EU_ScrollbarWheel(HWND hwnd, int element_id, int wheel_delta) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->wheel_delta(wheel_delta);
+void __stdcall EU_SetInfiniteScrollTexts(HWND hwnd, int element_id,
+                                         const unsigned char* loading_bytes, int loading_len,
+                                         const unsigned char* no_more_bytes, int no_more_len,
+                                         const unsigned char* empty_bytes, int empty_len) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_texts(utf8_to_wide(loading_bytes, loading_len),
+                      utf8_to_wide(no_more_bytes, no_more_len),
+                      utf8_to_wide(empty_bytes, empty_len));
     }
 }
 
-int __stdcall EU_GetScrollbarValue(HWND hwnd, int element_id) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
-    return el ? el->value : 0;
+void __stdcall EU_SetInfiniteScrollScroll(HWND hwnd, int element_id, int scroll_y) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_scroll(scroll_y);
+    }
 }
 
-int __stdcall EU_GetScrollbarMaxValue(HWND hwnd, int element_id) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
-    return el ? el->max_value : 0;
-}
-
-int __stdcall EU_GetScrollbarOptions(HWND hwnd, int element_id,
-                                     int* value, int* max_value, int* page_size,
-                                     int* orientation, int* auto_hide, int* wheel_step) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
+int __stdcall EU_GetInfiniteScrollFullState(HWND hwnd, int element_id,
+                                            int* item_count, int* scroll_y, int* max_scroll,
+                                            int* content_height, int* viewport_height,
+                                            int* loading, int* no_more, int* disabled,
+                                            int* load_count, int* change_count,
+                                            int* last_action, int* threshold,
+                                            int* style_mode, int* show_scrollbar,
+                                            int* show_index) {
+    auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id);
     if (!el) return 0;
-    if (value) *value = el->value;
-    if (max_value) *max_value = el->max_value;
-    if (page_size) *page_size = el->page_size;
-    if (orientation) *orientation = el->orientation;
-    if (auto_hide) *auto_hide = el->auto_hide ? 1 : 0;
-    if (wheel_step) *wheel_step = el->wheel_step;
-    return 1;
-}
-
-int __stdcall EU_GetScrollbarFullState(HWND hwnd, int element_id,
-                                       int* value, int* max_value, int* page_size,
-                                       int* orientation, int* auto_hide, int* wheel_step,
-                                       int* bound_element_id, int* content_size,
-                                       int* viewport_size, int* content_offset,
-                                       int* wheel_event_count, int* drag_event_count,
-                                       int* change_count, int* last_action,
-                                       int* last_wheel_delta) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
-    if (!el) return 0;
-    if (value) *value = el->value;
-    if (max_value) *max_value = el->max_value;
-    if (page_size) *page_size = el->page_size;
-    if (orientation) *orientation = el->orientation;
-    if (auto_hide) *auto_hide = el->auto_hide ? 1 : 0;
-    if (wheel_step) *wheel_step = el->wheel_step;
-    if (bound_element_id) *bound_element_id = el->bound_element_id;
-    if (content_size) *content_size = el->content_size;
-    if (viewport_size) *viewport_size = el->viewport_size;
-    if (content_offset) *content_offset = el->content_offset;
-    if (wheel_event_count) *wheel_event_count = el->wheel_event_count;
-    if (drag_event_count) *drag_event_count = el->drag_event_count;
+    if (item_count) *item_count = (int)el->items.size();
+    if (scroll_y) *scroll_y = el->scroll_y;
+    if (max_scroll) *max_scroll = el->max_scroll();
+    if (content_height) *content_height = el->content_height();
+    if (viewport_height) *viewport_height = el->viewport_height();
+    if (loading) *loading = el->loading ? 1 : 0;
+    if (no_more) *no_more = el->no_more ? 1 : 0;
+    if (disabled) *disabled = el->disabled ? 1 : 0;
+    if (load_count) *load_count = el->load_count;
     if (change_count) *change_count = el->change_count;
     if (last_action) *last_action = el->last_action;
-    if (last_wheel_delta) *last_wheel_delta = el->last_wheel_delta;
+    if (threshold) *threshold = el->threshold;
+    if (style_mode) *style_mode = el->style_mode;
+    if (show_scrollbar) *show_scrollbar = el->show_scrollbar ? 1 : 0;
+    if (show_index) *show_index = el->show_index ? 1 : 0;
     return 1;
 }
 
-void __stdcall EU_SetScrollbarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->change_cb = cb;
+void __stdcall EU_SetInfiniteScrollLoadCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->load_cb = cb;
     }
 }
 
@@ -9044,9 +9177,23 @@ void __stdcall EU_SetTabsItems(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetTabsItemsEx(HWND hwnd, int element_id,
+                                 const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_items_ex(parse_tabs_items_ex(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetTabsActive(HWND hwnd, int element_id, int active_index) {
     if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
         el->set_active_index(active_index);
+    }
+}
+
+void __stdcall EU_SetTabsActiveName(HWND hwnd, int element_id,
+                                    const unsigned char* name_bytes, int name_len) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_active_name(utf8_to_wide(name_bytes, name_len));
     }
 }
 
@@ -9056,10 +9203,28 @@ void __stdcall EU_SetTabsType(HWND hwnd, int element_id, int tab_type) {
     }
 }
 
+void __stdcall EU_SetTabsPosition(HWND hwnd, int element_id, int tab_position) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_tab_position(tab_position);
+    }
+}
+
 void __stdcall EU_SetTabsOptions(HWND hwnd, int element_id,
                                  int tab_type, int closable, int addable) {
     if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
         el->set_options(tab_type, closable != 0, addable != 0);
+    }
+}
+
+void __stdcall EU_SetTabsEditable(HWND hwnd, int element_id, int editable) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_editable(editable != 0);
+    }
+}
+
+void __stdcall EU_SetTabsContentVisible(HWND hwnd, int element_id, int visible) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_content_visible(visible != 0);
     }
 }
 
@@ -9115,6 +9280,20 @@ int __stdcall EU_GetTabsItem(HWND hwnd, int element_id, int item_index,
     return copy_wide_as_utf8(el->items[item_index], buffer, buffer_size);
 }
 
+int __stdcall EU_GetTabsActiveName(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->active_name(), buffer, buffer_size);
+}
+
+int __stdcall EU_GetTabsItemContent(HWND hwnd, int element_id, int item_index,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->item_content(item_index), buffer, buffer_size);
+}
+
 int __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
                                   int* active_index, int* item_count, int* tab_type,
                                   int* closable, int* addable,
@@ -9145,6 +9324,34 @@ int __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
     if (select_count) *select_count = el->select_count;
     if (scroll_count) *scroll_count = el->scroll_count;
     if (last_action) *last_action = el->last_action;
+    return 1;
+}
+
+int __stdcall EU_GetTabsFullStateEx(HWND hwnd, int element_id,
+                                    int* active_index, int* item_count, int* tab_type,
+                                    int* closable, int* addable,
+                                    int* scroll_offset, int* max_scroll_offset,
+                                    int* hover_index, int* press_index,
+                                    int* hover_part, int* press_part,
+                                    int* last_closed_index, int* last_added_index,
+                                    int* close_count, int* add_count,
+                                    int* select_count, int* scroll_count,
+                                    int* last_action, int* tab_position,
+                                    int* editable, int* content_visible,
+                                    int* active_disabled, int* active_closable) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el) return 0;
+    EU_GetTabsFullState(hwnd, element_id, active_index, item_count, tab_type,
+                        closable, addable, scroll_offset, max_scroll_offset,
+                        hover_index, press_index, hover_part, press_part,
+                        last_closed_index, last_added_index, close_count, add_count,
+                        select_count, scroll_count, last_action);
+    if (tab_position) *tab_position = el->tab_position;
+    if (editable) *editable = el->editable ? 1 : 0;
+    if (content_visible) *content_visible = el->content_visible ? 1 : 0;
+    bool has_active = el->active_index >= 0 && el->active_index < (int)el->tab_items.size();
+    if (active_disabled) *active_disabled = has_active && el->tab_items[el->active_index].disabled ? 1 : 0;
+    if (active_closable) *active_closable = has_active && el->tab_items[el->active_index].closable ? 1 : 0;
     return 1;
 }
 

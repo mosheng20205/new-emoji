@@ -37,7 +37,7 @@
 | `EU_CreateRate` | |
 | `EU_CreateColorPicker` | |
 | `EU_CreateTag` | |
-| `EU_CreateBadge` | |
+| `EU_CreateBadge` | 创建徽标，支持数值、文本、dot、角标位置、独立模式和语义类型 |
 | `EU_CreateProgress` | |
 | `EU_CreateAvatar` | |
 | `EU_CreateEmpty` | |
@@ -81,7 +81,7 @@
 | `EU_CreateImage` | |
 | `EU_CreateCarousel` | |
 | `EU_CreateUpload` | |
-| `EU_CreateScrollbar` | |
+| `EU_CreateInfiniteScroll` | |
 | `EU_CreateBreadcrumb` | |
 | `EU_CreateTabs` | |
 | `EU_CreatePagination` | |
@@ -345,10 +345,12 @@
 | `EU_SetTagCloseCallback` | |
 | `EU_SetBadgeValue` | |
 | `EU_SetBadgeMax` | |
+| `EU_SetBadgeType` | |
 | `EU_SetBadgeDot` | |
 | `EU_SetBadgeOptions` | |
 | `EU_GetBadgeHidden` | |
 | `EU_GetBadgeOptions` | |
+| `EU_GetBadgeType` | |
 | `EU_SetBadgeLayoutOptions` | |
 | `EU_GetBadgeLayoutOptions` | |
 | `EU_SetProgressPercentage` | |
@@ -667,6 +669,13 @@
 | `EU_SetMenuExpanded` | |
 | `EU_GetMenuState` | |
 | `EU_GetMenuActivePath` | |
+| `EU_SetMenuColors` | 设置 Menu/NavMenu 背景、文字、激活文字、悬停、禁用和边框色 |
+| `EU_GetMenuColors` | 读取 Menu/NavMenu 自定义颜色 |
+| `EU_SetMenuCollapsed` | 设置垂直菜单收起状态 |
+| `EU_GetMenuCollapsed` | 读取垂直菜单收起状态 |
+| `EU_SetMenuItemMeta` | 设置菜单项图标、分组、链接、目标和命令元数据 |
+| `EU_GetMenuItemMeta` | 读取菜单项图标、分组、链接、目标和命令元数据 |
+| `EU_SetMenuSelectCallback` | 设置菜单项选择回调 |
 | `EU_SetAnchorItems` | |
 | `EU_SetAnchorActive` | |
 | `EU_GetAnchorActive` | |
@@ -765,18 +774,15 @@
 | `EU_GetUploadFullState` | |
 | `EU_SetUploadSelectCallback` | |
 | `EU_SetUploadActionCallback` | |
-| `EU_SetScrollbarValue` | |
-| `EU_SetScrollbarRange` | |
-| `EU_SetScrollbarOptions` | |
-| `EU_SetScrollbarWheelStep` | |
-| `EU_BindScrollbarContent` | |
-| `EU_ScrollbarScroll` | |
-| `EU_ScrollbarWheel` | |
-| `EU_GetScrollbarValue` | |
-| `EU_GetScrollbarMaxValue` | |
-| `EU_GetScrollbarOptions` | |
-| `EU_GetScrollbarFullState` | |
-| `EU_SetScrollbarChangeCallback` | |
+| `EU_SetInfiniteScrollItems` | 设置无限滚动列表项目 |
+| `EU_AppendInfiniteScrollItems` | 追加无限滚动列表项目 |
+| `EU_ClearInfiniteScrollItems` | 清空无限滚动列表项目 |
+| `EU_SetInfiniteScrollState` | 设置加载中、没有更多和禁用状态 |
+| `EU_SetInfiniteScrollOptions` | 设置行高、间距、触底阈值、样式模式、指示条和索引 |
+| `EU_SetInfiniteScrollTexts` | 设置加载中、没有更多和空状态文案 |
+| `EU_SetInfiniteScrollScroll` | 设置垂直滚动位置 |
+| `EU_GetInfiniteScrollFullState` | 读取项目数、滚动、内容高度、状态、触发次数和样式选项 |
+| `EU_SetInfiniteScrollLoadCallback` | 设置触底加载回调 |
 | `EU_SetBreadcrumbItems` | |
 | `EU_SetBreadcrumbSeparator` | |
 | `EU_SetBreadcrumbCurrent` | |
@@ -788,9 +794,14 @@
 | `EU_GetBreadcrumbFullState` | |
 | `EU_SetBreadcrumbSelectCallback` | |
 | `EU_SetTabsItems` | |
+| `EU_SetTabsItemsEx` | 设置扩展标签页项目：标签、名称、内容、图标、禁用、可关闭 |
 | `EU_SetTabsActive` | |
+| `EU_SetTabsActiveName` | 按名称激活标签页 |
 | `EU_SetTabsType` | |
+| `EU_SetTabsPosition` | 设置标签页位置：上、右、下、左 |
 | `EU_SetTabsOptions` | |
+| `EU_SetTabsEditable` | 设置可编辑标签页模式 |
+| `EU_SetTabsContentVisible` | 设置标签页是否绘制内容区 |
 | `EU_AddTabsItem` | |
 | `EU_CloseTabsItem` | |
 | `EU_SetTabsScroll` | |
@@ -799,7 +810,10 @@
 | `EU_GetTabsItemCount` | |
 | `EU_GetTabsState` | |
 | `EU_GetTabsItem` | |
+| `EU_GetTabsActiveName` | 读取当前激活标签名称 |
+| `EU_GetTabsItemContent` | 读取标签页内容文本 |
 | `EU_GetTabsFullState` | |
+| `EU_GetTabsFullStateEx` | 读取扩展完整状态，含位置、editable 和内容区状态 |
 | `EU_SetTabsChangeCallback` | |
 | `EU_SetTabsCloseCallback` | |
 | `EU_SetTabsAddCallback` | |

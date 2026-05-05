@@ -681,13 +681,13 @@
   },
   {
     "index": "69",
-    "name": "Scrollbar",
-    "zh": "滚动条",
-    "create": "EU_CreateScrollbar",
+    "name": "InfiniteScroll",
+    "zh": "无限滚动",
+    "create": "EU_CreateInfiniteScroll",
     "status": "已完成",
-    "summary": "已补真实 WM_MOUSEWHEEL 派发、内容元素绑定、滚动偏移同步、自动隐藏、拖动/API/键盘/滚轮滚动、变化回调、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
-    "category": "媒体/工具",
-    "slug": "scrollbar"
+    "summary": "替换公开 Scrollbar，已补内置列表数据、触底加载、loading/no_more/disabled、防重复触发、滚轮/拖拽/轨道/键盘滚动、状态文案、竖向指示条、完整状态读回、Python 封装、易语言命令文档和桌面端中文 emoji 图库演示",
+    "category": "数据展示",
+    "slug": "infinite-scroll"
   },
   {
     "index": "70",

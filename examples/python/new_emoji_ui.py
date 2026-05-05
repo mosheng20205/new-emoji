@@ -38,6 +38,9 @@ TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.
                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+MenuSelectCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 
 EXTENDED_PLACEMENTS = {
     "top-start": 0, "top": 1, "top-end": 2,
@@ -566,10 +569,10 @@ dll.EU_CreateUpload.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateUpload.restype = ctypes.c_int
 
-dll.EU_CreateScrollbar.argtypes = [wintypes.HWND, ctypes.c_int,
-                                   ctypes.c_int, ctypes.c_int, ctypes.c_int,
-                                   ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_CreateScrollbar.restype = ctypes.c_int
+dll.EU_CreateInfiniteScroll.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateInfiniteScroll.restype = ctypes.c_int
 
 dll.EU_CreateBreadcrumb.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -1197,6 +1200,7 @@ dll.EU_SetTagCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallbac
 dll.EU_SetBadgeValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetBadgeMax.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetBadgeType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetBadgeDot.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetBadgeOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -1207,6 +1211,8 @@ dll.EU_GetBadgeOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                    ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetBadgeOptions.restype = ctypes.c_int
+dll.EU_GetBadgeType.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetBadgeType.restype = ctypes.c_int
 dll.EU_SetBadgeLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_GetBadgeLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
@@ -1930,6 +1936,32 @@ dll.EU_GetMenuState.restype = ctypes.c_int
 dll.EU_GetMenuActivePath.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetMenuActivePath.restype = ctypes.c_int
+dll.EU_SetMenuColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                 ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetMenuColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetMenuColors.restype = ctypes.c_int
+dll.EU_SetMenuCollapsed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetMenuCollapsed.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetMenuCollapsed.restype = ctypes.c_int
+dll.EU_SetMenuItemMeta.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_int), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetMenuItemMeta.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                   ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMenuItemMeta.restype = ctypes.c_int
+dll.EU_SetMenuSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, MenuSelectCallback]
 dll.EU_SetAnchorItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAnchorActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2193,25 +2225,24 @@ dll.EU_GetUploadFullState.argtypes = [
 dll.EU_GetUploadFullState.restype = ctypes.c_int
 dll.EU_SetUploadSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, TextCallback]
 dll.EU_SetUploadActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
-dll.EU_SetScrollbarValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_SetScrollbarRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_SetScrollbarOptions.argtypes = [wintypes.HWND, ctypes.c_int,
-                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_SetScrollbarWheelStep.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_BindScrollbarContent.argtypes = [wintypes.HWND, ctypes.c_int,
-                                        ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_ScrollbarScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_ScrollbarWheel.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_GetScrollbarValue.argtypes = [wintypes.HWND, ctypes.c_int]
-dll.EU_GetScrollbarValue.restype = ctypes.c_int
-dll.EU_GetScrollbarMaxValue.argtypes = [wintypes.HWND, ctypes.c_int]
-dll.EU_GetScrollbarMaxValue.restype = ctypes.c_int
-dll.EU_GetScrollbarOptions.argtypes = [wintypes.HWND, ctypes.c_int,
-                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
-dll.EU_GetScrollbarOptions.restype = ctypes.c_int
-dll.EU_GetScrollbarFullState.argtypes = [
+dll.EU_SetInfiniteScrollItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_AppendInfiniteScrollItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_ClearInfiniteScrollItems.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetInfiniteScrollState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetInfiniteScrollOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetInfiniteScrollTexts.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_SetInfiniteScrollScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInfiniteScrollFullState.argtypes = [
     wintypes.HWND, ctypes.c_int,
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
@@ -2222,8 +2253,8 @@ dll.EU_GetScrollbarFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
     ctypes.POINTER(ctypes.c_int),
 ]
-dll.EU_GetScrollbarFullState.restype = ctypes.c_int
-dll.EU_SetScrollbarChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_GetInfiniteScrollFullState.restype = ctypes.c_int
+dll.EU_SetInfiniteScrollLoadCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetBreadcrumbItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetBreadcrumbSeparator.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2251,9 +2282,16 @@ dll.EU_GetBreadcrumbFullState.restype = ctypes.c_int
 dll.EU_SetBreadcrumbSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTabsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTabsItemsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTabsActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsActiveName.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTabsType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsPosition.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTabsOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsEditable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsContentVisible.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_AddTabsItem.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_CloseTabsItem.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2270,6 +2308,12 @@ dll.EU_GetTabsState.restype = ctypes.c_int
 dll.EU_GetTabsItem.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetTabsItem.restype = ctypes.c_int
+dll.EU_GetTabsActiveName.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTabsActiveName.restype = ctypes.c_int
+dll.EU_GetTabsItemContent.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTabsItemContent.restype = ctypes.c_int
 dll.EU_GetTabsFullState.argtypes = [
     wintypes.HWND, ctypes.c_int,
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
@@ -2283,6 +2327,12 @@ dll.EU_GetTabsFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
 ]
 dll.EU_GetTabsFullState.restype = ctypes.c_int
+dll.EU_GetTabsFullStateEx.argtypes = dll.EU_GetTabsFullState.argtypes + [
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetTabsFullStateEx.restype = ctypes.c_int
 dll.EU_SetTabsChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTabsCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTabsAddCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
@@ -4446,7 +4496,7 @@ def set_tag_close_callback(hwnd, element_id, callback):
 
 def create_badge(hwnd, parent_id, text="Badge", value="12", max_value=99, dot=False,
                  x=0, y=0, w=180, h=34, show_zero=None, offset_x=0, offset_y=0,
-                 placement=None, standalone=None):
+                 placement=None, standalone=None, badge_type=None):
     text_data = make_utf8(text)
     value_data = make_utf8(value)
     element_id = dll.EU_CreateBadge(
@@ -4459,6 +4509,8 @@ def create_badge(hwnd, parent_id, text="Badge", value="12", max_value=99, dot=Fa
         dll.EU_SetBadgeOptions(hwnd, element_id, int(bool(dot)),
                                1 if show_zero is None else int(bool(show_zero)),
                                offset_x, offset_y)
+    if element_id and badge_type is not None:
+        dll.EU_SetBadgeType(hwnd, element_id, badge_type)
     if element_id and (placement is not None or standalone is not None):
         dll.EU_SetBadgeLayoutOptions(
             hwnd, element_id,
@@ -4473,6 +4525,9 @@ def set_badge_value(hwnd, element_id, value="12"):
 
 def set_badge_max(hwnd, element_id, max_value=99):
     dll.EU_SetBadgeMax(hwnd, element_id, max_value)
+
+def set_badge_type(hwnd, element_id, badge_type=0):
+    dll.EU_SetBadgeType(hwnd, element_id, badge_type)
 
 def set_badge_dot(hwnd, element_id, dot=True):
     dll.EU_SetBadgeDot(hwnd, element_id, 1 if dot else 0)
@@ -4499,6 +4554,9 @@ def get_badge_options(hwnd, element_id):
     if not ok:
         return None
     return max_value.value, bool(dot.value), bool(show_zero.value), offset_x.value, offset_y.value
+
+def get_badge_type(hwnd, element_id):
+    return dll.EU_GetBadgeType(hwnd, element_id)
 
 def set_badge_layout_options(hwnd, element_id, placement=0, standalone=False):
     dll.EU_SetBadgeLayoutOptions(hwnd, element_id, placement, 1 if standalone else 0)
@@ -6799,6 +6857,89 @@ def get_menu_active_path(hwnd, element_id):
     dll.EU_GetMenuActivePath(hwnd, element_id, buf, needed + 1)
     return bytes(buf[:needed]).decode("utf-8", errors="replace")
 
+def set_menu_colors(hwnd, element_id, bg=0, text_color=0, active_text_color=0,
+                    hover_bg=0, disabled_text_color=0, border=0):
+    dll.EU_SetMenuColors(
+        hwnd, element_id,
+        bg, text_color, active_text_color, hover_bg, disabled_text_color, border
+    )
+
+def get_menu_colors(hwnd, element_id):
+    bg = ctypes.c_uint32()
+    text_color = ctypes.c_uint32()
+    active_text_color = ctypes.c_uint32()
+    hover_bg = ctypes.c_uint32()
+    disabled_text_color = ctypes.c_uint32()
+    border = ctypes.c_uint32()
+    ok = dll.EU_GetMenuColors(
+        hwnd, element_id,
+        ctypes.byref(bg), ctypes.byref(text_color), ctypes.byref(active_text_color),
+        ctypes.byref(hover_bg), ctypes.byref(disabled_text_color), ctypes.byref(border)
+    )
+    return (bg.value, text_color.value, active_text_color.value,
+            hover_bg.value, disabled_text_color.value, border.value) if ok else None
+
+def set_menu_collapsed(hwnd, element_id, collapsed=True):
+    dll.EU_SetMenuCollapsed(hwnd, element_id, 1 if collapsed else 0)
+
+def get_menu_collapsed(hwnd, element_id):
+    return bool(dll.EU_GetMenuCollapsed(hwnd, element_id))
+
+def set_menu_item_meta(hwnd, element_id, icons=None, group_indices=None,
+                       hrefs=None, targets=None, commands=None):
+    icons = icons or []
+    group_indices = group_indices or []
+    hrefs = hrefs or []
+    targets = targets or []
+    commands = commands or []
+    icons_data = make_utf8("|".join(icons))
+    hrefs_data = make_utf8("|".join(hrefs))
+    targets_data = make_utf8("|".join(targets))
+    commands_data = make_utf8("|".join(commands))
+    arr_type = ctypes.c_int * len(group_indices)
+    arr = arr_type(*group_indices) if group_indices else None
+    dll.EU_SetMenuItemMeta(
+        hwnd, element_id,
+        bytes_arg(icons_data), len(icons_data),
+        arr, len(group_indices),
+        bytes_arg(hrefs_data), len(hrefs_data),
+        bytes_arg(targets_data), len(targets_data),
+        bytes_arg(commands_data), len(commands_data),
+    )
+
+def get_menu_item_meta(hwnd, element_id, item_index):
+    icon_buf = (ctypes.c_ubyte * 256)()
+    href_buf = (ctypes.c_ubyte * 512)()
+    target_buf = (ctypes.c_ubyte * 128)()
+    command_buf = (ctypes.c_ubyte * 256)()
+    is_group = ctypes.c_int()
+    disabled = ctypes.c_int()
+    level = ctypes.c_int()
+    ok = dll.EU_GetMenuItemMeta(
+        hwnd, element_id, item_index,
+        icon_buf, len(icon_buf),
+        href_buf, len(href_buf),
+        target_buf, len(target_buf),
+        command_buf, len(command_buf),
+        ctypes.byref(is_group), ctypes.byref(disabled), ctypes.byref(level),
+    )
+    if not ok:
+        return None
+    def read_buf(buf):
+        return bytes(buf).split(b"\0", 1)[0].decode("utf-8", errors="replace")
+    return {
+        "icon": read_buf(icon_buf),
+        "href": read_buf(href_buf),
+        "target": read_buf(target_buf),
+        "command": read_buf(command_buf),
+        "group": bool(is_group.value),
+        "disabled": bool(disabled.value),
+        "level": level.value,
+    }
+
+def set_menu_select_callback(hwnd, element_id, callback):
+    dll.EU_SetMenuSelectCallback(hwnd, element_id, callback)
+
 def create_anchor(hwnd, parent_id, items=None, active=0,
                   x=0, y=0, w=220, h=180):
     if items is None:
@@ -7440,10 +7581,32 @@ def create_upload(hwnd, parent_id, title="📤 点击或拖拽文件到此处上
         x, y, w, h
     )
 
-def create_scrollbar(hwnd, parent_id, value=0, max_value=100, orientation=1,
-                     x=0, y=0, w=18, h=160):
-    return dll.EU_CreateScrollbar(
-        hwnd, parent_id, value, max_value, orientation, x, y, w, h
+def _infinite_scroll_items_data(items):
+    rows = []
+    for item in items or []:
+        if isinstance(item, dict):
+            title = str(item.get("title", item.get("text", "")))
+            subtitle = str(item.get("subtitle", item.get("desc", "")))
+            tag = str(item.get("tag", ""))
+            rows.append("\t".join([title, subtitle, tag]).rstrip("\t"))
+        elif isinstance(item, (list, tuple)):
+            values = [str(v) for v in item[:3]]
+            rows.append("\t".join(values))
+        else:
+            rows.append(str(item))
+    return make_utf8("\n".join(rows))
+
+def create_infinite_scroll(hwnd, parent_id, items=None,
+                           x=0, y=0, w=360, h=260):
+    if items is None:
+        items = [
+            ("📌 待办事项", "打开窗口后可直接滚动加载更多", "进行中"),
+            ("🧾 审批记录", "列表项支持标题、副标题和标签", "已同步"),
+            ("📦 发货提醒", "接近底部会触发加载回调", "今日"),
+        ]
+    data = _infinite_scroll_items_data(items)
+    return dll.EU_CreateInfiniteScroll(
+        hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h
     )
 
 def set_image_source(hwnd, element_id, src="", alt="图片"):
@@ -7766,55 +7929,72 @@ def set_upload_select_callback(hwnd, element_id, callback):
 def set_upload_action_callback(hwnd, element_id, callback):
     dll.EU_SetUploadActionCallback(hwnd, element_id, callback)
 
-def set_scrollbar_wheel_step(hwnd, element_id, step=20):
-    dll.EU_SetScrollbarWheelStep(hwnd, element_id, step)
+def set_infinite_scroll_items(hwnd, element_id, items):
+    data = _infinite_scroll_items_data(items)
+    dll.EU_SetInfiniteScrollItems(hwnd, element_id, bytes_arg(data), len(data))
 
-def bind_scrollbar_content(hwnd, element_id, target_element_id, content_size, viewport_size):
-    dll.EU_BindScrollbarContent(hwnd, element_id, target_element_id, content_size, viewport_size)
+def append_infinite_scroll_items(hwnd, element_id, items):
+    data = _infinite_scroll_items_data(items)
+    dll.EU_AppendInfiniteScrollItems(hwnd, element_id, bytes_arg(data), len(data))
 
-def scrollbar_scroll(hwnd, element_id, delta=1):
-    dll.EU_ScrollbarScroll(hwnd, element_id, delta)
+def clear_infinite_scroll_items(hwnd, element_id):
+    dll.EU_ClearInfiniteScrollItems(hwnd, element_id)
 
-def scrollbar_wheel(hwnd, element_id, wheel_delta):
-    dll.EU_ScrollbarWheel(hwnd, element_id, wheel_delta)
-
-def get_scrollbar_options(hwnd, element_id):
-    value = ctypes.c_int()
-    max_value = ctypes.c_int()
-    page_size = ctypes.c_int()
-    orientation = ctypes.c_int()
-    auto_hide = ctypes.c_int()
-    wheel_step = ctypes.c_int()
-    ok = dll.EU_GetScrollbarOptions(
+def set_infinite_scroll_state(hwnd, element_id, loading=False, no_more=False, disabled=False):
+    dll.EU_SetInfiniteScrollState(
         hwnd, element_id,
-        ctypes.byref(value), ctypes.byref(max_value), ctypes.byref(page_size),
-        ctypes.byref(orientation), ctypes.byref(auto_hide), ctypes.byref(wheel_step),
+        1 if loading else 0,
+        1 if no_more else 0,
+        1 if disabled else 0,
     )
-    return (
-        value.value, max_value.value, page_size.value,
-        orientation.value, bool(auto_hide.value), wheel_step.value,
-    ) if ok else None
 
-def get_scrollbar_full_state(hwnd, element_id):
+def set_infinite_scroll_options(hwnd, element_id, item_height=54, gap=8, threshold=60,
+                                style_mode=0, show_scrollbar=True, show_index=False):
+    dll.EU_SetInfiniteScrollOptions(
+        hwnd, element_id, item_height, gap, threshold, style_mode,
+        1 if show_scrollbar else 0, 1 if show_index else 0,
+    )
+
+def set_infinite_scroll_texts(hwnd, element_id,
+                              loading_text="加载中...",
+                              no_more_text="没有更多了",
+                              empty_text="暂无数据"):
+    loading_data = make_utf8(loading_text)
+    no_more_data = make_utf8(no_more_text)
+    empty_data = make_utf8(empty_text)
+    dll.EU_SetInfiniteScrollTexts(
+        hwnd, element_id,
+        bytes_arg(loading_data), len(loading_data),
+        bytes_arg(no_more_data), len(no_more_data),
+        bytes_arg(empty_data), len(empty_data),
+    )
+
+def set_infinite_scroll_scroll(hwnd, element_id, scroll_y=0):
+    dll.EU_SetInfiniteScrollScroll(hwnd, element_id, scroll_y)
+
+def get_infinite_scroll_full_state(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(15)]
-    ok = dll.EU_GetScrollbarFullState(
+    ok = dll.EU_GetInfiniteScrollFullState(
         hwnd, element_id,
         *(ctypes.byref(v) for v in values)
     )
     if not ok:
         return None
     keys = [
-        "value", "max_value", "page_size", "orientation", "auto_hide",
-        "wheel_step", "bound_element_id", "content_size", "viewport_size",
-        "content_offset", "wheel_event_count", "drag_event_count",
-        "change_count", "last_action", "last_wheel_delta",
+        "item_count", "scroll_y", "max_scroll", "content_height", "viewport_height",
+        "loading", "no_more", "disabled", "load_count", "change_count",
+        "last_action", "threshold", "style_mode", "show_scrollbar", "show_index",
     ]
     result = {key: value.value for key, value in zip(keys, values)}
-    result["auto_hide"] = bool(result["auto_hide"])
+    result["loading"] = bool(result["loading"])
+    result["no_more"] = bool(result["no_more"])
+    result["disabled"] = bool(result["disabled"])
+    result["show_scrollbar"] = bool(result["show_scrollbar"])
+    result["show_index"] = bool(result["show_index"])
     return result
 
-def set_scrollbar_change_callback(hwnd, element_id, callback):
-    dll.EU_SetScrollbarChangeCallback(hwnd, element_id, callback)
+def set_infinite_scroll_load_callback(hwnd, element_id, callback):
+    dll.EU_SetInfiniteScrollLoadCallback(hwnd, element_id, callback)
 
 def create_breadcrumb(hwnd, parent_id, items=None, separator="/", current=-1,
                       x=0, y=0, w=420, h=32):
@@ -7838,6 +8018,39 @@ def create_tabs(hwnd, parent_id, items=None, active=0, tab_type=0,
         hwnd, parent_id, bytes_arg(items_data), len(items_data),
         active, tab_type, x, y, w, h
     )
+
+def _tabs_item_to_line(item):
+    if isinstance(item, dict):
+        label = item.get("label", "")
+        name = item.get("name", "")
+        content = item.get("content", "")
+        icon = item.get("icon", "")
+        disabled = "1" if item.get("disabled", False) else "0"
+        closable = "1" if item.get("closable", True) else "0"
+        return "\t".join([label, name, content, icon, disabled, closable])
+    values = list(item)
+    while len(values) < 6:
+        values.append("")
+    values[4] = "1" if bool(values[4]) else "0"
+    values[5] = "1" if (values[5] == "" or bool(values[5])) else "0"
+    return "\t".join(str(v) for v in values[:6])
+
+def create_tabs_ex(hwnd, parent_id, items=None, active=0, tab_type=0, tab_position=0,
+                   closable=False, addable=False, editable=False, content_visible=True,
+                   x=0, y=0, w=520, h=220):
+    if items is None:
+        items = [
+            {"label": "用户管理", "name": "users", "content": "👥 用户管理内容", "icon": "👥"},
+            {"label": "配置管理", "name": "config", "content": "⚙️ 配置管理内容", "icon": "⚙️"},
+        ]
+    labels = [item.get("label", "") if isinstance(item, dict) else str(item[0]) for item in items]
+    element_id = create_tabs(hwnd, parent_id, labels, active, tab_type, x, y, w, h)
+    set_tabs_items_ex(hwnd, element_id, items)
+    set_tabs_position(hwnd, element_id, tab_position)
+    set_tabs_options(hwnd, element_id, tab_type, closable, addable)
+    set_tabs_editable(hwnd, element_id, editable)
+    set_tabs_content_visible(hwnd, element_id, content_visible)
+    return element_id
 
 def create_pagination(hwnd, parent_id, total=120, page_size=10, current=1,
                       x=0, y=0, w=420, h=40):
@@ -7907,14 +8120,33 @@ def set_tabs_items(hwnd, element_id, items):
     data = make_utf8("|".join(items))
     dll.EU_SetTabsItems(hwnd, element_id, bytes_arg(data), len(data))
 
+def set_tabs_items_ex(hwnd, element_id, items):
+    data = make_utf8("|".join(_tabs_item_to_line(item) for item in items))
+    dll.EU_SetTabsItemsEx(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_tabs_type(hwnd, element_id, tab_type):
     dll.EU_SetTabsType(hwnd, element_id, tab_type)
+
+def set_tabs_position(hwnd, element_id, tab_position):
+    if isinstance(tab_position, str):
+        tab_position = {"top": 0, "right": 1, "bottom": 2, "left": 3}.get(tab_position, 0)
+    dll.EU_SetTabsPosition(hwnd, element_id, tab_position)
 
 def set_tabs_active(hwnd, element_id, active):
     dll.EU_SetTabsActive(hwnd, element_id, active)
 
+def set_tabs_active_name(hwnd, element_id, name):
+    data = make_utf8(name)
+    dll.EU_SetTabsActiveName(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_tabs_options(hwnd, element_id, tab_type=0, closable=False, addable=False):
     dll.EU_SetTabsOptions(hwnd, element_id, tab_type, int(bool(closable)), int(bool(addable)))
+
+def set_tabs_editable(hwnd, element_id, editable=True):
+    dll.EU_SetTabsEditable(hwnd, element_id, int(bool(editable)))
+
+def set_tabs_content_visible(hwnd, element_id, visible=True):
+    dll.EU_SetTabsContentVisible(hwnd, element_id, int(bool(visible)))
 
 def add_tabs_item(hwnd, element_id, text):
     data = make_utf8(text)
@@ -7947,6 +8179,22 @@ def get_tabs_item(hwnd, element_id, index):
     dll.EU_GetTabsItem(hwnd, element_id, index, buf, needed + 1)
     return bytes(buf[:needed]).decode("utf-8", errors="replace")
 
+def get_tabs_active_name(hwnd, element_id):
+    needed = dll.EU_GetTabsActiveName(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetTabsActiveName(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_tabs_item_content(hwnd, element_id, index):
+    needed = dll.EU_GetTabsItemContent(hwnd, element_id, index, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetTabsItemContent(hwnd, element_id, index, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
 def get_tabs_full_state(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(18)]
     ok = dll.EU_GetTabsFullState(
@@ -7960,6 +8208,23 @@ def get_tabs_full_state(hwnd, element_id):
         "scroll_offset", "max_scroll_offset", "hover_index", "press_index",
         "hover_part", "press_part", "last_closed_index", "last_added_index",
         "close_count", "add_count", "select_count", "scroll_count", "last_action",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
+def get_tabs_full_state_ex(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(23)]
+    ok = dll.EU_GetTabsFullStateEx(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "active_index", "item_count", "tab_type", "closable", "addable",
+        "scroll_offset", "max_scroll_offset", "hover_index", "press_index",
+        "hover_part", "press_part", "last_closed_index", "last_added_index",
+        "close_count", "add_count", "select_count", "scroll_count", "last_action",
+        "tab_position", "editable", "content_visible", "active_disabled", "active_closable",
     ]
     return {key: value.value for key, value in zip(keys, values)}
 
