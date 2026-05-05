@@ -16,6 +16,10 @@ EXPORTS
     EU_CreateIcon
     EU_CreateSpace
     EU_CreateContainer
+    EU_CreateHeader
+    EU_CreateAside
+    EU_CreateMain
+    EU_CreateFooter
     EU_CreateLayout
     EU_CreateBorder
     EU_CreateCheckbox
@@ -137,6 +141,10 @@ EXPORTS
     EU_GetPanelStyle
     EU_SetPanelLayout
     EU_GetPanelLayout
+    EU_SetContainerLayout
+    EU_GetContainerLayout
+    EU_SetContainerRegionTextOptions
+    EU_GetContainerRegionTextOptions
     EU_SetLayoutOptions
     EU_GetLayoutOptions
     EU_SetLayoutChildWeight
@@ -457,21 +465,32 @@ EXPORTS
     EU_ClearTableVirtualCache
     EU_GetTableCellValue
     EU_GetTableFullState
+    EU_SetCardTitle
     EU_SetCardBody
     EU_SetCardFooter
+    EU_SetCardItems
     EU_SetCardActions
+    EU_GetCardItemCount
     EU_GetCardAction
     EU_ResetCardAction
     EU_SetCardShadow
     EU_SetCardOptions
+    EU_SetCardStyle
+    EU_GetCardStyle
+    EU_SetCardBodyStyle
+    EU_GetCardBodyStyle
     EU_GetCardOptions
     EU_SetCollapseItems
+    EU_SetCollapseItemsEx
     EU_SetCollapseActive
     EU_GetCollapseActive
+    EU_SetCollapseActiveItems
+    EU_GetCollapseActiveItems
     EU_GetCollapseItemCount
     EU_SetCollapseOptions
     EU_SetCollapseAdvancedOptions
     EU_GetCollapseOptions
+    EU_GetCollapseStateJson
     EU_SetTimelineItems
     EU_SetTimelineOptions
     EU_GetTimelineItemCount

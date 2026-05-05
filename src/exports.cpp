@@ -601,15 +601,29 @@ parse_table_rows(const unsigned char* bytes, int len) {
 static std::vector<CollapseItem> parse_collapse_items(const unsigned char* bytes, int len) {
     std::vector<CollapseItem> items;
     std::wstring full = utf8_to_wide(bytes, len);
-    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+    std::wstring separators = (full.find(L'\t') != std::wstring::npos &&
+                               full.find(L'|') != std::wstring::npos) ? L"|" : L"|\n\r";
+    for (const auto& entry : split_wide_list(full, separators)) {
         if (entry.empty()) continue;
-        size_t pos = entry.find(L':');
-        if (pos == std::wstring::npos) pos = entry.find(L'=');
-        if (pos == std::wstring::npos) {
-            items.push_back({ entry, L"" });
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        CollapseItem item;
+        if (fields.size() >= 2) {
+            item.title = fields[0];
+            item.body = fields[1];
+            if (fields.size() >= 3) item.icon = fields[2];
+            if (fields.size() >= 4) item.suffix = fields[3];
+            if (fields.size() >= 5) item.disabled = _wtoi(fields[4].c_str()) != 0;
         } else {
-            items.push_back({ entry.substr(0, pos), entry.substr(pos + 1) });
+            size_t pos = entry.find(L':');
+            if (pos == std::wstring::npos) pos = entry.find(L'=');
+            if (pos == std::wstring::npos) {
+                item.title = entry;
+            } else {
+                item.title = entry.substr(0, pos);
+                item.body = entry.substr(pos + 1);
+            }
         }
+        items.push_back(item);
     }
     return items;
 }
@@ -947,6 +961,64 @@ int __stdcall EU_CreateContainer(HWND hwnd, int parent_id, int x, int y, int w, 
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
+}
+
+static int create_container_region(HWND hwnd, int parent_id,
+                                   const unsigned char* text_bytes, int text_len,
+                                   int x, int y, int w, int h, int role) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = find_parent_or_root(st, parent_id);
+    std::unique_ptr<ContainerRegion> el;
+    if (role == ContainerRegion::HeaderRole) {
+        el = std::make_unique<Header>();
+        if (h <= 0) h = 60;
+    } else if (role == ContainerRegion::AsideRole) {
+        el = std::make_unique<Aside>();
+        if (w <= 0) w = 200;
+    } else if (role == ContainerRegion::FooterRole) {
+        el = std::make_unique<Footer>();
+        if (h <= 0) h = 60;
+    } else {
+        el = std::make_unique<Main>();
+    }
+    el->set_logical_bounds({ x, y, w, h });
+    el->text = utf8_to_wide(text_bytes, text_len);
+    el->set_logical_style(el->style);
+
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CreateHeader(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::HeaderRole);
+}
+
+int __stdcall EU_CreateAside(HWND hwnd, int parent_id,
+                             const unsigned char* text_bytes, int text_len,
+                             int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::AsideRole);
+}
+
+int __stdcall EU_CreateMain(HWND hwnd, int parent_id,
+                            const unsigned char* text_bytes, int text_len,
+                            int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::MainRole);
+}
+
+int __stdcall EU_CreateFooter(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::FooterRole);
 }
 
 int __stdcall EU_CreateLayout(HWND hwnd, int parent_id, int orientation, int gap,
@@ -3970,6 +4042,42 @@ int __stdcall EU_GetPanelLayout(HWND hwnd, int element_id, int* fill_parent, int
     return 1;
 }
 
+void __stdcall EU_SetContainerLayout(HWND hwnd, int element_id, int enabled, int direction, int gap) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Container>(hwnd, element_id)) {
+        el->set_flow_options(enabled, direction, gap);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetContainerLayout(HWND hwnd, int element_id, int* enabled, int* direction, int* gap, int* actual_direction) {
+    auto* el = find_typed_element<Container>(hwnd, element_id);
+    if (!el) return 0;
+    if (enabled) *enabled = el->flow_enabled;
+    if (direction) *direction = el->flow_direction;
+    if (gap) *gap = el->get_logical_gap();
+    if (actual_direction) *actual_direction = el->flow_enabled ? el->actual_direction : 0;
+    return 1;
+}
+
+void __stdcall EU_SetContainerRegionTextOptions(HWND hwnd, int element_id, int align, int valign) {
+    if (auto* el = find_typed_element<ContainerRegion>(hwnd, element_id)) {
+        el->set_text_options(align, valign);
+    }
+}
+
+int __stdcall EU_GetContainerRegionTextOptions(HWND hwnd, int element_id, int* align, int* valign, int* role) {
+    auto* el = find_typed_element<ContainerRegion>(hwnd, element_id);
+    if (!el) return 0;
+    if (align) *align = el->horizontal_align;
+    if (valign) *valign = el->vertical_align;
+    if (role) *role = el->region_role;
+    return 1;
+}
+
 void __stdcall EU_SetLayoutOptions(HWND hwnd, int element_id, int orientation, int gap, int stretch, int align, int wrap) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return;
@@ -6489,6 +6597,13 @@ int __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
     return el ? copy_wide_as_utf8(el->full_state_text(), buffer, buffer_size) : 0;
 }
 
+void __stdcall EU_SetCardTitle(HWND hwnd, int element_id,
+                               const unsigned char* title_bytes, int title_len) {
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        el->set_title(utf8_to_wide(title_bytes, title_len));
+    }
+}
+
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
                               const unsigned char* body_bytes, int body_len) {
     if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
@@ -6503,6 +6618,17 @@ void __stdcall EU_SetCardFooter(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetCardItems(HWND hwnd, int element_id,
+                               const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        std::vector<std::wstring> items;
+        for (const auto& item : split_wide_list(utf8_to_wide(items_bytes, items_len), L"|\t\n\r")) {
+            if (!item.empty()) items.push_back(item);
+        }
+        el->set_items(items);
+    }
+}
+
 void __stdcall EU_SetCardActions(HWND hwnd, int element_id,
                                  const unsigned char* actions_bytes, int actions_len) {
     if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
@@ -6512,6 +6638,11 @@ void __stdcall EU_SetCardActions(HWND hwnd, int element_id,
         }
         el->set_actions(actions);
     }
+}
+
+int __stdcall EU_GetCardItemCount(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Card>(hwnd, element_id);
+    return el ? (int)el->items.size() : 0;
 }
 
 int __stdcall EU_GetCardAction(HWND hwnd, int element_id) {
@@ -6537,6 +6668,84 @@ void __stdcall EU_SetCardOptions(HWND hwnd, int element_id, int shadow, int hove
     }
 }
 
+void __stdcall EU_SetCardStyle(HWND hwnd, int element_id,
+                               Color bg, Color border, float border_width,
+                               float radius, int padding) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        ElementStyle logical = el->has_logical_style ? el->logical_style : el->style;
+        int pad = padding >= 0 ? padding : 0;
+        logical.bg_color = bg;
+        logical.border_color = border;
+        logical.border_width = border_width >= 0.0f ? border_width : 0.0f;
+        logical.corner_radius = radius >= 0.0f ? radius : 0.0f;
+        logical.pad_left = pad;
+        logical.pad_top = pad;
+        logical.pad_right = pad;
+        logical.pad_bottom = pad;
+        el->set_logical_style(logical);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetCardStyle(HWND hwnd, int element_id,
+                              Color* bg, Color* border, float* border_width,
+                              float* radius, int* padding) {
+    auto* el = find_typed_element<Card>(hwnd, element_id);
+    if (!el) return 0;
+    const ElementStyle& s = el->has_logical_style ? el->logical_style : el->style;
+    if (bg) *bg = s.bg_color;
+    if (border) *border = s.border_color;
+    if (border_width) *border_width = s.border_width;
+    if (radius) *radius = s.corner_radius;
+    if (padding) *padding = s.pad_left;
+    return 1;
+}
+
+void __stdcall EU_SetCardBodyStyle(HWND hwnd, int element_id,
+                                   int pad_left, int pad_top, int pad_right, int pad_bottom,
+                                   float font_size, int item_gap, int item_padding_y,
+                                   int divider) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        CardBodyStyle style;
+        style.pad_left = pad_left >= 0 ? pad_left : 0;
+        style.pad_top = pad_top >= 0 ? pad_top : 0;
+        style.pad_right = pad_right >= 0 ? pad_right : 0;
+        style.pad_bottom = pad_bottom >= 0 ? pad_bottom : 0;
+        style.font_size = font_size > 0.0f ? font_size : 14.0f;
+        style.item_gap = item_gap >= 0 ? item_gap : 0;
+        style.item_padding_y = item_padding_y >= 0 ? item_padding_y : 0;
+        style.divider = divider != 0;
+        el->set_body_style(style);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetCardBodyStyle(HWND hwnd, int element_id,
+                                  int* pad_left, int* pad_top, int* pad_right, int* pad_bottom,
+                                  float* font_size, int* item_gap, int* item_padding_y,
+                                  int* divider) {
+    auto* el = find_typed_element<Card>(hwnd, element_id);
+    if (!el) return 0;
+    const CardBodyStyle& s = el->logical_body_style;
+    if (pad_left) *pad_left = s.pad_left;
+    if (pad_top) *pad_top = s.pad_top;
+    if (pad_right) *pad_right = s.pad_right;
+    if (pad_bottom) *pad_bottom = s.pad_bottom;
+    if (font_size) *font_size = s.font_size;
+    if (item_gap) *item_gap = s.item_gap;
+    if (item_padding_y) *item_padding_y = s.item_padding_y;
+    if (divider) *divider = s.divider ? 1 : 0;
+    return 1;
+}
+
 int __stdcall EU_GetCardOptions(HWND hwnd, int element_id,
                                 int* shadow, int* hoverable, int* action_count) {
     auto* el = find_typed_element<Card>(hwnd, element_id);
@@ -6554,6 +6763,13 @@ void __stdcall EU_SetCollapseItems(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetCollapseItemsEx(HWND hwnd, int element_id,
+                                     const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Collapse>(hwnd, element_id)) {
+        el->set_items(parse_collapse_items(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetCollapseActive(HWND hwnd, int element_id, int active_index) {
     if (auto* el = find_typed_element<Collapse>(hwnd, element_id)) {
         el->set_active_index(active_index);
@@ -6563,6 +6779,19 @@ void __stdcall EU_SetCollapseActive(HWND hwnd, int element_id, int active_index)
 int __stdcall EU_GetCollapseActive(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Collapse>(hwnd, element_id);
     return el ? el->active_index : -1;
+}
+
+void __stdcall EU_SetCollapseActiveItems(HWND hwnd, int element_id,
+                                         const unsigned char* indices_bytes, int indices_len) {
+    if (auto* el = find_typed_element<Collapse>(hwnd, element_id)) {
+        el->set_active_indices(parse_index_set(indices_bytes, indices_len));
+    }
+}
+
+int __stdcall EU_GetCollapseActiveItems(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Collapse>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->active_indices_text(), buffer, buffer_size) : 0;
 }
 
 int __stdcall EU_GetCollapseItemCount(HWND hwnd, int element_id) {
@@ -6599,8 +6828,20 @@ int __stdcall EU_GetCollapseOptions(HWND hwnd, int element_id,
     if (accordion) *accordion = el->accordion ? 1 : 0;
     if (allow_collapse) *allow_collapse = el->allow_collapse ? 1 : 0;
     if (animated) *animated = el->animated ? 1 : 0;
-    if (disabled_count) *disabled_count = (int)el->disabled_indices.size();
+    if (disabled_count) {
+        std::set<int> disabled = el->disabled_indices;
+        for (int i = 0; i < (int)el->items.size(); ++i) {
+            if (el->items[(size_t)i].disabled) disabled.insert(i);
+        }
+        *disabled_count = (int)disabled.size();
+    }
     return 1;
+}
+
+int __stdcall EU_GetCollapseStateJson(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Collapse>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->state_json(), buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetTimelineItems(HWND hwnd, int element_id,

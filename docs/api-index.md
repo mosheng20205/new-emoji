@@ -19,7 +19,11 @@
 | `EU_CreateLink` | |
 | `EU_CreateIcon` | |
 | `EU_CreateSpace` | |
-| `EU_CreateContainer` | |
+| `EU_CreateContainer` | 创建 Container 容器；默认兼容旧绝对定位，流式布局通过 `EU_SetContainerLayout` 开启 |
+| `EU_CreateHeader` | 创建 Container 顶栏区域 |
+| `EU_CreateAside` | 创建 Container 侧边栏区域 |
+| `EU_CreateMain` | 创建 Container 主要区域 |
+| `EU_CreateFooter` | 创建 Container 底栏区域 |
 | `EU_CreateLayout` | |
 | `EU_CreateBorder` | |
 | `EU_CreateCheckbox` | 创建独立复选框，支持普通/边框/尺寸样式 |
@@ -44,8 +48,8 @@
 | `EU_CreateSkeleton` | |
 | `EU_CreateDescriptions` | |
 | `EU_CreateTable` | 创建表格；兼容旧基础表格协议，高级能力通过 `EU_SetTableColumnsEx` / `EU_SetTableRowsEx` 补齐 |
-| `EU_CreateCard` | |
-| `EU_CreateCollapse` | |
+| `EU_CreateCard` | 创建 Card 卡片，支持标题、正文、阴影和子元素插槽 |
+| `EU_CreateCollapse` | 创建 Collapse 折叠面板，支持多展开、手风琴、中文 emoji 标题和旧项目格式 |
 | `EU_CreateTimeline` | 创建 Timeline 时间线，支持中文和 emoji 项目 |
 | `EU_CreateStatistic` | 创建统计数值组件 |
 | `EU_CreateKpiCard` | |
@@ -147,6 +151,10 @@
 | `EU_GetPanelStyle` | |
 | `EU_SetPanelLayout` | |
 | `EU_GetPanelLayout` | |
+| `EU_SetContainerLayout` | 设置 Container 流式布局：0自动、1横向、2纵向 |
+| `EU_GetContainerLayout` | 读取 Container 流式布局、间距和实际方向 |
+| `EU_SetContainerRegionTextOptions` | 设置 Header/Aside/Main/Footer 区域文本对齐 |
+| `EU_GetContainerRegionTextOptions` | 读取 Header/Aside/Main/Footer 区域文本对齐和角色 |
 | `EU_SetLayoutOptions` | |
 | `EU_GetLayoutOptions` | |
 | `EU_SetLayoutChildWeight` | |
@@ -451,21 +459,32 @@
 | `EU_SetTableCellActionCallback` | 设置单元格按钮、开关、选择、展开等交互回调 |
 | `EU_GetTableCellValue` | 读取单元格值 |
 | `EU_GetTableFullState` | 读取高级表格摘要状态 |
-| `EU_SetCardBody` | |
-| `EU_SetCardFooter` | |
-| `EU_SetCardActions` | |
-| `EU_GetCardAction` | |
-| `EU_ResetCardAction` | |
-| `EU_SetCardShadow` | |
-| `EU_SetCardOptions` | |
-| `EU_GetCardOptions` | |
-| `EU_SetCollapseItems` | |
-| `EU_SetCollapseActive` | |
-| `EU_GetCollapseActive` | |
-| `EU_GetCollapseItemCount` | |
-| `EU_SetCollapseOptions` | |
-| `EU_SetCollapseAdvancedOptions` | |
-| `EU_GetCollapseOptions` | |
+| `EU_SetCardTitle` | 设置 Card 标题 |
+| `EU_SetCardBody` | 设置 Card 正文 |
+| `EU_SetCardFooter` | 设置 Card 页脚文字 |
+| `EU_SetCardItems` | 设置 Card 正文列表项 |
+| `EU_SetCardActions` | 设置 Card 页脚操作项 |
+| `EU_GetCardItemCount` | 读取 Card 列表项数量 |
+| `EU_GetCardAction` | 读取 Card 最近点击的操作索引 |
+| `EU_ResetCardAction` | 重置 Card 操作索引 |
+| `EU_SetCardShadow` | 设置 Card 阴影模式 |
+| `EU_SetCardOptions` | 设置 Card 阴影和悬停选项 |
+| `EU_SetCardStyle` | 设置 Card 背景、边框、圆角和外层 padding |
+| `EU_GetCardStyle` | 读取 Card 背景、边框、圆角和外层 padding |
+| `EU_SetCardBodyStyle` | 设置 Card 正文 padding、字号、列表间距、列表内边距和分割线 |
+| `EU_GetCardBodyStyle` | 读取 Card 正文样式 |
+| `EU_GetCardOptions` | 读取 Card 阴影、悬停和操作项数量 |
+| `EU_SetCollapseItems` | 设置 Collapse 项目；兼容 `标题:正文` 和扩展字段 |
+| `EU_SetCollapseItemsEx` | 设置 Collapse 扩展项目，字段为标题、正文、标题图标、右侧说明、禁用 |
+| `EU_SetCollapseActive` | 设置单个激活项，兼容旧单展开调用 |
+| `EU_GetCollapseActive` | 读取兼容单激活索引 |
+| `EU_SetCollapseActiveItems` | 设置多个激活项，非手风琴模式可同时展开 |
+| `EU_GetCollapseActiveItems` | 读取多个激活项索引列表 |
+| `EU_GetCollapseItemCount` | 读取 Collapse 项目数量 |
+| `EU_SetCollapseOptions` | 设置手风琴、再次点击折叠和禁用索引 |
+| `EU_SetCollapseAdvancedOptions` | 设置手风琴、再次点击折叠、动画和禁用索引 |
+| `EU_GetCollapseOptions` | 读取 Collapse 选项 |
+| `EU_GetCollapseStateJson` | 读取 Collapse 完整状态 JSON |
 | `EU_SetTimelineItems` | 设置 Timeline 项目，支持类型、图标、颜色、尺寸、时间位置和卡片字段 |
 | `EU_SetTimelineOptions` | 设置 Timeline 基础选项：位置和显示时间 |
 | `EU_GetTimelineItemCount` | 读取 Timeline 项目数量 |

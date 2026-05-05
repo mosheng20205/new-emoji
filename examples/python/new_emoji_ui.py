@@ -125,6 +125,18 @@ dll.EU_CreateContainer.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateContainer.restype = ctypes.c_int
 
+_container_region_args = [wintypes.HWND, ctypes.c_int,
+                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                          ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateHeader.argtypes = _container_region_args
+dll.EU_CreateHeader.restype = ctypes.c_int
+dll.EU_CreateAside.argtypes = _container_region_args
+dll.EU_CreateAside.restype = ctypes.c_int
+dll.EU_CreateMain.argtypes = _container_region_args
+dll.EU_CreateMain.restype = ctypes.c_int
+dll.EU_CreateFooter.argtypes = _container_region_args
+dll.EU_CreateFooter.restype = ctypes.c_int
+
 dll.EU_CreateLayout.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateLayout.restype = ctypes.c_int
@@ -740,8 +752,15 @@ dll.EU_ShowPromptBox.restype = ctypes.c_int
 dll.EU_SetElementColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32]
 dll.EU_SetElementText.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetElementText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetElementText.restype = ctypes.c_int
 dll.EU_SetElementBounds.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetElementBounds.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetElementBounds.restype = ctypes.c_int
 dll.EU_SetElementVisible.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetElementVisible.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetElementVisible.restype = ctypes.c_int
@@ -789,6 +808,18 @@ dll.EU_SetPanelLayout.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, cty
 dll.EU_GetPanelLayout.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetPanelLayout.restype = ctypes.c_int
+dll.EU_SetContainerLayout.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetContainerLayout.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetContainerLayout.restype = ctypes.c_int
+dll.EU_SetContainerRegionTextOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.c_int, ctypes.c_int]
+dll.EU_GetContainerRegionTextOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                                 ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetContainerRegionTextOptions.restype = ctypes.c_int
 dll.EU_SetLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_GetLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1455,26 +1486,56 @@ dll.EU_GetTableCellValue.restype = ctypes.c_int
 dll.EU_GetTableFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetTableFullState.restype = ctypes.c_int
+dll.EU_SetCardTitle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardBody.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardFooter.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCardItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardActions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCardItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetCardItemCount.restype = ctypes.c_int
 dll.EU_GetCardAction.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCardAction.restype = ctypes.c_int
 dll.EU_ResetCardAction.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_SetCardShadow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetCardOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetCardStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float,
+                                ctypes.c_float, ctypes.c_int]
+dll.EU_GetCardStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float),
+                                ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCardStyle.restype = ctypes.c_int
+dll.EU_SetCardBodyStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_float, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetCardBodyStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCardBodyStyle.restype = ctypes.c_int
 dll.EU_GetCardOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                   ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetCardOptions.restype = ctypes.c_int
 dll.EU_SetCollapseItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCollapseItemsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCollapseActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetCollapseActive.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCollapseActive.restype = ctypes.c_int
+dll.EU_SetCollapseActiveItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCollapseActiveItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCollapseActiveItems.restype = ctypes.c_int
 dll.EU_GetCollapseItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCollapseItemCount.restype = ctypes.c_int
 dll.EU_SetCollapseOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1487,6 +1548,9 @@ dll.EU_GetCollapseOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetCollapseOptions.restype = ctypes.c_int
+dll.EU_GetCollapseStateJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCollapseStateJson.restype = ctypes.c_int
 dll.EU_SetTimelineItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTimelineOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -3533,6 +3597,22 @@ def get_space_size(hwnd, element_id):
 def create_container(hwnd, parent_id, x=0, y=0, w=800, h=600):
     return dll.EU_CreateContainer(hwnd, parent_id, x, y, w, h)
 
+def _create_container_region(fn, hwnd, parent_id, text="", x=0, y=0, w=0, h=0):
+    data = make_utf8(text)
+    return fn(hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h)
+
+def create_header(hwnd, parent_id, text="顶栏", x=0, y=0, w=0, h=60):
+    return _create_container_region(dll.EU_CreateHeader, hwnd, parent_id, text, x, y, w, h)
+
+def create_aside(hwnd, parent_id, text="侧边栏", x=0, y=0, w=200, h=0):
+    return _create_container_region(dll.EU_CreateAside, hwnd, parent_id, text, x, y, w, h)
+
+def create_main(hwnd, parent_id, text="主要区域", x=0, y=0, w=0, h=0):
+    return _create_container_region(dll.EU_CreateMain, hwnd, parent_id, text, x, y, w, h)
+
+def create_footer(hwnd, parent_id, text="底栏", x=0, y=0, w=0, h=60):
+    return _create_container_region(dll.EU_CreateFooter, hwnd, parent_id, text, x, y, w, h)
+
 def create_layout(hwnd, parent_id, orientation=0, gap=8, x=0, y=0, w=300, h=40):
     return dll.EU_CreateLayout(hwnd, parent_id, orientation, gap, x, y, w, h)
 
@@ -3578,6 +3658,47 @@ def get_panel_layout(hwnd, element_id):
     if not ok:
         return None
     return bool(fill_parent.value), bool(content_layout.value)
+
+def set_container_layout(hwnd, element_id, enabled=True, direction=0, gap=0):
+    dll.EU_SetContainerLayout(hwnd, element_id, 1 if enabled else 0, direction, gap)
+
+def get_container_layout(hwnd, element_id):
+    enabled = ctypes.c_int()
+    direction = ctypes.c_int()
+    gap = ctypes.c_int()
+    actual = ctypes.c_int()
+    ok = dll.EU_GetContainerLayout(
+        hwnd, element_id,
+        ctypes.byref(enabled), ctypes.byref(direction),
+        ctypes.byref(gap), ctypes.byref(actual),
+    )
+    if not ok:
+        return None
+    return {
+        "enabled": bool(enabled.value),
+        "direction": direction.value,
+        "gap": gap.value,
+        "actual_direction": actual.value,
+    }
+
+def set_container_region_text_options(hwnd, element_id, align=1, valign=1):
+    dll.EU_SetContainerRegionTextOptions(hwnd, element_id, align, valign)
+
+def get_container_region_text_options(hwnd, element_id):
+    align = ctypes.c_int()
+    valign = ctypes.c_int()
+    role = ctypes.c_int()
+    ok = dll.EU_GetContainerRegionTextOptions(
+        hwnd, element_id,
+        ctypes.byref(align), ctypes.byref(valign), ctypes.byref(role),
+    )
+    if not ok:
+        return None
+    return {
+        "align": align.value,
+        "valign": valign.value,
+        "role": role.value,
+    }
 
 def set_button_emoji(hwnd, element_id, emoji=""):
     data = make_utf8(emoji)
@@ -4140,6 +4261,30 @@ def get_slider_range_mode(hwnd, element_id):
 def set_element_text(hwnd, element_id, text=""):
     data = make_utf8(text)
     dll.EU_SetElementText(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_element_text(hwnd, element_id):
+    needed = dll.EU_GetElementText(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    written = dll.EU_GetElementText(hwnd, element_id, buf, needed + 1)
+    if written < 0:
+        return ""
+    size = min(written, needed)
+    return bytes(buf[:size]).decode("utf-8", errors="replace")
+
+def get_element_bounds(hwnd, element_id):
+    x = ctypes.c_int()
+    y = ctypes.c_int()
+    w = ctypes.c_int()
+    h = ctypes.c_int()
+    ok = dll.EU_GetElementBounds(
+        hwnd, element_id,
+        ctypes.byref(x), ctypes.byref(y), ctypes.byref(w), ctypes.byref(h),
+    )
+    if not ok:
+        return None
+    return x.value, y.value, w.value, h.value
 
 def set_element_color(hwnd, element_id, bg=0, fg=0):
     dll.EU_SetElementColor(hwnd, element_id, bg, fg)
@@ -5893,17 +6038,65 @@ def create_card(hwnd, parent_id, title="🧩 卡片", body="", shadow=1,
         shadow, x, y, w, h
     )
 
+def create_image_card(hwnd, parent_id, image_src="", title="🍔 图片卡片",
+                      subtitle="", button_text="操作按钮", shadow=1,
+                      x=0, y=0, w=280, h=240):
+    card_id = create_card(hwnd, parent_id, "", "", shadow, x, y, w, h)
+    set_card_body_style(hwnd, card_id, 0, 0, 0, 0, 14.0, 0, 0, False)
+    image_h = max(80, min(h - 76, int(w * 0.56)))
+    create_image(hwnd, card_id, image_src, title, "cover", 0, 0, w, image_h)
+    create_text(hwnd, card_id, title, 14, image_h + 12, w - 28, 26)
+    if subtitle:
+        create_text(hwnd, card_id, subtitle, 14, image_h + 44, max(40, w - 122), 24)
+    if button_text:
+        create_button(hwnd, card_id, "", button_text, max(14, w - 98), image_h + 40, 84, 28, variant=5)
+    return card_id
+
+def _collapse_bool(value):
+    if isinstance(value, str):
+        return value.strip().lower() not in ("", "0", "false", "no", "否")
+    return bool(value)
+
+def _collapse_item_row(item):
+    if isinstance(item, dict):
+        fields = [
+            item.get("title", item.get("label", "")),
+            item.get("body", item.get("content", "")),
+            item.get("icon", ""),
+            item.get("suffix", item.get("right", item.get("extra", ""))),
+            1 if _collapse_bool(item.get("disabled", False)) else 0,
+        ]
+        return "\t".join(str(v) for v in fields)
+    if isinstance(item, (list, tuple)):
+        fields = list(item[:5])
+        while len(fields) < 5:
+            fields.append("")
+        fields[4] = 1 if _collapse_bool(fields[4]) else 0
+        return "\t".join(str(v) for v in fields)
+    return str(item)
+
+def _collapse_indices_text(indices):
+    if indices is None:
+        return ""
+    if isinstance(indices, int):
+        return str(indices)
+    return ",".join(str(int(i)) for i in indices)
+
 def create_collapse(hwnd, parent_id, items=None, active=0, accordion=True,
                     x=0, y=0, w=360, h=180):
     if items is None:
         items = [("🎯 一致性", "保持界面风格一致。"),
                  ("💡 反馈", "提供清晰的状态变化。")]
-    items_data = make_utf8("|".join(f"{title}:{body}" for title, body in items))
-    return dll.EU_CreateCollapse(
+    items_data = make_utf8("|".join(_collapse_item_row(item) for item in items))
+    active_index = active[0] if isinstance(active, (list, tuple, set)) and active else active
+    element_id = dll.EU_CreateCollapse(
         hwnd, parent_id,
         bytes_arg(items_data), len(items_data),
-        active, 1 if accordion else 0, x, y, w, h
+        int(active_index) if active_index is not None else -1, 1 if accordion else 0, x, y, w, h
     )
+    if element_id and isinstance(active, (list, tuple, set)):
+        set_collapse_active_items(hwnd, element_id, active)
+    return element_id
 
 def _timeline_placement_value(value):
     if isinstance(value, str):
@@ -8560,9 +8753,26 @@ def set_table_options(hwnd, element_id, striped=True, bordered=True,
         row_height, header_height, 1 if selectable else 0
     )
 
+def set_card_title(hwnd, element_id, title=""):
+    data = make_utf8(title)
+    dll.EU_SetCardTitle(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_card_body(hwnd, element_id, body=""):
+    data = make_utf8(body)
+    dll.EU_SetCardBody(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_card_footer(hwnd, element_id, footer=""):
     data = make_utf8(footer)
     dll.EU_SetCardFooter(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_card_items(hwnd, element_id, items=None):
+    if items is None:
+        items = []
+    data = make_utf8("|".join(str(item) for item in items))
+    dll.EU_SetCardItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_card_item_count(hwnd, element_id):
+    return dll.EU_GetCardItemCount(hwnd, element_id)
 
 def set_card_actions(hwnd, element_id, actions=None):
     if actions is None:
@@ -8579,6 +8789,66 @@ def reset_card_action(hwnd, element_id):
 def set_card_options(hwnd, element_id, shadow=1, hoverable=True):
     dll.EU_SetCardOptions(hwnd, element_id, shadow, 1 if hoverable else 0)
 
+def set_card_style(hwnd, element_id, bg=0, border=0, border_width=1.0,
+                   radius=4.0, padding=18):
+    dll.EU_SetCardStyle(
+        hwnd, element_id, bg, border,
+        ctypes.c_float(border_width), ctypes.c_float(radius), padding
+    )
+
+def get_card_style(hwnd, element_id):
+    bg = ctypes.c_uint32()
+    border = ctypes.c_uint32()
+    border_width = ctypes.c_float()
+    radius = ctypes.c_float()
+    padding = ctypes.c_int()
+    ok = dll.EU_GetCardStyle(
+        hwnd, element_id,
+        ctypes.byref(bg), ctypes.byref(border),
+        ctypes.byref(border_width), ctypes.byref(radius),
+        ctypes.byref(padding)
+    )
+    return (bg.value, border.value, border_width.value, radius.value, padding.value) if ok else None
+
+def set_card_body_style(hwnd, element_id, pad_left=18, pad_top=14, pad_right=18,
+                        pad_bottom=14, font_size=14.0, item_gap=0,
+                        item_padding_y=0, divider=False):
+    dll.EU_SetCardBodyStyle(
+        hwnd, element_id,
+        pad_left, pad_top, pad_right, pad_bottom,
+        ctypes.c_float(font_size), item_gap, item_padding_y,
+        1 if divider else 0
+    )
+
+def get_card_body_style(hwnd, element_id):
+    pad_left = ctypes.c_int()
+    pad_top = ctypes.c_int()
+    pad_right = ctypes.c_int()
+    pad_bottom = ctypes.c_int()
+    font_size = ctypes.c_float()
+    item_gap = ctypes.c_int()
+    item_padding_y = ctypes.c_int()
+    divider = ctypes.c_int()
+    ok = dll.EU_GetCardBodyStyle(
+        hwnd, element_id,
+        ctypes.byref(pad_left), ctypes.byref(pad_top),
+        ctypes.byref(pad_right), ctypes.byref(pad_bottom),
+        ctypes.byref(font_size), ctypes.byref(item_gap),
+        ctypes.byref(item_padding_y), ctypes.byref(divider)
+    )
+    if not ok:
+        return None
+    return {
+        "pad_left": pad_left.value,
+        "pad_top": pad_top.value,
+        "pad_right": pad_right.value,
+        "pad_bottom": pad_bottom.value,
+        "font_size": font_size.value,
+        "item_gap": item_gap.value,
+        "item_padding_y": item_padding_y.value,
+        "divider": bool(divider.value),
+    }
+
 def get_card_options(hwnd, element_id):
     shadow = ctypes.c_int()
     hoverable = ctypes.c_int()
@@ -8591,6 +8861,22 @@ def get_card_options(hwnd, element_id):
 
 def get_collapse_item_count(hwnd, element_id):
     return dll.EU_GetCollapseItemCount(hwnd, element_id)
+
+def set_collapse_items_ex(hwnd, element_id, items):
+    data = make_utf8("|".join(_collapse_item_row(item) for item in (items or [])))
+    dll.EU_SetCollapseItemsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_collapse_active_items(hwnd, element_id, indices):
+    data = make_utf8(_collapse_indices_text(indices))
+    dll.EU_SetCollapseActiveItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_collapse_active_items(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    needed = dll.EU_GetCollapseActiveItems(hwnd, element_id, buf, buffer_size)
+    raw = bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
+    if not raw:
+        return []
+    return [int(item) for item in raw.replace("|", ",").replace(";", ",").split(",") if item.strip()]
 
 def set_collapse_options(hwnd, element_id, accordion=True, allow_collapse=True,
                          disabled_indices=None, animated=True):
@@ -8619,6 +8905,9 @@ def get_collapse_options(hwnd, element_id):
         bool(animated.value),
         disabled_count.value,
     ) if ok else None
+
+def get_collapse_state_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetCollapseStateJson, hwnd, element_id)
 
 def set_timeline_options(hwnd, element_id, position=0, show_time=True):
     dll.EU_SetTimelineOptions(hwnd, element_id, position, 1 if show_time else 0)

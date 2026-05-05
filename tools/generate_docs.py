@@ -13,7 +13,7 @@ MANIFEST = ROOT / "docs" / "components" / "manifest.json"
 CATEGORIES = {
     "基础/布局": [
         "Panel", "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space",
-        "Container", "Layout", "Border", "Divider",
+        "Container", "Header", "Aside", "Main", "Footer", "Layout", "Border", "Divider",
     ],
     "表单/选择": [
         "Checkbox", "Radio", "Switch", "Slider", "InputNumber", "Input",
@@ -50,7 +50,8 @@ CATEGORIES = {
 ZH_NAMES = {
     "Panel": "面板", "Button": "按钮", "EditBox": "编辑框", "InfoBox": "信息框",
     "Text": "文本", "Link": "链接", "Icon": "图标", "Space": "间距",
-    "Container": "容器", "Layout": "布局", "Border": "边框", "Divider": "分割线",
+    "Container": "容器套件", "Header": "顶栏", "Aside": "侧边栏",
+    "Main": "主要区域", "Footer": "底栏", "Layout": "布局", "Border": "边框", "Divider": "分割线",
     "Checkbox": "复选框", "Radio": "单选框", "Switch": "开关", "Slider": "滑块",
     "InputNumber": "数字输入框", "Input": "输入框", "InputGroup": "组合输入", "InputTag": "标签输入",
     "Select": "选择器", "SelectV2": "虚拟选择器", "Rate": "评分",
@@ -475,7 +476,7 @@ def api_index(exports: list[str]) -> str:
 
 
 def components_index(components: list[dict[str, str]]) -> str:
-    blocks = ["# 组件文档导航\n\n计划内 81 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。\n"]
+    blocks = [f"# 组件文档导航\n\n计划内 {len(components)} 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。\n"]
     for category, names in CATEGORIES.items():
         blocks.append(f"\n## {EMOJI.get(category, '📦')} {category}\n")
         blocks.append("| 组件 | 中文名 | 创建导出 | 状态 | 文档 |\n|---|---|---|---|---|\n")

@@ -1,5 +1,5 @@
 """
-new_emoji 84 component gallery.
+new_emoji 88 component gallery.
 
 Run from the repository root:
     python examples/python/component_gallery.py
@@ -251,7 +251,7 @@ def show_component(hwnd, category_name, component_name):
             elif category == category_name:
                 ui.set_element_color(hwnd, button_id, colors["nav_item"], colors["muted"])
     if status_text_id:
-        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 84 个组件 · 左侧二级菜单切换演示")
+        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 88 个组件 · 左侧二级菜单切换演示")
         ui.set_element_color(hwnd, status_text_id, 0, colors["muted"])
 
 
@@ -483,23 +483,122 @@ def showcase_panel(hwnd, stage, w, h):
 
 
 def showcase_container(hwnd, stage, w, h):
-    outer = add_demo_panel(hwnd, stage, "📦 外层容器", 28, 30, w - 56, 300)
-    ui.set_panel_style(hwnd, outer, palette()["panel_canvas"], palette()["panel_canvas_border"], 1.0, 10.0, 12)
-    register_panel(outer, "panel_canvas", "panel_canvas_border", 1.0, 10.0, 12)
-    add_text(hwnd, outer, "外层容器", 28, 66, 160, 24, TEXT)
-    add_text(hwnd, outer, "用于承载内容区、卡片区或多列组合。", 28, 98, 280, 24, MUTED)
+    add_text(hwnd, stage, "📦 Container 套件覆盖顶栏、侧边栏、主要区域、底栏、自动方向、显式横纵向、间距和嵌套后台壳。", 36, 28, w - 72, 28, MUTED)
 
-    add_themed_panel(hwnd, outer, 26, 136, w - 108, 118, "panel_neutral", "panel_neutral_border", 1.0, 10.0, 10)
-    inner = ui.create_container(hwnd, outer, 26, 136, w - 108, 118)
-    add_themed_panel(hwnd, inner, 18, 18, 220, 82, "panel_blue", "panel_blue_border", 1.0, 8.0, 10)
-    add_themed_panel(hwnd, inner, 260, 18, 220, 82, "panel_gold", "panel_gold_border", 1.0, 8.0, 10)
-    add_themed_panel(hwnd, inner, 502, 18, 220, 82, "panel_green", "panel_green_border", 1.0, 8.0, 10)
-    add_role_text(hwnd, inner, "内容块 A", 36, 48, 120, 24, "panel_blue_text")
-    add_role_text(hwnd, inner, "内容块 B", 278, 48, 120, 24, "panel_gold_text")
-    add_role_text(hwnd, inner, "内容块 C", 520, 48, 120, 24, "panel_green_text")
+    def make_flow(parent, x, y, cw, ch, direction=0, gap=0, bg=0):
+        cid = ui.create_container(hwnd, parent, x, y, cw, ch)
+        ui.set_panel_layout(hwnd, cid, fill_parent=False, content_layout=False)
+        ui.set_panel_style(hwnd, cid, bg, 0x00000000, 0.0, 0.0, 0)
+        ui.set_container_layout(hwnd, cid, True, direction, gap)
+        return cid
 
-    note = add_demo_panel(hwnd, stage, "🧩 容器用途说明", 28, 354, w - 56, 150)
-    add_text(hwnd, note, "Container 更像一个透明骨架。它本身负责收纳和分层，真正的视觉通常来自内部内容卡、布局块和状态块。", 28, 72, w - 116, 44, MUTED)
+    def layout_card(parent, title, index, builder):
+        card_w = (w - 116) // 4
+        card_h = 142
+        col = index % 4
+        row = index // 4
+        x = 20 + col * (card_w + 12)
+        y = 54 + row * (card_h + 12)
+        card = add_themed_panel(hwnd, parent, x, y, card_w, card_h, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        add_text(hwnd, card, title, 10, 8, card_w - 20, 22, MUTED)
+        root = make_flow(card, 10, 38, card_w - 20, card_h - 52)
+        builder(root)
+        return root
+
+    matrix = add_demo_panel(hwnd, stage, "📐 七种官方 Container 布局", 28, 70, w - 56, 372)
+
+    def case_header_main(root):
+        ui.create_header(hwnd, root, "📌 顶栏", h=42)
+        ui.create_main(hwnd, root, "📄 主要区域")
+
+    def case_header_main_footer(root):
+        ui.create_header(hwnd, root, "📌 顶栏", h=36)
+        ui.create_main(hwnd, root, "📄 主要区域")
+        ui.create_footer(hwnd, root, "✅ 底栏", h=34)
+
+    def case_aside_main(root):
+        ui.create_aside(hwnd, root, "🧭 侧边栏", w=118)
+        ui.create_main(hwnd, root, "📄 主要区域")
+
+    def case_header_aside_main(root):
+        ui.create_header(hwnd, root, "📌 顶栏", h=34)
+        body = make_flow(root, 0, 0, 0, 0, direction=1)
+        ui.create_aside(hwnd, body, "🧭 侧边栏", w=112)
+        ui.create_main(hwnd, body, "📄 主要区域")
+
+    def case_header_aside_main_footer(root):
+        ui.create_header(hwnd, root, "📌 顶栏", h=32)
+        body = make_flow(root, 0, 0, 0, 0, direction=1)
+        ui.create_aside(hwnd, body, "🧭 侧边栏", w=108)
+        content = make_flow(body, 0, 0, 0, 0, direction=2)
+        ui.create_main(hwnd, content, "📄 主要区域")
+        ui.create_footer(hwnd, content, "✅ 底栏", h=30)
+
+    def case_aside_header_main(root):
+        ui.set_container_layout(hwnd, root, True, 1, 0)
+        ui.create_aside(hwnd, root, "🧭 侧边栏", w=112)
+        content = make_flow(root, 0, 0, 0, 0, direction=2)
+        ui.create_header(hwnd, content, "📌 顶栏", h=34)
+        ui.create_main(hwnd, content, "📄 主要区域")
+
+    def case_aside_header_main_footer(root):
+        ui.set_container_layout(hwnd, root, True, 1, 0)
+        ui.create_aside(hwnd, root, "🧭 侧边栏", w=104)
+        content = make_flow(root, 0, 0, 0, 0, direction=2)
+        ui.create_header(hwnd, content, "📌 顶栏", h=30)
+        ui.create_main(hwnd, content, "📄 主要区域")
+        ui.create_footer(hwnd, content, "✅ 底栏", h=28)
+
+    for i, (title, builder) in enumerate([
+        ("顶栏 + 主要区域", case_header_main),
+        ("顶栏 + 主要区域 + 底栏", case_header_main_footer),
+        ("侧边栏 + 主要区域", case_aside_main),
+        ("顶栏 + 侧边栏 + 主要区域", case_header_aside_main),
+        ("顶栏 + 侧边栏 + 主要区域 + 底栏", case_header_aside_main_footer),
+        ("侧边栏 + 顶栏 + 主要区域", case_aside_header_main),
+        ("侧边栏 + 顶栏 + 主要区域 + 底栏", case_aside_header_main_footer),
+    ]):
+        layout_card(matrix, title, i, builder)
+
+    style_panel = add_demo_panel(hwnd, stage, "🎨 样式覆盖与布局读回", 28, 464, w - 56, 176)
+    custom = make_flow(style_panel, 28, 58, 620, 96, direction=1, gap=10, bg=0x00000000)
+    aside = ui.create_aside(hwnd, custom, "🧭 左对齐", w=150)
+    main = ui.create_main(hwnd, custom, "📄 自定义主区")
+    footer_like = ui.create_footer(hwnd, custom, "➡️ 右下", w=150, h=0)
+    ui.set_panel_style(hwnd, aside, 0xFFEEF5FF, 0xFF7AA7FF, 1.0, 8.0, 8)
+    ui.set_panel_style(hwnd, main, 0xFFFFFAE8, 0xFFE6A23C, 1.0, 8.0, 8)
+    ui.set_panel_style(hwnd, footer_like, 0xFFEAF8EF, 0xFF63B77C, 1.0, 8.0, 8)
+    ui.set_container_region_text_options(hwnd, aside, 0, 1)
+    ui.set_container_region_text_options(hwnd, footer_like, 2, 2)
+    readback = ui.get_container_layout(hwnd, custom)
+    add_text(hwnd, style_panel, f"📌 当前布局：启用={readback['enabled']} 方向={readback['direction']} 实际={readback['actual_direction']} 间距={readback['gap']}", 690, 64, 620, 30, TEXT)
+    add_text(hwnd, style_panel, "区域文本可设置起始/居中/末尾对齐；颜色、边框、圆角和 padding 复用 Panel 样式 API。", 690, 102, 760, 30, MUTED)
+
+    app_panel = add_demo_panel(hwnd, stage, "🖥️ 桌面后台布局：侧栏菜单 + 顶栏工具 + 表格主区", 28, 666, w - 56, 430)
+    shell = make_flow(app_panel, 28, 58, w - 112, 342, direction=1)
+    sidebar = ui.create_aside(hwnd, shell, "", w=250)
+    ui.set_panel_style(hwnd, sidebar, 0xFFEEF1F6, 0xFFD8DEE8, 1.0, 0.0, 0)
+    menu_items = ["导航一", "> 分组一", "> > 选项1", "> > 选项2", "> 分组二", "> > 选项3", "> 选项4", "> > 选项4-1", "导航二", "导航三"]
+    menu = ui.create_menu(hwnd, sidebar, menu_items, 2, 1, 0, 0, 250, 324)
+    ui.set_menu_expanded(hwnd, menu, [0, 6])
+    blank_meta = [""] * len(menu_items)
+    ui.set_menu_item_meta(hwnd, menu, ["🧭", "📁", "•", "•", "📁", "•", "📦", "•", "📊", "⚙️"], [1, 4], blank_meta, blank_meta, blank_meta)
+
+    workspace = make_flow(shell, 0, 0, 0, 0, direction=2)
+    top = ui.create_header(hwnd, workspace, "", h=54)
+    ui.set_panel_style(hwnd, top, 0xFFB3C0D1, 0x00000000, 0.0, 0.0, 0)
+    add_text(hwnd, top, "⚙️ 系统设置", 690, 16, 110, 24, 0xFF333333)
+    add_text(hwnd, top, "王小虎 👤", 818, 16, 120, 24, 0xFF333333)
+    main_area = ui.create_main(hwnd, workspace, "")
+    ui.set_panel_style(hwnd, main_area, 0xFFE9EEF3, 0x00000000, 0.0, 0.0, 18)
+    columns = ["日期", "姓名", "地址"]
+    rows = [
+        ["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+        ["2016-05-04", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+        ["2016-05-01", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+        ["2016-05-03", "王小虎", "上海市普陀区金沙江路 1518 弄"],
+    ]
+    ui.create_table(hwnd, main_area, columns, rows, True, True, 0, 0, min(w - 430, 1180), 216)
 
 
 def showcase_layout(hwnd, stage, w, h):
@@ -3695,7 +3794,7 @@ def showcase_infinite_scroll(hwnd, stage, w, h):
         hwnd, cards,
         [
             ("🪪 客户工单 A-1024", "华东一区 · 今日 13:40 · 优先级高", "待确认"),
-            ("🧩 组件回归清单", "84 个组件 · Release x64 构建", "检查中"),
+        ("🧩 组件回归清单", "88 个组件 · Release x64 构建", "检查中"),
             ("📦 物料同步任务", "3 个仓库 · 12 条记录", "已排队"),
         ],
         24, 70, max(220, w - 1068), 132,
@@ -3766,6 +3865,132 @@ def showcase_infinite_scroll(hwnd, stage, w, h):
         2, True, 24, 64, w - 112, 82,
     )
     refresh_state()
+
+
+def showcase_card(hwnd, stage, w, h):
+    wide, tall, small = image_sample_files()
+    status = add_text(hwnd, stage, "🪪 Card 卡片：基础、头部操作、正文列表、图片卡片、阴影和桌面业务卡片都由 C++ Card + 子元素插槽完成。", 36, 28, w - 72, 28, MUTED)
+
+    def card_click(label):
+        def action(element_id):
+            ui.set_element_text(hwnd, status, f"🪪 最近操作：{label} · 卡片操作索引 {ui.get_card_action(hwnd, element_id)}")
+        return action
+
+    basics = add_demo_panel(hwnd, stage, "🧩 基础、无头与页脚操作", 28, 70, w - 56, 238)
+    basic = ui.create_card(hwnd, basics, "🧩 基础卡片", "用于承载一组说明、状态或快捷入口。", 1, 28, 66, 300, 132)
+    no_header = ui.create_card(hwnd, basics, "", "只有正文的轻量卡片，适合密集信息区。", 0, 352, 66, 300, 132)
+    action_card = ui.create_card(hwnd, basics, "📌 发布卡片", "页脚区域支持多个可点击操作。", 2, 676, 66, 360, 132)
+    ui.set_card_footer(hwnd, action_card, "最近更新：2026-05-06")
+    ui.set_card_actions(hwnd, action_card, ["查看", "同步", "归档"])
+    ui.set_card_options(hwnd, action_card, shadow=2, hoverable=True)
+    set_click(hwnd, action_card, card_click("页脚按钮"))
+    add_text(hwnd, basics, "shadow：always / never / hover", 1068, 108, 260, 28, MUTED)
+    add_text(hwnd, basics, f"读回：{ui.get_card_options(hwnd, action_card)}", 1068, 148, 260, 28, MUTED)
+
+    header = add_demo_panel(hwnd, stage, "🎛️ Header 插槽：标题 + 右侧操作按钮", 28, 334, 520, 230)
+    header_card = ui.create_card(hwnd, header, "🪪 卡片名称", "", 1, 28, 66, 420, 132)
+    ui.set_card_items(hwnd, header_card, ["📄 列表内容 1", "📄 列表内容 2", "📄 列表内容 3"])
+    ui.set_card_body_style(hwnd, header_card, 18, 12, 18, 12, 14.0, 8, 0, False)
+    op = ui.create_button(hwnd, header_card, "", "操作按钮", 318, 9, 82, 28, variant=5)
+    set_click(hwnd, op, lambda _eid: ui.set_element_text(hwnd, status, "🪪 最近操作：头部右侧操作按钮"))
+
+    lists = add_demo_panel(hwnd, stage, "📋 正文列表：margin 与 padding 两种桌面密度", 580, 334, w - 608, 230)
+    margin_card = ui.create_card(hwnd, lists, "", "", 1, 28, 66, 300, 132)
+    ui.set_card_items(hwnd, margin_card, ["📄 列表内容 1", "📄 列表内容 2", "📄 列表内容 3", "📄 列表内容 4"])
+    ui.set_card_body_style(hwnd, margin_card, 18, 18, 18, 18, 14.0, 18, 0, False)
+    padding_card = ui.create_card(hwnd, lists, "", "", 1, 356, 66, 300, 132)
+    ui.set_card_items(hwnd, padding_card, ["✅ 列表内容 1", "✅ 列表内容 2", "✅ 列表内容 3", "✅ 列表内容 4"])
+    ui.set_card_body_style(hwnd, padding_card, 18, 0, 18, 0, 14.0, 0, 18, True)
+    add_text(hwnd, lists, "左：item_gap=18；右：item_padding_y=18 + divider", 690, 112, 420, 28, MUTED)
+    add_text(hwnd, lists, f"列表读回：{ui.get_card_item_count(hwnd, padding_card)} 项", 690, 150, 260, 28, MUTED)
+
+    media = add_demo_panel(hwnd, stage, "🍔 body-style=0 的图片卡片", 28, 590, w - 56, 270)
+    food = ui.create_image_card(hwnd, media, wide, "🍔 好吃的汉堡", "2026-05-06 09:30", "操作按钮", 1, 28, 62, 300, 182)
+    poster = ui.create_image_card(hwnd, media, tall, "🖼️ 竖向海报", "图片适配 cover", "预览", 1, 352, 62, 260, 182)
+    material = ui.create_image_card(hwnd, media, small, "📦 物料缩略图", "可组合 Image/Text/Button", "入库", 2, 636, 62, 300, 182)
+    ui.set_card_style(hwnd, food, 0xFFFFFFFF, 0xFFDDE5F2, 1.0, 6.0, 0)
+    ui.set_card_style(hwnd, poster, 0xFFFFFFFF, 0xFFDDE5F2, 1.0, 6.0, 0)
+    ui.set_card_style(hwnd, material, 0xFFFFFFFF, 0xFFDDE5F2, 1.0, 6.0, 0)
+    add_text(hwnd, media, "这些图片卡片使用真实 Card 作为父元素，Image、Text、Button 是子元素插槽。", 976, 112, 520, 48, MUTED)
+
+    business = add_demo_panel(hwnd, stage, "🧭 桌面端业务卡片", 28, 886, w - 56, 216)
+    cards = [
+        ("🛡️ 审批中心", "待审批 12 项\n高优先级 3 项", 0xFFEBF5FF, 0xFF78A8F8, ["处理"]),
+        ("🧾 工单队列", "今日新增 28 条\n平均响应 14 分钟", 0xFFFFF7E7, 0xFFF1B85B, ["查看", "分派"]),
+        ("📚 资料卡片", "产品文档 88 篇\n同步状态正常", 0xFFEAF8EF, 0xFF69C587, ["打开"]),
+        ("📦 物料卡片", "库存预警 6 项\n等待补货确认", 0xFFF8FBFF, 0xFFB6C6DE, ["详情"]),
+    ]
+    card_w = max(240, (w - 128) // 4)
+    for i, (title, body, bg, border, actions) in enumerate(cards):
+        x = 28 + i * (card_w + 18)
+        cid = ui.create_card(hwnd, business, title, body, 2 if i == 1 else 1, x, 62, card_w, 126)
+        ui.set_card_style(hwnd, cid, bg, border, 1.0, 8.0, 16)
+        ui.set_card_body_style(hwnd, cid, 16, 12, 16, 12, 14.0, 0, 0, False)
+        ui.set_card_actions(hwnd, cid, actions)
+        set_click(hwnd, cid, card_click(title))
+
+
+def showcase_collapse(hwnd, stage, w, h):
+    add_text(hwnd, stage, "📂 Collapse 折叠面板：多展开、手风琴、自定义标题、禁用项和状态读回都由 C++ Collapse 原生渲染。", 36, 28, w - 72, 28, MUTED)
+    col_w = max(520, (w - 84) // 2)
+    right_x = 56 + col_w
+    right_w = max(420, w - right_x - 28)
+
+    multi_panel = add_demo_panel(hwnd, stage, "📚 基础多展开：activeNames 数组", 28, 70, col_w, 330)
+    multi_items = [
+        ("一致性 Consistency", "与现实生活一致：流程、逻辑保持一致，遵循用户习惯的语言和概念。\n在界面中一致：设计样式、图标、文本和元素位置保持一致。", "🎯", "已展开", 0),
+        ("反馈 Feedback", "控制反馈：通过界面样式和交互动效让用户清晰感知自己的操作。\n页面反馈：操作后通过页面元素变化展现当前状态。", "💬", "已展开", 0),
+        ("效率 Efficiency", "简化流程：设计简洁直观的操作流程。\n清晰明确：语言表达清晰且表意明确，让用户快速理解并决策。", "⚡", "可展开", 0),
+        ("可控 Controllability", "用户决策：给予操作建议或安全提示，但不代替用户决策。\n结果可控：用户可以撤销、回退或终止当前操作。", "🛡️", "可展开", 0),
+    ]
+    multi = ui.create_collapse(hwnd, multi_panel, multi_items, active=[0, 1], accordion=False, x=24, y=64, w=col_w - 48, h=240)
+    ui.set_collapse_options(hwnd, multi, accordion=False, allow_collapse=True, animated=True)
+
+    accordion_panel = add_demo_panel(hwnd, stage, "🪗 手风琴模式：accordion", right_x, 70, right_w, 330)
+    accordion = ui.create_collapse(
+        hwnd, accordion_panel,
+        [
+            ("反馈面板", "一次只展开一个区域，适合设置页左侧摘要或帮助中心目录。", "📣", "当前", 0),
+            ("效率面板", "点击其他标题时，当前展开项会自动收起。", "⚙️", "候选", 0),
+            ("可控面板", "allow_collapse=False 时，已展开项再次点击不会关闭。", "🔒", "锁定", 0),
+        ],
+        active=0, accordion=True, x=24, y=64, w=right_w - 48, h=220
+    )
+    ui.set_collapse_options(hwnd, accordion, accordion=True, allow_collapse=False, animated=True)
+
+    custom_panel = add_demo_panel(hwnd, stage, "🎛️ 自定义标题：图标、右侧信息和禁用项", 28, 428, w - 56, 300)
+    custom = ui.create_collapse(
+        hwnd, custom_panel,
+        [
+            {"title": "组件规范", "body": "标题区支持 emoji 图标和右侧状态说明，可直接呈现桌面软件里的设置分组。", "icon": "🧩", "suffix": "说明"},
+            {"title": "禁用分组", "body": "这个项目禁用，仅展示弱化标题，不响应点击和键盘切换。", "icon": "🚫", "suffix": "禁用", "disabled": True},
+            {"title": "发布检查", "body": "正文支持显式换行。\n可用于列出检查项、注意事项或折叠式表单说明。", "icon": "✅", "suffix": "2 项"},
+        ],
+        active=[0, 2], accordion=False, x=24, y=64, w=w - 104, h=210
+    )
+    ui.set_collapse_options(hwnd, custom, accordion=False, allow_collapse=True, disabled_indices=[1], animated=True)
+
+    state_panel = add_demo_panel(hwnd, stage, "📤 状态读回与桌面端操作", 28, 756, w - 56, 230)
+    state_text = add_text(hwnd, state_panel, "📋 当前状态：等待操作", 28, 70, w - 112, 28, TEXT)
+    details = add_text(hwnd, state_panel, "多展开面板读取 activeIndices；手风琴面板读取 activeIndex；自定义面板读取禁用项和标题扩展字段。", 28, 110, w - 112, 28, MUTED)
+
+    def refresh_state(label="刷新状态"):
+        multi_state = ui.get_collapse_state_json(hwnd, multi)
+        acc_state = ui.get_collapse_state_json(hwnd, accordion)
+        custom_state = ui.get_collapse_state_json(hwnd, custom)
+        ui.set_element_text(hwnd, state_text, f"📋 {label}：多展开={multi_state.get('activeIndices')} 手风琴={acc_state.get('activeIndex')} 自定义禁用={custom_state.get('disabledIndices')}")
+        ui.set_element_text(hwnd, details, f"选项读回：{ui.get_collapse_options(hwnd, custom)}；激活列表：{ui.get_collapse_active_items(hwnd, multi)}")
+
+    buttons = [
+        ("📚", "展开全部", lambda _eid: (ui.set_collapse_active_items(hwnd, multi, [0, 1, 2, 3]), refresh_state("展开全部"))),
+        ("💬", "只看反馈", lambda _eid: (ui.set_collapse_active_items(hwnd, multi, [1]), refresh_state("只看反馈"))),
+        ("🪗", "切换手风琴", lambda _eid: (ui.set_collapse_options(hwnd, multi, accordion=True, allow_collapse=True, animated=True), ui.set_collapse_active_items(hwnd, multi, [2]), refresh_state("切换手风琴"))),
+        ("📤", "读取状态", lambda _eid: refresh_state("读取状态")),
+    ]
+    for i, (emoji, text, action) in enumerate(buttons):
+        btn = ui.create_button(hwnd, state_panel, emoji, text, 28 + i * 150, 154, 132, 42)
+        set_click(hwnd, btn, action)
+    refresh_state("初始状态")
 
 
 def showcase_tabs(hwnd, stage, w, h):
@@ -4747,6 +4972,10 @@ SPECIAL_SHOWCASES = {
     "Link": showcase_link,
     "Radio": showcase_radio,
     "Container": showcase_container,
+    "Header": showcase_container,
+    "Aside": showcase_container,
+    "Main": showcase_container,
+    "Footer": showcase_container,
     "Layout": showcase_layout,
     "Divider": showcase_divider,
     "Watermark": showcase_watermark,
@@ -4774,6 +5003,8 @@ SPECIAL_SHOWCASES = {
     "Empty": showcase_empty,
     "Descriptions": showcase_descriptions,
     "Table": showcase_table,
+    "Card": showcase_card,
+    "Collapse": showcase_collapse,
     "Timeline": showcase_timeline,
     "Statistic": showcase_statistic,
     "Upload": showcase_upload,
@@ -5452,6 +5683,10 @@ def build_pages(hwnd, root):
         ("Icon", "⭐", "图标/emoji", lambda h, p, x, y, w, hh: ui.create_icon(h, p, "⭐", x, y, 46, 46)),
         ("Space", "↔️", "占位间距", lambda h, p, x, y, w, hh: ui.create_space(h, p, x, y, 90, 36)),
         ("Container", "📦", "内容容器", lambda h, p, x, y, w, hh: ui.create_container(h, p, x, y, w, 58)),
+        ("Header", "📌", "顶栏容器", lambda h, p, x, y, w, hh: ui.create_header(h, p, "📌 顶栏", x, y, w, 58)),
+        ("Aside", "🧭", "侧边栏容器", lambda h, p, x, y, w, hh: ui.create_aside(h, p, "🧭 侧边栏", x, y, min(w, 220), 96)),
+        ("Main", "📄", "主要区域容器", lambda h, p, x, y, w, hh: ui.create_main(h, p, "📄 主要区域", x, y, w, 76)),
+        ("Footer", "✅", "底栏容器", lambda h, p, x, y, w, hh: ui.create_footer(h, p, "✅ 底栏", x, y, w, 58)),
         ("Layout", "🧭", "自动布局", lambda h, p, x, y, w, hh: ui.create_layout(h, p, 0, 8, x, y, w, 46)),
         ("Border", "▣", "边框区域", lambda h, p, x, y, w, hh: ui.create_border(h, p, x, y, w, 58)),
         ("Divider", "➖", "分割线", lambda h, p, x, y, w, hh: ui.create_divider(h, p, "分区", 0, 1, x, y + 18, w, 24)),
@@ -5497,13 +5732,13 @@ def build_pages(hwnd, root):
         ("Avatar", "😀", "头像", lambda h, p, x, y, w, hh: ui.create_avatar(h, p, "新", 0, x, y, 50, 50)),
         ("Empty", "📭", "空状态", lambda h, p, x, y, w, hh: ui.create_empty(h, p, "暂无数据 📭", "请稍后刷新", x, y, w, 76)),
         ("Skeleton", "💀", "骨架屏", lambda h, p, x, y, w, hh: ui.create_skeleton(h, p, 3, True, x, y, w, 76)),
-        ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "84"), ("许可", "MIT")], 2, True, x, y, w, 76)),
+        ("Descriptions", "📋", "描述列表", lambda h, p, x, y, w, hh: ui.create_descriptions(h, p, "项目信息", [("组件", "88"), ("许可", "MIT")], 2, True, x, y, w, 76)),
         ("Table", "📊", "表格", lambda h, p, x, y, w, hh: ui.create_table(h, p, ["组件", "状态"], [["Button", "完成"], ["Tabs", "完成"]], True, True, x, y, w, 84)),
         ("InfiniteScroll", "♾️", "无限滚动", lambda h, p, x, y, w, hh: ui.create_infinite_scroll(h, p, [("📌 任务 01", "触底自动加载", "进行中"), ("📌 任务 02", "支持状态读回", "已同步")], x, y, w, 112)),
-        ("Card", "🪪", "卡片", lambda h, p, x, y, w, hh: ui.create_card(h, p, "🪪 项目卡片", "用于组织信息块", 1, x, y, w, 84)),
+        ("Card", "🪪", "基础、列表、图片和插槽卡片", lambda h, p, x, y, w, hh: ui.create_card(h, p, "🪪 项目卡片", "用于组织信息块", 1, x, y, w, 84)),
         ("Collapse", "📂", "折叠面板", lambda h, p, x, y, w, hh: ui.create_collapse(h, p, [("基础组件", "按钮/文本/面板"), ("反馈组件", "弹窗/提示/通知")], 0, True, x, y, w, 84)),
         ("Timeline", "🕒", "时间线", lambda h, p, x, y, w, hh: ui.create_timeline(h, p, [("09:00", "🚀 启动", 0, "🚀"), ("10:30", "✅ 封装", 1, "✅"), ("14:20", "📦 开源", 2, "📦")], x, y, w, 84)),
-        ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "84", suffix="个", x=x, y=y, w=w, h=62)),
+        ("Statistic", "📌", "统计数值", lambda h, p, x, y, w, hh: ui.create_statistic(h, p, "组件数", "88", suffix="个", x=x, y=y, w=w, h=62)),
         ("KPI Card", "🎯", "指标卡", lambda h, p, x, y, w, hh: ui.create_kpi_card(h, p, "完成率", "100%", "全部组件已封装", x=x, y=y, w=w, h=76)),
         ("Trend", "📈", "趋势", lambda h, p, x, y, w, hh: ui.create_trend(h, p, "星标增长", "+128", "12%", "本周", 1, x, y, w, 62)),
         ("StatusDot", "🟢", "状态点", lambda h, p, x, y, w, hh: ui.create_status_dot(h, p, "运行正常", "DLL 已加载", 1, x, y, w, 48)),
@@ -5545,10 +5780,10 @@ def build_pages(hwnd, root):
 
 
 def main():
-    hwnd = ui.create_window("🧩 new_emoji 84 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
+    hwnd = ui.create_window("🧩 new_emoji 88 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
     root = ui.create_container(hwnd, 0, 0, 0, ROOT_W, ROOT_H)
     add_text(hwnd, root, "🧩 new_emoji 组件总览", 28, 18, 250, 34, TEXT)
-    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n84 个组件", 28, 54, 250, 72, MUTED)
+    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n88 个组件", 28, 54, 250, 72, MUTED)
     global status_text_id
     status_text_id = add_text(hwnd, root, "正在加载组件演示...", PAGE_X + 20, ROOT_H + 10, PAGE_W - 40, 28, MUTED)
 
@@ -5617,7 +5852,7 @@ def main():
     elif START_THEME.lower() in ("dark", "1", "深色"):
         apply_gallery_theme(hwnd, 1)
     ui.dll.EU_ShowWindow(hwnd, 1)
-    print(f"new_emoji 组件总览已启动：84 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
+    print(f"new_emoji 组件总览已启动：88 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
     if gallery_errors:
         print("以下组件卡片创建失败：")
         for name, error in gallery_errors:

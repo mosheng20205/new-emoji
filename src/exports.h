@@ -37,6 +37,18 @@ int __stdcall EU_CreateIcon(HWND hwnd, int parent_id,
                             int x, int y, int w, int h);
 int __stdcall EU_CreateSpace(HWND hwnd, int parent_id, int x, int y, int w, int h);
 int __stdcall EU_CreateContainer(HWND hwnd, int parent_id, int x, int y, int w, int h);
+int __stdcall EU_CreateHeader(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h);
+int __stdcall EU_CreateAside(HWND hwnd, int parent_id,
+                             const unsigned char* text_bytes, int text_len,
+                             int x, int y, int w, int h);
+int __stdcall EU_CreateMain(HWND hwnd, int parent_id,
+                            const unsigned char* text_bytes, int text_len,
+                            int x, int y, int w, int h);
+int __stdcall EU_CreateFooter(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h);
 int __stdcall EU_CreateLayout(HWND hwnd, int parent_id, int orientation, int gap,
                               int x, int y, int w, int h);
 int __stdcall EU_CreateBorder(HWND hwnd, int parent_id, int x, int y, int w, int h);
@@ -437,6 +449,10 @@ void __stdcall EU_SetPanelStyle(HWND hwnd, int element_id, Color bg, Color borde
 int  __stdcall EU_GetPanelStyle(HWND hwnd, int element_id, Color* bg, Color* border, float* border_width, float* radius, int* padding);
 void __stdcall EU_SetPanelLayout(HWND hwnd, int element_id, int fill_parent, int content_layout);
 int  __stdcall EU_GetPanelLayout(HWND hwnd, int element_id, int* fill_parent, int* content_layout);
+void __stdcall EU_SetContainerLayout(HWND hwnd, int element_id, int enabled, int direction, int gap);
+int  __stdcall EU_GetContainerLayout(HWND hwnd, int element_id, int* enabled, int* direction, int* gap, int* actual_direction);
+void __stdcall EU_SetContainerRegionTextOptions(HWND hwnd, int element_id, int align, int valign);
+int  __stdcall EU_GetContainerRegionTextOptions(HWND hwnd, int element_id, int* align, int* valign, int* role);
 void __stdcall EU_SetLayoutOptions(HWND hwnd, int element_id, int orientation, int gap, int stretch, int align, int wrap);
 int  __stdcall EU_GetLayoutOptions(HWND hwnd, int element_id, int* orientation, int* gap, int* stretch, int* align, int* wrap);
 void __stdcall EU_SetLayoutChildWeight(HWND hwnd, int layout_id, int child_id, int weight);
@@ -949,22 +965,47 @@ int  __stdcall EU_GetTableCellValue(HWND hwnd, int element_id, int row, int col,
                                     unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
                                     unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetCardTitle(HWND hwnd, int element_id,
+                               const unsigned char* title_bytes, int title_len);
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
                               const unsigned char* body_bytes, int body_len);
 void __stdcall EU_SetCardFooter(HWND hwnd, int element_id,
                                 const unsigned char* footer_bytes, int footer_len);
+void __stdcall EU_SetCardItems(HWND hwnd, int element_id,
+                               const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetCardActions(HWND hwnd, int element_id,
                                  const unsigned char* actions_bytes, int actions_len);
+int  __stdcall EU_GetCardItemCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetCardAction(HWND hwnd, int element_id);
 void __stdcall EU_ResetCardAction(HWND hwnd, int element_id);
 void __stdcall EU_SetCardShadow(HWND hwnd, int element_id, int shadow);
 void __stdcall EU_SetCardOptions(HWND hwnd, int element_id, int shadow, int hoverable);
+void __stdcall EU_SetCardStyle(HWND hwnd, int element_id,
+                               Color bg, Color border, float border_width,
+                               float radius, int padding);
+int  __stdcall EU_GetCardStyle(HWND hwnd, int element_id,
+                               Color* bg, Color* border, float* border_width,
+                               float* radius, int* padding);
+void __stdcall EU_SetCardBodyStyle(HWND hwnd, int element_id,
+                                   int pad_left, int pad_top, int pad_right, int pad_bottom,
+                                   float font_size, int item_gap, int item_padding_y,
+                                   int divider);
+int  __stdcall EU_GetCardBodyStyle(HWND hwnd, int element_id,
+                                   int* pad_left, int* pad_top, int* pad_right, int* pad_bottom,
+                                   float* font_size, int* item_gap, int* item_padding_y,
+                                   int* divider);
 int  __stdcall EU_GetCardOptions(HWND hwnd, int element_id,
                                  int* shadow, int* hoverable, int* action_count);
 void __stdcall EU_SetCollapseItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetCollapseItemsEx(HWND hwnd, int element_id,
+                                     const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetCollapseActive(HWND hwnd, int element_id, int active_index);
 int  __stdcall EU_GetCollapseActive(HWND hwnd, int element_id);
+void __stdcall EU_SetCollapseActiveItems(HWND hwnd, int element_id,
+                                         const unsigned char* indices_bytes, int indices_len);
+int  __stdcall EU_GetCollapseActiveItems(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetCollapseItemCount(HWND hwnd, int element_id);
 void __stdcall EU_SetCollapseOptions(HWND hwnd, int element_id, int accordion,
                                      int allow_collapse,
@@ -977,6 +1018,8 @@ void __stdcall EU_SetCollapseAdvancedOptions(HWND hwnd, int element_id, int acco
 int  __stdcall EU_GetCollapseOptions(HWND hwnd, int element_id,
                                      int* accordion, int* allow_collapse,
                                      int* animated, int* disabled_count);
+int  __stdcall EU_GetCollapseStateJson(HWND hwnd, int element_id,
+                                       unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetTimelineItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetTimelineOptions(HWND hwnd, int element_id, int position, int show_time);

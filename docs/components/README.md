@@ -1,6 +1,6 @@
 # 组件文档导航
 
-计划内 84 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
+计划内 88 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
 
 ## 🧱 基础/布局
 `Button` 已补齐 Element 风格常用按钮样式，包括语义变体、朴素、圆角、圆形、加载中和尺寸选项。
@@ -15,7 +15,11 @@
 | `Link` | 链接 | `EU_CreateLink` | 已完成 | [链接](./link.md) |
 | `Icon` | 图标 | `EU_CreateIcon` | 已完成 | [图标](./icon.md) |
 | `Space` | 间距 | `EU_CreateSpace` | 已完成 | [间距](./space.md) |
-| `Container` | 容器 | `EU_CreateContainer` | 已完成 | [容器](./container.md) |
+| `Container` | 容器套件 | `EU_CreateContainer` | 已完成，支持 Header/Aside/Main/Footer 流式布局套件 | [容器套件](./container.md) |
+| `Header` | 顶栏 | `EU_CreateHeader` | 已完成 | [顶栏](./header.md) |
+| `Aside` | 侧边栏 | `EU_CreateAside` | 已完成 | [侧边栏](./aside.md) |
+| `Main` | 主要区域 | `EU_CreateMain` | 已完成 | [主要区域](./main.md) |
+| `Footer` | 底栏 | `EU_CreateFooter` | 已完成 | [底栏](./footer.md) |
 | `Layout` | 布局 | `EU_CreateLayout` | 已完成 | [布局](./layout.md) |
 | `Border` | 边框 | `EU_CreateBorder` | 已完成 | [边框](./border.md) |
 | `Divider` | 分割线 | `EU_CreateDivider` | 已完成，支持横/竖向、文本位置、图标内容、实线/虚线/点线/双线、颜色、线宽和间距 | [分割线](./divider.md) |
@@ -48,8 +52,8 @@
 | `Descriptions` | 描述列表 | `EU_CreateDescriptions` | 全样式已完成 | [描述列表](./descriptions.md) |
 | `Table` | 高级表格：固定列、多级表头、纵横滚动条、表头拖拽、Excel 导入导出、单元格点击回调、筛选搜索、树形、合计、内置单元格控件、虚表 | `EU_CreateTable` | 高级样式完成 | [表格](./table.md) |
 | `InfiniteScroll` | 无限滚动 | `EU_CreateInfiniteScroll` | 已完成 | [无限滚动](./infinite-scroll.md) |
-| `Card` | 卡片 | `EU_CreateCard` | 已完成 | [卡片](./card.md) |
-| `Collapse` | 折叠面板 | `EU_CreateCollapse` | 已完成 | [折叠面板](./collapse.md) |
+| `Card` | 卡片：标题、正文、列表、页脚操作、阴影、样式读回和子元素插槽图片卡片 | `EU_CreateCard` | 全样式已完成 | [卡片](./card.md) |
+| `Collapse` | 折叠面板：多展开、手风琴、自定义标题、禁用项和状态读回 | `EU_CreateCollapse` | 全样式已完成 | [折叠面板](./collapse.md) |
 | `Timeline` | 时间线 | `EU_CreateTimeline` / `EU_SetTimelineAdvancedOptions` | 已完成，覆盖倒序、节点图标、类型色、自定义颜色、大尺寸节点、顶部/底部时间戳、卡片式项目和三种位置 | [时间线](./timeline.md) |
 | `Statistic` | 统计数值：格式化数值、前后缀样式、formatter、后缀点击、倒计时、暂停/继续、完成回调 | `EU_CreateStatistic` | 已完成 | [统计数值](./statistic.md) |
 
