@@ -6838,12 +6838,27 @@ JSON 示例：
     .参数 元素ID, 整数型
     .参数 是否激活, 整数型
 
+.DLL命令 设置加载文本, , "new_emoji.dll", "EU_SetLoadingText", , 对应 C++ 导出命令 EU_SetLoadingText；运行时修改加载文案
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
 .DLL命令 设置加载选项, , "new_emoji.dll", "EU_SetLoadingOptions", , 对应 C++ 导出命令 EU_SetLoadingOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 是否激活, 整数型
     .参数 是否全屏遮罩, 整数型
     .参数 进度, 整数型, , -1隐藏进度，0-100显示进度
+
+.DLL命令 设置加载样式, , "new_emoji.dll", "EU_SetLoadingStyle", , 对应 C++ 导出命令 EU_SetLoadingStyle；设置遮罩、图标、文字和锁定输入
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 遮罩颜色, 整数型, , ARGB；0使用主题默认
+    .参数 图标颜色, 整数型, , ARGB；0使用主题强调色
+    .参数 文字颜色, 整数型, , ARGB；0使用主题文字色
+    .参数 图标类型, 整数型, , 0点状旋转 1圆弧旋转 2脉冲圆点
+    .参数 是否锁定输入, 整数型, , 0鼠标穿透 1拦截底层控件
 
 .DLL命令 取加载激活状态, 整数型, "new_emoji.dll", "EU_GetLoadingActive", , 对应 C++ 导出命令 EU_GetLoadingActive
     .参数 窗口句柄, 整数型
@@ -6867,6 +6882,31 @@ JSON 示例：
     .参数 元素ID, 整数型
     .参数 输出缓冲区指针, 整数型, , UTF-8 output buffer
     .参数 输出缓冲区大小, 整数型, , bytes
+
+.DLL命令 取加载样式, 整数型, "new_emoji.dll", "EU_GetLoadingStyle", , 对应 C++ 导出命令 EU_GetLoadingStyle；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 遮罩颜色指针, 整数型, , 传址接收 ARGB
+    .参数 图标颜色指针, 整数型, , 传址接收 ARGB
+    .参数 文字颜色指针, 整数型, , 传址接收 ARGB
+    .参数 图标类型指针, 整数型, , 传址接收，0点状旋转 1圆弧旋转 2脉冲圆点
+    .参数 是否锁定输入指针, 整数型, , 传址接收
+
+.DLL命令 显示加载, 整数型, "new_emoji.dll", "EU_ShowLoading", , 对应 C++ 导出命令 EU_ShowLoading；服务式创建 Loading，返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 目标元素ID, 整数型, , 0表示窗口主工作区；非0表示覆盖目标元素
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 是否全屏遮罩, 整数型
+    .参数 是否锁定输入, 整数型
+    .参数 遮罩颜色, 整数型, , ARGB；0使用主题默认
+    .参数 图标颜色, 整数型, , ARGB；0使用主题强调色
+    .参数 文字颜色, 整数型, , ARGB；0使用主题文字色
+    .参数 图标类型, 整数型, , 0点状旋转 1圆弧旋转 2脉冲圆点
+
+.DLL命令 关闭加载, 整数型, "new_emoji.dll", "EU_CloseLoading", , 对应 C++ 导出命令 EU_CloseLoading；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 加载元素ID, 整数型
 
 .DLL命令 取加载完整状态, 整数型, "new_emoji.dll", "EU_GetLoadingFullState", , 对应 C++ 导出命令 EU_GetLoadingFullState；成功返回1，失败返回0
     .参数 窗口句柄, 整数型

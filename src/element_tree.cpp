@@ -6,6 +6,7 @@
 #include "element_drawer.h"
 #include "element_upload.h"
 #include "element_image.h"
+#include "element_loading.h"
 #include "factory.h"
 #include "dpi_context.h"
 #include <algorithm>
@@ -141,6 +142,12 @@ void ElementTree::layout() {
             if (auto* mb = dynamic_cast<MessageBoxElement*>(ch.get())) {
                 mb->layout(modal_area);
                 continue;
+            }
+            if (auto* loading = dynamic_cast<Loading*>(ch.get())) {
+                if (loading->fullscreen) {
+                    loading->layout({0, tb_h, w, h - tb_h});
+                    continue;
+                }
             }
             if (!ch->visible) continue;
             if (auto* p = dynamic_cast<Panel*>(ch.get())) {

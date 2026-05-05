@@ -2,65 +2,97 @@
 
 ## 简介
 
-`Loading` 是 new_emoji 的 反馈/浮层 组件。当前状态：**已完成**。
+`Loading` 是反馈/浮层组件，当前状态：**已完成**。
 
-已补目标绑定遮罩、真实旋转动画定时器、激活/全屏/进度/文本/目标/动画完整状态读回、Python 封装、易语言 DLL 命令文档和独立中文 emoji 验证
+本轮已补齐 Element UI 常见加载样式：局部遮罩、自定义文本、自定义遮罩背景、点状旋转、圆弧旋转、脉冲圆点、全屏锁定、服务式显示/关闭、进度显示、目标绑定和完整状态读回。
 
-## 创建
+## 创建与服务式调用
 
 | 项目 | 值 |
 |---|---|
 | 创建导出 | `EU_CreateLoading` |
+| 服务式导出 | `EU_ShowLoading` / `EU_CloseLoading` |
 | 组件分类 | 反馈/浮层 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_loading` 或同类 helper |
+| Python helper | `create_loading` / `show_loading` / `close_loading` |
 | 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
 
 ## 相关 API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateLoading` | 当前组件相关导出 |
-| `EU_GetLoadingActive` | 当前组件相关导出 |
-| `EU_GetLoadingFullState` | 当前组件相关导出 |
-| `EU_GetLoadingOptions` | 当前组件相关导出 |
-| `EU_GetLoadingText` | 当前组件相关导出 |
-| `EU_SetLoadingActive` | 当前组件相关导出 |
-| `EU_SetLoadingOptions` | 当前组件相关导出 |
-| `EU_SetLoadingTarget` | 当前组件相关导出 |
+| `EU_CreateLoading` | 创建普通 Loading 元素 |
+| `EU_SetLoadingActive` / `EU_GetLoadingActive` | 设置/读取激活状态 |
+| `EU_SetLoadingText` / `EU_GetLoadingText` | 设置/读取 UTF-8 加载文本 |
+| `EU_SetLoadingOptions` / `EU_GetLoadingOptions` | 设置/读取激活、全屏和进度 |
+| `EU_SetLoadingStyle` / `EU_GetLoadingStyle` | 设置/读取遮罩色、图标色、文字色、spinner 类型和输入锁定 |
+| `EU_SetLoadingTarget` | 绑定目标元素并按目标区域覆盖遮罩 |
+| `EU_ShowLoading` / `EU_CloseLoading` | 服务式显示/关闭 Loading |
+| `EU_GetLoadingFullState` | 读取激活、全屏、进度、目标、动画帧、定时器和最近动作 |
 
-## Python 使用
+## Spinner 类型
+
+| 值 | 样式 | 用途 |
+|---|---|---|
+| `0` | 点状旋转 | 默认样式，兼容旧版本 |
+| `1` | 圆弧旋转 | 对应 Element UI `el-icon-loading` |
+| `2` | 脉冲圆点 | 适合桌面端状态卡片和轻量等待 |
+
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
 import new_emoji_ui as ui
 
-hwnd = ui.create_window("✨ 加载 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Loading`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+hwnd = ui.create_window("⏳ 加载示例", 240, 120, 960, 620)
+root = ui.create_container(hwnd, 0, 0, 0, 920, 560)
+
+table = ui.create_table(
+    hwnd, root,
+    ["日期", "姓名", "地址"],
+    [["2016-05-03", "王小虎", "上海市普陀区金沙江路 1518 弄"]],
+    True, True, 40, 80, 760, 180,
+)
+
+loading = ui.create_loading(hwnd, root, "拼命加载中", True, 40, 80, 760, 180)
+ui.set_loading_target(hwnd, loading, table, 0)
+ui.set_loading_style(
+    hwnd, loading,
+    background=0xCC000000,
+    spinner_color=0xFFFFFFFF,
+    text_color=0xFFFFFFFF,
+    spinner="el-icon-loading",
+    lock_input=True,
+)
+
+service_id = ui.show_loading(
+    hwnd, 0, "🔒 正在全屏处理",
+    fullscreen=True,
+    lock_input=True,
+    background=0xCC111827,
+    spinner_color=0xFF409EFF,
+    text_color=0xFFFFFFFF,
+    spinner="arc",
+)
+ui.close_loading(hwnd, service_id)
 ```
 
-## 易语言调用
+## 行为说明
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+- `fullscreen=1` 时覆盖标题栏以下的主工作区，并默认锁定底层控件输入。
+- `lock_input=0` 时 Loading 只做视觉遮罩，鼠标可以穿透到底层控件。
+- `lock_input=1` 时 Loading 会拦截鼠标命中和键盘焦点，适合提交、导入、保存等不可重复触发场景。
+- `progress=-1` 隐藏进度条，`0-100` 显示进度条。
+- 所有文本参数使用 UTF-8 字节数组 + 长度，支持中文和 emoji。
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_loading_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
+优先运行：
+
+```powershell
+python tests/python/test_loading_complete_components.py
+```
+
+该测试覆盖默认动画、目标绑定、自定义文案、黑色遮罩、圆弧 spinner、脉冲 spinner、全屏锁定、服务式打开/关闭和关闭后底层点击恢复。
 
 ## 文档维护
 
-如果 `Loading` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+如果 `Loading` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py`、`tests/python/test_new_emoji.py`、`tests/python/test_loading_complete_components.py`、`component_gallery.py` 和 `DLL命令/易语言DLL命令.md`。

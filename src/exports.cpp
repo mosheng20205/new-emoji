@@ -10809,10 +10809,32 @@ void __stdcall EU_SetLoadingActive(HWND hwnd, int element_id, int active) {
     }
 }
 
+void __stdcall EU_SetLoadingText(HWND hwnd, int element_id,
+                                 const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Loading>(hwnd, element_id)) {
+        el->text = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+
 void __stdcall EU_SetLoadingOptions(HWND hwnd, int element_id,
                                     int active, int fullscreen, int progress) {
     if (auto* el = find_typed_element<Loading>(hwnd, element_id)) {
         el->set_options(active != 0, fullscreen != 0, progress);
+        if (fullscreen != 0 && !el->lock_input) {
+            el->set_style(el->overlay_color, el->spinner_color, el->text_color,
+                          el->spinner_type, true);
+        }
+        relayout_and_invalidate(hwnd);
+    }
+}
+
+void __stdcall EU_SetLoadingStyle(HWND hwnd, int element_id,
+                                  Color background, Color spinner_color,
+                                  Color text_color, int spinner_type,
+                                  int lock_input) {
+    if (auto* el = find_typed_element<Loading>(hwnd, element_id)) {
+        el->set_style(background, spinner_color, text_color, spinner_type, lock_input != 0);
     }
 }
 
@@ -10828,6 +10850,20 @@ int __stdcall EU_GetLoadingOptions(HWND hwnd, int element_id,
     if (active) *active = el->active ? 1 : 0;
     if (fullscreen) *fullscreen = el->fullscreen ? 1 : 0;
     if (progress) *progress = el->progress;
+    return 1;
+}
+
+int __stdcall EU_GetLoadingStyle(HWND hwnd, int element_id,
+                                 Color* background, Color* spinner_color,
+                                 Color* text_color, int* spinner_type,
+                                 int* lock_input) {
+    auto* el = find_typed_element<Loading>(hwnd, element_id);
+    if (!el) return 0;
+    if (background) *background = el->overlay_color;
+    if (spinner_color) *spinner_color = el->spinner_color;
+    if (text_color) *text_color = el->text_color;
+    if (spinner_type) *spinner_type = el->spinner_type;
+    if (lock_input) *lock_input = el->lock_input ? 1 : 0;
     return 1;
 }
 
@@ -10855,6 +10891,68 @@ int __stdcall EU_GetLoadingText(HWND hwnd, int element_id, unsigned char* buffer
     auto* el = find_typed_element<Loading>(hwnd, element_id);
     if (!el) return 0;
     return copy_wide_as_utf8(el->text, buffer, buffer_size);
+}
+
+int __stdcall EU_ShowLoading(HWND hwnd, int target_element_id,
+                             const unsigned char* text_bytes, int text_len,
+                             int fullscreen, int lock_input,
+                             Color background, Color spinner_color,
+                             Color text_color, int spinner_type) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = st->element_tree->root();
+    Rect r = {0, 0, 260, 150};
+    if (target_element_id > 0) {
+        Element* target = st->element_tree->find_by_id(target_element_id);
+        if (target) {
+            parent = target->parent ? target->parent : st->element_tree->root();
+            r = target->has_logical_bounds ? target->logical_bounds : target->bounds;
+        }
+    }
+    if (fullscreen != 0) parent = st->element_tree->root();
+
+    auto el = std::make_unique<Loading>();
+    el->set_logical_bounds(r);
+    el->text = utf8_to_wide(text_bytes, text_len);
+    el->fullscreen = fullscreen != 0;
+    el->service_owned = true;
+    el->set_target(target_element_id, 0);
+    el->set_style(background, spinner_color, text_color, spinner_type,
+                  lock_input != 0 || fullscreen != 0);
+    el->set_active(true);
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 12;
+    logical_style.pad_top = 12;
+    logical_style.pad_right = 12;
+    logical_style.pad_bottom = 12;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CloseLoading(HWND hwnd, int loading_id) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    auto* el = find_typed_element<Loading>(hwnd, loading_id);
+    if (!el) return 0;
+    el->set_active(false);
+    if (el->service_owned && el->parent) {
+        st->element_tree->remove_child(el);
+        InvalidateRect(hwnd, nullptr, FALSE);
+        return 1;
+    }
+    el->visible = false;
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return 1;
 }
 
 int __stdcall EU_GetLoadingFullState(HWND hwnd, int element_id,

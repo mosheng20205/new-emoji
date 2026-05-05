@@ -2770,8 +2770,13 @@ dll.EU_GetNotificationFullStateEx.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_GetNotificationFullStateEx.restype = ctypes.c_int
 dll.EU_SetNotificationCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetLoadingActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetLoadingText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetLoadingOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetLoadingStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                   ctypes.c_int, ctypes.c_int]
 dll.EU_GetLoadingActive.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetLoadingActive.restype = ctypes.c_int
 dll.EU_GetLoadingOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2782,6 +2787,19 @@ dll.EU_SetLoadingTarget.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, c
 dll.EU_GetLoadingText.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetLoadingText.restype = ctypes.c_int
+dll.EU_GetLoadingStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                   ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int),
+                                   ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetLoadingStyle.restype = ctypes.c_int
+dll.EU_ShowLoading.argtypes = [wintypes.HWND, ctypes.c_int,
+                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                               ctypes.c_int, ctypes.c_int,
+                               ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                               ctypes.c_int]
+dll.EU_ShowLoading.restype = ctypes.c_int
+dll.EU_CloseLoading.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_CloseLoading.restype = ctypes.c_int
 dll.EU_GetLoadingFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
@@ -9769,8 +9787,39 @@ def create_loading(hwnd, parent_id, text="加载中", active=True,
         1 if active else 0, x, y, w, h
     )
 
+def _loading_spinner_type(spinner):
+    if isinstance(spinner, str):
+        key = spinner.strip().lower()
+        return {
+            "dots": 0,
+            "dot": 0,
+            "default": 0,
+            "el-icon-loading": 1,
+            "arc": 1,
+            "circle": 1,
+            "pulse": 2,
+            "pulse-dots": 2,
+        }.get(key, 0)
+    try:
+        value = int(spinner)
+    except Exception:
+        return 0
+    return max(0, min(2, value))
+
+def set_loading_text(hwnd, element_id, text="加载中"):
+    data = make_utf8(text)
+    dll.EU_SetLoadingText(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_loading_options(hwnd, element_id, active=True, fullscreen=False, progress=-1):
     dll.EU_SetLoadingOptions(hwnd, element_id, 1 if active else 0, 1 if fullscreen else 0, progress)
+
+def set_loading_style(hwnd, element_id, background=0, spinner_color=0, text_color=0,
+                      spinner="dots", lock_input=False):
+    dll.EU_SetLoadingStyle(
+        hwnd, element_id,
+        background, spinner_color, text_color,
+        _loading_spinner_type(spinner), 1 if lock_input else 0,
+    )
 
 def get_loading_options(hwnd, element_id):
     active = ctypes.c_int()
@@ -9792,6 +9841,43 @@ def get_loading_text(hwnd, element_id):
     buf = (ctypes.c_ubyte * (needed + 1))()
     dll.EU_GetLoadingText(hwnd, element_id, buf, needed + 1)
     return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_loading_style(hwnd, element_id):
+    background = ctypes.c_uint32()
+    spinner_color = ctypes.c_uint32()
+    text_color = ctypes.c_uint32()
+    spinner_type = ctypes.c_int()
+    lock_input = ctypes.c_int()
+    ok = dll.EU_GetLoadingStyle(
+        hwnd, element_id,
+        ctypes.byref(background), ctypes.byref(spinner_color),
+        ctypes.byref(text_color), ctypes.byref(spinner_type),
+        ctypes.byref(lock_input),
+    )
+    if not ok:
+        return None
+    return {
+        "background": background.value,
+        "spinner_color": spinner_color.value,
+        "text_color": text_color.value,
+        "spinner_type": spinner_type.value,
+        "lock_input": bool(lock_input.value),
+    }
+
+def show_loading(hwnd, target_element_id=0, text="加载中", fullscreen=False,
+                 lock_input=False, background=0, spinner_color=0, text_color=0,
+                 spinner="dots"):
+    data = make_utf8(text)
+    return dll.EU_ShowLoading(
+        hwnd, target_element_id,
+        bytes_arg(data), len(data),
+        1 if fullscreen else 0, 1 if lock_input else 0,
+        background, spinner_color, text_color,
+        _loading_spinner_type(spinner),
+    )
+
+def close_loading(hwnd, element_id):
+    return bool(dll.EU_CloseLoading(hwnd, element_id))
 
 def get_loading_full_state(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(9)]

@@ -975,11 +975,16 @@
 | `EU_GetNotificationFullStateEx` | 读取 Notification 扩展完整状态 |
 | `EU_SetNotificationCloseCallback` | |
 | `EU_SetLoadingActive` | |
+| `EU_SetLoadingText` | 设置 Loading 加载文本 |
 | `EU_SetLoadingOptions` | |
+| `EU_SetLoadingStyle` | 设置 Loading 遮罩色、图标色、文字色、spinner 类型和锁定输入 |
 | `EU_GetLoadingActive` | |
 | `EU_GetLoadingOptions` | |
 | `EU_SetLoadingTarget` | |
 | `EU_GetLoadingText` | |
+| `EU_GetLoadingStyle` | 读取 Loading 样式 |
+| `EU_ShowLoading` | 服务式显示 Loading |
+| `EU_CloseLoading` | 关闭服务式 Loading |
 | `EU_GetLoadingFullState` | |
 | `EU_SetDialogOpen` | |
 | `EU_SetDialogTitle` | |

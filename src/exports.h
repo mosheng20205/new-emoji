@@ -1998,13 +1998,29 @@ int  __stdcall EU_GetMessageBoxFullState(HWND hwnd, int element_id,
                                          int* confirm_loading, int* input_error_visible,
                                          int* last_action, int* timer_elapsed_ms);
 void __stdcall EU_SetLoadingActive(HWND hwnd, int element_id, int active);
+void __stdcall EU_SetLoadingText(HWND hwnd, int element_id,
+                                 const unsigned char* text_bytes, int text_len);
 void __stdcall EU_SetLoadingOptions(HWND hwnd, int element_id,
                                     int active, int fullscreen, int progress);
+void __stdcall EU_SetLoadingStyle(HWND hwnd, int element_id,
+                                  Color background, Color spinner_color,
+                                  Color text_color, int spinner_type,
+                                  int lock_input);
 int  __stdcall EU_GetLoadingActive(HWND hwnd, int element_id);
 int  __stdcall EU_GetLoadingOptions(HWND hwnd, int element_id,
                                     int* active, int* fullscreen, int* progress);
 void __stdcall EU_SetLoadingTarget(HWND hwnd, int element_id, int target_element_id, int padding);
 int  __stdcall EU_GetLoadingText(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetLoadingStyle(HWND hwnd, int element_id,
+                                  Color* background, Color* spinner_color,
+                                  Color* text_color, int* spinner_type,
+                                  int* lock_input);
+int  __stdcall EU_ShowLoading(HWND hwnd, int target_element_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int fullscreen, int lock_input,
+                              Color background, Color spinner_color,
+                              Color text_color, int spinner_type);
+int  __stdcall EU_CloseLoading(HWND hwnd, int loading_id);
 int  __stdcall EU_GetLoadingFullState(HWND hwnd, int element_id,
                                       int* active, int* fullscreen, int* progress,
                                       int* target_element_id, int* target_padding,

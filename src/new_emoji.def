@@ -1007,11 +1007,16 @@ EXPORTS
     EU_GetNotificationFullStateEx
     EU_SetNotificationCloseCallback
     EU_SetLoadingActive
+    EU_SetLoadingText
     EU_SetLoadingOptions
+    EU_SetLoadingStyle
     EU_GetLoadingActive
     EU_GetLoadingOptions
     EU_SetLoadingTarget
     EU_GetLoadingText
+    EU_GetLoadingStyle
+    EU_ShowLoading
+    EU_CloseLoading
     EU_GetLoadingFullState
     EU_SetDialogOpen
     EU_SetDialogTitle

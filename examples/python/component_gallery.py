@@ -4059,6 +4059,134 @@ def showcase_steps(hwnd, stage, w, h):
     refresh_state()
 
 
+def showcase_loading(hwnd, stage, w, h):
+    add_text(hwnd, stage, "⏳ Loading 加载覆盖 Element UI 常见样式：局部遮罩、自定义背景、圆弧图标、脉冲图标、全屏锁定和服务式调用。", 36, 28, w - 72, 30, MUTED)
+
+    actions = add_demo_panel(hwnd, stage, "🧭 操作区", 28, 72, 260, 510)
+    work = add_demo_panel(hwnd, stage, "📊 表格数据加载", 310, 72, 690, 510)
+    styles = add_demo_panel(hwnd, stage, "🎨 样式矩阵", 1022, 72, max(360, w - 1050), 510)
+    status_panel = add_demo_panel(hwnd, stage, "📚 状态读回", 28, 606, w - 56, 150)
+
+    add_text(hwnd, actions, "桌面端通常把加载控制放在工具栏或状态栏，主工作区保持稳定布局。", 22, 62, 210, 66, MUTED)
+    status_id = add_text(hwnd, status_panel, "⏳ 当前状态：等待操作", 24, 62, w - 108, 36, TEXT)
+
+    columns = ["日期", "姓名", "地址", "状态"]
+    rows = [
+        ["2016-05-03", "王小虎", "上海市普陀区金沙江路 1518 弄", "同步中 ⏳"],
+        ["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄", "已缓存 ✅"],
+        ["2016-05-04", "王小虎", "上海市普陀区金沙江路 1518 弄", "待校验 🔎"],
+    ]
+    table_id = ui.create_table(hwnd, work, columns, rows, True, True, 24, 74, 640, 178)
+    add_text(hwnd, work, "模拟 el-table 的 v-loading：Loading 绑定表格区域，遮罩只覆盖目标控件，不改变表格布局。", 24, 278, 620, 48, MUTED)
+    local_loading = ui.create_loading(hwnd, work, "📦 正在加载表格数据", True, 24, 74, 640, 178)
+    ui.set_loading_target(hwnd, local_loading, table_id, 0)
+    ui.set_loading_style(hwnd, local_loading, background=0xCCFFFFFF, spinner_color=0xFF409EFF,
+                         text_color=0xFF2F3A4A, spinner="dots", lock_input=True)
+
+    state = {"current": local_loading, "service": 0, "spinner": 0}
+
+    def refresh_status():
+        current = state["current"] or local_loading
+        full = ui.get_loading_full_state(hwnd, current)
+        style = ui.get_loading_style(hwnd, current)
+        text = ui.get_loading_text(hwnd, current)
+        if full and style:
+            ui.set_element_text(
+                hwnd, status_id,
+                f"⏳ 文案：{text}  active={full['active']}  fullscreen={full['fullscreen']}  progress={full['progress']}  "
+                f"spinner={style['spinner_type']}  lock={int(style['lock_input'])}  ticks={full['tick_count']}"
+            )
+        else:
+            ui.set_element_text(hwnd, status_id, "✅ 服务式加载已关闭，当前无活动遮罩。")
+
+    def open_local(_eid):
+        state["current"] = local_loading
+        ui.set_loading_text(hwnd, local_loading, "📦 正在加载表格数据")
+        ui.set_loading_options(hwnd, local_loading, active=True, fullscreen=False, progress=-1)
+        ui.set_loading_style(hwnd, local_loading, background=0xCCFFFFFF, spinner_color=0xFF409EFF,
+                             text_color=0xFF2F3A4A, spinner="dots", lock_input=True)
+        ui.set_element_visible(hwnd, local_loading, True)
+        refresh_status()
+
+    def close_current(_eid):
+        if state["service"]:
+            ui.close_loading(hwnd, state["service"])
+            state["service"] = 0
+        ui.set_loading_options(hwnd, local_loading, active=False, fullscreen=False, progress=100)
+        ui.set_element_visible(hwnd, local_loading, False)
+        state["current"] = local_loading
+        refresh_status()
+
+    def open_fullscreen(_eid):
+        if state["service"]:
+            ui.close_loading(hwnd, state["service"])
+        state["service"] = ui.show_loading(
+            hwnd, 0, "🔒 正在全屏锁定处理", fullscreen=True, lock_input=True,
+            background=0xCC111827, spinner_color=0xFF67C23A, text_color=0xFFFFFFFF,
+            spinner="el-icon-loading",
+        )
+        state["current"] = state["service"]
+        refresh_status()
+
+    def open_service(_eid):
+        if state["service"]:
+            ui.close_loading(hwnd, state["service"])
+        state["service"] = ui.show_loading(
+            hwnd, table_id, "🚀 服务式加载中", fullscreen=False, lock_input=True,
+            background=0xCC000000, spinner_color=0xFFFFD166, text_color=0xFFFFFFFF,
+            spinner="arc",
+        )
+        state["current"] = state["service"]
+        refresh_status()
+
+    def switch_spinner(_eid):
+        state["spinner"] = (state["spinner"] + 1) % 3
+        labels = ["dots", "arc", "pulse"]
+        current = state["current"] or local_loading
+        ui.set_loading_style(hwnd, current, background=0xCCFFFFFF, spinner_color=0xFF409EFF,
+                             text_color=0xFF2F3A4A, spinner=labels[state["spinner"]],
+                             lock_input=True)
+        ui.set_loading_text(hwnd, current, f"🔄 当前图标：{labels[state['spinner']]}")
+        refresh_status()
+
+    buttons = [
+        ("📦", "局部加载", open_local),
+        ("✅", "关闭加载", close_current),
+        ("🔒", "全屏锁定", open_fullscreen),
+        ("🚀", "服务方式", open_service),
+        ("🔄", "切换图标", switch_spinner),
+        ("📤", "读取状态", lambda _eid: refresh_status()),
+    ]
+    for i, (emoji, label, handler) in enumerate(buttons):
+        btn = ui.create_button(hwnd, actions, emoji, label, 24, 150 + i * 52, 190, 38)
+        set_click(hwnd, btn, handler)
+
+    default_panel = ui.create_panel(hwnd, styles, 24, 68, 220, 128)
+    dark_panel = ui.create_panel(hwnd, styles, 264, 68, 220, 128)
+    arc_panel = ui.create_panel(hwnd, styles, 24, 224, 220, 128)
+    pulse_panel = ui.create_panel(hwnd, styles, 264, 224, 220, 128)
+    progress_panel = ui.create_panel(hwnd, styles, 24, 380, 460, 92)
+    for panel in (default_panel, dark_panel, arc_panel, pulse_panel, progress_panel):
+        ui.set_panel_style(hwnd, panel, 0xFFF7F9FC, 0xFFD7DEE8, 1.0, 8.0, 8)
+
+    ui.create_loading(hwnd, styles, "默认加载 ⏳", True, 24, 68, 220, 128)
+    custom = ui.create_loading(hwnd, styles, "拼命加载中", True, 264, 68, 220, 128)
+    ui.set_loading_style(hwnd, custom, background=0xCC000000, spinner_color=0xFFFFFFFF,
+                         text_color=0xFFFFFFFF, spinner="el-icon-loading", lock_input=False)
+    arc = ui.create_loading(hwnd, styles, "圆弧图标 🔄", True, 24, 224, 220, 128)
+    ui.set_loading_style(hwnd, arc, background=0xAAFFFFFF, spinner_color=0xFF409EFF,
+                         text_color=0xFF303133, spinner="arc", lock_input=False)
+    pulse = ui.create_loading(hwnd, styles, "脉冲状态 🫧", True, 264, 224, 220, 128)
+    ui.set_loading_style(hwnd, pulse, background=0xAAFFFFFF, spinner_color=0xFF67C23A,
+                         text_color=0xFF303133, spinner="pulse", lock_input=False)
+    progress = ui.create_loading(hwnd, styles, "导入进度", True, 24, 380, 460, 92)
+    ui.set_loading_options(hwnd, progress, active=True, fullscreen=False, progress=68)
+    ui.set_loading_style(hwnd, progress, background=0xDDFFFFFF, spinner_color=0xFFE6A23C,
+                         text_color=0xFF303133, spinner="arc", lock_input=False)
+
+    refresh_status()
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -4095,6 +4223,7 @@ SPECIAL_SHOWCASES = {
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
     "Notification": showcase_notification,
+    "Loading": showcase_loading,
     "Dialog": showcase_dialog,
     "Drawer": showcase_drawer,
     "Tooltip": showcase_tooltip,

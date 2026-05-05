@@ -117,7 +117,7 @@
 | `Message` | 消息提示 | `EU_ShowMessage` | 已完成，服务式轻提示，支持四类型、可关闭、居中、富文本、自动关闭、偏移和堆叠 | [消息提示](./message.md) |
 | `MessageBox` | 消息框 | `EU_ShowMessageBoxEx` / `EU_ShowPromptBox` | 已完成，支持 alert/confirm/prompt/msgbox、富文本、区分关闭、loading 和输入校验 | [消息框](./message-box.md) |
 | `Notification` | 通知 | `EU_CreateNotification` / `EU_ShowNotification` | 已完成，支持嵌入式与服务式通知、四角位置、offset、富文本和隐藏关闭按钮 | [通知](./notification.md) |
-| `Loading` | 加载 | `EU_CreateLoading` | 已完成 | [加载](./loading.md) |
+| `Loading` | 加载 | `EU_CreateLoading` / `EU_ShowLoading` | 已完成，支持局部遮罩、自定义背景、三种 spinner、全屏锁定和服务式调用 | [加载](./loading.md) |
 | `Dialog` | 对话框 | `EU_CreateDialog` | 已完成：slot / before-close / 居中 / 嵌套内容 | [对话框](./dialog.md) |
 | `Drawer` | 抽屉 | `EU_CreateDrawer` | 已完成：四方向 / 无标题栏 / 50% 尺寸 / slot / before-close / 嵌套抽屉 | [抽屉](./drawer.md) |
 | `Tooltip` | 文字提示 | `EU_CreateTooltip` | 已完成：12 方位 / dark-light / disabled / 换行 | [文字提示](./tooltip.md) |
