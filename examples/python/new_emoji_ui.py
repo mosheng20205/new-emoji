@@ -2532,6 +2532,8 @@ dll.EU_SetPaginationCurrent.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_in
 dll.EU_SetPaginationPageSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPaginationOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPaginationAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPaginationPageSizeOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                                 ctypes.POINTER(ctypes.c_int), ctypes.c_int]
 dll.EU_SetPaginationJumpPage.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2556,6 +2558,11 @@ dll.EU_GetPaginationFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
 ]
 dll.EU_GetPaginationFullState.restype = ctypes.c_int
+dll.EU_GetPaginationAdvancedOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetPaginationAdvancedOptions.restype = ctypes.c_int
 dll.EU_SetPaginationChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetStepsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -9155,6 +9162,12 @@ def set_pagination_options(hwnd, element_id, show_jumper=True, show_size_changer
         int(bool(show_jumper)), int(bool(show_size_changer)), int(visible_page_count),
     )
 
+def set_pagination_advanced_options(hwnd, element_id, background=False, small=False, hide_on_single_page=False):
+    dll.EU_SetPaginationAdvancedOptions(
+        hwnd, element_id,
+        int(bool(background)), int(bool(small)), int(bool(hide_on_single_page)),
+    )
+
 def set_pagination_page_size_options(hwnd, element_id, sizes):
     values = [int(v) for v in sizes]
     arr = (ctypes.c_int * len(values))(*values) if values else None
@@ -9196,6 +9209,22 @@ def get_pagination_full_state(hwnd, element_id):
         "jump_count", "last_action",
     ]
     return {key: value.value for key, value in zip(keys, values)}
+
+def get_pagination_advanced_options(hwnd, element_id):
+    background = ctypes.c_int()
+    small = ctypes.c_int()
+    hide_on_single_page = ctypes.c_int()
+    ok = dll.EU_GetPaginationAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(background), ctypes.byref(small), ctypes.byref(hide_on_single_page),
+    )
+    if not ok:
+        return None
+    return {
+        "background": bool(background.value),
+        "small": bool(small.value),
+        "hide_on_single_page": bool(hide_on_single_page.value),
+    }
 
 def set_pagination_change_callback(hwnd, element_id, callback):
     dll.EU_SetPaginationChangeCallback(hwnd, element_id, callback)

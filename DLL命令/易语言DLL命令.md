@@ -6251,6 +6251,13 @@ JSON 示例：
     .参数 显示每页数量, 整数型, , 0否 1是
     .参数 可见页码数, 整数型, , 建议奇数，最小5最大11
 
+.DLL命令 设置分页高级样式, , "new_emoji.dll", "EU_SetPaginationAdvancedOptions", , 对应 C++ 导出命令 EU_SetPaginationAdvancedOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景样式, 整数型, , 0否 1是
+    .参数 小尺寸, 整数型, , 0否 1是
+    .参数 单页隐藏, 整数型, , 0否 1是，总页数不大于1时不绘制且不响应
+
 .DLL命令 设置分页每页数量选项, , "new_emoji.dll", "EU_SetPaginationPageSizeOptions", , 对应 C++ 导出命令 EU_SetPaginationPageSizeOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -6303,6 +6310,13 @@ JSON 示例：
     .参数 每页数量变化次数指针, 整数型, , 传址接收
     .参数 跳转次数指针, 整数型, , 传址接收
     .参数 最近动作指针, 整数型, , 1设置 2鼠标 3键盘 4每页数量 5跳转
+
+.DLL命令 取分页高级样式, 整数型, "new_emoji.dll", "EU_GetPaginationAdvancedOptions", , 对应 C++ 导出命令 EU_GetPaginationAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景样式指针, 整数型, , 传址接收
+    .参数 小尺寸指针, 整数型, , 传址接收
+    .参数 单页隐藏指针, 整数型, , 传址接收
 
 .DLL命令 设置分页变化回调, , "new_emoji.dll", "EU_SetPaginationChangeCallback", , 对应 C++ 导出命令 EU_SetPaginationChangeCallback
     .参数 窗口句柄, 整数型

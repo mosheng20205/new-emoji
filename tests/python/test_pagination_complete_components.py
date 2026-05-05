@@ -57,98 +57,119 @@ def pump_messages(user32, msg, duration):
     return running
 
 
+def require(condition, message):
+    if not condition:
+        raise RuntimeError(message)
+
+
 def main():
     global g_hwnd, g_pagination_id, g_next_id, g_size_id, g_jump_id
 
-    hwnd = ui.create_window("📄 分页完整组件验证", 220, 80, 1040, 660)
-    if not hwnd:
-        print("错误：窗口创建失败")
-        return
+    hwnd = ui.create_window("📚 分页完整样式验证", 220, 80, 1080, 720)
+    require(hwnd, "错误：窗口创建失败")
 
     g_hwnd = hwnd
     ui.dll.EU_SetWindowCloseCallback(hwnd, on_close)
-    content_id = ui.create_container(hwnd, 0, 0, 0, 1000, 600)
+    content_id = ui.create_container(hwnd, 0, 0, 0, 1040, 660)
 
-    ui.create_text(hwnd, content_id, "📄 Pagination 分页完整封装", 28, 24, 560, 38)
+    ui.create_text(hwnd, content_id, "📚 Pagination 分页完整封装", 28, 24, 620, 38)
     intro_id = ui.create_text(
         hwnd,
         content_id,
-        "验证省略页码、上一页/下一页、每页数量切换、跳转页、键盘导航、变化回调和完整状态读回。",
-        28, 72, 900, 54,
+        "验证基础分页、大页数折叠、pager-count、背景样式、小尺寸、单页隐藏、每页数量、跳转页、键盘导航和变化回调。",
+        28, 72, 960, 54,
     )
     ui.set_text_options(hwnd, intro_id, align=0, valign=0, wrap=True, ellipsis=False)
 
     g_pagination_id = ui.create_pagination(
-        hwnd,
-        content_id,
-        total=368,
-        page_size=10,
-        current=6,
-        x=46,
-        y=156,
-        w=900,
-        h=48,
+        hwnd, content_id,
+        total=1000, page_size=100, current=5,
+        x=46, y=150, w=940, h=48,
     )
-    ui.set_pagination_options(hwnd, g_pagination_id, show_jumper=True, show_size_changer=True, visible_page_count=7)
-    ui.set_pagination_page_size_options(hwnd, g_pagination_id, [10, 20, 50])
+    ui.set_pagination_options(hwnd, g_pagination_id, show_jumper=True, show_size_changer=True, visible_page_count=11)
+    ui.set_pagination_page_size_options(hwnd, g_pagination_id, [100, 200, 300, 400])
+    ui.set_pagination_advanced_options(hwnd, g_pagination_id, background=True, small=False, hide_on_single_page=False)
     ui.set_pagination_change_callback(hwnd, g_pagination_id, on_pagination_change)
 
+    small_id = ui.create_pagination(
+        hwnd, content_id,
+        total=50, page_size=10, current=2,
+        x=46, y=220, w=520, h=32,
+    )
+    ui.set_pagination_options(hwnd, small_id, show_jumper=False, show_size_changer=False, visible_page_count=7)
+    ui.set_pagination_advanced_options(hwnd, small_id, background=False, small=True, hide_on_single_page=False)
+
+    hidden_id = ui.create_pagination(
+        hwnd, content_id,
+        total=5, page_size=20, current=1,
+        x=46, y=280, w=520, h=40,
+    )
+    ui.set_pagination_advanced_options(hwnd, hidden_id, background=True, small=False, hide_on_single_page=True)
+
     ui.create_infobox(
-        hwnd,
-        content_id,
+        hwnd, content_id,
         "✅ 验证提示",
-        "分页条包含页码、省略号、每页数量和跳转按钮；可用方向键、Home/End、PageUp/PageDown、数字键和回车操作。",
-        46,
-        250,
-        840,
-        92,
+        "分页条包含页码、省略号、每页数量、跳转按钮、背景样式和小尺寸样式；单页隐藏组件不绘制且不响应键盘翻页。",
+        46, 340, 900, 92,
     )
 
-    g_next_id = ui.create_button(hwnd, content_id, "➡️", "下一页", 46, 386, 130, 42)
-    g_size_id = ui.create_button(hwnd, content_id, "📦", "切换每页", 198, 386, 150, 42)
-    g_jump_id = ui.create_button(hwnd, content_id, "🎯", "跳到 12 页", 370, 386, 160, 42)
+    g_next_id = ui.create_button(hwnd, content_id, "➡️", "下一页", 46, 470, 130, 42)
+    g_size_id = ui.create_button(hwnd, content_id, "📏", "切换每页", 198, 470, 150, 42)
+    g_jump_id = ui.create_button(hwnd, content_id, "🎯", "跳到 12 页", 370, 470, 160, 42)
     ui.dll.EU_SetElementClickCallback(hwnd, g_next_id, on_click)
     ui.dll.EU_SetElementClickCallback(hwnd, g_size_id, on_click)
     ui.dll.EU_SetElementClickCallback(hwnd, g_jump_id, on_click)
 
     initial = ui.get_pagination_full_state(hwnd, g_pagination_id)
-    print("[初始状态]", initial)
-    if not initial or initial["total"] != 368 or initial["page_count"] != 37 or initial["current_page"] != 6:
-        raise RuntimeError("分页初始状态读回失败")
-    if initial["show_jumper"] != 1 or initial["show_size_changer"] != 1 or initial["visible_page_count"] != 7:
-        raise RuntimeError("分页完整选项读回失败")
+    advanced = ui.get_pagination_advanced_options(hwnd, g_pagination_id)
+    print("[初始状态]", initial, advanced)
+    require(initial and initial["total"] == 1000, "分页总数读回失败")
+    require(initial["page_count"] == 10 and initial["current_page"] == 5, "分页初始页数读回失败")
+    require(initial["show_jumper"] == 1 and initial["show_size_changer"] == 1, "分页布局选项读回失败")
+    require(initial["visible_page_count"] == 11, "分页 pager-count=11 读回失败")
+    require(advanced == {"background": True, "small": False, "hide_on_single_page": False}, "分页高级样式读回失败")
 
-    ui.set_pagination_jump_page(hwnd, g_pagination_id, 12)
-    ui.trigger_pagination_jump(hwnd, g_pagination_id)
+    small_state = ui.get_pagination_advanced_options(hwnd, small_id)
+    hidden_state = ui.get_pagination_advanced_options(hwnd, hidden_id)
+    require(small_state == {"background": False, "small": True, "hide_on_single_page": False}, "小尺寸样式读回失败")
+    require(hidden_state == {"background": True, "small": False, "hide_on_single_page": True}, "单页隐藏样式读回失败")
+
+    ui.set_pagination_jump_page(hwnd, g_pagination_id, 10)
+    ui.trigger_pagination_jump(g_hwnd, g_pagination_id)
     jumped = ui.get_pagination_full_state(hwnd, g_pagination_id)
     print("[程序跳转]", jumped)
-    if jumped["current_page"] != 12 or jumped["jump_count"] < 1 or jumped["last_action"] != 5:
-        raise RuntimeError("分页跳转失败")
+    require(jumped["current_page"] == 10 and jumped["jump_count"] >= 1 and jumped["last_action"] == 5, "分页跳转失败")
 
     ui.next_pagination_page_size(hwnd, g_pagination_id)
     sized = ui.get_pagination_full_state(hwnd, g_pagination_id)
     print("[每页数量切换]", sized)
-    if sized["page_size"] != 20 or sized["page_count"] != 19 or sized["size_change_count"] < 1:
-        raise RuntimeError("分页每页数量切换失败")
+    require(sized["page_size"] == 200 and sized["page_count"] == 5 and sized["size_change_count"] >= 1, "分页每页数量切换失败")
 
     ui.set_pagination_current(hwnd, g_pagination_id, 3)
     selected = ui.get_pagination_full_state(hwnd, g_pagination_id)
     print("[程序选页]", selected)
-    if selected["current_page"] != 3 or not g_events:
-        raise RuntimeError("分页选择回调失败")
+    require(selected["current_page"] == 3 and g_events, "分页选择回调失败")
 
-    ui.dll.EU_SetElementFocus(hwnd, g_pagination_id)
     user32 = ctypes.windll.user32
     msg = wintypes.MSG()
+    ui.dll.EU_SetElementFocus(hwnd, g_pagination_id)
     user32.PostMessageW(hwnd, 0x0100, 0x27, 0)
     pump_messages(user32, msg, 0.25)
     key_state = ui.get_pagination_full_state(hwnd, g_pagination_id)
     print("[键盘右移]", key_state)
-    if key_state["current_page"] != 4 or key_state["last_action"] != 3:
-        raise RuntimeError("分页键盘导航失败")
+    require(key_state["current_page"] == 4 and key_state["last_action"] == 3, "分页键盘导航失败")
+
+    before_hidden = ui.get_pagination_full_state(hwnd, hidden_id)
+    ui.dll.EU_SetElementFocus(hwnd, hidden_id)
+    user32.PostMessageW(hwnd, 0x0100, 0x27, 0)
+    pump_messages(user32, msg, 0.25)
+    after_hidden = ui.get_pagination_full_state(hwnd, hidden_id)
+    print("[单页隐藏键盘忽略]", before_hidden, after_hidden)
+    require(after_hidden["current_page"] == before_hidden["current_page"], "单页隐藏不应响应键盘翻页")
+    require(after_hidden["last_action"] == before_hidden["last_action"], "单页隐藏不应更新动作状态")
 
     ui.dll.EU_ShowWindow(hwnd, 1)
-    print("分页完整组件示例已显示。关闭窗口或等待 60 秒结束。")
+    print("分页完整样式示例已显示。关闭窗口或等待 60 秒结束。")
 
     start = time.time()
     running = True
@@ -159,7 +180,7 @@ def main():
             auto_clicked = True
         running = pump_messages(user32, msg, 0.05)
 
-    print("分页完整组件示例结束。")
+    print("分页完整样式示例结束。")
 
 
 if __name__ == "__main__":

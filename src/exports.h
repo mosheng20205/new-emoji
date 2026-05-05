@@ -1817,6 +1817,9 @@ void __stdcall EU_SetPaginationPageSize(HWND hwnd, int element_id, int page_size
 void __stdcall EU_SetPaginationOptions(HWND hwnd, int element_id,
                                        int show_jumper, int show_size_changer,
                                        int visible_page_count);
+void __stdcall EU_SetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                               int background, int small_style,
+                                               int hide_on_single_page);
 void __stdcall EU_SetPaginationPageSizeOptions(HWND hwnd, int element_id,
                                                const int* sizes, int count);
 void __stdcall EU_SetPaginationJumpPage(HWND hwnd, int element_id, int jump_page);
@@ -1835,6 +1838,9 @@ int  __stdcall EU_GetPaginationFullState(HWND hwnd, int element_id,
                                          int* hover_part, int* press_part,
                                          int* change_count, int* size_change_count,
                                          int* jump_count, int* last_action);
+int  __stdcall EU_GetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                               int* background, int* small_style,
+                                               int* hide_on_single_page);
 void __stdcall EU_SetPaginationChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetStepsItems(HWND hwnd, int element_id,
                                 const unsigned char* items_bytes, int items_len);

@@ -10040,6 +10040,14 @@ void __stdcall EU_SetPaginationOptions(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                               int background, int small_style,
+                                               int hide_on_single_page) {
+    if (auto* el = find_typed_element<Pagination>(hwnd, element_id)) {
+        el->set_advanced_options(background, small_style, hide_on_single_page);
+    }
+}
+
 void __stdcall EU_SetPaginationPageSizeOptions(HWND hwnd, int element_id,
                                                const int* sizes, int count) {
     if (auto* el = find_typed_element<Pagination>(hwnd, element_id)) {
@@ -10115,6 +10123,17 @@ int __stdcall EU_GetPaginationFullState(HWND hwnd, int element_id,
     if (size_change_count) *size_change_count = el->size_change_count;
     if (jump_count) *jump_count = el->jump_count;
     if (last_action) *last_action = el->last_action;
+    return 1;
+}
+
+int __stdcall EU_GetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                              int* background, int* small_style,
+                                              int* hide_on_single_page) {
+    auto* el = find_typed_element<Pagination>(hwnd, element_id);
+    if (!el) return 0;
+    if (background) *background = el->background ? 1 : 0;
+    if (small_style) *small_style = el->small_style ? 1 : 0;
+    if (hide_on_single_page) *hide_on_single_page = el->hide_on_single_page ? 1 : 0;
     return 1;
 }
 

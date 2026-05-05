@@ -11,6 +11,9 @@ public:
     int visible_page_count = 7;
     bool show_jumper = true;
     bool show_size_changer = true;
+    bool background = false;
+    bool small_style = false;
+    bool hide_on_single_page = false;
     std::vector<int> page_size_options = { 10, 20, 50, 100 };
     int change_count = 0;
     int size_change_count = 0;
@@ -30,6 +33,7 @@ public:
     void set_page_size(int value);
     void set_current_page(int value);
     void set_options(int show_jump, int show_size, int visible_count);
+    void set_advanced_options(int bg, int is_small, int hide_single);
     void set_page_size_options(const std::vector<int>& values);
     void set_jump_page(int value);
     void trigger_jump(int action);
@@ -37,6 +41,7 @@ public:
     int page_count() const;
     int hover_part() const { return m_hover_part; }
     int press_part() const { return m_press_part; }
+    bool is_hidden_single_page() const;
 
 private:
     int m_hover_part = 0;

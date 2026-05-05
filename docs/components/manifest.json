@@ -715,7 +715,7 @@
     "zh": "分页",
     "create": "EU_CreatePagination",
     "status": "已完成",
-    "summary": "已补省略页码、上一页/下一页、每页数量切换、每页数量选项、跳转页、方向键/Home/End/Page 键/数字键/回车键盘操作、变化回调、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "summary": "已补基础分页、大页数省略、pager-count、背景分页、小尺寸、显示总数、每页数量、跳转页、单页隐藏、键盘操作、变化回调、状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
     "category": "导航",
     "slug": "pagination"
   },

@@ -1162,12 +1162,40 @@ def showcase_gauge(hwnd, stage, w, h):
 
 
 def showcase_pagination(hwnd, stage, w, h):
-    card = add_demo_panel(hwnd, stage, "📚 数据列表分页", 28, 30, w - 56, 260)
-    ui.create_pagination(hwnd, card, 128, 10, 3, 30, 72, min(w - 116, 860), 42)
-    ui.create_pagination(hwnd, card, 520, 20, 8, 30, 140, min(w - 116, 920), 42)
-    add_text(hwnd, card, "用于表格、日志、搜索结果等长列表场景，可展示页码、跳转和总数。", 30, 202, w - 116, 30, MUTED)
-    table = add_demo_panel(hwnd, stage, "📊 配套列表预览", 28, 320, w - 56, 220)
-    ui.create_table(hwnd, table, ["组件", "分类", "状态"], [["Pagination", "反馈流程", "当前页 3"], ["Table", "数据展示", "可分页"], ["Search", "业务场景", "结果 128 条"]], True, True, 30, 70, min(w - 116, 760), 120)
+    work = add_demo_panel(hwnd, stage, "🔎 搜索结果与审计分页", 28, 30, w - 56, 250)
+    add_text(hwnd, work, "搜索结果：共 50 条，页数较少时直接展示全部页码。", 30, 56, w - 116, 24, MUTED)
+    basic = ui.create_pagination(hwnd, work, 50, 10, 2, 30, 86, min(w - 116, 620), 40)
+    ui.set_pagination_options(hwnd, basic, show_jumper=False, show_size_changer=False, visible_page_count=7)
+
+    add_text(hwnd, work, "审计日志：共 1000 条，超过 7 页时自动折叠为省略号。", 30, 138, w - 116, 24, MUTED)
+    audit = ui.create_pagination(hwnd, work, 1000, 20, 18, 30, 168, min(w - 116, 760), 42)
+    ui.set_pagination_options(hwnd, audit, show_jumper=False, show_size_changer=False, visible_page_count=7)
+
+    admin = add_demo_panel(hwnd, stage, "📊 后台列表完整分页", 28, 304, w - 56, 210)
+    add_text(hwnd, admin, "工单列表：显示总数、每页数量、页码、跳转页，适合桌面端表格页底部工具栏。", 30, 54, w - 116, 24, MUTED)
+    full = ui.create_pagination(hwnd, admin, 400, 100, 4, 30, 88, min(w - 116, 900), 46)
+    ui.set_pagination_options(hwnd, full, show_jumper=True, show_size_changer=True, visible_page_count=7)
+    ui.set_pagination_page_size_options(hwnd, full, [100, 200, 300, 400])
+    ui.set_pagination_advanced_options(hwnd, full, background=True, small=False, hide_on_single_page=False)
+    ui.create_table(
+        hwnd, admin,
+        ["模块", "场景", "当前效果"],
+        [["Pagination", "后台工单", "完整功能 ✅"], ["Table", "数据展示", "页脚分页 📄"], ["Search", "结果列表", "共 400 条 🔎"]],
+        True, True, 30, 144, min(w - 116, 760), 52,
+    )
+
+    styles = add_demo_panel(hwnd, stage, "🎨 样式态与隐藏规则", 28, 544, w - 56, 210)
+    add_text(hwnd, styles, "背景分页：页码按钮使用色块，更适合工具栏和表格底部。", 30, 48, w - 116, 22, MUTED)
+    bg = ui.create_pagination(hwnd, styles, 1000, 20, 9, 30, 74, min(w - 116, 760), 40)
+    ui.set_pagination_options(hwnd, bg, show_jumper=False, show_size_changer=False, visible_page_count=11)
+    ui.set_pagination_advanced_options(hwnd, bg, background=True, small=False, hide_on_single_page=False)
+
+    add_text(hwnd, styles, "小尺寸：适合紧凑筛选栏；单页隐藏：结果不足一页时不占用界面空间。", 30, 126, w - 116, 22, MUTED)
+    small = ui.create_pagination(hwnd, styles, 50, 10, 3, 30, 152, 360, 32)
+    ui.set_pagination_options(hwnd, small, show_jumper=False, show_size_changer=False, visible_page_count=7)
+    ui.set_pagination_advanced_options(hwnd, small, background=False, small=True, hide_on_single_page=False)
+    hidden = ui.create_pagination(hwnd, styles, 5, 20, 1, 430, 152, 260, 32)
+    ui.set_pagination_advanced_options(hwnd, hidden, background=True, small=True, hide_on_single_page=True)
 
 
 def showcase_table(hwnd, stage, w, h):

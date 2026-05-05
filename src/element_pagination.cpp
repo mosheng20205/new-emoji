@@ -9,6 +9,11 @@
 
 static int round_px(float v) { return (int)std::lround(v); }
 
+static float pagination_font_size(const ElementStyle& style, bool small_style) {
+    float reduced = style.font_size - 2.0f;
+    return small_style ? (reduced < 11.0f ? 11.0f : reduced) : style.font_size;
+}
+
 static void draw_text(RenderContext& ctx, const std::wstring& text, const ElementStyle& style,
                       Color color, float x, float y, float w, float h,
                       DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_CENTER) {
@@ -46,6 +51,14 @@ void Pagination::set_options(int show_jump, int show_size, int visible_count) {
     if (visible_count > 11) visible_count = 11;
     if ((visible_count % 2) == 0) ++visible_count;
     visible_page_count = visible_count;
+    last_action = 1;
+    invalidate();
+}
+
+void Pagination::set_advanced_options(int bg, int is_small, int hide_single) {
+    background = bg != 0;
+    small_style = is_small != 0;
+    hide_on_single_page = hide_single != 0;
     last_action = 1;
     invalidate();
 }
@@ -88,6 +101,10 @@ int Pagination::page_count() const {
     if (page_size <= 0) return 1;
     int count = (total + page_size - 1) / page_size;
     return count < 1 ? 1 : count;
+}
+
+bool Pagination::is_hidden_single_page() const {
+    return hide_on_single_page && page_count() <= 1;
 }
 
 void Pagination::clamp_jump_page() {
@@ -138,6 +155,7 @@ std::vector<int> Pagination::visible_pages() const {
 }
 
 int Pagination::part_count() const {
+    if (is_hidden_single_page()) return 0;
     int count = 1 + (int)visible_pages().size() + 1;
     if (show_size_changer) ++count;
     if (show_jumper) count += 4;
@@ -145,21 +163,25 @@ int Pagination::part_count() const {
 }
 
 int Pagination::width_for_part(int part) const {
-    int size = round_px(style.font_size * 2.15f);
-    if (size < 28) size = 28;
+    float fs = pagination_font_size(style, small_style);
+    int size = round_px(fs * (small_style ? 2.0f : 2.15f));
+    int min_size = small_style ? 24 : 28;
+    if (size < min_size) size = min_size;
     int pages_end = 1 + (int)visible_pages().size();
     int size_part = pages_end + 2;
-    if (show_size_changer && part == size_part) return round_px(86.0f * style.font_size / 14.0f);
+    if (show_size_changer && part == size_part) return round_px((small_style ? 74.0f : 86.0f) * fs / 14.0f);
     int jump_start = size_part + (show_size_changer ? 1 : 0);
-    if (show_jumper && part == jump_start + 1) return round_px(58.0f * style.font_size / 14.0f);
-    if (show_jumper && part == jump_start + 3) return round_px(54.0f * style.font_size / 14.0f);
+    if (show_jumper && part == jump_start + 1) return round_px((small_style ? 48.0f : 58.0f) * fs / 14.0f);
+    if (show_jumper && part == jump_start + 3) return round_px((small_style ? 48.0f : 54.0f) * fs / 14.0f);
     return size;
 }
 
 Rect Pagination::part_rect(int part) const {
-    int size = round_px(style.font_size * 2.15f);
-    if (size < 28) size = 28;
-    int gap = round_px(6.0f * style.font_size / 14.0f);
+    float fs = pagination_font_size(style, small_style);
+    int size = round_px(fs * (small_style ? 2.0f : 2.15f));
+    int min_size = small_style ? 24 : 28;
+    if (size < min_size) size = min_size;
+    int gap = round_px((small_style ? 4.0f : 6.0f) * fs / 14.0f);
     int y = (bounds.h - size) / 2;
     int x = style.pad_left;
     for (int p = 1; p < part; ++p) x += width_for_part(p) + gap;
@@ -167,6 +189,7 @@ Rect Pagination::part_rect(int part) const {
 }
 
 int Pagination::part_at(int x, int y) const {
+    if (is_hidden_single_page()) return 0;
     for (int i = 1; i <= part_count(); ++i) {
         if (part_rect(i).contains(x, y)) return i;
     }
@@ -181,6 +204,7 @@ int Pagination::page_for_part(int part) const {
 
 void Pagination::paint(RenderContext& ctx) {
     if (!visible || bounds.w <= 0 || bounds.h <= 0) return;
+    if (is_hidden_single_page()) return;
 
     D2D1_MATRIX_3X2_F saved;
     ctx.rt->GetTransform(&saved);
@@ -191,6 +215,8 @@ void Pagination::paint(RenderContext& ctx) {
     Color fg = style.fg_color ? style.fg_color : t->text_secondary;
     Color border = style.border_color ? style.border_color : t->border_default;
     Color active = t->accent;
+    ElementStyle text_style = style;
+    text_style.font_size = pagination_font_size(style, small_style);
     int count = page_count();
     auto pages = visible_pages();
     int pages_end = 1 + (int)pages.size();
@@ -217,7 +243,7 @@ void Pagination::paint(RenderContext& ctx) {
             is_active = page == current_page;
             label = page == 0 ? L"..." : std::to_wstring(page);
         } else if (show_size_changer && part == size_part) {
-            label = std::to_wstring(page_size) + L"条/页";
+            label = std::to_wstring(page_size) + L" 条/页";
         } else if (show_jumper && part == jump_start) {
             label = L"-";
         } else if (show_jumper && part == jump_start + 1) {
@@ -230,18 +256,20 @@ void Pagination::paint(RenderContext& ctx) {
 
         bool hot = part == m_hover_part && !disabled;
         D2D1_RECT_F rr = { (float)r.x, (float)r.y, (float)(r.x + r.w), (float)(r.y + r.h) };
-        Color bg = is_active ? active : (hot ? t->button_hover : 0);
+        Color bg = is_active ? active : (hot ? t->button_hover : (background ? t->button_bg : 0));
         Color text_color = disabled ? t->text_muted : (is_active ? 0xFFFFFFFF : fg);
         if (bg) ctx.rt->FillRoundedRectangle(ROUNDED(rr, 4.0f, 4.0f), ctx.get_brush(bg));
-        ctx.rt->DrawRoundedRectangle(ROUNDED(D2D1::RectF(rr.left + 0.5f, rr.top + 0.5f,
-            rr.right - 0.5f, rr.bottom - 0.5f), 4.0f, 4.0f),
-            ctx.get_brush(is_active ? active : border), 1.0f);
-        draw_text(ctx, label, style, text_color, rr.left, rr.top, (float)r.w, (float)r.h);
+        if (!background || is_active || hot) {
+            ctx.rt->DrawRoundedRectangle(ROUNDED(D2D1::RectF(rr.left + 0.5f, rr.top + 0.5f,
+                rr.right - 0.5f, rr.bottom - 0.5f), 4.0f, 4.0f),
+                ctx.get_brush(is_active ? active : border), 1.0f);
+        }
+        draw_text(ctx, label, text_style, text_color, rr.left, rr.top, (float)r.w, (float)r.h);
     }
 
     Rect last = part_rect(part_count());
     std::wstring total_text = L"共 " + std::to_wstring(total) + L" 条 / " + std::to_wstring(count) + L" 页";
-    draw_text(ctx, total_text, style, fg, (float)(last.x + last.w + 10), 0.0f,
+    draw_text(ctx, total_text, text_style, fg, (float)(last.x + last.w + 10), 0.0f,
               (float)bounds.w - (float)(last.x + last.w + 10) - style.pad_right, (float)bounds.h,
               DWRITE_TEXT_ALIGNMENT_LEADING);
 
@@ -250,6 +278,7 @@ void Pagination::paint(RenderContext& ctx) {
 }
 
 void Pagination::on_mouse_move(int x, int y) {
+    if (is_hidden_single_page()) return;
     int part = part_at(x, y);
     if (part != m_hover_part) {
         m_hover_part = part;
@@ -265,12 +294,14 @@ void Pagination::on_mouse_leave() {
 }
 
 void Pagination::on_mouse_down(int x, int y, MouseButton) {
+    if (is_hidden_single_page()) return;
     m_press_part = part_at(x, y);
     pressed = true;
     invalidate();
 }
 
 void Pagination::on_mouse_up(int x, int y, MouseButton) {
+    if (is_hidden_single_page()) return;
     int part = part_at(x, y);
     auto pages = visible_pages();
     int pages_end = 1 + (int)pages.size();
@@ -292,6 +323,7 @@ void Pagination::on_mouse_up(int x, int y, MouseButton) {
 }
 
 void Pagination::on_key_down(int vk, int) {
+    if (is_hidden_single_page()) return;
     if (vk == VK_LEFT) update_current_page(current_page - 1, 3);
     else if (vk == VK_RIGHT) update_current_page(current_page + 1, 3);
     else if (vk == VK_HOME) update_current_page(1, 3);
