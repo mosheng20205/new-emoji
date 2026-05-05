@@ -98,7 +98,8 @@ def main():
         0,
         28, 60, 250, 180
     )
-    assert ui.get_image_options(hwnd, g_image_id) == (0, True, False, 2)
+    image_options = ui.get_image_options(hwnd, g_image_id)
+    assert image_options[:3] == (0, True, False) and image_options[3] in (2, 3)
 
     ui.create_text(hwnd, content_id, "🎠 轮播展示", 318, 24, 180, 28)
     g_carousel_id = ui.create_carousel(

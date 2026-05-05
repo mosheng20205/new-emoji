@@ -774,16 +774,22 @@
 | `EU_GetTourStepCount` | |
 | `EU_GetTourOptions` | |
 | `EU_GetTourFullState` | |
-| `EU_SetImageSource` | |
-| `EU_SetImageFit` | |
-| `EU_SetImagePreview` | |
-| `EU_SetImagePreviewEnabled` | |
-| `EU_SetImagePreviewTransform` | |
-| `EU_SetImageCacheEnabled` | |
-| `EU_GetImageStatus` | |
-| `EU_GetImagePreviewOpen` | |
-| `EU_GetImageOptions` | |
-| `EU_GetImageFullOptions` | |
+| `EU_SetImageSource` | 设置图片来源和替代说明，支持本地路径、HTTP 和 HTTPS |
+| `EU_SetImageFit` | 设置适配方式：contain、cover、fill、none、scale-down |
+| `EU_SetImagePreview` | 打开或关闭图片预览层 |
+| `EU_SetImagePreviewEnabled` | 设置是否允许点击打开预览 |
+| `EU_SetImagePreviewTransform` | 设置预览缩放比例和偏移 |
+| `EU_SetImageCacheEnabled` | 设置是否缓存已解码位图 |
+| `EU_SetImageLazy` | 设置视口懒加载，未进入可见区时保持等待状态 |
+| `EU_SetImagePlaceholder` | 设置占位图标、文字、前景色和背景色 |
+| `EU_SetImageErrorContent` | 设置加载失败图标、文字、前景色和背景色 |
+| `EU_SetImagePreviewList` | 设置预览图片列表和当前索引 |
+| `EU_SetImagePreviewIndex` | 切换预览列表当前图片 |
+| `EU_GetImageStatus` | 读取加载状态：占位、已加载、失败、加载中、懒加载等待 |
+| `EU_GetImagePreviewOpen` | 读取预览层打开状态 |
+| `EU_GetImageOptions` | 读取基础选项：fit、预览启用、预览打开、状态 |
+| `EU_GetImageFullOptions` | 读取完整选项：基础选项、缓存、重载次数、位图尺寸 |
+| `EU_GetImageAdvancedOptions` | 读取高级选项：lazy、预览列表、状态、缩放和偏移 |
 | `EU_SetCarouselItems` | |
 | `EU_SetCarouselActive` | |
 | `EU_SetCarouselOptions` | |

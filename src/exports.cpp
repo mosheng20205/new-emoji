@@ -8984,6 +8984,48 @@ void __stdcall EU_SetImageCacheEnabled(HWND hwnd, int element_id, int enabled) {
     }
 }
 
+void __stdcall EU_SetImageLazy(HWND hwnd, int element_id, int lazy) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_lazy(lazy != 0);
+    }
+}
+
+void __stdcall EU_SetImagePlaceholder(HWND hwnd, int element_id,
+                                      const unsigned char* icon_bytes, int icon_len,
+                                      const unsigned char* text_bytes, int text_len,
+                                      Color fg, Color bg) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_placeholder(utf8_to_wide(icon_bytes, icon_len),
+                            utf8_to_wide(text_bytes, text_len),
+                            fg, bg);
+    }
+}
+
+void __stdcall EU_SetImageErrorContent(HWND hwnd, int element_id,
+                                       const unsigned char* icon_bytes, int icon_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       Color fg, Color bg) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_error_content(utf8_to_wide(icon_bytes, icon_len),
+                              utf8_to_wide(text_bytes, text_len),
+                              fg, bg);
+    }
+}
+
+void __stdcall EU_SetImagePreviewList(HWND hwnd, int element_id,
+                                      const unsigned char* sources_bytes, int sources_len,
+                                      int selected_index) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_preview_list(split_option_list(sources_bytes, sources_len), selected_index);
+    }
+}
+
+void __stdcall EU_SetImagePreviewIndex(HWND hwnd, int element_id, int index) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_preview_index(index);
+    }
+}
+
 int __stdcall EU_GetImageStatus(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Image>(hwnd, element_id);
     return el ? el->load_status : -1;
@@ -9023,6 +9065,26 @@ int __stdcall EU_GetImageFullOptions(HWND hwnd, int element_id,
     if (reload_count) *reload_count = el->reload_count;
     if (bitmap_width) *bitmap_width = el->bitmap_width;
     if (bitmap_height) *bitmap_height = el->bitmap_height;
+    return 1;
+}
+
+int __stdcall EU_GetImageAdvancedOptions(HWND hwnd, int element_id,
+                                         int* fit, int* lazy, int* preview_enabled,
+                                         int* preview_open, int* preview_index,
+                                         int* preview_count, int* status,
+                                         int* scale_percent, int* offset_x, int* offset_y) {
+    auto* el = find_typed_element<Image>(hwnd, element_id);
+    if (!el) return 0;
+    if (fit) *fit = el->fit;
+    if (lazy) *lazy = el->lazy ? 1 : 0;
+    if (preview_enabled) *preview_enabled = el->preview_enabled ? 1 : 0;
+    if (preview_open) *preview_open = el->is_preview_open() ? 1 : 0;
+    if (preview_index) *preview_index = el->preview_index;
+    if (preview_count) *preview_count = el->preview_count();
+    if (status) *status = el->load_status;
+    if (scale_percent) *scale_percent = el->preview_scale_percent;
+    if (offset_x) *offset_x = el->preview_offset_x;
+    if (offset_y) *offset_y = el->preview_offset_y;
     return 1;
 }
 

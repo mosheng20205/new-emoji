@@ -869,7 +869,7 @@
     .参数 来源长度, 整数型
     .参数 替代文本字节集指针, 整数型, , UTF-8
     .参数 替代文本长度, 整数型
-    .参数 适配方式, 整数型
+    .参数 适配方式, 整数型, , 0包含contain 1覆盖cover 2拉伸fill 3原尺寸none 4按需缩小scale-down
     .参数 X坐标, 整数型, , 逻辑坐标
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
@@ -5458,7 +5458,7 @@ JSON 示例：
 .DLL命令 设置图片适配方式, , "new_emoji.dll", "EU_SetImageFit", , 对应 C++ 导出命令 EU_SetImageFit
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 适配方式, 整数型
+    .参数 适配方式, 整数型, , 0包含contain 1覆盖cover 2拉伸fill 3原尺寸none 4按需缩小scale-down
 
 .DLL命令 设置图片预览打开状态, , "new_emoji.dll", "EU_SetImagePreview", , 对应 C++ 导出命令 EU_SetImagePreview
     .参数 窗口句柄, 整数型
@@ -5482,7 +5482,44 @@ JSON 示例：
     .参数 元素ID, 整数型
     .参数 是否启用缓存, 整数型, , 0禁用 1启用
 
-.DLL命令 取图片加载状态, 整数型, "new_emoji.dll", "EU_GetImageStatus", , 对应 C++ 导出命令 EU_GetImageStatus；返回 0占位 1已加载 2失败
+.DLL命令 设置图片懒加载, , "new_emoji.dll", "EU_SetImageLazy", , 对应 C++ 导出命令 EU_SetImageLazy
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否懒加载, 整数型, , 0关闭 1开启
+
+.DLL命令 设置图片占位内容, , "new_emoji.dll", "EU_SetImagePlaceholder", , 对应 C++ 导出命令 EU_SetImagePlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8 emoji 或文本
+    .参数 图标长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 前景色, 整数型, , ARGB，0使用主题默认
+    .参数 背景色, 整数型, , ARGB，0使用默认背景
+
+.DLL命令 设置图片失败内容, , "new_emoji.dll", "EU_SetImageErrorContent", , 对应 C++ 导出命令 EU_SetImageErrorContent
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8 emoji 或文本
+    .参数 图标长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 前景色, 整数型, , ARGB，0使用主题默认
+    .参数 背景色, 整数型, , ARGB，0使用默认背景
+
+.DLL命令 设置图片预览列表, , "new_emoji.dll", "EU_SetImagePreviewList", , 对应 C++ 导出命令 EU_SetImagePreviewList
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 来源列表字节集指针, 整数型, , UTF-8，使用 | 或换行分隔
+    .参数 来源列表长度, 整数型
+    .参数 当前索引, 整数型, , 从0开始
+
+.DLL命令 设置图片预览索引, , "new_emoji.dll", "EU_SetImagePreviewIndex", , 对应 C++ 导出命令 EU_SetImagePreviewIndex
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 当前索引, 整数型, , 从0开始
+
+.DLL命令 取图片加载状态, 整数型, "new_emoji.dll", "EU_GetImageStatus", , 对应 C++ 导出命令 EU_GetImageStatus；返回 0占位/空 1已加载 2失败 3加载中 4懒加载等待可见
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
@@ -5496,7 +5533,7 @@ JSON 示例：
     .参数 适配方式指针, 整数型, , 传址接收
     .参数 预览启用指针, 整数型, , 传址接收
     .参数 预览打开指针, 整数型, , 传址接收
-    .参数 加载状态指针, 整数型, , 传址接收，0占位 1已加载 2失败
+    .参数 加载状态指针, 整数型, , 传址接收，0占位/空 1已加载 2失败 3加载中 4懒加载等待可见
 
 .DLL命令 取图片完整选项, 整数型, "new_emoji.dll", "EU_GetImageFullOptions", , 对应 C++ 导出命令 EU_GetImageFullOptions；成功返回1，失败返回0
     .参数 窗口句柄, 整数型
@@ -5512,6 +5549,20 @@ JSON 示例：
     .参数 重载次数指针, 整数型, , 传址接收
     .参数 位图宽度指针, 整数型, , 传址接收
     .参数 位图高度指针, 整数型, , 传址接收
+
+.DLL命令 取图片高级选项, 整数型, "new_emoji.dll", "EU_GetImageAdvancedOptions", , 对应 C++ 导出命令 EU_GetImageAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 适配方式指针, 整数型, , 传址接收
+    .参数 懒加载指针, 整数型, , 传址接收
+    .参数 预览启用指针, 整数型, , 传址接收
+    .参数 预览打开指针, 整数型, , 传址接收
+    .参数 预览索引指针, 整数型, , 传址接收
+    .参数 预览数量指针, 整数型, , 传址接收
+    .参数 加载状态指针, 整数型, , 传址接收
+    .参数 缩放百分比指针, 整数型, , 传址接收
+    .参数 横向偏移指针, 整数型, , 传址接收
+    .参数 纵向偏移指针, 整数型, , 传址接收
 
 .DLL命令 设置走马灯项目, , "new_emoji.dll", "EU_SetCarouselItems", , 对应 C++ 导出命令 EU_SetCarouselItems
     .参数 窗口句柄, 整数型

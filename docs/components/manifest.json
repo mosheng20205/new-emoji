@@ -655,7 +655,7 @@
     "zh": "图片",
     "create": "EU_CreateImage",
     "status": "已完成",
-    "summary": "已补本地图片加载、失败占位、contain/cover/fill、预览打开/关闭、缩放偏移、缓存开关、完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 可见验证",
+    "summary": "已补五种 fit、本地/HTTP/HTTPS 图片、默认/自定义占位、默认/自定义失败、视口懒加载、预览列表、上一张/下一张、键盘切换、缩放偏移、Python 封装、易语言命令文档、专项测试和 gallery 中文 emoji 全样式演示",
     "category": "媒体/工具",
     "slug": "image"
   },

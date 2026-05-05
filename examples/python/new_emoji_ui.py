@@ -2218,6 +2218,19 @@ dll.EU_SetImagePreviewEnabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_
 dll.EU_SetImagePreviewTransform.argtypes = [wintypes.HWND, ctypes.c_int,
                                             ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetImageCacheEnabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetImageLazy.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetImagePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetImageErrorContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetImagePreviewList.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.c_int]
+dll.EU_SetImagePreviewIndex.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetImageStatus.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetImageStatus.restype = ctypes.c_int
 dll.EU_GetImagePreviewOpen.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -2234,6 +2247,13 @@ dll.EU_GetImageFullOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                        ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetImageFullOptions.restype = ctypes.c_int
+dll.EU_GetImageAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetImageAdvancedOptions.restype = ctypes.c_int
 dll.EU_SetCarouselItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCarouselActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -8065,6 +8085,20 @@ def get_tour_full_state(hwnd, element_id):
         "change_count": change_count.value,
     } if ok else None
 
+IMAGE_FIT_VALUES = {
+    "contain": 0,
+    "cover": 1,
+    "fill": 2,
+    "none": 3,
+    "scale-down": 4,
+    "scale_down": 4,
+}
+
+def _image_fit_value(fit):
+    if isinstance(fit, str):
+        return IMAGE_FIT_VALUES.get(fit.strip().lower(), 0)
+    return int(fit)
+
 def create_image(hwnd, parent_id, src="", alt="图片", fit=0,
                  x=0, y=0, w=220, h=180):
     src_data = make_utf8(src)
@@ -8073,7 +8107,7 @@ def create_image(hwnd, parent_id, src="", alt="图片", fit=0,
         hwnd, parent_id,
         bytes_arg(src_data), len(src_data),
         bytes_arg(alt_data), len(alt_data),
-        fit, x, y, w, h
+        _image_fit_value(fit), x, y, w, h
     )
 
 def create_carousel(hwnd, parent_id, items=None, active=0, indicator_position=0,
@@ -8139,6 +8173,9 @@ def set_image_source(hwnd, element_id, src="", alt="图片"):
         bytes_arg(alt_data), len(alt_data)
     )
 
+def set_image_fit(hwnd, element_id, fit):
+    dll.EU_SetImageFit(hwnd, element_id, _image_fit_value(fit))
+
 def set_image_preview(hwnd, element_id, open=True):
     dll.EU_SetImagePreview(hwnd, element_id, 1 if open else 0)
 
@@ -8150,6 +8187,44 @@ def set_image_preview_transform(hwnd, element_id, scale_percent=100, offset_x=0,
 
 def set_image_cache_enabled(hwnd, element_id, enabled=True):
     dll.EU_SetImageCacheEnabled(hwnd, element_id, 1 if enabled else 0)
+
+def set_image_lazy(hwnd, element_id, lazy=True):
+    dll.EU_SetImageLazy(hwnd, element_id, 1 if lazy else 0)
+
+def set_image_placeholder(hwnd, element_id, icon="🖼️", text="图片加载中",
+                          fg=0, bg=0):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetImagePlaceholder(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+        fg, bg
+    )
+
+def set_image_error_content(hwnd, element_id, icon="⚠️", text="图片加载失败",
+                            fg=0, bg=0):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetImageErrorContent(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+        fg, bg
+    )
+
+def set_image_preview_list(hwnd, element_id, sources=None, selected_index=0):
+    if sources is None:
+        sources = []
+    data = make_utf8("|".join(str(item) for item in sources))
+    dll.EU_SetImagePreviewList(
+        hwnd, element_id,
+        bytes_arg(data), len(data),
+        selected_index
+    )
+
+def set_image_preview_index(hwnd, element_id, index=0):
+    dll.EU_SetImagePreviewIndex(hwnd, element_id, index)
 
 def get_image_preview_open(hwnd, element_id):
     return dll.EU_GetImagePreviewOpen(hwnd, element_id)
@@ -8198,6 +8273,37 @@ def get_image_full_options(hwnd, element_id):
         "reload_count": reload_count.value,
         "bitmap_width": bitmap_width.value,
         "bitmap_height": bitmap_height.value,
+    } if ok else None
+
+def get_image_advanced_options(hwnd, element_id):
+    fit = ctypes.c_int()
+    lazy = ctypes.c_int()
+    preview_enabled = ctypes.c_int()
+    preview_open = ctypes.c_int()
+    preview_index = ctypes.c_int()
+    preview_count = ctypes.c_int()
+    status = ctypes.c_int()
+    scale_percent = ctypes.c_int()
+    offset_x = ctypes.c_int()
+    offset_y = ctypes.c_int()
+    ok = dll.EU_GetImageAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(fit), ctypes.byref(lazy), ctypes.byref(preview_enabled),
+        ctypes.byref(preview_open), ctypes.byref(preview_index), ctypes.byref(preview_count),
+        ctypes.byref(status), ctypes.byref(scale_percent),
+        ctypes.byref(offset_x), ctypes.byref(offset_y),
+    )
+    return {
+        "fit": fit.value,
+        "lazy": bool(lazy.value),
+        "preview_enabled": bool(preview_enabled.value),
+        "preview_open": bool(preview_open.value),
+        "preview_index": preview_index.value,
+        "preview_count": preview_count.value,
+        "status": status.value,
+        "scale_percent": scale_percent.value,
+        "offset_x": offset_x.value,
+        "offset_y": offset_y.value,
     } if ok else None
 
 def set_carousel_items(hwnd, element_id, items):

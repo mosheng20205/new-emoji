@@ -103,7 +103,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
-      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;winhttp.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -126,7 +126,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
-      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;winhttp.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -144,7 +144,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
-      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;winhttp.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -167,7 +167,7 @@
       <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
       <ModuleDefinitionFile>src\new_emoji.def</ModuleDefinitionFile>
-      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>d2d1.lib;dwrite.lib;imm32.lib;shell32.lib;ole32.lib;oleaut32.lib;shcore.lib;winhttp.lib;ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>

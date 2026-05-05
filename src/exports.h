@@ -1572,6 +1572,19 @@ void __stdcall EU_SetImagePreviewEnabled(HWND hwnd, int element_id, int enabled)
 void __stdcall EU_SetImagePreviewTransform(HWND hwnd, int element_id,
                                            int scale_percent, int offset_x, int offset_y);
 void __stdcall EU_SetImageCacheEnabled(HWND hwnd, int element_id, int enabled);
+void __stdcall EU_SetImageLazy(HWND hwnd, int element_id, int lazy);
+void __stdcall EU_SetImagePlaceholder(HWND hwnd, int element_id,
+                                      const unsigned char* icon_bytes, int icon_len,
+                                      const unsigned char* text_bytes, int text_len,
+                                      Color fg, Color bg);
+void __stdcall EU_SetImageErrorContent(HWND hwnd, int element_id,
+                                       const unsigned char* icon_bytes, int icon_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       Color fg, Color bg);
+void __stdcall EU_SetImagePreviewList(HWND hwnd, int element_id,
+                                      const unsigned char* sources_bytes, int sources_len,
+                                      int selected_index);
+void __stdcall EU_SetImagePreviewIndex(HWND hwnd, int element_id, int index);
 int  __stdcall EU_GetImageStatus(HWND hwnd, int element_id);
 int  __stdcall EU_GetImagePreviewOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetImageOptions(HWND hwnd, int element_id,
@@ -1581,6 +1594,11 @@ int  __stdcall EU_GetImageFullOptions(HWND hwnd, int element_id,
                                       int* scale_percent, int* offset_x, int* offset_y,
                                       int* cache_enabled, int* reload_count,
                                       int* bitmap_width, int* bitmap_height);
+int  __stdcall EU_GetImageAdvancedOptions(HWND hwnd, int element_id,
+                                          int* fit, int* lazy, int* preview_enabled,
+                                          int* preview_open, int* preview_index,
+                                          int* preview_count, int* status,
+                                          int* scale_percent, int* offset_x, int* offset_y);
 void __stdcall EU_SetCarouselItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetCarouselActive(HWND hwnd, int element_id, int active_index);

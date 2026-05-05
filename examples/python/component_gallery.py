@@ -7,6 +7,7 @@ Run from the repository root:
 import base64
 import ctypes
 import os
+import struct
 import tempfile
 import time
 from ctypes import wintypes
@@ -110,6 +111,7 @@ current_page_name = ""
 current_category_name = ""
 current_theme_mode = 1
 upload_sample_cache = None
+image_sample_cache = None
 
 PNG_1X1 = (
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8"
@@ -134,6 +136,45 @@ def upload_sample_files():
     files.append(doc)
     upload_sample_cache = files
     return files
+
+
+def _write_demo_bmp(path, width, height, palette_index):
+    pixels = bytearray()
+    for y in range(height):
+        for x in range(width):
+            if palette_index == 1:
+                b = 80 + (y * 150 // max(1, height - 1))
+                g = 120 + (x * 80 // max(1, width - 1))
+                r = 230 - (y * 90 // max(1, height - 1))
+            elif palette_index == 2:
+                b = 210 - (x * 110 // max(1, width - 1))
+                g = 90 + (y * 120 // max(1, height - 1))
+                r = 90 + (x * 120 // max(1, width - 1))
+            else:
+                b = 120 + (x * 90 // max(1, width - 1))
+                g = 210 - (y * 80 // max(1, height - 1))
+                r = 110 + ((x + y) * 70 // max(1, width + height - 2))
+            pixels.extend([b & 0xFF, g & 0xFF, r & 0xFF, 255])
+    file_size = 54 + len(pixels)
+    with open(path, "wb") as f:
+        f.write(struct.pack("<2sIHHI", b"BM", file_size, 0, 0, 54))
+        f.write(struct.pack("<IiiHHIIiiII", 40, width, height, 1, 32, 0, len(pixels), 2835, 2835, 0, 0))
+        f.write(pixels)
+
+
+def image_sample_files():
+    global image_sample_cache
+    if image_sample_cache:
+        return image_sample_cache
+    folder = tempfile.mkdtemp(prefix="new_emoji_gallery_image_")
+    wide = os.path.join(folder, "横向风景.bmp")
+    tall = os.path.join(folder, "竖向海报.bmp")
+    small = os.path.join(folder, "小图标.bmp")
+    _write_demo_bmp(wide, 180, 108, 1)
+    _write_demo_bmp(tall, 72, 150, 2)
+    _write_demo_bmp(small, 46, 34, 3)
+    image_sample_cache = (wide, tall, small)
+    return image_sample_cache
 
 
 @ui.MessageBoxCallback
@@ -1387,6 +1428,102 @@ def showcase_upload(hwnd, stage, w, h):
     ui.set_upload_options(hwnd, drop, multiple=True, auto_upload=False)
     ui.set_upload_constraints(hwnd, drop, limit=3, max_size_kb=2048, accept=".png")
     add_text(hwnd, drag, "✅ 点击会打开系统文件选择框\n✅ 多选由上传选项控制\n✅ 文件类型过滤会同时作用于对话框、API 写入和系统拖入", 730, 78, 520, 116, TEXT)
+
+
+def showcase_image(hwnd, stage, w, h):
+    wide, tall, small = image_sample_files()
+    missing = os.path.join(tempfile.gettempdir(), "new_emoji_gallery_missing_image.bmp")
+    remote = "https://fuss10.elemecdn.com/e/5d/4a731a90594a4af544c0c25941171jpeg.jpeg"
+
+    fit_panel = add_demo_panel(hwnd, stage, "🧩 五种适配方式", 28, 30, w - 56, 220)
+    fit_specs = [
+        ("fill", "拉伸填满"),
+        ("contain", "完整包含"),
+        ("cover", "覆盖裁切"),
+        ("none", "原图居中"),
+        ("scale-down", "按需缩小"),
+    ]
+    for index, (fit, label) in enumerate(fit_specs):
+        x = 26 + index * 214
+        add_text(hwnd, fit_panel, f"🖼️ {label}", x, 48, 170, 24, MUTED)
+        ui.create_image(hwnd, fit_panel, wide, f"🖼️ {label}", fit, x, 78, 176, 118)
+
+    state_panel = add_demo_panel(hwnd, stage, "⏳ 占位与失败状态", 28, 278, w - 56, 220)
+    ui.create_image(hwnd, state_panel, "", "🕒 默认占位", "contain", 28, 64, 210, 130)
+    custom_placeholder = ui.create_image(hwnd, state_panel, "", "🎨 自定义占位", "contain", 268, 64, 210, 130)
+    ui.set_image_placeholder(hwnd, custom_placeholder, "⏳", "正在生成缩略图", 0xFF409EFF, 0xFFEAF4FF)
+    ui.create_image(hwnd, state_panel, missing, "⚠️ 默认失败", "contain", 508, 64, 210, 130)
+    custom_error = ui.create_image(hwnd, state_panel, missing, "🧯 自定义失败", "contain", 748, 64, 210, 130)
+    ui.set_image_error_content(hwnd, custom_error, "🧯", "图片读取失败", 0xFFF56C6C, 0xFFFFF0F0)
+
+    source_panel = add_demo_panel(hwnd, stage, "🌐 本地、远程与懒加载", 28, 526, w - 56, 220)
+    ui.create_image(hwnd, source_panel, tall, "📁 本地竖图", "contain", 28, 64, 190, 130)
+    remote_image = ui.create_image(hwnd, source_panel, remote, "🌐 HTTPS 远程图", "cover", 248, 64, 230, 130)
+    ui.set_image_placeholder(hwnd, remote_image, "🌐", "远程图片加载中", 0xFF409EFF, 0)
+    for i, (path, label) in enumerate([(wide, "懒加载一"), (tall, "懒加载二"), (small, "懒加载三")]):
+        item = ui.create_image(hwnd, source_panel, path, f"🛗 {label}", "scale-down",
+                               520 + i * 156, 64, 136, 130)
+        ui.set_image_lazy(hwnd, item, True)
+
+    preview_panel = add_demo_panel(hwnd, stage, "🔍 预览列表、切换、缩放和关闭", 28, 774, w - 56, 310)
+    preview_image = ui.create_image(hwnd, preview_panel, wide, "🔍 预览列表示例", "contain", 28, 64, 260, 190)
+    ui.set_image_preview_list(hwnd, preview_image, [wide, tall, remote], selected_index=0)
+    ui.set_image_preview_enabled(hwnd, preview_image, True)
+    status = add_text(hwnd, preview_panel, "🔍 当前预览：第 1 张 / 3 张", 330, 64, 520, 28, MUTED)
+
+    def refresh_status():
+        state = ui.get_image_advanced_options(hwnd, preview_image) or {}
+        ui.set_element_text(hwnd, status, f"🔍 当前预览：第 {state.get('preview_index', 0) + 1} 张 / {state.get('preview_count', 0)} 张 · 缩放 {state.get('scale_percent', 100)}%")
+
+    def open_preview(_eid):
+        ui.set_image_preview(hwnd, preview_image, True)
+        refresh_status()
+
+    def prev_preview(_eid):
+        state = ui.get_image_advanced_options(hwnd, preview_image) or {}
+        count = max(1, state.get("preview_count", 1))
+        ui.set_image_preview_index(hwnd, preview_image, (state.get("preview_index", 0) - 1) % count)
+        ui.set_image_preview(hwnd, preview_image, True)
+        refresh_status()
+
+    def next_preview(_eid):
+        state = ui.get_image_advanced_options(hwnd, preview_image) or {}
+        count = max(1, state.get("preview_count", 1))
+        ui.set_image_preview_index(hwnd, preview_image, (state.get("preview_index", 0) + 1) % count)
+        ui.set_image_preview(hwnd, preview_image, True)
+        refresh_status()
+
+    def zoom_preview(_eid):
+        state = ui.get_image_advanced_options(hwnd, preview_image) or {}
+        ui.set_image_preview_transform(hwnd, preview_image, min(220, state.get("scale_percent", 100) + 30), 18, -12)
+        ui.set_image_preview(hwnd, preview_image, True)
+        refresh_status()
+
+    def close_preview(_eid):
+        ui.set_image_preview(hwnd, preview_image, False)
+        refresh_status()
+
+    actions = [
+        ("🔍", "打开预览", open_preview),
+        ("⬅️", "上一张", prev_preview),
+        ("➡️", "下一张", next_preview),
+        ("➕", "放大", zoom_preview),
+        ("✅", "关闭", close_preview),
+    ]
+    for index, (emoji, label, handler) in enumerate(actions):
+        btn = ui.create_button(hwnd, preview_panel, emoji, label, 330 + index * 132, 110, 116, 38)
+        set_click(hwnd, btn, handler)
+    ui.create_descriptions(
+        hwnd, preview_panel, "🧭 图片状态",
+        [
+            ("适配", "fill / contain / cover / none / scale-down"),
+            ("占位", "默认文案 + 自定义 emoji / 文本 / 颜色"),
+            ("来源", "本地文件 + HTTPS 远程异步加载"),
+            ("预览", "列表索引、左右切换、缩放、Esc 关闭"),
+        ],
+        2, True, 330, 166, 760, 112,
+    )
+    refresh_status()
 
 
 def showcase_message(hwnd, stage, w, h):
@@ -3428,6 +3565,7 @@ SPECIAL_SHOWCASES = {
     "Pagination": showcase_pagination,
     "Table": showcase_table,
     "Upload": showcase_upload,
+    "Image": showcase_image,
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
     "Notification": showcase_notification,
@@ -3740,7 +3878,7 @@ def make_media_page(hwnd, root):
         ("DateTimePicker", "🗓️", "日期时间", lambda h, p, x, y, w, hh: ui.create_datetimepicker(h, p, 2026, 5, 3, 9, 30, x, y, min(w, 560), 42), True),
         ("TimeSelect", "🕘", "时间候选", lambda h, p, x, y, w, hh: ui.create_time_select(h, p, 10, 0, x, y, min(w, 520), 42), True),
         ("Upload", "📤", "上传入口", lambda h, p, x, y, w, hh: ui.create_upload(h, p, "📤 选择文件", "支持状态读回", [], x, y, min(w, 900), min(hh, 320))),
-        ("Image", "🖼️", "图片容器", lambda h, p, x, y, w, hh: ui.create_image(h, p, "", "图片预览", 0, x, y, min(w, 760), min(hh, 320))),
+        ("Image", "🖼️", "五种适配、占位、失败、懒加载、远程和预览列表", lambda h, p, x, y, w, hh: ui.create_image(h, p, "", "图片预览", 0, x, y, min(w, 760), min(hh, 320))),
         ("Carousel", "🎠", "轮播", lambda h, p, x, y, w, hh: ui.create_carousel(h, p, ["第一屏 🚀", "第二屏 🌈", "第三屏 ✨"], 0, 0, x, y, min(w, 760), min(hh, 320))),
     ])
 

@@ -812,10 +812,16 @@ EXPORTS
     EU_SetImagePreviewEnabled
     EU_SetImagePreviewTransform
     EU_SetImageCacheEnabled
+    EU_SetImageLazy
+    EU_SetImagePlaceholder
+    EU_SetImageErrorContent
+    EU_SetImagePreviewList
+    EU_SetImagePreviewIndex
     EU_GetImageStatus
     EU_GetImagePreviewOpen
     EU_GetImageOptions
     EU_GetImageFullOptions
+    EU_GetImageAdvancedOptions
     EU_SetCarouselItems
     EU_SetCarouselActive
     EU_SetCarouselOptions
