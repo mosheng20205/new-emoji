@@ -550,6 +550,19 @@ EXPORTS
     EU_SetTransferItemDisabled
     EU_GetTransferItemDisabled
     EU_GetTransferDisabledCount
+    EU_SetTransferDataEx
+    EU_SetTransferOptions
+    EU_GetTransferOptions
+    EU_SetTransferTitles
+    EU_SetTransferButtonTexts
+    EU_SetTransferFormat
+    EU_SetTransferItemTemplate
+    EU_SetTransferFooterTexts
+    EU_SetTransferFilterPlaceholder
+    EU_SetTransferCheckedKeys
+    EU_GetTransferCheckedCount
+    EU_GetTransferValueKeys
+    EU_GetTransferText
     EU_SetAutocompleteSuggestions
     EU_SetAutocompleteValue
     EU_SetAutocompletePlaceholder

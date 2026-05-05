@@ -1641,6 +1641,44 @@ dll.EU_GetTransferItemDisabled.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_GetTransferItemDisabled.restype = ctypes.c_int
 dll.EU_GetTransferDisabledCount.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTransferDisabledCount.restype = ctypes.c_int
+dll.EU_SetTransferDataEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTransferOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTransferOptions.restype = ctypes.c_int
+dll.EU_SetTransferTitles.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferButtonTexts.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferFormat.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferItemTemplate.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferFooterTexts.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferFilterPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferCheckedKeys.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTransferCheckedCount.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTransferCheckedCount.restype = ctypes.c_int
+dll.EU_GetTransferValueKeys.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTransferValueKeys.restype = ctypes.c_int
+dll.EU_GetTransferText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTransferText.restype = ctypes.c_int
 dll.EU_SetAutocompleteSuggestions.argtypes = [wintypes.HWND, ctypes.c_int,
                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAutocompleteValue.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -5643,6 +5681,40 @@ def create_tree_select(hwnd, parent_id, items=None, selected=0,
         selected, x, y, w, h
     )
 
+def _transfer_item_rows(items, props=None):
+    props = props or {}
+    rows = []
+    if items is None:
+        items = []
+
+    def value_from(item, name, default=""):
+        source = props.get(name, name)
+        if isinstance(item, dict):
+            return item.get(source, item.get(name, default))
+        if isinstance(item, (list, tuple)):
+            index = {"key": 0, "label": 1, "value": 2, "desc": 3, "pinyin": 4, "disabled": 5}.get(name, 0)
+            return item[index] if len(item) > index else default
+        if name in ("key", "label", "value"):
+            return item
+        return default
+
+    for i, item in enumerate(items):
+        key = str(value_from(item, "key", i))
+        label = str(value_from(item, "label", key))
+        value = str(value_from(item, "value", key))
+        desc = str(value_from(item, "desc", ""))
+        pinyin = str(value_from(item, "pinyin", ""))
+        disabled = value_from(item, "disabled", False)
+        rows.append(
+            f"{key}\t{label}\t{value}\t{desc}\t{pinyin}\t{1 if disabled else 0}"
+        )
+    return rows
+
+def _transfer_key_text(keys):
+    if keys is None:
+        keys = []
+    return "|".join(str(key) for key in keys)
+
 def create_transfer(hwnd, parent_id, left_items=None, right_items=None,
                     x=0, y=0, w=560, h=170):
     if left_items is None:
@@ -5657,6 +5729,28 @@ def create_transfer(hwnd, parent_id, left_items=None, right_items=None,
         bytes_arg(right_data), len(right_data),
         x, y, w, h
     )
+
+def create_transfer_ex(hwnd, parent_id, items=None, target_keys=None, props=None,
+                       filterable=False, multiple=True, show_footer=False,
+                       show_select_all=True, show_count=True, render_mode=0,
+                       titles=("源列表", "目标列表"),
+                         button_texts=("到左边", "到右边"),
+                         fmt=("${total}", "${checked}/${total}"),
+                         item_template="{label}",
+                         footer_texts=("左侧操作", "右侧操作"),
+                         filter_placeholder="请输入关键词 🔎",
+                         x=0, y=0, w=720, h=260):
+    element_id = create_transfer(hwnd, parent_id, [], [], x, y, w, h)
+    set_transfer_data_ex(hwnd, element_id, items or [], target_keys or [], props=props)
+    set_transfer_options(hwnd, element_id, filterable, multiple, show_footer,
+                         show_select_all, show_count, render_mode)
+    set_transfer_titles(hwnd, element_id, titles[0], titles[1])
+    set_transfer_button_texts(hwnd, element_id, button_texts[0], button_texts[1])
+    set_transfer_format(hwnd, element_id, fmt[0], fmt[1])
+    set_transfer_item_template(hwnd, element_id, item_template)
+    set_transfer_footer_texts(hwnd, element_id, footer_texts[0], footer_texts[1])
+    set_transfer_filter_placeholder(hwnd, element_id, filter_placeholder)
+    return element_id
 
 def set_tree_items(hwnd, element_id, items=None):
     if items is None:
@@ -5882,6 +5976,113 @@ def get_transfer_item_disabled(hwnd, element_id, side=0, item_index=0):
 
 def get_transfer_disabled_count(hwnd, element_id, side=0):
     return dll.EU_GetTransferDisabledCount(hwnd, element_id, side)
+
+def set_transfer_data_ex(hwnd, element_id, items=None, target_keys=None, props=None):
+    item_data = make_utf8("|".join(_transfer_item_rows(items or [], props=props)))
+    target_data = make_utf8(_transfer_key_text(target_keys or []))
+    dll.EU_SetTransferDataEx(
+        hwnd, element_id,
+        bytes_arg(item_data), len(item_data),
+        bytes_arg(target_data), len(target_data),
+    )
+
+def set_transfer_options(hwnd, element_id, filterable=False, multiple=True,
+                         show_footer=False, show_select_all=True,
+                         show_count=True, render_mode=0):
+    dll.EU_SetTransferOptions(
+        hwnd, element_id,
+        1 if filterable else 0,
+        1 if multiple else 0,
+        1 if show_footer else 0,
+        1 if show_select_all else 0,
+        1 if show_count else 0,
+        int(render_mode),
+    )
+
+def get_transfer_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetTransferOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    return {
+        "filterable": bool(values[0].value),
+        "multiple": bool(values[1].value),
+        "show_footer": bool(values[2].value),
+        "show_select_all": bool(values[3].value),
+        "show_count": bool(values[4].value),
+        "render_mode": values[5].value,
+    }
+
+def set_transfer_titles(hwnd, element_id, left_title="源列表", right_title="目标列表"):
+    left_data = make_utf8(left_title)
+    right_data = make_utf8(right_title)
+    dll.EU_SetTransferTitles(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def set_transfer_button_texts(hwnd, element_id, left_text="到左边", right_text="到右边"):
+    left_data = make_utf8(left_text)
+    right_data = make_utf8(right_text)
+    dll.EU_SetTransferButtonTexts(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def set_transfer_format(hwnd, element_id, no_checked="${total}", has_checked="${checked}/${total}"):
+    no_data = make_utf8(no_checked)
+    has_data = make_utf8(has_checked)
+    dll.EU_SetTransferFormat(
+        hwnd, element_id,
+        bytes_arg(no_data), len(no_data),
+        bytes_arg(has_data), len(has_data),
+    )
+
+def set_transfer_item_template(hwnd, element_id, template="{label}"):
+    data = make_utf8(template)
+    dll.EU_SetTransferItemTemplate(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_transfer_footer_texts(hwnd, element_id, left_text="左侧操作", right_text="右侧操作"):
+    left_data = make_utf8(left_text)
+    right_data = make_utf8(right_text)
+    dll.EU_SetTransferFooterTexts(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def set_transfer_filter_placeholder(hwnd, element_id, text="请输入关键词 🔎"):
+    data = make_utf8(text)
+    dll.EU_SetTransferFilterPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_transfer_checked_keys(hwnd, element_id, left_keys=None, right_keys=None):
+    left_data = make_utf8(_transfer_key_text(left_keys or []))
+    right_data = make_utf8(_transfer_key_text(right_keys or []))
+    dll.EU_SetTransferCheckedKeys(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def get_transfer_checked_count(hwnd, element_id, side=0):
+    return dll.EU_GetTransferCheckedCount(hwnd, element_id, side)
+
+def _read_utf8(fn, *args, buffer_size=2048):
+    needed = fn(*args, None, 0)
+    size = max(buffer_size, needed + 1)
+    buf = (ctypes.c_ubyte * size)()
+    written = fn(*args, buf, size)
+    if written <= 0:
+        return ""
+    return bytes(buf[:min(written, size - 1)]).decode("utf-8", errors="replace")
+
+def get_transfer_value_keys(hwnd, element_id, buffer_size=2048):
+    return _read_utf8(dll.EU_GetTransferValueKeys, hwnd, element_id, buffer_size=buffer_size)
+
+def get_transfer_text(hwnd, element_id, text_type=0, buffer_size=2048):
+    return _read_utf8(dll.EU_GetTransferText, hwnd, element_id, text_type, buffer_size=buffer_size)
 
 def create_autocomplete(hwnd, parent_id, value="", suggestions=None,
                         x=0, y=0, w=260, h=36):

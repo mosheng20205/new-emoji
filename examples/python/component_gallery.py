@@ -3344,6 +3344,107 @@ def demo_message_button(hwnd, parent, x, y, w, h, title, body):
     set_click(hwnd, btn, button_action(hwnd, title, body))
 
 
+def showcase_transfer(hwnd, stage, w, h):
+    basic_items = [
+        {"key": 1, "label": "📦 备选项 1", "disabled": False},
+        {"key": 2, "label": "🧩 备选项 2", "disabled": False},
+        {"key": 3, "label": "🎨 备选项 3", "disabled": False},
+        {"key": 4, "label": "🔒 备选项 4", "disabled": True},
+        {"key": 5, "label": "🚀 备选项 5", "disabled": False},
+        {"key": 6, "label": "📊 备选项 6", "disabled": False},
+    ]
+    basic = add_demo_panel(hwnd, stage, "🔁 基础穿梭、禁用项与初始目标值", 28, 30, w - 56, 230)
+    basic_transfer = ui.create_transfer_ex(
+        hwnd, basic, basic_items, target_keys=[1, 4],
+        titles=("📚 备选列表", "✅ 已选列表"),
+        button_texts=("移回", "加入"),
+        item_template="{label}",
+        x=24, y=64, w=930, h=138,
+    )
+    state_id = add_text(hwnd, basic, "", 986, 70, max(260, w - 1070), 88, MUTED)
+
+    def refresh_state():
+        ui.set_element_text(
+            hwnd, state_id,
+            f"右侧值：{ui.get_transfer_value_keys(hwnd, basic_transfer)}\n"
+            f"左侧 {ui.get_transfer_count(hwnd, basic_transfer, 0)} 项，"
+            f"右侧 {ui.get_transfer_count(hwnd, basic_transfer, 1)} 项，"
+            f"禁用 {ui.get_transfer_disabled_count(hwnd, basic_transfer, 0)} 项 🔒"
+        )
+
+    join_btn = ui.create_button(hwnd, basic, "➡️", "加入选中", 986, 164, 118, 34)
+    back_btn = ui.create_button(hwnd, basic, "⬅️", "移回选中", 1118, 164, 118, 34)
+    set_click(hwnd, join_btn, lambda _eid: (ui.transfer_move_right(hwnd, basic_transfer), refresh_state()))
+    set_click(hwnd, back_btn, lambda _eid: (ui.transfer_move_left(hwnd, basic_transfer), refresh_state()))
+    refresh_state()
+
+    search = add_demo_panel(hwnd, stage, "🔎 可搜索：城市中文与拼音过滤", 28, 284, w - 56, 210)
+    city_items = [
+        {"key": "shanghai", "label": "🏙️ 上海", "pinyin": "shanghai"},
+        {"key": "beijing", "label": "🏛️ 北京", "pinyin": "beijing"},
+        {"key": "guangzhou", "label": "🌸 广州", "pinyin": "guangzhou"},
+        {"key": "shenzhen", "label": "🚄 深圳", "pinyin": "shenzhen"},
+        {"key": "nanjing", "label": "🌙 南京", "pinyin": "nanjing"},
+        {"key": "xian", "label": "🏮 西安", "pinyin": "xian"},
+        {"key": "chengdu", "label": "🐼 成都", "pinyin": "chengdu"},
+    ]
+    city_transfer = ui.create_transfer_ex(
+        hwnd, search, city_items, target_keys=[],
+        filterable=True, titles=("🌍 城市备选", "📍 已选城市"),
+        item_template="{label}", filter_placeholder="请输入城市拼音 🔎",
+        x=24, y=62, w=930, h=124,
+    )
+    ui.set_transfer_filters(hwnd, city_transfer, "bei", "")
+    add_text(hwnd, search, "筛选框可用键盘输入，也可由 API 设置；示例已过滤出拼音包含 bei 的城市。", 986, 72, max(280, w - 1070), 54, MUTED)
+    clear_filter = ui.create_button(hwnd, search, "🧹", "清除过滤", 986, 140, 126, 34)
+    set_click(hwnd, clear_filter, lambda _eid: ui.set_transfer_filters(hwnd, city_transfer, "", ""))
+
+    custom = add_demo_panel(hwnd, stage, "🎛️ 自定义标题、按钮、统计格式、模板与底部操作", 28, 518, w - 56, 250)
+    custom_items = [
+        {"key": 1, "label": "备选项 1", "desc": "低风险", "pinyin": "one"},
+        {"key": 2, "label": "备选项 2", "desc": "默认勾选", "pinyin": "two"},
+        {"key": 3, "label": "备选项 3", "desc": "默认勾选", "pinyin": "three"},
+        {"key": 4, "label": "备选项 4", "desc": "禁用", "pinyin": "four", "disabled": True},
+        {"key": 5, "label": "备选项 5", "desc": "可移动", "pinyin": "five"},
+    ]
+    custom_transfer = ui.create_transfer_ex(
+        hwnd, custom, custom_items, target_keys=[1],
+        filterable=True, show_footer=True,
+        titles=("📥 来源", "📤 目标"),
+        button_texts=("到左边", "到右边"),
+        fmt=("${total}", "${checked}/${total}"),
+        item_template="{key} - {label} · {desc}",
+        footer_texts=("⚙️ 左侧操作", "✅ 右侧操作"),
+        x=24, y=62, w=930, h=164,
+    )
+    ui.set_transfer_checked_keys(hwnd, custom_transfer, [2, 3], [1])
+    add_text(hwnd, custom, "字段模板覆盖 render-content / scoped-slot 场景：{key}、{label}、{desc}、{pinyin} 都可直接组合显示。", 986, 72, max(310, w - 1070), 70, MUTED)
+    add_text(hwnd, custom, f"当前勾选：左 {ui.get_transfer_checked_count(hwnd, custom_transfer, 0)} / 右 {ui.get_transfer_checked_count(hwnd, custom_transfer, 1)}", 986, 150, max(280, w - 1070), 34, TEXT)
+
+    props_panel = add_demo_panel(hwnd, stage, "🧾 字段映射：value / desc 模拟 props", 28, 794, w - 56, 230)
+    prop_items = [
+        {"value": "sku-1", "desc": "🧾 订单字段", "disabled": False},
+        {"value": "sku-2", "desc": "📦 商品字段", "disabled": False},
+        {"value": "sku-3", "desc": "🔒 只读字段", "disabled": True},
+        {"value": "sku-4", "desc": "🚚 配送字段", "disabled": False},
+        {"value": "sku-5", "desc": "💬 备注字段", "disabled": False},
+    ]
+    prop_transfer = ui.create_transfer_ex(
+        hwnd, props_panel, prop_items, target_keys=["sku-2"],
+        props={"key": "value", "label": "desc"},
+        titles=("🗂️ 可用字段", "📌 已选字段"),
+        item_template="{label}",
+        show_footer=True,
+        footer_texts=("批量字段操作", "生成配置 ✅"),
+        x=24, y=62, w=930, h=142,
+    )
+    add_text(hwnd, props_panel, "Python 侧 dict 可通过 props 映射到 C++ 的 key/label；易语言侧使用 key<Tab>label<Tab>value<Tab>desc<Tab>pinyin<Tab>disabled。", 986, 72, max(330, w - 1070), 82, MUTED)
+    add_text(hwnd, props_panel, f"目标值：{ui.get_transfer_value_keys(hwnd, prop_transfer)}", 986, 164, max(280, w - 1070), 30, TEXT)
+
+
+SPECIAL_SHOWCASES["Transfer"] = showcase_transfer
+
+
 def make_media_page(hwnd, root):
     make_page(hwnd, root, "选择媒体", "日期时间、树形选择、穿梭框、上传、图片和轮播等较完整的业务组件。", [
         ("Calendar", "📅", "日历", lambda h, p, x, y, w, hh: ui.create_calendar(h, p, 2026, 5, 3, x, y, min(w, 920), min(hh, 420))),

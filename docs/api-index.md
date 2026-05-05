@@ -544,6 +544,19 @@
 | `EU_SetTransferItemDisabled` | |
 | `EU_GetTransferItemDisabled` | |
 | `EU_GetTransferDisabledCount` | |
+| `EU_SetTransferDataEx` | 设置 Transfer 结构化项目和目标值 |
+| `EU_SetTransferOptions` | 设置 Transfer 筛选、多选、底部区、全选、统计和渲染模式 |
+| `EU_GetTransferOptions` | 读回 Transfer 样式与行为选项 |
+| `EU_SetTransferTitles` | 设置 Transfer 左右面板标题 |
+| `EU_SetTransferButtonTexts` | 设置 Transfer 左右移动按钮文案 |
+| `EU_SetTransferFormat` | 设置 Transfer 统计格式 |
+| `EU_SetTransferItemTemplate` | 设置 Transfer 数据项字段模板 |
+| `EU_SetTransferFooterTexts` | 设置 Transfer 左右底部操作区文案 |
+| `EU_SetTransferFilterPlaceholder` | 设置 Transfer 筛选输入框占位文案 |
+| `EU_SetTransferCheckedKeys` | 设置 Transfer 左右默认勾选键 |
+| `EU_GetTransferCheckedCount` | 读回 Transfer 指定侧勾选数量 |
+| `EU_GetTransferValueKeys` | 读回 Transfer 右侧目标值 |
+| `EU_GetTransferText` | 读回 Transfer 标题、按钮、格式、模板、底部文案和筛选占位文案 |
 | `EU_SetAutocompleteSuggestions` | |
 | `EU_SetAutocompleteValue` | |
 | `EU_SetAutocompletePlaceholder` | 设置自动补全占位文本 |

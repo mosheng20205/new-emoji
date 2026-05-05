@@ -485,7 +485,7 @@
     "zh": "穿梭框",
     "create": "EU_CreateTransfer",
     "status": "已完成",
-    "summary": "已补过滤、禁用项、匹配/禁用数量读回、单项和批量左右移动、Python 封装和独立中文 emoji 验证",
+        "summary": "已补基础穿梭、筛选占位、禁用项、多选勾选、默认勾选、自定义标题/按钮/格式、字段模板、底部操作区、字段映射、状态读回、Python 封装和 component_gallery 完整样式演示",
     "category": "复杂选择",
     "slug": "transfer"
   },

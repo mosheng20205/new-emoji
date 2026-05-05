@@ -1094,8 +1094,41 @@ int  __stdcall EU_GetTransferMatchedCount(HWND hwnd, int element_id, int side);
 void __stdcall EU_SetTransferItemDisabled(HWND hwnd, int element_id,
                                           int side, int item_index, int disabled);
 int  __stdcall EU_GetTransferItemDisabled(HWND hwnd, int element_id,
-                                         int side, int item_index);
+                                          int side, int item_index);
 int  __stdcall EU_GetTransferDisabledCount(HWND hwnd, int element_id, int side);
+void __stdcall EU_SetTransferDataEx(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len,
+                                    const unsigned char* target_bytes, int target_len);
+void __stdcall EU_SetTransferOptions(HWND hwnd, int element_id,
+                                     int filterable, int multiple, int show_footer,
+                                     int show_select_all, int show_count, int render_mode);
+int  __stdcall EU_GetTransferOptions(HWND hwnd, int element_id,
+                                     int* filterable, int* multiple, int* show_footer,
+                                     int* show_select_all, int* show_count, int* render_mode);
+void __stdcall EU_SetTransferTitles(HWND hwnd, int element_id,
+                                    const unsigned char* left_bytes, int left_len,
+                                    const unsigned char* right_bytes, int right_len);
+void __stdcall EU_SetTransferButtonTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len);
+void __stdcall EU_SetTransferFormat(HWND hwnd, int element_id,
+                                    const unsigned char* no_checked_bytes, int no_checked_len,
+                                    const unsigned char* has_checked_bytes, int has_checked_len);
+void __stdcall EU_SetTransferItemTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* template_bytes, int template_len);
+void __stdcall EU_SetTransferFooterTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len);
+void __stdcall EU_SetTransferFilterPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetTransferCheckedKeys(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len);
+int  __stdcall EU_GetTransferCheckedCount(HWND hwnd, int element_id, int side);
+int  __stdcall EU_GetTransferValueKeys(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTransferText(HWND hwnd, int element_id, int text_type,
+                                 unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetAutocompleteSuggestions(HWND hwnd, int element_id,
                                              const unsigned char* suggestions_bytes, int suggestions_len);
 void __stdcall EU_SetAutocompleteValue(HWND hwnd, int element_id,

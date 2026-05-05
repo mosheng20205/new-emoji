@@ -652,6 +652,27 @@ static std::vector<TreeViewItem> parse_tree_items(const unsigned char* bytes, in
     return items;
 }
 
+static std::vector<TransferItem> parse_transfer_items_ex(const unsigned char* bytes, int len) {
+    std::vector<TransferItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+        if (entry.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        TransferItem item;
+        item.key = fields.size() >= 1 ? fields[0] : L"";
+        item.label = fields.size() >= 2 ? fields[1] : item.key;
+        item.value = fields.size() >= 3 ? fields[2] : item.key;
+        item.desc = fields.size() >= 4 ? fields[3] : L"";
+        item.pinyin = fields.size() >= 5 ? fields[4] : L"";
+        item.disabled = fields.size() >= 6 && _wtoi(fields[5].c_str()) != 0;
+        if (item.key.empty()) item.key = !item.value.empty() ? item.value : item.label;
+        if (item.label.empty()) item.label = !item.desc.empty() ? item.desc : item.key;
+        if (item.value.empty()) item.value = item.key;
+        items.push_back(item);
+    }
+    return items;
+}
+
 static std::vector<TourStep> parse_tour_steps(const unsigned char* bytes, int len) {
     std::vector<TourStep> steps;
     std::wstring full = utf8_to_wide(bytes, len);
@@ -6946,6 +6967,111 @@ int __stdcall EU_GetTransferItemDisabled(HWND hwnd, int element_id,
 int __stdcall EU_GetTransferDisabledCount(HWND hwnd, int element_id, int side) {
     auto* el = find_typed_element<Transfer>(hwnd, element_id);
     return el ? el->disabled_count(side) : 0;
+}
+
+void __stdcall EU_SetTransferDataEx(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len,
+                                    const unsigned char* target_bytes, int target_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_data_ex(parse_transfer_items_ex(items_bytes, items_len),
+                        split_option_list(target_bytes, target_len));
+    }
+}
+
+void __stdcall EU_SetTransferOptions(HWND hwnd, int element_id,
+                                     int filterable, int multiple, int show_footer,
+                                     int show_select_all, int show_count, int render_mode) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_options(filterable != 0, multiple != 0, show_footer != 0,
+                        show_select_all != 0, show_count != 0, render_mode);
+    }
+}
+
+int __stdcall EU_GetTransferOptions(HWND hwnd, int element_id,
+                                    int* filterable, int* multiple, int* show_footer,
+                                    int* show_select_all, int* show_count, int* render_mode) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    if (!el) return 0;
+    if (filterable) *filterable = el->filterable ? 1 : 0;
+    if (multiple) *multiple = el->multiple ? 1 : 0;
+    if (show_footer) *show_footer = el->show_footer ? 1 : 0;
+    if (show_select_all) *show_select_all = el->show_select_all ? 1 : 0;
+    if (show_count) *show_count = el->show_count ? 1 : 0;
+    if (render_mode) *render_mode = el->render_mode;
+    return 1;
+}
+
+void __stdcall EU_SetTransferTitles(HWND hwnd, int element_id,
+                                    const unsigned char* left_bytes, int left_len,
+                                    const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_titles(utf8_to_wide(left_bytes, left_len), utf8_to_wide(right_bytes, right_len));
+    }
+}
+
+void __stdcall EU_SetTransferButtonTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_button_texts(utf8_to_wide(left_bytes, left_len), utf8_to_wide(right_bytes, right_len));
+    }
+}
+
+void __stdcall EU_SetTransferFormat(HWND hwnd, int element_id,
+                                    const unsigned char* no_checked_bytes, int no_checked_len,
+                                    const unsigned char* has_checked_bytes, int has_checked_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_format(utf8_to_wide(no_checked_bytes, no_checked_len),
+                       utf8_to_wide(has_checked_bytes, has_checked_len));
+    }
+}
+
+void __stdcall EU_SetTransferItemTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* template_bytes, int template_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_item_template(utf8_to_wide(template_bytes, template_len));
+    }
+}
+
+void __stdcall EU_SetTransferFooterTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_footer_texts(utf8_to_wide(left_bytes, left_len), utf8_to_wide(right_bytes, right_len));
+    }
+}
+
+void __stdcall EU_SetTransferFilterPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_filter_placeholder(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+void __stdcall EU_SetTransferCheckedKeys(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_checked_keys(split_option_list(left_bytes, left_len),
+                             split_option_list(right_bytes, right_len));
+    }
+}
+
+int __stdcall EU_GetTransferCheckedCount(HWND hwnd, int element_id, int side) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    return el ? el->checked_count(side) : 0;
+}
+
+int __stdcall EU_GetTransferValueKeys(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->value_keys_text(), buffer, buffer_size) : 0;
+}
+
+int __stdcall EU_GetTransferText(HWND hwnd, int element_id, int text_type,
+                                 unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->text_value(text_type), buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetAutocompleteSuggestions(HWND hwnd, int element_id,

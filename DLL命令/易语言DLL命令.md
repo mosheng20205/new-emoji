@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：927。
+当前导出命令数量：1012。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -3845,6 +3845,104 @@
     .参数 元素ID, 整数型
     .参数 侧边, 整数型, , 0左侧 1右侧
 
+.DLL命令 设置穿梭框扩展数据, , "new_emoji.dll", "EU_SetTransferDataEx", , 结构化项目格式为 key<Tab>label<Tab>value<Tab>desc<Tab>pinyin<Tab>disabled；目标值用 | 或换行分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目数据字节集指针, 整数型, , UTF-8
+    .参数 项目数据长度, 整数型
+    .参数 目标值字节集指针, 整数型, , UTF-8，值用 | 或换行分隔
+    .参数 目标值长度, 整数型
+
+.DLL命令 设置穿梭框选项, , "new_emoji.dll", "EU_SetTransferOptions", , 设置筛选、多选、底部操作区、全选、统计和渲染模式
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否可筛选, 整数型, , 0否 1是
+    .参数 是否多选, 整数型, , 0单选 1多选
+    .参数 是否显示底部, 整数型, , 0否 1是
+    .参数 是否显示全选, 整数型, , 0否 1是
+    .参数 是否显示统计, 整数型, , 0否 1是
+    .参数 渲染模式, 整数型, , 0模板 1键值标签 2标签描述
+
+.DLL命令 取穿梭框选项, 整数型, "new_emoji.dll", "EU_GetTransferOptions", , 成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否可筛选指针, 整数型, , 传址接收
+    .参数 是否多选指针, 整数型, , 传址接收
+    .参数 是否显示底部指针, 整数型, , 传址接收
+    .参数 是否显示全选指针, 整数型, , 传址接收
+    .参数 是否显示统计指针, 整数型, , 传址接收
+    .参数 渲染模式指针, 整数型, , 传址接收
+
+.DLL命令 设置穿梭框标题, , "new_emoji.dll", "EU_SetTransferTitles", , 设置左右面板标题
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左侧标题字节集指针, 整数型, , UTF-8
+    .参数 左侧标题长度, 整数型
+    .参数 右侧标题字节集指针, 整数型, , UTF-8
+    .参数 右侧标题长度, 整数型
+
+.DLL命令 设置穿梭框按钮文字, , "new_emoji.dll", "EU_SetTransferButtonTexts", , 设置“到左边 / 到右边”按钮文字
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 到左边文字字节集指针, 整数型, , UTF-8
+    .参数 到左边文字长度, 整数型
+    .参数 到右边文字字节集指针, 整数型, , UTF-8
+    .参数 到右边文字长度, 整数型
+
+.DLL命令 设置穿梭框统计格式, , "new_emoji.dll", "EU_SetTransferFormat", , 支持 ${checked}、${total}、${matched}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 未勾选格式字节集指针, 整数型, , UTF-8
+    .参数 未勾选格式长度, 整数型
+    .参数 已勾选格式字节集指针, 整数型, , UTF-8
+    .参数 已勾选格式长度, 整数型
+
+.DLL命令 设置穿梭框项目模板, , "new_emoji.dll", "EU_SetTransferItemTemplate", , 支持 {key}、{label}、{value}、{desc}、{pinyin}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 模板字节集指针, 整数型, , UTF-8
+    .参数 模板长度, 整数型
+
+.DLL命令 设置穿梭框底部文字, , "new_emoji.dll", "EU_SetTransferFooterTexts", , 设置左右底部操作区文字
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左侧底部字节集指针, 整数型, , UTF-8
+    .参数 左侧底部长度, 整数型
+    .参数 右侧底部字节集指针, 整数型, , UTF-8
+    .参数 右侧底部长度, 整数型
+
+.DLL命令 设置穿梭框筛选占位, , "new_emoji.dll", "EU_SetTransferFilterPlaceholder", , 设置筛选输入框占位文案，例如“请输入城市拼音 🔎”
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 占位文字字节集指针, 整数型, , UTF-8
+    .参数 占位文字长度, 整数型
+
+.DLL命令 设置穿梭框勾选键, , "new_emoji.dll", "EU_SetTransferCheckedKeys", , 设置左右默认勾选键，值用 | 或换行分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左侧键字节集指针, 整数型, , UTF-8
+    .参数 左侧键长度, 整数型
+    .参数 右侧键字节集指针, 整数型, , UTF-8
+    .参数 右侧键长度, 整数型
+
+.DLL命令 取穿梭框勾选数量, 整数型, "new_emoji.dll", "EU_GetTransferCheckedCount", , 返回指定侧边勾选项目数量
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0左侧 1右侧
+
+.DLL命令 取穿梭框目标值, 整数型, "new_emoji.dll", "EU_GetTransferValueKeys", , 返回写入 UTF-8 字节数；右侧目标值用 | 分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 缓冲区长度, 整数型
+
+.DLL命令 取穿梭框文本, 整数型, "new_emoji.dll", "EU_GetTransferText", , 返回写入 UTF-8 字节数；文本类型 0左标题 1右标题 2左移按钮 3右移按钮 4未勾选格式 5已勾选格式 6项目模板 7左底部 8右底部 9筛选占位
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本类型, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 缓冲区长度, 整数型
+
 .DLL命令 设置自动补全建议项, , "new_emoji.dll", "EU_SetAutocompleteSuggestions", , 对应 C++ 导出命令 EU_SetAutocompleteSuggestions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -4148,6 +4246,18 @@
     .参数 元素ID, 整数型
     .参数 分隔符字节集指针, 整数型, , UTF-8
     .参数 分隔符长度, 整数型
+
+.DLL命令 设置日期选择器开始占位符, , "new_emoji.dll", "EU_SetDatePickerStartPlaceholder", , 对应 C++ 导出命令 EU_SetDatePickerStartPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 设置日期选择器结束占位符, , "new_emoji.dll", "EU_SetDatePickerEndPlaceholder", , 对应 C++ 导出命令 EU_SetDatePickerEndPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
 
 .DLL命令 设置日期选择器格式, , "new_emoji.dll", "EU_SetDatePickerFormat", , 对应 C++ 导出命令 EU_SetDatePickerFormat
     .参数 窗口句柄, 整数型
