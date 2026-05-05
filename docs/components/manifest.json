@@ -733,9 +733,9 @@
     "index": "74",
     "name": "Alert",
     "zh": "警告提示",
-    "create": "EU_CreateAlert",
+    "create": "EU_CreateAlert / EU_CreateAlertEx",
     "status": "已完成",
-    "summary": "已补类型/效果/描述/可关闭状态、关闭按钮、鼠标/键盘/程序触发关闭、关闭回调、关闭次数与最近动作完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
+    "summary": "已补四类型、浅色/深色、自定义关闭文字、显示/隐藏图标、居中、长描述换行、关闭回调、状态读回、Python 封装、易语言命令文档和 Alert 专属完整图库页",
     "category": "反馈/浮层",
     "slug": "alert"
   },

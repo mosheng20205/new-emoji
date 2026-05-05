@@ -83,6 +83,7 @@ EXPORTS
     EU_CreatePagination
     EU_CreateSteps
     EU_CreateAlert
+    EU_CreateAlertEx
     EU_CreateResult
     EU_CreateNotification
     EU_CreateLoading
@@ -963,6 +964,10 @@ EXPORTS
     EU_SetAlertType
     EU_SetAlertEffect
     EU_SetAlertClosable
+    EU_SetAlertAdvancedOptions
+    EU_GetAlertAdvancedOptions
+    EU_SetAlertCloseText
+    EU_GetAlertText
     EU_SetAlertClosed
     EU_TriggerAlertClose
     EU_GetAlertClosed

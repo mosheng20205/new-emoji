@@ -610,6 +610,14 @@ dll.EU_CreateAlert.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateAlert.restype = ctypes.c_int
+dll.EU_CreateAlertEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateAlertEx.restype = ctypes.c_int
 
 dll.EU_CreateResult.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -2624,6 +2632,19 @@ dll.EU_SetAlertDescription.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetAlertType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAlertEffect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAlertClosable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetAlertAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetAlertAdvancedOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetAlertAdvancedOptions.restype = ctypes.c_int
+dll.EU_SetAlertCloseText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAlertText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAlertText.restype = ctypes.c_int
 dll.EU_SetAlertClosed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_TriggerAlertClose.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetAlertClosed.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -9286,6 +9307,22 @@ def create_alert(hwnd, parent_id, title="提示", description="", alert_type=0,
         alert_type, effect, 1 if closable else 0, x, y, w, h
     )
 
+def create_alert_ex(hwnd, parent_id, title="提示", description="", alert_type=0,
+                    effect=0, closable=True, show_icon=True, center=False,
+                    wrap_description=False, close_text="", x=0, y=0, w=420, h=52):
+    title_data = make_utf8(title)
+    desc_data = make_utf8(description)
+    close_data = make_utf8(close_text)
+    return dll.EU_CreateAlertEx(
+        hwnd, parent_id,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(desc_data), len(desc_data),
+        alert_type, effect, 1 if closable else 0,
+        1 if show_icon else 0, 1 if center else 0, 1 if wrap_description else 0,
+        bytes_arg(close_data), len(close_data),
+        x, y, w, h
+    )
+
 def get_alert_options(hwnd, element_id):
     alert_type = ctypes.c_int()
     effect = ctypes.c_int()
@@ -9310,6 +9347,36 @@ def set_alert_effect(hwnd, element_id, effect):
 
 def set_alert_closable(hwnd, element_id, closable):
     dll.EU_SetAlertClosable(hwnd, element_id, int(bool(closable)))
+
+def set_alert_advanced_options(hwnd, element_id, show_icon=True, center=False, wrap_description=False):
+    dll.EU_SetAlertAdvancedOptions(
+        hwnd, element_id,
+        1 if show_icon else 0,
+        1 if center else 0,
+        1 if wrap_description else 0,
+    )
+
+def get_alert_advanced_options(hwnd, element_id):
+    show_icon = ctypes.c_int()
+    center = ctypes.c_int()
+    wrap_description = ctypes.c_int()
+    ok = dll.EU_GetAlertAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(show_icon), ctypes.byref(center), ctypes.byref(wrap_description),
+    )
+    return (bool(show_icon.value), bool(center.value), bool(wrap_description.value)) if ok else None
+
+def set_alert_close_text(hwnd, element_id, close_text):
+    data = make_utf8(close_text)
+    dll.EU_SetAlertCloseText(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_alert_text(hwnd, element_id, text_type=0):
+    needed = dll.EU_GetAlertText(hwnd, element_id, text_type, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetAlertText(hwnd, element_id, text_type, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
 
 def set_alert_closed(hwnd, element_id, closed):
     dll.EU_SetAlertClosed(hwnd, element_id, int(bool(closed)))

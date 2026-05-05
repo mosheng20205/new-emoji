@@ -3009,11 +3009,13 @@ int __stdcall EU_CreateSteps(HWND hwnd, int parent_id,
     return raw->id;
 }
 
-int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
-                             const unsigned char* title_bytes, int title_len,
-                             const unsigned char* desc_bytes, int desc_len,
-                             int alert_type, int effect, int closable,
-                             int x, int y, int w, int h) {
+static int create_alert_element(HWND hwnd, int parent_id,
+                                const unsigned char* title_bytes, int title_len,
+                                const unsigned char* desc_bytes, int desc_len,
+                                int alert_type, int effect, int closable,
+                                int show_icon, int center, int wrap_description,
+                                const unsigned char* close_text_bytes, int close_text_len,
+                                int x, int y, int w, int h) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return 0;
 
@@ -3025,6 +3027,8 @@ int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
     el->set_type(alert_type);
     el->set_effect(effect);
     el->set_closable(closable != 0);
+    el->set_advanced_options(show_icon != 0, center != 0, wrap_description != 0);
+    el->set_close_text(utf8_to_wide(close_text_bytes, close_text_len));
 
     ElementStyle logical_style = el->style;
     logical_style.bg_color = 0;
@@ -3042,6 +3046,33 @@ int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
+}
+
+int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
+                             const unsigned char* title_bytes, int title_len,
+                             const unsigned char* desc_bytes, int desc_len,
+                             int alert_type, int effect, int closable,
+                             int x, int y, int w, int h) {
+    return create_alert_element(hwnd, parent_id,
+                                title_bytes, title_len, desc_bytes, desc_len,
+                                alert_type, effect, closable,
+                                1, 0, 0, nullptr, 0,
+                                x, y, w, h);
+}
+
+int __stdcall EU_CreateAlertEx(HWND hwnd, int parent_id,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* desc_bytes, int desc_len,
+                               int alert_type, int effect, int closable,
+                               int show_icon, int center, int wrap_description,
+                               const unsigned char* close_text_bytes, int close_text_len,
+                               int x, int y, int w, int h) {
+    return create_alert_element(hwnd, parent_id,
+                                title_bytes, title_len, desc_bytes, desc_len,
+                                alert_type, effect, closable,
+                                show_icon, center, wrap_description,
+                                close_text_bytes, close_text_len,
+                                x, y, w, h);
 }
 
 int __stdcall EU_CreateResult(HWND hwnd, int parent_id,
@@ -10409,6 +10440,41 @@ void __stdcall EU_SetAlertClosable(HWND hwnd, int element_id, int closable) {
     if (auto* el = find_typed_element<Alert>(hwnd, element_id)) {
         el->set_closable(closable != 0);
     }
+}
+
+void __stdcall EU_SetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                          int show_icon, int center, int wrap_description) {
+    if (auto* el = find_typed_element<Alert>(hwnd, element_id)) {
+        el->set_advanced_options(show_icon != 0, center != 0, wrap_description != 0);
+    }
+}
+
+int __stdcall EU_GetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                         int* show_icon, int* center,
+                                         int* wrap_description) {
+    auto* el = find_typed_element<Alert>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_icon) *show_icon = el->show_icon ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (wrap_description) *wrap_description = el->wrap_description ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetAlertCloseText(HWND hwnd, int element_id,
+                                    const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Alert>(hwnd, element_id)) {
+        el->set_close_text(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+int __stdcall EU_GetAlertText(HWND hwnd, int element_id, int text_type,
+                              unsigned char* out_bytes, int out_len) {
+    auto* el = find_typed_element<Alert>(hwnd, element_id);
+    if (!el) return 0;
+    const std::wstring* value = &el->text;
+    if (text_type == 1) value = &el->description;
+    else if (text_type == 2) value = &el->close_text;
+    return copy_wide_as_utf8(*value, out_bytes, out_len);
 }
 
 void __stdcall EU_SetAlertClosed(HWND hwnd, int element_id, int closed) {

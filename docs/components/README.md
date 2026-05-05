@@ -112,7 +112,7 @@
 ## 💬 反馈/浮层
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
-| `Alert` | 警告提示 | `EU_CreateAlert` | 已完成 | [警告提示](./alert.md) |
+| `Alert` | 警告提示 | `EU_CreateAlert` / `EU_CreateAlertEx` | 已完成，支持四类型、浅色/深色、关闭文字、显示/隐藏图标、居中和长描述换行 | [警告提示](./alert.md) |
 | `Result` | 结果页 | `EU_CreateResult` | 已完成 | [结果页](./result.md) |
 | `Message` | 消息提示 | `EU_ShowMessage` | 已完成，服务式轻提示，支持四类型、可关闭、居中、富文本、自动关闭、偏移和堆叠 | [消息提示](./message.md) |
 | `MessageBox` | 消息框 | `EU_ShowMessageBoxEx` / `EU_ShowPromptBox` | 已完成，支持 alert/confirm/prompt/msgbox、富文本、区分关闭、loading 和输入校验 | [消息框](./message-box.md) |

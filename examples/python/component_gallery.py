@@ -1870,6 +1870,151 @@ def showcase_image(hwnd, stage, w, h):
     refresh_status()
 
 
+def showcase_alert(hwnd, stage, w, h):
+    type_names = {0: "信息", 1: "成功", 2: "警告", 3: "错误"}
+    action_names = {0: "无", 1: "设置", 2: "鼠标", 3: "键盘", 4: "程序"}
+    tracked = {"target": 0, "type": 1, "effect": 0, "show_icon": True, "center": False}
+
+    status_id = add_text(hwnd, stage, "🚨 Alert 警告提示：展示页面内重要信息，支持中文与 emoji。", 36, 28, w - 72, 28, MUTED)
+
+    basic = add_demo_panel(hwnd, stage, "🌈 基础类型：浅色 success / info / warning / error", 28, 70, 820, 294)
+    basic_specs = [
+        ("✅ 成功提示的文案", 1),
+        ("ℹ️ 消息提示的文案", 0),
+        ("⚠️ 警告提示的文案", 2),
+        ("❌ 错误提示的文案", 3),
+    ]
+    for i, (title, alert_type) in enumerate(basic_specs):
+        ui.create_alert_ex(
+            hwnd, basic, title, "", alert_type, 0, True,
+            True, False, False, "", 24, 58 + i * 54, 748, 42,
+        )
+
+    dark = add_demo_panel(hwnd, stage, "🌙 深色效果：effect=dark", 878, 70, w - 906, 294)
+    for i, (title, alert_type) in enumerate(basic_specs):
+        ui.create_alert_ex(
+            hwnd, dark, title.replace("文案", "深色文案"), "", alert_type, 1, True,
+            True, False, False, "", 24, 58 + i * 54, w - 970, 42,
+        )
+
+    close_panel = add_demo_panel(hwnd, stage, "🧯 关闭能力：不可关闭、自定义文字与关闭回调", 28, 392, 820, 250)
+    no_close = ui.create_alert_ex(
+        hwnd, close_panel, "✅ 不可关闭的 alert", "", 1, 0, False,
+        True, False, False, "", 24, 58, 748, 44,
+    )
+    custom_close = ui.create_alert_ex(
+        hwnd, close_panel, "ℹ️ 自定义 close-text", "右侧关闭区域显示「知道了」。", 0, 0, True,
+        True, False, False, "知道了", 24, 116, 748, 58,
+    )
+    callback_id = ui.create_alert_ex(
+        hwnd, close_panel, "⚠️ 设置了回调的 alert", "关闭后会在右侧状态区显示来源和次数。", 2, 0, True,
+        True, False, False, "", 24, 188, 748, 58,
+    )
+
+    advanced = add_demo_panel(hwnd, stage, "🎯 图标与居中：show-icon / hide-icon / center", 878, 392, w - 906, 250)
+    ui.create_alert_ex(hwnd, advanced, "✅ 带图标的成功提示", "", 1, 0, True, True, False, False, "", 24, 58, w - 970, 42)
+    ui.create_alert_ex(hwnd, advanced, "ℹ️ 隐藏图标的信息提示", "", 0, 0, True, False, False, False, "", 24, 112, w - 970, 42)
+    ui.create_alert_ex(hwnd, advanced, "⚠️ 居中且带图标的警告提示", "", 2, 0, True, True, True, False, "", 24, 166, w - 970, 42)
+
+    desc_panel = add_demo_panel(hwnd, stage, "📝 辅助说明：短描述、长中文换行、多类型描述", 28, 670, 1080, 344)
+    long_desc = "这是一句绕口令：黑灰化肥会挥发发灰黑化肥挥发；灰黑化肥会挥发发黑灰化肥发挥。黑灰化肥会挥发发灰黑化肥黑灰挥发化为灰。"
+    ui.create_alert_ex(
+        hwnd, desc_panel, "✅ 带辅助性文字介绍", long_desc, 1, 0, True,
+        True, False, True, "", 24, 58, 1018, 88,
+    )
+    desc_specs = [
+        ("✅ 成功提示的文案", "文字说明文字说明文字说明文字说明文字说明文字说明", 1),
+        ("ℹ️ 消息提示的文案", "文字说明文字说明文字说明文字说明文字说明文字说明", 0),
+        ("⚠️ 警告提示的文案", "文字说明文字说明文字说明文字说明文字说明文字说明", 2),
+        ("❌ 错误提示的文案", "文字说明文字说明文字说明文字说明文字说明文字说明", 3),
+    ]
+    for i, (title, desc, alert_type) in enumerate(desc_specs):
+        ui.create_alert_ex(
+            hwnd, desc_panel, title, desc, alert_type, 0, True,
+            True, False, True, "", 24 + (i % 2) * 510, 166 + (i // 2) * 76, 488, 60,
+        )
+
+    control = add_demo_panel(hwnd, stage, "🎛️ 交互与读回：动态切换样式、程序关闭和重新显示", 1138, 670, w - 1166, 344)
+    state_id = add_text(hwnd, control, "📋 状态读回：等待操作。", 24, 56, w - 1214, 116, TEXT)
+    target = ui.create_alert_ex(
+        hwnd, control, "✅ 可交互目标", "按钮会修改这条 Alert 的类型、深浅、图标、居中和关闭文字。", 1, 0, True,
+        True, False, True, "", 24, 186, w - 1214, 76,
+    )
+    tracked["target"] = target
+
+    @ui.ValueCallback
+    def on_alert_close(element_id, close_count, alert_type, action):
+        ui.set_element_text(hwnd, status_id, f"🧯 关闭回调：#{element_id} · {type_names.get(alert_type, '信息')} · {action_names.get(action, '未知')} · 第 {close_count} 次")
+
+    keep_callback(on_alert_close)
+    for aid in (custom_close, callback_id, target):
+        ui.set_alert_close_callback(hwnd, aid, on_alert_close)
+
+    def refresh_state(label):
+        state = ui.get_alert_full_state(hwnd, target) or {}
+        advanced_state = ui.get_alert_advanced_options(hwnd, target) or (False, False, False)
+        title = ui.get_alert_text(hwnd, target, 0)
+        desc = ui.get_alert_text(hwnd, target, 1)
+        close_text = ui.get_alert_text(hwnd, target, 2) or "X"
+        ui.set_element_text(
+            hwnd,
+            state_id,
+            f"📋 {label}\n类型={type_names.get(state.get('alert_type', 0), '信息')} · effect={'dark' if state.get('effect') else 'light'} · "
+            f"图标={advanced_state[0]} · 居中={advanced_state[1]} · 换行={advanced_state[2]}\n"
+            f"关闭={state.get('closed', 0)} · hover={state.get('close_hover', 0)} · down={state.get('close_down', 0)} · "
+            f"次数={state.get('close_count', 0)} · 来源={action_names.get(state.get('last_action', 0), '无')}\n"
+            f"标题：{title}\n描述：{desc}\n关闭文字：{close_text}",
+        )
+
+    def cycle_type(_eid):
+        tracked["type"] = (tracked["type"] + 1) % 4
+        ui.set_alert_type(hwnd, target, tracked["type"])
+        ui.set_element_text(hwnd, target, f"{['ℹ️', '✅', '⚠️', '❌'][tracked['type']]} 已切换为{type_names[tracked['type']]}")
+        refresh_state("已切换类型")
+
+    def toggle_dark(_eid):
+        tracked["effect"] = 0 if tracked["effect"] else 1
+        ui.set_alert_effect(hwnd, target, tracked["effect"])
+        refresh_state("已切换深浅效果")
+
+    def toggle_icon(_eid):
+        tracked["show_icon"] = not tracked["show_icon"]
+        ui.set_alert_advanced_options(hwnd, target, tracked["show_icon"], tracked["center"], True)
+        refresh_state("已切换图标显示")
+
+    def toggle_center(_eid):
+        tracked["center"] = not tracked["center"]
+        ui.set_alert_advanced_options(hwnd, target, tracked["show_icon"], tracked["center"], True)
+        refresh_state("已切换居中")
+
+    def set_close_text(_eid):
+        current = ui.get_alert_text(hwnd, target, 2)
+        ui.set_alert_close_text(hwnd, target, "" if current else "知道了")
+        refresh_state("已切换关闭文字")
+
+    def close_target(_eid):
+        ui.trigger_alert_close(hwnd, target)
+        refresh_state("程序触发关闭")
+
+    def reopen_target(_eid):
+        ui.set_alert_closed(hwnd, target, False)
+        refresh_state("重新显示")
+
+    buttons = [
+        ("🔄", "切换类型", cycle_type),
+        ("🌙", "深浅效果", toggle_dark),
+        ("👁️", "显示图标", toggle_icon),
+        ("🎯", "居中", toggle_center),
+        ("📝", "关闭文字", set_close_text),
+        ("🧯", "程序关闭", close_target),
+        ("🔁", "重新显示", reopen_target),
+    ]
+    for i, (emoji, label, handler) in enumerate(buttons):
+        btn = ui.create_button(hwnd, control, emoji, label, 24 + (i % 4) * 124, 278 + (i // 4) * 42, 112, 34)
+        set_click(hwnd, btn, handler)
+    refresh_state("初始状态")
+
+
 def showcase_message(hwnd, stage, w, h):
     last_message = {"id": 0}
     status_id = add_text(hwnd, stage, "💬 最近消息：点击任一按钮开始演示", 44, 28, w - 88, 26, MUTED)
@@ -4220,6 +4365,7 @@ SPECIAL_SHOWCASES = {
     "Timeline": showcase_timeline,
     "Upload": showcase_upload,
     "Image": showcase_image,
+    "Alert": showcase_alert,
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
     "Notification": showcase_notification,

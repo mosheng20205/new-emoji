@@ -313,6 +313,13 @@ int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
                              const unsigned char* desc_bytes, int desc_len,
                              int alert_type, int effect, int closable,
                              int x, int y, int w, int h);
+int __stdcall EU_CreateAlertEx(HWND hwnd, int parent_id,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* desc_bytes, int desc_len,
+                               int alert_type, int effect, int closable,
+                               int show_icon, int center, int wrap_description,
+                               const unsigned char* close_text_bytes, int close_text_len,
+                               int x, int y, int w, int h);
 int __stdcall EU_CreateResult(HWND hwnd, int parent_id,
                               const unsigned char* title_bytes, int title_len,
                               const unsigned char* subtitle_bytes, int subtitle_len,
@@ -1897,6 +1904,15 @@ void __stdcall EU_SetAlertDescription(HWND hwnd, int element_id,
 void __stdcall EU_SetAlertType(HWND hwnd, int element_id, int alert_type);
 void __stdcall EU_SetAlertEffect(HWND hwnd, int element_id, int effect);
 void __stdcall EU_SetAlertClosable(HWND hwnd, int element_id, int closable);
+void __stdcall EU_SetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                          int show_icon, int center, int wrap_description);
+int  __stdcall EU_GetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                          int* show_icon, int* center,
+                                          int* wrap_description);
+void __stdcall EU_SetAlertCloseText(HWND hwnd, int element_id,
+                                    const unsigned char* text_bytes, int text_len);
+int  __stdcall EU_GetAlertText(HWND hwnd, int element_id, int text_type,
+                               unsigned char* out_bytes, int out_len);
 void __stdcall EU_SetAlertClosed(HWND hwnd, int element_id, int closed);
 void __stdcall EU_TriggerAlertClose(HWND hwnd, int element_id);
 int  __stdcall EU_GetAlertClosed(HWND hwnd, int element_id);

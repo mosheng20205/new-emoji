@@ -87,6 +87,7 @@
 | `EU_CreatePagination` | |
 | `EU_CreateSteps` | |
 | `EU_CreateAlert` | |
+| `EU_CreateAlertEx` | 创建高级警告提示，支持图标、居中、描述换行和自定义关闭文字 |
 | `EU_CreateResult` | |
 | `EU_CreateNotification` | |
 | `EU_CreateLoading` | |
@@ -931,6 +932,10 @@
 | `EU_SetAlertType` | |
 | `EU_SetAlertEffect` | |
 | `EU_SetAlertClosable` | |
+| `EU_SetAlertAdvancedOptions` | 设置 Alert 显示图标、居中和描述换行 |
+| `EU_GetAlertAdvancedOptions` | 读取 Alert 高级选项 |
+| `EU_SetAlertCloseText` | 设置 Alert 自定义关闭文字 |
+| `EU_GetAlertText` | 读取 Alert 标题、描述或关闭文字 |
 | `EU_SetAlertClosed` | |
 | `EU_TriggerAlertClose` | |
 | `EU_GetAlertClosed` | |
