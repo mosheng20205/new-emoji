@@ -4107,12 +4107,238 @@ def showcase_transfer(hwnd, stage, w, h):
     add_text(hwnd, props_panel, f"目标值：{ui.get_transfer_value_keys(hwnd, prop_transfer)}", 986, 164, max(280, w - 1070), 30, TEXT)
 
 
+def showcase_calendar(hwnd, stage, w, h):
+    today_value = 20260505
+    base_items = [
+        {
+            "date": 20260512, "label": "05-12", "extra": "产品评审",
+            "emoji": "✔️", "badge": "会", "bg": "0xFFEAF2FF", "fg": "0xFF1989FA",
+            "border": "0xFF1989FA", "badge_bg": "0xFF1989FA",
+            "badge_fg": "0xFFFFFFFF", "font_flags": 1,
+        },
+        {
+            "date": 20260515, "label": "05-15", "extra": "客户演示",
+            "emoji": "💬", "badge": "客", "bg": "0xFFFFF7E6", "fg": "0xFF9A5B00",
+            "border": "0xFFE6A23C", "badge_bg": "0xFFE6A23C",
+            "badge_fg": "0xFFFFFFFF", "font_flags": 1,
+        },
+        {
+            "date": 20260518, "label": "05-18", "extra": "不可预约",
+            "emoji": "⛔", "badge": "禁", "bg": "0xFF303442", "fg": "0xFFCDD5E4",
+            "border": "0xFFD0D7E2", "badge_bg": "0xFF909399",
+            "badge_fg": "0xFFFFFFFF", "disabled": 1,
+        },
+        {
+            "date": 20260522, "label": "05-22", "extra": "发布窗口",
+            "emoji": "🚀", "badge": "发", "bg": "0xFFEAF8EF", "fg": "0xFF2F855A",
+            "border": "0xFF67C23A", "badge_bg": "0xFF67C23A",
+            "badge_fg": "0xFFFFFFFF", "font_flags": 1,
+        },
+    ]
+
+    state = {
+        "display_enabled": False,
+        "label_mode": 0,
+        "custom_enabled": True,
+        "last": "等待用户选择日期",
+    }
+
+    left_w = 252
+    center_w = min(930, max(820, w - 600))
+    gap = 14
+    right_w = max(420, w - 56 - left_w - center_w - gap * 2)
+    top_y = 30
+    top_h = 520
+    left_x = 28
+    center_x = left_x + left_w + gap
+    right_x = center_x + center_w + gap
+
+    ops = add_demo_panel(hwnd, stage, "🧭 操作区", left_x, top_y, left_w, top_h)
+    add_text(hwnd, ops, "常用桌面操作集中在左侧，点击后会同步更新中间日历和右侧读回。", 18, 54, left_w - 36, 54, MUTED)
+
+    readback = add_demo_panel(hwnd, stage, "📌 状态读回", right_x, top_y, right_w, top_h)
+    status_id = add_text(hwnd, readback, "", 18, 56, right_w - 36, 206, MUTED)
+    ui.set_text_options(hwnd, status_id, wrap=True, ellipsis=False)
+    add_text(hwnd, readback, "显示范围是 Element UI `range` 的桌面端对应能力；可选范围仍由“设置日历范围”控制。", 18, 292, right_w - 36, 58, MUTED)
+    add_text(hwnd, readback, "单元格数据使用每行一个日期、字段 Tab 分隔的 UTF-8 文本，可为具体日期覆盖 label、extra、emoji、badge、颜色和禁用态。", 18, 368, right_w - 36, 82, MUTED)
+
+    main = add_demo_panel(hwnd, stage, "📅 日历区", center_x, top_y, center_w, top_h)
+    add_text(hwnd, main, "基础绑定、dateCell 自定义内容和显示范围三种能力并列展示。", 18, 52, center_w - 36, 28, MUTED)
+    cal_w = max(260, (center_w - 68) // 3)
+    cal_h = 330
+    x1 = 18
+    x2 = x1 + cal_w + 16
+    x3 = x2 + cal_w + 16
+    add_text(hwnd, main, "基础日历", x1, 90, cal_w, 24, TEXT)
+    add_text(hwnd, main, "dateCell 自定义", x2, 90, cal_w, 24, TEXT)
+    add_text(hwnd, main, "显示范围", x3, 90, cal_w, 24, TEXT)
+
+    base_cal = ui.create_calendar(hwnd, main, 2026, 5, 12, x1, 120, cal_w, cal_h)
+    custom_cal = ui.create_calendar(hwnd, main, 2026, 5, 12, x2, 120, cal_w, cal_h)
+    range_cal = ui.create_calendar(hwnd, main, 2026, 5, 12, x3, 120, cal_w, cal_h)
+
+    for cal in (base_cal, custom_cal, range_cal):
+        ui.set_calendar_range(hwnd, cal, 20260505, 20260528)
+        ui.set_calendar_options(hwnd, cal, today_value, True)
+        ui.set_calendar_selection_range(hwnd, cal, 20260510, 20260518, True)
+        ui.set_calendar_selected_marker(hwnd, cal, "✔️")
+        ui.set_calendar_state_colors(
+            hwnd, cal,
+            selected_bg=0xFF1989FA, selected_fg=0xFFFFFFFF,
+            range_bg=0x332F80ED, today_border=0xFF1989FA,
+            hover_bg=0xFFEAF2FF, disabled_fg=0xFF9AA6BA,
+            adjacent_fg=0xFF909399,
+        )
+    ui.set_calendar_visual_options(hwnd, custom_cal, True, True, 3, True, 8.0)
+    ui.set_calendar_cell_items(hwnd, custom_cal, base_items)
+    ui.set_calendar_display_range(hwnd, range_cal, 20260504, 20260524)
+    ui.set_calendar_visual_options(hwnd, range_cal, True, True, 1, True, 8.0)
+    add_text(
+        hwnd, main,
+        "dateCell 图例：05-12 产品评审 / 05-15 客户演示 / 05-18 不可预约 / 05-22 发布窗口",
+        18, 462, center_w - 36, 36, MUTED,
+    )
+
+    def fmt_date(value):
+        if not value:
+            return "未设置"
+        text = str(value)
+        if len(text) == 8:
+            return f"{text[:4]}-{text[4:6]}-{text[6:]}"
+        return text
+
+    def refresh_status():
+        custom_count = len([line for line in ui.get_calendar_cell_items(hwnd, custom_cal).splitlines() if line.strip()])
+        display = ui.get_calendar_display_range(hwnd, base_cal)
+        range_display = ui.get_calendar_display_range(hwnd, range_cal)
+        visual = ui.get_calendar_visual_options(hwnd, base_cal)
+        ui.set_element_text(
+            hwnd,
+            status_id,
+            "当前选中："
+            f"{fmt_date(ui.get_calendar_value(hwnd, base_cal))}\n"
+            f"可选范围：{tuple(fmt_date(v) for v in ui.get_calendar_range(hwnd, base_cal))}\n"
+            f"基础显示范围：{tuple(fmt_date(v) for v in display)}\n"
+            f"范围日历：{tuple(fmt_date(v) for v in range_display)}\n"
+            f"自定义单元格：{custom_count} 条\n"
+            f"区间选择：{ui.get_calendar_selection_range(hwnd, base_cal)}\n"
+            f"视觉选项：{visual}\n"
+            f"最近变化：{state['last']}"
+        )
+
+    def on_calendar_change(element_id, value, range_start, range_end):
+        state["last"] = f"#{element_id} 选中 {fmt_date(value)}，区间 {fmt_date(range_start)} 至 {fmt_date(range_end)}"
+        refresh_status()
+
+    for cal in (base_cal, custom_cal, range_cal):
+        ui.set_calendar_change_callback(hwnd, cal, on_calendar_change)
+
+    def set_all_to_today(_eid):
+        for cal in (base_cal, custom_cal, range_cal):
+            ui.set_calendar_date(hwnd, cal, 2026, 5, 5)
+        state["last"] = "已跳转到今天 2026-05-05"
+        refresh_status()
+
+    def move_month(delta):
+        def action(_eid):
+            ui.calendar_move_month(hwnd, base_cal, delta)
+            ui.calendar_move_month(hwnd, custom_cal, delta)
+            state["last"] = "已切换到上月" if delta < 0 else "已切换到下月"
+            refresh_status()
+        return action
+
+    def toggle_display(_eid):
+        state["display_enabled"] = not state["display_enabled"]
+        if state["display_enabled"]:
+            ui.set_calendar_display_range(hwnd, base_cal, 20260504, 20260524)
+            state["last"] = "基础日历已启用显示范围"
+        else:
+            ui.set_calendar_display_range(hwnd, base_cal, 0, 0)
+            state["last"] = "基础日历已恢复普通月视图"
+        refresh_status()
+
+    def toggle_label(_eid):
+        state["label_mode"] = 1 if state["label_mode"] == 0 else 0
+        for cal in (base_cal, range_cal):
+            ui.set_calendar_visual_options(hwnd, cal, True, True, state["label_mode"], True, 8.0)
+        state["last"] = "已切换为月-日标签" if state["label_mode"] else "已切换为日号标签"
+        refresh_status()
+
+    def toggle_custom(_eid):
+        state["custom_enabled"] = not state["custom_enabled"]
+        if state["custom_enabled"]:
+            ui.set_calendar_cell_items(hwnd, custom_cal, base_items)
+            state["last"] = "已恢复 dateCell 自定义数据"
+        else:
+            ui.clear_calendar_cell_items(hwnd, custom_cal)
+            state["last"] = "已清空 dateCell 自定义数据"
+        refresh_status()
+
+    actions = [
+        ("📍", "今天", set_all_to_today),
+        ("⬅️", "上月", move_month(-1)),
+        ("➡️", "下月", move_month(1)),
+        ("📆", "切换显示范围", toggle_display),
+        ("🔤", "切换月日标签", toggle_label),
+        ("🧹", "清空/恢复自定义", toggle_custom),
+    ]
+    for i, (emoji, label, handler) in enumerate(actions):
+        btn = ui.create_button(hwnd, ops, emoji, label, 18, 126 + i * 58, left_w - 36, 40, variant=1 if i < 4 else 6)
+        set_click(hwnd, btn, handler)
+
+    matrix_y = top_y + top_h + 18
+    matrix_h = max(500, h - matrix_y - 30)
+    matrix = add_demo_panel(hwnd, stage, "🎨 样式矩阵", 28, matrix_y, w - 56, matrix_h)
+    add_text(hwnd, matrix, "覆盖默认、蓝色选中、区间高亮、今天高亮、禁用日期、badge、extra 和 emoji/✔️ 标记。", 18, 50, w - 92, 28, MUTED)
+    specs = [
+        ("默认", "📅", {}, []),
+        ("蓝色选中", "🔵", {"selected_bg": 0xFF1989FA, "selected_fg": 0xFFFFFFFF}, []),
+        ("区间高亮", "🟦", {"range_bg": 0x333B82F6}, []),
+        ("今天高亮", "📍", {"today_border": 0xFFE6A23C}, []),
+        ("禁用日期", "🚫", {"disabled_fg": 0xFFB0B7C3}, [{"date": 20260512, "label": "12", "disabled": 1, "badge": "禁"}]),
+        ("带 badge", "🏷️", {}, [{"date": 20260512, "label": "12", "badge": "休", "badge_bg": "0xFF1989FA"}]),
+        ("带 extra", "📝", {}, [{"date": 20260512, "label": "12", "extra": "会议", "fg": "0xFF1989FA"}]),
+        ("emoji/✔️", "✅", {}, [{"date": 20260512, "label": "05-12", "emoji": "✔️", "extra": "完成"}]),
+    ]
+    cell_gap = 12
+    matrix_w = w - 56
+    cell_w = max(300, (matrix_w - 36 - cell_gap * 3) // 4)
+    cell_h = 196
+    for i, (label, emoji, colors, items) in enumerate(specs):
+        col = i % 4
+        row = i // 4
+        px = 18 + col * (cell_w + cell_gap)
+        py = 84 + row * (cell_h + 10)
+        p = add_themed_panel(hwnd, matrix, px, py, cell_w, cell_h, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        add_text(hwnd, p, f"{emoji} {label}", 12, 10, cell_w - 24, 24, TEXT)
+        cal = ui.create_calendar(hwnd, p, 2026, 5, 12, 12, 42, min(260, cell_w - 24), 138)
+        ui.set_calendar_options(hwnd, cal, today_value, True)
+        ui.set_calendar_visual_options(hwnd, cal, False, True, 0, True, 6.0)
+        ui.set_calendar_selection_range(hwnd, cal, 20260510, 20260516, True)
+        ui.set_calendar_selected_marker(hwnd, cal, "✔️" if label == "emoji/✔️" else "")
+        ui.set_calendar_state_colors(
+            hwnd, cal,
+            selected_bg=colors.get("selected_bg", 0),
+            selected_fg=colors.get("selected_fg", 0),
+            range_bg=colors.get("range_bg", 0),
+            today_border=colors.get("today_border", 0),
+            disabled_fg=colors.get("disabled_fg", 0),
+        )
+        if items:
+            ui.set_calendar_cell_items(hwnd, cal, items)
+        if label == "禁用日期":
+            ui.set_calendar_range(hwnd, cal, 20260505, 20260528)
+
+    refresh_status()
+
+
+SPECIAL_SHOWCASES["Calendar"] = showcase_calendar
 SPECIAL_SHOWCASES["Transfer"] = showcase_transfer
 
 
 def make_media_page(hwnd, root):
     make_page(hwnd, root, "选择媒体", "日期时间、树形选择、穿梭框、上传、图片和轮播等较完整的业务组件。", [
-        ("Calendar", "📅", "日历", lambda h, p, x, y, w, hh: ui.create_calendar(h, p, 2026, 5, 3, x, y, min(w, 920), min(hh, 420))),
+        ("Calendar", "📅", "日历全样式", lambda h, p, x, y, w, hh: ui.create_calendar(h, p, 2026, 5, 3, x, y, min(w, 920), min(hh, 420))),
         ("Tree", "🌳", "树组件", lambda h, p, x, y, w, hh: ui.create_tree(h, p, [("首页", 0, True), ("组件", 0, True), ("表单", 1, True), ("反馈", 1, True)], 1, x, y, min(w, 620), min(hh, 360))),
         ("TreeSelect", "🌲", "树选择", lambda h, p, x, y, w, hh: ui.create_tree_select(h, p, [("部门", 0, True), ("研发", 1, True), ("设计", 1, True)], 1, x, y, min(w, 620), 42), True),
         ("Transfer", "🔁", "穿梭框", lambda h, p, x, y, w, hh: ui.create_transfer(h, p, ["按钮", "输入框"], ["表格"], x, y, min(w, 900), min(hh, 320))),

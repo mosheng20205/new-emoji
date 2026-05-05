@@ -510,6 +510,17 @@ EXPORTS
     EU_GetCalendarOptions
     EU_SetCalendarSelectionRange
     EU_GetCalendarSelectionRange
+    EU_SetCalendarDisplayRange
+    EU_GetCalendarDisplayRange
+    EU_SetCalendarCellItems
+    EU_GetCalendarCellItems
+    EU_ClearCalendarCellItems
+    EU_SetCalendarVisualOptions
+    EU_GetCalendarVisualOptions
+    EU_SetCalendarStateColors
+    EU_GetCalendarStateColors
+    EU_SetCalendarSelectedMarker
+    EU_SetCalendarChangeCallback
     EU_SetTreeItems
     EU_SetTreeSelected
     EU_GetTreeSelected

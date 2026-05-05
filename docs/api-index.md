@@ -58,7 +58,7 @@
 | `EU_CreateBarChart` | |
 | `EU_CreateDonutChart` | |
 | `EU_CreateDivider` | |
-| `EU_CreateCalendar` | |
+| `EU_CreateCalendar` | 创建 Calendar 日历，支持基础绑定、可选范围、显示范围、自定义单元格和状态样式 |
 | `EU_CreateTree` | |
 | `EU_CreateTreeSelect` | |
 | `EU_CreateTransfer` | |
@@ -495,15 +495,26 @@
 | `EU_GetDonutChartActive` | |
 | `EU_GetDonutChartOptions` | |
 | `EU_GetDonutChartAdvancedOptions` | |
-| `EU_SetCalendarDate` | |
-| `EU_SetCalendarRange` | |
-| `EU_SetCalendarOptions` | |
-| `EU_CalendarMoveMonth` | |
-| `EU_GetCalendarValue` | |
-| `EU_GetCalendarRange` | |
-| `EU_GetCalendarOptions` | |
-| `EU_SetCalendarSelectionRange` | |
-| `EU_GetCalendarSelectionRange` | |
+| `EU_SetCalendarDate` | 设置当前年月和选中日 |
+| `EU_SetCalendarRange` | 设置可选日期范围限制，0 表示不限制 |
+| `EU_SetCalendarOptions` | 设置今天高亮日期和是否显示今天 |
+| `EU_CalendarMoveMonth` | 按月份偏移切换日历 |
+| `EU_GetCalendarValue` | 读取当前选中日期，格式 YYYYMMDD |
+| `EU_GetCalendarRange` | 读取可选日期范围限制 |
+| `EU_GetCalendarOptions` | 读取今天高亮和显示选项 |
+| `EU_SetCalendarSelectionRange` | 设置区间选择读回值 |
+| `EU_GetCalendarSelectionRange` | 读取区间选择起止日期和启用状态 |
+| `EU_SetCalendarDisplayRange` | 设置显示范围，对应 Element UI Calendar 的 `range` |
+| `EU_GetCalendarDisplayRange` | 读取显示范围，0/0 表示普通月视图 |
+| `EU_SetCalendarCellItems` | 设置 dateCell 等价数据：label、extra、emoji、badge、颜色、禁用态 |
+| `EU_GetCalendarCellItems` | 读取 dateCell 单元格数据 UTF-8 文本 |
+| `EU_ClearCalendarCellItems` | 清空 dateCell 单元格数据 |
+| `EU_SetCalendarVisualOptions` | 设置标题、星期栏、标签模式、相邻月份日期和单元格圆角 |
+| `EU_GetCalendarVisualOptions` | 读取日历视觉选项 |
+| `EU_SetCalendarStateColors` | 设置选中、区间、今天、悬停、禁用和相邻日期状态颜色 |
+| `EU_GetCalendarStateColors` | 读取日历状态颜色 |
+| `EU_SetCalendarSelectedMarker` | 设置选中日期角标，例如 `✔️` |
+| `EU_SetCalendarChangeCallback` | 设置日期变化回调，返回当前选中值和区间起止值 |
 | `EU_SetTreeItems` | |
 | `EU_SetTreeSelected` | |
 | `EU_GetTreeSelected` | |

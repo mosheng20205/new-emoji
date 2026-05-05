@@ -6798,6 +6798,125 @@ int __stdcall EU_GetCalendarSelectionRange(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetCalendarDisplayRange(HWND hwnd, int element_id,
+                                          int start_yyyymmdd, int end_yyyymmdd) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_display_range(start_yyyymmdd, end_yyyymmdd);
+    }
+}
+
+int __stdcall EU_GetCalendarDisplayRange(HWND hwnd, int element_id,
+                                         int* start_yyyymmdd, int* end_yyyymmdd) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    int start = 0;
+    int end = 0;
+    el->get_display_range(start, end);
+    if (start_yyyymmdd) *start_yyyymmdd = start;
+    if (end_yyyymmdd) *end_yyyymmdd = end;
+    return 1;
+}
+
+void __stdcall EU_SetCalendarCellItems(HWND hwnd, int element_id,
+                                       const unsigned char* spec_bytes, int spec_len) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_cell_items(utf8_to_wide(spec_bytes, spec_len));
+    }
+}
+
+int __stdcall EU_GetCalendarCellItems(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->cell_items_spec, buffer, buffer_size);
+}
+
+void __stdcall EU_ClearCalendarCellItems(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->clear_cell_items();
+    }
+}
+
+void __stdcall EU_SetCalendarVisualOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_week_header,
+                                           int label_mode, int show_adjacent_days,
+                                           float cell_radius) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_visual_options(show_header != 0, show_week_header != 0,
+                               label_mode, show_adjacent_days != 0,
+                               cell_radius);
+    }
+}
+
+int __stdcall EU_GetCalendarVisualOptions(HWND hwnd, int element_id,
+                                          int* show_header, int* show_week_header,
+                                          int* label_mode, int* show_adjacent_days,
+                                          float* cell_radius) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    int header = 0;
+    int week = 0;
+    int mode = 0;
+    int adjacent = 0;
+    float radius = 0.0f;
+    el->get_visual_options(header, week, mode, adjacent, radius);
+    if (show_header) *show_header = header;
+    if (show_week_header) *show_week_header = week;
+    if (label_mode) *label_mode = mode;
+    if (show_adjacent_days) *show_adjacent_days = adjacent;
+    if (cell_radius) *cell_radius = radius;
+    return 1;
+}
+
+void __stdcall EU_SetCalendarStateColors(HWND hwnd, int element_id,
+                                         Color selected_bg, Color selected_fg,
+                                         Color range_bg, Color today_border,
+                                         Color hover_bg, Color disabled_fg,
+                                         Color adjacent_fg) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_state_colors(selected_bg, selected_fg, range_bg, today_border,
+                             hover_bg, disabled_fg, adjacent_fg);
+    }
+}
+
+int __stdcall EU_GetCalendarStateColors(HWND hwnd, int element_id,
+                                        Color* selected_bg, Color* selected_fg,
+                                        Color* range_bg, Color* today_border,
+                                        Color* hover_bg, Color* disabled_fg,
+                                        Color* adjacent_fg) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    Color sb = 0;
+    Color sf = 0;
+    Color rb = 0;
+    Color tb = 0;
+    Color hb = 0;
+    Color df = 0;
+    Color af = 0;
+    el->get_state_colors(sb, sf, rb, tb, hb, df, af);
+    if (selected_bg) *selected_bg = sb;
+    if (selected_fg) *selected_fg = sf;
+    if (range_bg) *range_bg = rb;
+    if (today_border) *today_border = tb;
+    if (hover_bg) *hover_bg = hb;
+    if (disabled_fg) *disabled_fg = df;
+    if (adjacent_fg) *adjacent_fg = af;
+    return 1;
+}
+
+void __stdcall EU_SetCalendarSelectedMarker(HWND hwnd, int element_id,
+                                            const unsigned char* marker_bytes, int marker_len) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_selected_marker(utf8_to_wide(marker_bytes, marker_len));
+    }
+}
+
+void __stdcall EU_SetCalendarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->change_cb = cb;
+    }
+}
+
 void __stdcall EU_SetTreeItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len) {
     if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {

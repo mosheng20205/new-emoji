@@ -69,7 +69,7 @@
 ## 📅 日期时间
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
-| `Calendar` | 日历 | `EU_CreateCalendar` | 已完成 | [日历](./calendar.md) |
+| `Calendar` | 日历 | `EU_CreateCalendar` / `EU_SetCalendarDisplayRange` / `EU_SetCalendarCellItems` | 已完成，覆盖基础绑定、dateCell 自定义、显示范围、状态颜色、选中标记和变化回调 | [日历](./calendar.md) |
 | `DatePicker` | 日期选择器 | `EU_CreateDatePicker` | 已完成 | [日期选择器](./date-picker.md) |
 | `TimePicker` | 时间选择器 | `EU_CreateTimePicker` | 已完成 | [时间选择器](./time-picker.md) |
 | `DateTimePicker` | 日期时间选择器 | `EU_CreateDateTimePicker` | 已完成 | [日期时间选择器](./date-time-picker.md) |

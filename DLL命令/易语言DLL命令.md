@@ -3630,6 +3630,85 @@
     .参数 结束日期指针, 整数型, , 输出整数指针，YYYYMMDD
     .参数 是否启用指针, 整数型, , 输出整数指针
 
+.DLL命令 设置日历显示范围, , "new_emoji.dll", "EU_SetCalendarDisplayRange", , 对应 C++ 导出命令 EU_SetCalendarDisplayRange；对应 Element UI 的 range 显示范围
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 起始日期, 整数型, , YYYYMMDD，0表示恢复普通月视图
+    .参数 结束日期, 整数型, , YYYYMMDD，0表示恢复普通月视图
+
+.DLL命令 取日历显示范围, 整数型, "new_emoji.dll", "EU_GetCalendarDisplayRange", , 对应 C++ 导出命令 EU_GetCalendarDisplayRange；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 起始日期指针, 整数型, , 输出整数指针，YYYYMMDD
+    .参数 结束日期指针, 整数型, , 输出整数指针，YYYYMMDD
+
+.DLL命令 设置日历单元格数据, , "new_emoji.dll", "EU_SetCalendarCellItems", , 对应 C++ 导出命令 EU_SetCalendarCellItems；UTF-8 每行一个日期，字段用 Tab 分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 数据字节集指针, 整数型, , UTF-8，date/label/extra/emoji/badge/bg/fg/border 等字段
+    .参数 数据长度, 整数型
+
+.DLL命令 取日历单元格数据, 整数型, "new_emoji.dll", "EU_GetCalendarCellItems", , 对应 C++ 导出命令 EU_GetCalendarCellItems；返回写入字节数或所需长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区，可先传 0 取所需长度
+    .参数 缓冲区长度, 整数型
+
+.DLL命令 清空日历单元格数据, , "new_emoji.dll", "EU_ClearCalendarCellItems", , 对应 C++ 导出命令 EU_ClearCalendarCellItems
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置日历视觉选项, , "new_emoji.dll", "EU_SetCalendarVisualOptions", , 对应 C++ 导出命令 EU_SetCalendarVisualOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示标题栏, 整数型, , 0隐藏 1显示
+    .参数 显示星期栏, 整数型, , 0隐藏 1显示
+    .参数 标签模式, 整数型, , 0日号 1月-日 2年-月-日 3优先自定义label
+    .参数 显示相邻月份日期, 整数型, , 0隐藏 1显示
+    .参数 单元格圆角, 小数型
+
+.DLL命令 取日历视觉选项, 整数型, "new_emoji.dll", "EU_GetCalendarVisualOptions", , 对应 C++ 导出命令 EU_GetCalendarVisualOptions；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示标题栏指针, 整数型, , 输出整数指针
+    .参数 显示星期栏指针, 整数型, , 输出整数指针
+    .参数 标签模式指针, 整数型, , 输出整数指针
+    .参数 显示相邻月份日期指针, 整数型, , 输出整数指针
+    .参数 单元格圆角指针, 整数型, , 输出小数指针
+
+.DLL命令 设置日历状态颜色, , "new_emoji.dll", "EU_SetCalendarStateColors", , 对应 C++ 导出命令 EU_SetCalendarStateColors；颜色为 ARGB，0使用主题默认
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 选中背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 选中文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 区间背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 今天边框色, 整数型, , ARGB 0xAARRGGBB
+    .参数 悬停背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 禁用文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 相邻月份文字色, 整数型, , ARGB 0xAARRGGBB
+
+.DLL命令 取日历状态颜色, 整数型, "new_emoji.dll", "EU_GetCalendarStateColors", , 对应 C++ 导出命令 EU_GetCalendarStateColors；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 选中背景色指针, 整数型, , 输出 ARGB
+    .参数 选中文字色指针, 整数型, , 输出 ARGB
+    .参数 区间背景色指针, 整数型, , 输出 ARGB
+    .参数 今天边框色指针, 整数型, , 输出 ARGB
+    .参数 悬停背景色指针, 整数型, , 输出 ARGB
+    .参数 禁用文字色指针, 整数型, , 输出 ARGB
+    .参数 相邻月份文字色指针, 整数型, , 输出 ARGB
+
+.DLL命令 设置日历选中标记, , "new_emoji.dll", "EU_SetCalendarSelectedMarker", , 对应 C++ 导出命令 EU_SetCalendarSelectedMarker；例如传入 ✔️
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 标记字节集指针, 整数型, , UTF-8，可传 emoji
+    .参数 标记长度, 整数型
+
+.DLL命令 设置日历变化回调, , "new_emoji.dll", "EU_SetCalendarChangeCallback", , 对应 C++ 导出命令 EU_SetCalendarChangeCallback；回调参数为 元素ID、当前选中YYYYMMDD、区间起始、区间结束
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
 .DLL命令 设置树项目, , "new_emoji.dll", "EU_SetTreeItems", , 对应 C++ 导出命令 EU_SetTreeItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型

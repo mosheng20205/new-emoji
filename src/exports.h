@@ -1038,11 +1038,37 @@ int  __stdcall EU_GetCalendarValue(HWND hwnd, int element_id);
 int  __stdcall EU_GetCalendarRange(HWND hwnd, int element_id, int* min_yyyymmdd, int* max_yyyymmdd);
 int  __stdcall EU_GetCalendarOptions(HWND hwnd, int element_id, int* today_yyyymmdd, int* show_today);
 void __stdcall EU_SetCalendarSelectionRange(HWND hwnd, int element_id,
-                                            int start_yyyymmdd, int end_yyyymmdd,
-                                            int enabled);
+                                             int start_yyyymmdd, int end_yyyymmdd,
+                                             int enabled);
 int  __stdcall EU_GetCalendarSelectionRange(HWND hwnd, int element_id,
-                                            int* start_yyyymmdd, int* end_yyyymmdd,
-                                            int* enabled);
+                                             int* start_yyyymmdd, int* end_yyyymmdd,
+                                             int* enabled);
+void __stdcall EU_SetCalendarDisplayRange(HWND hwnd, int element_id, int start_yyyymmdd, int end_yyyymmdd);
+int  __stdcall EU_GetCalendarDisplayRange(HWND hwnd, int element_id, int* start_yyyymmdd, int* end_yyyymmdd);
+void __stdcall EU_SetCalendarCellItems(HWND hwnd, int element_id, const unsigned char* spec_bytes, int spec_len);
+int  __stdcall EU_GetCalendarCellItems(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+void __stdcall EU_ClearCalendarCellItems(HWND hwnd, int element_id);
+void __stdcall EU_SetCalendarVisualOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_week_header,
+                                           int label_mode, int show_adjacent_days,
+                                           float cell_radius);
+int  __stdcall EU_GetCalendarVisualOptions(HWND hwnd, int element_id,
+                                           int* show_header, int* show_week_header,
+                                           int* label_mode, int* show_adjacent_days,
+                                           float* cell_radius);
+void __stdcall EU_SetCalendarStateColors(HWND hwnd, int element_id,
+                                          Color selected_bg, Color selected_fg,
+                                          Color range_bg, Color today_border,
+                                          Color hover_bg, Color disabled_fg,
+                                          Color adjacent_fg);
+int  __stdcall EU_GetCalendarStateColors(HWND hwnd, int element_id,
+                                          Color* selected_bg, Color* selected_fg,
+                                          Color* range_bg, Color* today_border,
+                                          Color* hover_bg, Color* disabled_fg,
+                                          Color* adjacent_fg);
+void __stdcall EU_SetCalendarSelectedMarker(HWND hwnd, int element_id,
+                                            const unsigned char* marker_bytes, int marker_len);
+void __stdcall EU_SetCalendarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTreeItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetTreeSelected(HWND hwnd, int element_id, int selected_index);

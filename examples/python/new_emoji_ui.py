@@ -1573,6 +1573,45 @@ dll.EU_GetCalendarSelectionRange.argtypes = [wintypes.HWND, ctypes.c_int,
                                              ctypes.POINTER(ctypes.c_int),
                                              ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetCalendarSelectionRange.restype = ctypes.c_int
+dll.EU_SetCalendarDisplayRange.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.c_int, ctypes.c_int]
+dll.EU_GetCalendarDisplayRange.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCalendarDisplayRange.restype = ctypes.c_int
+dll.EU_SetCalendarCellItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCalendarCellItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCalendarCellItems.restype = ctypes.c_int
+dll.EU_ClearCalendarCellItems.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetCalendarVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_float]
+dll.EU_GetCalendarVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_float)]
+dll.EU_GetCalendarVisualOptions.restype = ctypes.c_int
+dll.EU_SetCalendarStateColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.c_uint32, ctypes.c_uint32,
+                                          ctypes.c_uint32, ctypes.c_uint32,
+                                          ctypes.c_uint32, ctypes.c_uint32,
+                                          ctypes.c_uint32]
+dll.EU_GetCalendarStateColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetCalendarStateColors.restype = ctypes.c_int
+dll.EU_SetCalendarSelectedMarker.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCalendarChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTreeItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTreeSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -6850,6 +6889,121 @@ def get_calendar_selection_range(hwnd, element_id):
         ctypes.byref(start_value), ctypes.byref(end_value), ctypes.byref(enabled)
     )
     return (start_value.value, end_value.value, bool(enabled.value)) if ok else None
+
+def set_calendar_display_range(hwnd, element_id, start_value=0, end_value=0):
+    dll.EU_SetCalendarDisplayRange(hwnd, element_id, start_value, end_value)
+
+def get_calendar_display_range(hwnd, element_id):
+    start_value = ctypes.c_int()
+    end_value = ctypes.c_int()
+    ok = dll.EU_GetCalendarDisplayRange(
+        hwnd, element_id,
+        ctypes.byref(start_value), ctypes.byref(end_value)
+    )
+    return (start_value.value, end_value.value) if ok else None
+
+def _calendar_cell_value(value):
+    text = "" if value is None else str(value)
+    return text.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
+
+def _calendar_cell_line(item):
+    if isinstance(item, str):
+        return item
+    pairs = []
+    for key in (
+        "date", "label", "extra", "emoji", "badge", "bg", "fg", "border",
+        "badge_bg", "badge_fg", "font_flags", "disabled"
+    ):
+        if key in item and item[key] is not None:
+            pairs.append(f"{key}={_calendar_cell_value(item[key])}")
+    return "\t".join(pairs)
+
+def calendar_cell_items_spec(items):
+    if isinstance(items, str):
+        return items
+    return "\n".join(_calendar_cell_line(item) for item in (items or []))
+
+def set_calendar_cell_items(hwnd, element_id, items):
+    spec = calendar_cell_items_spec(items)
+    data = make_utf8(spec)
+    dll.EU_SetCalendarCellItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_calendar_cell_items(hwnd, element_id):
+    needed = dll.EU_GetCalendarCellItems(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    copied = dll.EU_GetCalendarCellItems(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:min(copied, needed)]).decode("utf-8", errors="replace")
+
+def clear_calendar_cell_items(hwnd, element_id):
+    dll.EU_ClearCalendarCellItems(hwnd, element_id)
+
+def set_calendar_visual_options(hwnd, element_id, show_header=True, show_week_header=True,
+                                label_mode=0, show_adjacent_days=True, cell_radius=8.0):
+    dll.EU_SetCalendarVisualOptions(
+        hwnd, element_id,
+        1 if show_header else 0,
+        1 if show_week_header else 0,
+        label_mode,
+        1 if show_adjacent_days else 0,
+        float(cell_radius),
+    )
+
+def get_calendar_visual_options(hwnd, element_id):
+    show_header = ctypes.c_int()
+    show_week_header = ctypes.c_int()
+    label_mode = ctypes.c_int()
+    show_adjacent_days = ctypes.c_int()
+    cell_radius = ctypes.c_float()
+    ok = dll.EU_GetCalendarVisualOptions(
+        hwnd, element_id,
+        ctypes.byref(show_header), ctypes.byref(show_week_header),
+        ctypes.byref(label_mode), ctypes.byref(show_adjacent_days),
+        ctypes.byref(cell_radius),
+    )
+    if not ok:
+        return None
+    return (
+        bool(show_header.value),
+        bool(show_week_header.value),
+        label_mode.value,
+        bool(show_adjacent_days.value),
+        cell_radius.value,
+    )
+
+def set_calendar_state_colors(hwnd, element_id, selected_bg=0, selected_fg=0, range_bg=0,
+                              today_border=0, hover_bg=0, disabled_fg=0, adjacent_fg=0):
+    dll.EU_SetCalendarStateColors(
+        hwnd, element_id,
+        selected_bg, selected_fg, range_bg, today_border,
+        hover_bg, disabled_fg, adjacent_fg,
+    )
+
+def get_calendar_state_colors(hwnd, element_id):
+    values = [ctypes.c_uint32() for _ in range(7)]
+    ok = dll.EU_GetCalendarStateColors(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    return tuple(value.value for value in values) if ok else None
+
+def set_calendar_selected_marker(hwnd, element_id, marker=""):
+    data = make_utf8(marker or "")
+    dll.EU_SetCalendarSelectedMarker(hwnd, element_id, bytes_arg(data), len(data))
+
+_calendar_change_callback_refs = {}
+
+def set_calendar_change_callback(hwnd, element_id, callback):
+    key = _callback_key(hwnd, element_id, "calendar_change")
+    if callback is None:
+        _calendar_change_callback_refs.pop(key, None)
+        dll.EU_SetCalendarChangeCallback(hwnd, element_id, ValueCallback(0))
+        return None
+    wrapped = _wrap_callback(ValueCallback, callback)
+    _calendar_change_callback_refs[key] = wrapped
+    dll.EU_SetCalendarChangeCallback(hwnd, element_id, wrapped)
+    return wrapped
 
 def set_datepicker_date(hwnd, element_id, year=2026, month=5, selected_day=2):
     dll.EU_SetDatePickerDate(hwnd, element_id, year, month, selected_day)
