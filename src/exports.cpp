@@ -97,6 +97,7 @@ extern HMODULE g_module;
 #include <cstring>
 #include <cmath>
 #include <cstdlib>
+#include <cwchar>
 
 static int scale_to_px(int v, float scale) {
     return (int)std::lround((float)v * scale);
@@ -535,6 +536,53 @@ parse_description_items(const unsigned char* bytes, int len) {
         } else {
             items.push_back({ entry.substr(0, pos), entry.substr(pos + 1) });
         }
+    }
+    return items;
+}
+
+static int parse_int_field(const std::wstring& value, int fallback = 0) {
+    if (value.empty()) return fallback;
+    wchar_t* end = nullptr;
+    long parsed = std::wcstol(value.c_str(), &end, 10);
+    return end == value.c_str() ? fallback : (int)parsed;
+}
+
+static Color parse_description_color_field(const std::wstring& value) {
+    if (value.empty() || value == L"0") return 0;
+    std::wstring v = value;
+    if (!v.empty() && v[0] == L'#') v = L"0xFF" + v.substr(1);
+    int base = 10;
+    const wchar_t* start = v.c_str();
+    if (v.size() > 2 && v[0] == L'0' && (v[1] == L'x' || v[1] == L'X')) {
+        base = 16;
+        start += 2;
+    }
+    wchar_t* end = nullptr;
+    unsigned long parsed = std::wcstoul(start, &end, base);
+    if (end == start) return 0;
+    return (Color)parsed;
+}
+
+static std::vector<DescriptionItem>
+parse_description_items_ex(const unsigned char* bytes, int len) {
+    std::vector<DescriptionItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        DescriptionItem item;
+        if (fields.size() >= 1) item.label = fields[0];
+        if (fields.size() >= 2) item.content = fields[1];
+        if (fields.size() >= 3) item.span = (std::max)(1, parse_int_field(fields[2], 1));
+        if (fields.size() >= 4) item.label_icon = fields[3];
+        if (fields.size() >= 5) item.content_type = (std::max)(0, (std::min)(1, parse_int_field(fields[4])));
+        if (fields.size() >= 6) item.tag_type = (std::max)(0, (std::min)(4, parse_int_field(fields[5])));
+        if (fields.size() >= 7) item.content_align = (std::max)(0, (std::min)(2, parse_int_field(fields[6])));
+        if (fields.size() >= 8) item.label_bg = parse_description_color_field(fields[7]);
+        if (fields.size() >= 9) item.content_bg = parse_description_color_field(fields[8]);
+        if (fields.size() >= 10) item.label_fg = parse_description_color_field(fields[9]);
+        if (fields.size() >= 11) item.content_fg = parse_description_color_field(fields[10]);
+        items.push_back(item);
     }
     return items;
 }
@@ -5969,6 +6017,32 @@ void __stdcall EU_SetEmptyActionCallback(HWND hwnd, int element_id, ElementClick
     }
 }
 
+void __stdcall EU_SetEmptyImage(HWND hwnd, int element_id,
+                                const unsigned char* image_bytes, int image_len) {
+    if (auto* el = find_typed_element<Empty>(hwnd, element_id)) {
+        el->set_image(utf8_to_wide(image_bytes, image_len));
+    }
+}
+
+void __stdcall EU_SetEmptyImageSize(HWND hwnd, int element_id, int image_size) {
+    if (auto* el = find_typed_element<Empty>(hwnd, element_id)) {
+        el->set_image_size(image_size);
+        if (WindowState* st = window_state(hwnd)) {
+            el->apply_dpi_scale(st->dpi_scale);
+        }
+    }
+}
+
+int __stdcall EU_GetEmptyImageStatus(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Empty>(hwnd, element_id);
+    return el ? el->image_status : -1;
+}
+
+int __stdcall EU_GetEmptyImageSize(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Empty>(hwnd, element_id);
+    return el ? el->logical_image_size : -1;
+}
+
 void __stdcall EU_SetSkeletonRows(HWND hwnd, int element_id, int rows) {
     if (auto* el = find_typed_element<Skeleton>(hwnd, element_id)) {
         el->set_rows(rows);
@@ -6029,6 +6103,20 @@ void __stdcall EU_SetDescriptionsBordered(HWND hwnd, int element_id, int bordere
     }
 }
 
+void __stdcall EU_SetDescriptionsLayout(HWND hwnd, int element_id, int direction,
+                                        int size, int columns, int bordered) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_layout(direction, size, columns, bordered != 0);
+    }
+}
+
+void __stdcall EU_SetDescriptionsItemsEx(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_rich_items(parse_description_items_ex(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetDescriptionsOptions(HWND hwnd, int element_id, int columns,
                                          int bordered, int label_width,
                                          int min_row_height, int wrap_values) {
@@ -6049,6 +6137,25 @@ void __stdcall EU_SetDescriptionsAdvancedOptions(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetDescriptionsColors(HWND hwnd, int element_id,
+                                        Color border, Color label_bg, Color content_bg,
+                                        Color label_fg, Color content_fg, Color title_fg) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_colors(border, label_bg, content_bg, label_fg, content_fg, title_fg);
+    }
+}
+
+void __stdcall EU_SetDescriptionsExtra(HWND hwnd, int element_id,
+                                       const unsigned char* emoji_bytes, int emoji_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       int visible, int variant) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_extra(utf8_to_wide(emoji_bytes, emoji_len),
+                      utf8_to_wide(text_bytes, text_len),
+                      visible != 0, variant);
+    }
+}
+
 int __stdcall EU_GetDescriptionsOptions(HWND hwnd, int element_id,
                                         int* columns, int* bordered,
                                         int* label_width, int* min_row_height,
@@ -6063,6 +6170,24 @@ int __stdcall EU_GetDescriptionsOptions(HWND hwnd, int element_id,
     if (wrap_values) *wrap_values = el->wrap_values ? 1 : 0;
     if (responsive) *responsive = el->responsive ? 1 : 0;
     if (last_item_span) *last_item_span = el->last_item_span ? 1 : 0;
+    return 1;
+}
+
+int __stdcall EU_GetDescriptionsFullState(HWND hwnd, int element_id,
+                                          int* direction, int* size,
+                                          int* columns, int* bordered,
+                                          int* item_count, int* extra_click_count,
+                                          int* responsive, int* wrap_values) {
+    auto* el = find_typed_element<Descriptions>(hwnd, element_id);
+    if (!el) return 0;
+    if (direction) *direction = el->direction;
+    if (size) *size = el->size;
+    if (columns) *columns = el->columns;
+    if (bordered) *bordered = el->bordered ? 1 : 0;
+    if (item_count) *item_count = (int)el->rich_items.size();
+    if (extra_click_count) *extra_click_count = el->extra_click_count;
+    if (responsive) *responsive = el->responsive ? 1 : 0;
+    if (wrap_values) *wrap_values = el->wrap_values ? 1 : 0;
     return 1;
 }
 

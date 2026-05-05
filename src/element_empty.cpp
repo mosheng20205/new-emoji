@@ -1,5 +1,6 @@
 #include "element_empty.h"
 #include "emoji_fallback.h"
+#include "element_image.h"
 #include "render_context.h"
 #include "theme.h"
 #include <algorithm>
@@ -23,6 +24,105 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+struct EmptyMetrics {
+    float media_w = 0.0f;
+    float media_h = 0.0f;
+    float media_x = 0.0f;
+    float media_y = 0.0f;
+    float title_y = 0.0f;
+};
+
+static EmptyMetrics empty_metrics(const Empty& el, bool has_action) {
+    EmptyMetrics m;
+    float fallback_w = (std::min)((float)el.bounds.w * 0.36f, el.style.font_size * 5.2f);
+    if (fallback_w < 42.0f) fallback_w = 42.0f;
+
+    float max_media_w = (std::max)(24.0f,
+        (float)el.bounds.w - (float)el.style.pad_left - (float)el.style.pad_right);
+    if (el.image_size > 0) {
+        m.media_w = (std::min)((float)el.image_size, max_media_w);
+        m.media_h = m.media_w;
+    } else {
+        m.media_w = (std::min)(fallback_w, max_media_w);
+        m.media_h = el.image_source.empty() ? m.media_w * 0.62f : m.media_w;
+    }
+
+    float action_h = has_action ? el.style.font_size * 2.15f : 0.0f;
+    float total_h = m.media_h + el.style.font_size * 3.2f + action_h;
+    float top = ((float)el.bounds.h - total_h) * 0.5f;
+    if (top < 4.0f) top = 4.0f;
+
+    m.media_x = ((float)el.bounds.w - m.media_w) * 0.5f;
+    m.media_y = top;
+    m.title_y = m.media_y + m.media_h + 6.0f;
+    return m;
+}
+
+static D2D1_RECT_F contain_rect(const D2D1_RECT_F& box, int bitmap_w, int bitmap_h) {
+    if (bitmap_w <= 0 || bitmap_h <= 0) return box;
+    float bw = (float)bitmap_w;
+    float bh = (float)bitmap_h;
+    float box_w = box.right - box.left;
+    float box_h = box.bottom - box.top;
+    float scale = (std::min)(box_w / bw, box_h / bh);
+    float w = bw * scale;
+    float h = bh * scale;
+    float x = box.left + (box_w - w) * 0.5f;
+    float y = box.top + (box_h - h) * 0.5f;
+    return { x, y, x + w, y + h };
+}
+
+Empty::~Empty() {
+    release_image_bitmap();
+}
+
+void Empty::release_image_bitmap() {
+    if (m_image_bitmap) {
+        m_image_bitmap->Release();
+        m_image_bitmap = nullptr;
+    }
+    m_image_bitmap_rt = nullptr;
+    m_image_bitmap_src.clear();
+    m_image_bitmap_w = 0;
+    m_image_bitmap_h = 0;
+}
+
+bool Empty::ensure_image_bitmap(RenderContext& ctx) {
+    if (image_source.empty()) {
+        image_status = 0;
+        release_image_bitmap();
+        return false;
+    }
+    if (m_image_bitmap && m_image_bitmap_rt == ctx.rt && m_image_bitmap_src == image_source) {
+        image_status = 1;
+        return true;
+    }
+
+    std::wstring decode_path;
+    int state = resolve_shared_image_source(owner_hwnd, image_source, decode_path);
+    if (state != 1 || decode_path.empty()) {
+        image_status = (state == 2) ? 2 : 3;
+        return false;
+    }
+
+    release_image_bitmap();
+    ID2D1Bitmap* loaded = nullptr;
+    int bitmap_w = 0;
+    int bitmap_h = 0;
+    if (load_shared_bitmap_from_path(ctx, decode_path, &loaded, &bitmap_w, &bitmap_h)) {
+        m_image_bitmap = loaded;
+        m_image_bitmap_rt = ctx.rt;
+        m_image_bitmap_src = image_source;
+        m_image_bitmap_w = bitmap_w;
+        m_image_bitmap_h = bitmap_h;
+        image_status = 1;
+        return true;
+    }
+
+    image_status = 2;
+    return false;
+}
+
 void Empty::set_description(const std::wstring& value) {
     description = value;
     invalidate();
@@ -30,6 +130,19 @@ void Empty::set_description(const std::wstring& value) {
 
 void Empty::set_icon(const std::wstring& value) {
     icon = value.empty() ? L"📭" : value;
+    invalidate();
+}
+
+void Empty::set_image(const std::wstring& value) {
+    image_source = value;
+    image_status = image_source.empty() ? 0 : 3;
+    release_image_bitmap();
+    invalidate();
+}
+
+void Empty::set_image_size(int value) {
+    logical_image_size = (std::max)(0, value);
+    image_size = logical_image_size;
     invalidate();
 }
 
@@ -44,22 +157,22 @@ void Empty::set_action_clicked(bool value) {
     invalidate();
 }
 
+void Empty::apply_dpi_scale(float scale) {
+    Element::apply_dpi_scale(scale);
+    image_size = logical_image_size > 0
+        ? (int)std::lround((float)logical_image_size * scale)
+        : 0;
+}
+
 Rect Empty::action_rect() const {
     if (action_text.empty()) return { 0, 0, 0, 0 };
-    float icon_w = (std::min)((float)bounds.w * 0.36f, style.font_size * 5.2f);
-    if (icon_w < 42.0f) icon_w = 42.0f;
-    float icon_h = icon_w * 0.62f;
-    float action_h = style.font_size * 2.15f;
-    float total_h = icon_h + style.font_size * 3.2f + action_h;
-    float top = ((float)bounds.h - total_h) * 0.5f;
-    if (top < 4.0f) top = 4.0f;
-    float title_y = top + icon_h + 6.0f;
+    EmptyMetrics m = empty_metrics(*this, true);
     float btn_w = (std::min)((float)bounds.w - style.pad_left - style.pad_right,
                              (float)action_text.size() * style.font_size + 34.0f);
     if (btn_w < 96.0f) btn_w = 96.0f;
     float btn_h = style.font_size * 2.15f;
     float btn_x = ((float)bounds.w - btn_w) * 0.5f;
-    float btn_y = title_y + style.font_size * 3.2f;
+    float btn_y = m.title_y + style.font_size * 3.2f;
     return { (int)std::lround(btn_x), (int)std::lround(btn_y),
              (int)std::lround(btn_w), (int)std::lround(btn_h) };
 }
@@ -70,7 +183,7 @@ bool Empty::action_hit(int x, int y) const {
 }
 
 Element* Empty::hit_test(int x, int y) {
-    return Element::hit_test(x, y) ? this : nullptr;
+    return Element::hit_test(x, y);
 }
 
 void Empty::paint(RenderContext& ctx) {
@@ -90,19 +203,19 @@ void Empty::paint(RenderContext& ctx) {
     D2D1_RECT_F clip = { 0, 0, (float)bounds.w, (float)bounds.h };
     ctx.push_clip(clip);
 
-    float icon_w = (std::min)((float)bounds.w * 0.36f, style.font_size * 5.2f);
-    if (icon_w < 42.0f) icon_w = 42.0f;
-    float icon_h = icon_w * 0.62f;
-    float action_h = action_text.empty() ? 0.0f : style.font_size * 2.15f;
-    float total_h = icon_h + style.font_size * 3.2f + action_h;
-    float top = ((float)bounds.h - total_h) * 0.5f;
-    if (top < 4.0f) top = 4.0f;
-    float icon_x = ((float)bounds.w - icon_w) * 0.5f;
-    float icon_y = top;
+    EmptyMetrics m = empty_metrics(*this, !action_text.empty());
+    D2D1_RECT_F media_box = { m.media_x, m.media_y, m.media_x + m.media_w, m.media_y + m.media_h };
+    if (!image_source.empty() && ensure_image_bitmap(ctx)) {
+        D2D1_RECT_F dst = contain_rect(media_box, m_image_bitmap_w, m_image_bitmap_h);
+        ctx.rt->DrawBitmap(m_image_bitmap, dst, 1.0f, D2D1_BITMAP_INTERPOLATION_MODE_LINEAR);
+    } else {
+        std::wstring shown_icon = icon;
+        if (!image_source.empty()) shown_icon = (image_status == 2) ? L"⚠️" : L"🖼️";
+        float icon_scale = (std::max)(1.0f, m.media_h / (std::max)(1.0f, style.font_size) * 0.58f);
+        draw_text(ctx, shown_icon, style, muted, m.media_x, m.media_y, m.media_w, m.media_h, icon_scale);
+    }
 
-    draw_text(ctx, icon, style, muted, icon_x, icon_y, icon_w, icon_h, 2.4f);
-
-    float title_y = icon_y + icon_h + 6.0f;
+    float title_y = m.title_y;
     draw_text(ctx, text.empty() ? L"暂无数据" : text, style, fg,
               0.0f, title_y, (float)bounds.w, style.font_size * 1.7f, 1.0f);
     draw_text(ctx, description, style, t->text_muted,
@@ -124,6 +237,10 @@ void Empty::paint(RenderContext& ctx) {
             ctx.rt->DrawRoundedRectangle(ROUNDED(btn, 5.0f, 5.0f), ctx.get_brush(action_bg), 1.0f);
         }
         draw_text(ctx, action_text, style, 0xFFFFFFFF, btn_x, btn_y, btn_w, btn_h, 0.95f);
+    }
+
+    for (auto& ch : children) {
+        if (ch->visible) ch->paint(ctx);
     }
 
     ctx.pop_clip();

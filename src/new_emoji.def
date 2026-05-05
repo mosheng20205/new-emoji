@@ -391,6 +391,10 @@ EXPORTS
     EU_SetEmptyActionClicked
     EU_GetEmptyActionClicked
     EU_SetEmptyActionCallback
+    EU_SetEmptyImage
+    EU_SetEmptyImageSize
+    EU_GetEmptyImageStatus
+    EU_GetEmptyImageSize
     EU_SetSkeletonRows
     EU_SetSkeletonAnimated
     EU_SetSkeletonLoading
@@ -400,10 +404,15 @@ EXPORTS
     EU_SetDescriptionsItems
     EU_SetDescriptionsColumns
     EU_SetDescriptionsBordered
+    EU_SetDescriptionsLayout
+    EU_SetDescriptionsItemsEx
     EU_SetDescriptionsOptions
     EU_GetDescriptionsItemCount
     EU_SetDescriptionsAdvancedOptions
+    EU_SetDescriptionsColors
+    EU_SetDescriptionsExtra
     EU_GetDescriptionsOptions
+    EU_GetDescriptionsFullState
     EU_SetTableData
     EU_SetTableStriped
     EU_SetTableBordered

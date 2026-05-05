@@ -826,6 +826,11 @@ void __stdcall EU_SetEmptyOptions(HWND hwnd, int element_id,
 void __stdcall EU_SetEmptyActionClicked(HWND hwnd, int element_id, int clicked);
 int  __stdcall EU_GetEmptyActionClicked(HWND hwnd, int element_id);
 void __stdcall EU_SetEmptyActionCallback(HWND hwnd, int element_id, ElementClickCallback cb);
+void __stdcall EU_SetEmptyImage(HWND hwnd, int element_id,
+                                const unsigned char* image_bytes, int image_len);
+void __stdcall EU_SetEmptyImageSize(HWND hwnd, int element_id, int image_size);
+int  __stdcall EU_GetEmptyImageStatus(HWND hwnd, int element_id);
+int  __stdcall EU_GetEmptyImageSize(HWND hwnd, int element_id);
 void __stdcall EU_SetSkeletonRows(HWND hwnd, int element_id, int rows);
 void __stdcall EU_SetSkeletonAnimated(HWND hwnd, int element_id, int animated);
 void __stdcall EU_SetSkeletonLoading(HWND hwnd, int element_id, int loading);
@@ -838,17 +843,33 @@ void __stdcall EU_SetDescriptionsItems(HWND hwnd, int element_id,
                                        const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetDescriptionsColumns(HWND hwnd, int element_id, int columns);
 void __stdcall EU_SetDescriptionsBordered(HWND hwnd, int element_id, int bordered);
+void __stdcall EU_SetDescriptionsLayout(HWND hwnd, int element_id, int direction,
+                                        int size, int columns, int bordered);
+void __stdcall EU_SetDescriptionsItemsEx(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetDescriptionsOptions(HWND hwnd, int element_id, int columns,
                                          int bordered, int label_width,
                                          int min_row_height, int wrap_values);
 int  __stdcall EU_GetDescriptionsItemCount(HWND hwnd, int element_id);
 void __stdcall EU_SetDescriptionsAdvancedOptions(HWND hwnd, int element_id,
                                                  int responsive, int last_item_span);
+void __stdcall EU_SetDescriptionsColors(HWND hwnd, int element_id,
+                                        Color border, Color label_bg, Color content_bg,
+                                        Color label_fg, Color content_fg, Color title_fg);
+void __stdcall EU_SetDescriptionsExtra(HWND hwnd, int element_id,
+                                       const unsigned char* emoji_bytes, int emoji_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       int visible, int variant);
 int  __stdcall EU_GetDescriptionsOptions(HWND hwnd, int element_id,
                                          int* columns, int* bordered,
                                          int* label_width, int* min_row_height,
                                          int* wrap_values, int* responsive,
                                          int* last_item_span);
+int  __stdcall EU_GetDescriptionsFullState(HWND hwnd, int element_id,
+                                           int* direction, int* size,
+                                           int* columns, int* bordered,
+                                           int* item_count, int* extra_click_count,
+                                           int* responsive, int* wrap_values);
 void __stdcall EU_SetTableData(HWND hwnd, int element_id,
                                const unsigned char* columns_bytes, int columns_len,
                                const unsigned char* rows_bytes, int rows_len);

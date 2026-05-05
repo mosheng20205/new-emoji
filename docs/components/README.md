@@ -43,9 +43,9 @@
 | `Badge` | 徽标 | `EU_CreateBadge` / `EU_SetBadgeType` | 已完成，覆盖数值、最大值、文本、dot、四角位置、独立徽标、语义配色和自定义色 | [徽标](./badge.md) |
 | `Progress` | 进度条全样式 | `EU_CreateProgress` | 已完成 | [进度条](./progress.md) |
 | `Avatar` | 头像：圆形/方形、图片/图标/文字、失败回退、五种适配 | `EU_CreateAvatar` | 已完成 | [头像](./avatar.md) |
-| `Empty` | 空状态 | `EU_CreateEmpty` | 已完成 | [空状态](./empty.md) |
+| `Empty` | 空状态：描述、图片、尺寸、操作按钮和插槽按钮 | `EU_CreateEmpty` | 全样式已完成 | [空状态](./empty.md) |
 | `Skeleton` | 骨架屏 | `EU_CreateSkeleton` | 已完成 | [骨架屏](./skeleton.md) |
-| `Descriptions` | 描述列表 | `EU_CreateDescriptions` | 已完成 | [描述列表](./descriptions.md) |
+| `Descriptions` | 描述列表 | `EU_CreateDescriptions` | 全样式已完成 | [描述列表](./descriptions.md) |
 | `Table` | 高级表格：固定列、多级表头、纵横滚动条、表头拖拽、Excel 导入导出、单元格点击回调、筛选搜索、树形、合计、内置单元格控件、虚表 | `EU_CreateTable` | 高级样式完成 | [表格](./table.md) |
 | `InfiniteScroll` | 无限滚动 | `EU_CreateInfiniteScroll` | 已完成 | [无限滚动](./infinite-scroll.md) |
 | `Card` | 卡片 | `EU_CreateCard` | 已完成 | [卡片](./card.md) |

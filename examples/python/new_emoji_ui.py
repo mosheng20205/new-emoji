@@ -1312,6 +1312,13 @@ dll.EU_SetEmptyActionClicked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_i
 dll.EU_GetEmptyActionClicked.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetEmptyActionClicked.restype = ctypes.c_int
 dll.EU_SetEmptyActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
+dll.EU_SetEmptyImage.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetEmptyImageSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetEmptyImageStatus.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetEmptyImageStatus.restype = ctypes.c_int
+dll.EU_GetEmptyImageSize.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetEmptyImageSize.restype = ctypes.c_int
 dll.EU_SetSkeletonRows.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSkeletonAnimated.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSkeletonLoading.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1327,18 +1334,35 @@ dll.EU_SetDescriptionsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDescriptionsColumns.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetDescriptionsBordered.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDescriptionsLayout.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDescriptionsItemsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDescriptionsOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.c_int, ctypes.c_int,
                                           ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDescriptionsItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDescriptionsItemCount.restype = ctypes.c_int
 dll.EU_SetDescriptionsAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDescriptionsColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                         ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetDescriptionsExtra.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int]
 dll.EU_GetDescriptionsOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                           ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDescriptionsOptions.restype = ctypes.c_int
+dll.EU_GetDescriptionsFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDescriptionsFullState.restype = ctypes.c_int
 dll.EU_SetTableData.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -5154,7 +5178,8 @@ def get_avatar_options(hwnd, element_id):
     return shape.value, fit.value
 
 def create_empty(hwnd, parent_id, title="暂无数据 📭", description="",
-                 x=0, y=0, w=220, h=100, icon=None, action=None):
+                 x=0, y=0, w=220, h=100, icon=None, action=None,
+                 image="", image_size=0):
     title_data = make_utf8(title)
     desc_data = make_utf8(description)
     element_id = dll.EU_CreateEmpty(
@@ -5169,6 +5194,11 @@ def create_empty(hwnd, parent_id, title="暂无数据 📭", description="",
         dll.EU_SetEmptyOptions(hwnd, element_id,
                                bytes_arg(icon_data), len(icon_data),
                                bytes_arg(action_data), len(action_data))
+    if element_id and image:
+        image_data = make_utf8(image)
+        dll.EU_SetEmptyImage(hwnd, element_id, bytes_arg(image_data), len(image_data))
+    if element_id and image_size:
+        dll.EU_SetEmptyImageSize(hwnd, element_id, int(image_size))
     return element_id
 
 def set_empty_description(hwnd, element_id, description=""):
@@ -5183,6 +5213,19 @@ def set_empty_options(hwnd, element_id, icon="📭", action=""):
         bytes_arg(icon_data), len(icon_data),
         bytes_arg(action_data), len(action_data)
     )
+
+def set_empty_image(hwnd, element_id, image=""):
+    data = make_utf8(image)
+    dll.EU_SetEmptyImage(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_empty_image_size(hwnd, element_id, image_size=0):
+    dll.EU_SetEmptyImageSize(hwnd, element_id, int(image_size))
+
+def get_empty_image_status(hwnd, element_id):
+    return dll.EU_GetEmptyImageStatus(hwnd, element_id)
+
+def get_empty_image_size(hwnd, element_id):
+    return dll.EU_GetEmptyImageSize(hwnd, element_id)
 
 def set_empty_action_clicked(hwnd, element_id, clicked=False):
     dll.EU_SetEmptyActionClicked(hwnd, element_id, 1 if clicked else 0)
@@ -5236,6 +5279,25 @@ def get_skeleton_options(hwnd, element_id):
         return None
     return rows.value, bool(animated.value), bool(loading.value), bool(show_avatar.value)
 
+def _description_item_to_row(item):
+    if isinstance(item, dict):
+        fields = [
+            item.get("label", ""),
+            item.get("content", item.get("value", "")),
+            item.get("span", 1),
+            item.get("label_icon", item.get("icon", "")),
+            item.get("content_type", 0),
+            item.get("tag_type", 0),
+            item.get("content_align", item.get("align", 0)),
+            item.get("label_bg", 0),
+            item.get("content_bg", 0),
+            item.get("label_fg", 0),
+            item.get("content_fg", 0),
+        ]
+    else:
+        fields = [item[0], item[1], 1, "", 0, 0, 0, 0, 0, 0, 0]
+    return "\t".join(str(v) for v in fields)
+
 def create_descriptions(hwnd, parent_id, title="📋 描述列表", items=None,
                         columns=2, bordered=True, x=0, y=0, w=420, h=110,
                         label_width=None, min_row_height=None, wrap_values=None,
@@ -5243,7 +5305,13 @@ def create_descriptions(hwnd, parent_id, title="📋 描述列表", items=None,
     if items is None:
         items = [("名称", "Emoji UI"), ("状态", "✅ 就绪")]
     title_data = make_utf8(title)
-    items_data = make_utf8("|".join(f"{k}:{v}" for k, v in items))
+    legacy_rows = []
+    for item in items:
+        if isinstance(item, dict):
+            legacy_rows.append(f"{item.get('label', '')}:{item.get('content', item.get('value', ''))}")
+        else:
+            legacy_rows.append(f"{item[0]}:{item[1]}")
+    items_data = make_utf8("|".join(legacy_rows))
     element_id = dll.EU_CreateDescriptions(
         hwnd, parent_id,
         bytes_arg(title_data), len(title_data),
@@ -5263,6 +5331,8 @@ def create_descriptions(hwnd, parent_id, title="📋 描述列表", items=None,
             1 if responsive is None else int(bool(responsive)),
             0 if last_item_span is None else int(bool(last_item_span)),
         )
+    if element_id and any(isinstance(item, dict) for item in items):
+        set_descriptions_items_ex(hwnd, element_id, items)
     return element_id
 
 def set_descriptions_options(hwnd, element_id, columns=2, bordered=True,
@@ -5277,6 +5347,31 @@ def set_descriptions_advanced_options(hwnd, element_id, responsive=True, last_it
         hwnd, element_id, 1 if responsive else 0, 1 if last_item_span else 0
     )
 
+def set_descriptions_layout(hwnd, element_id, direction=0, size=0, columns=2, bordered=True):
+    dll.EU_SetDescriptionsLayout(
+        hwnd, element_id, direction, size, columns, 1 if bordered else 0
+    )
+
+def set_descriptions_items_ex(hwnd, element_id, items):
+    data = make_utf8("\n".join(_description_item_to_row(item) for item in items))
+    dll.EU_SetDescriptionsItemsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_descriptions_colors(hwnd, element_id, border=0, label_bg=0, content_bg=0,
+                            label_fg=0, content_fg=0, title_fg=0):
+    dll.EU_SetDescriptionsColors(
+        hwnd, element_id, border, label_bg, content_bg, label_fg, content_fg, title_fg
+    )
+
+def set_descriptions_extra(hwnd, element_id, emoji="⚙️", text="操作", visible=True, variant=1):
+    emoji_data = make_utf8(emoji)
+    text_data = make_utf8(text)
+    dll.EU_SetDescriptionsExtra(
+        hwnd, element_id,
+        bytes_arg(emoji_data), len(emoji_data),
+        bytes_arg(text_data), len(text_data),
+        1 if visible else 0, variant
+    )
+
 def get_descriptions_options(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(7)]
     ok = dll.EU_GetDescriptionsOptions(hwnd, element_id, *[ctypes.byref(v) for v in values])
@@ -5286,6 +5381,22 @@ def get_descriptions_options(hwnd, element_id):
         values[0].value, bool(values[1].value), values[2].value, values[3].value,
         bool(values[4].value), bool(values[5].value), bool(values[6].value)
     )
+
+def get_descriptions_full_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(8)]
+    ok = dll.EU_GetDescriptionsFullState(hwnd, element_id, *[ctypes.byref(v) for v in values])
+    if not ok:
+        return None
+    return {
+        "direction": values[0].value,
+        "size": values[1].value,
+        "columns": values[2].value,
+        "bordered": bool(values[3].value),
+        "item_count": values[4].value,
+        "extra_click_count": values[5].value,
+        "responsive": bool(values[6].value),
+        "wrap_values": bool(values[7].value),
+    }
 
 def create_table(hwnd, parent_id, columns=None, rows=None,
                  striped=True, bordered=True, x=0, y=0, w=420, h=120,

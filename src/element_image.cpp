@@ -446,6 +446,11 @@ static bool load_bitmap_from_path(RenderContext& ctx, const std::wstring& path,
     return false;
 }
 
+bool load_shared_bitmap_from_path(RenderContext& ctx, const std::wstring& path,
+                                  ID2D1Bitmap** out_bitmap, int* out_w, int* out_h) {
+    return load_bitmap_from_path(ctx, path, out_bitmap, out_w, out_h);
+}
+
 void Image::set_source(const std::wstring& value) {
     src = value;
     load_status = src.empty() ? 0 : 3;

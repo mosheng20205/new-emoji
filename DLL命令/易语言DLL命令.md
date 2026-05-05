@@ -2901,6 +2901,25 @@
     .参数 元素ID, 整数型
     .参数 回调函数, 整数型, , 回调签名：子程序(元素ID)
 
+.DLL命令 设置空状态图片, , "new_emoji.dll", "EU_SetEmptyImage", , 对应 C++ 导出命令 EU_SetEmptyImage；支持本地路径、HTTP、HTTPS 图片
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图片字节集指针, 整数型, , UTF-8 图片路径或 URL
+    .参数 图片长度, 整数型
+
+.DLL命令 设置空状态图片尺寸, , "new_emoji.dll", "EU_SetEmptyImageSize", , 对应 C++ 导出命令 EU_SetEmptyImageSize；0为自适应，正数为逻辑尺寸
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图片尺寸, 整数型, , 逻辑尺寸，0为自适应
+
+.DLL命令 取空状态图片状态, 整数型, "new_emoji.dll", "EU_GetEmptyImageStatus", , 对应 C++ 导出命令 EU_GetEmptyImageStatus；返回 0默认图标/无图片 1已加载 2加载失败 3加载中
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取空状态图片尺寸, 整数型, "new_emoji.dll", "EU_GetEmptyImageSize", , 对应 C++ 导出命令 EU_GetEmptyImageSize；返回逻辑尺寸，0为自适应
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 设置骨架屏行数, , "new_emoji.dll", "EU_SetSkeletonRows", , 对应 C++ 导出命令 EU_SetSkeletonRows
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2952,6 +2971,20 @@
     .参数 元素ID, 整数型
     .参数 是否带边框, 整数型
 
+.DLL命令 设置描述列表布局, , "new_emoji.dll", "EU_SetDescriptionsLayout", , 对应 C++ 导出命令 EU_SetDescriptionsLayout；方向0横向 1垂直，尺寸0默认 1中等 2小型 3超小
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 方向, 整数型
+    .参数 尺寸, 整数型
+    .参数 列数, 整数型
+    .参数 是否带边框, 整数型
+
+.DLL命令 设置描述列表高级项目, , "new_emoji.dll", "EU_SetDescriptionsItemsEx", , 对应 C++ 导出命令 EU_SetDescriptionsItemsEx；UTF-8 多行，每行：标签<TAB>内容<TAB>跨列<TAB>标签图标<TAB>内容类型<TAB>标签类型<TAB>内容对齐<TAB>标签背景<TAB>内容背景<TAB>标签文字色<TAB>内容文字色
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8，内容类型0文本 1标签；标签类型0默认 1成功 2信息 3警告 4危险；内容对齐0左 1中 2右；颜色0为主题默认
+    .参数 项目长度, 整数型
+
 .DLL命令 设置描述列表选项, , "new_emoji.dll", "EU_SetDescriptionsOptions", , 对应 C++ 导出命令 EU_SetDescriptionsOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2971,6 +3004,26 @@
     .参数 是否响应式列, 整数型
     .参数 最后一项是否跨列, 整数型
 
+.DLL命令 设置描述列表颜色, , "new_emoji.dll", "EU_SetDescriptionsColors", , 对应 C++ 导出命令 EU_SetDescriptionsColors；颜色为 ARGB，0 表示主题默认
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 边框色, 整数型
+    .参数 标签背景色, 整数型
+    .参数 内容背景色, 整数型
+    .参数 标签文字色, 整数型
+    .参数 内容文字色, 整数型
+    .参数 标题文字色, 整数型
+
+.DLL命令 设置描述列表操作按钮, , "new_emoji.dll", "EU_SetDescriptionsExtra", , 对应 C++ 导出命令 EU_SetDescriptionsExtra；右上角自绘操作按钮，点击触发元素点击回调
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 表情字节集指针, 整数型, , UTF-8
+    .参数 表情长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 是否显示, 整数型
+    .参数 按钮类型, 整数型, , 0默认 1主色 2成功 3警告 4危险 6信息
+
 .DLL命令 取描述列表选项, 整数型, "new_emoji.dll", "EU_GetDescriptionsOptions", , 对应 C++ 导出命令 EU_GetDescriptionsOptions；返回 1成功 0失败
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2981,6 +3034,18 @@
     .参数 内容是否换行指针, 整数型, , 输出整数指针
     .参数 是否响应式列指针, 整数型, , 输出整数指针
     .参数 最后一项是否跨列指针, 整数型, , 输出整数指针
+
+.DLL命令 取描述列表完整状态, 整数型, "new_emoji.dll", "EU_GetDescriptionsFullState", , 对应 C++ 导出命令 EU_GetDescriptionsFullState；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 方向指针, 整数型, , 输出整数指针
+    .参数 尺寸指针, 整数型, , 输出整数指针
+    .参数 列数指针, 整数型, , 输出整数指针
+    .参数 是否带边框指针, 整数型, , 输出整数指针
+    .参数 项目数指针, 整数型, , 输出整数指针
+    .参数 操作点击次数指针, 整数型, , 输出整数指针
+    .参数 是否响应式列指针, 整数型, , 输出整数指针
+    .参数 内容是否换行指针, 整数型, , 输出整数指针
 
 .DLL命令 设置表格数据, , "new_emoji.dll", "EU_SetTableData", , 对应 C++ 导出命令 EU_SetTableData
     .参数 窗口句柄, 整数型

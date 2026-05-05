@@ -275,7 +275,7 @@
     "zh": "空状态",
     "create": "EU_CreateEmpty",
     "status": "已完成",
-    "summary": "已补自定义图标、描述、操作按钮、操作专用回调、点击状态读回、Python 封装和独立中文 emoji 验证",
+    "summary": "已补描述文字、自定义图标、本地/HTTP/HTTPS 图片、图片尺寸、操作按钮、真实子按钮插槽、状态读回、Python 封装和桌面端全样式演示",
     "category": "数据展示",
     "slug": "empty"
   },

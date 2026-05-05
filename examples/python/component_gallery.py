@@ -4490,6 +4490,166 @@ def showcase_statistic(hwnd, stage, w, h):
     add_text(hwnd, timers, "倒计时卡片支持默认中文时分秒、DD天HH小时mm分钟、HH:mm:ss、增加时间、暂停/继续和结束回调。", 24, 426, w - 112, 34, MUTED)
 
 
+def showcase_empty(hwnd, stage, w, h):
+    wide, _tall, small = image_sample_files()
+    remote = "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
+    state = {"slot": 0, "action": 0}
+
+    status_id = add_text(hwnd, stage, "📭 Empty 状态：等待图片加载与按钮交互。", 32, 24, w - 64, 28, MUTED)
+    control = add_demo_panel(hwnd, stage, "🧭 桌面端空状态控制区", 28, 70, 340, h - 250)
+    add_text(hwnd, control, "用于表格、搜索结果、文件列表和任务队列为空时的占位提示。右侧覆盖描述、图片、尺寸和默认插槽按钮。", 22, 58, 296, 78, MUTED)
+
+    preview = add_demo_panel(hwnd, stage, "🖥️ 空列表工作台", 396, 70, w - 424, h - 110)
+    add_text(hwnd, preview, "搜索结果", 24, 58, 160, 24, TEXT)
+    add_text(hwnd, preview, "筛选条件：状态=待处理，时间=本周，负责人=全部", 150, 58, 520, 24, MUTED)
+
+    basic = ui.create_empty(
+        hwnd, preview, "暂无数据 📭", "描述文字：当前筛选条件下没有可展示的记录。",
+        24, 96, 280, 190, icon="📭"
+    )
+
+    remote_empty = ui.create_empty(
+        hwnd, preview, "暂无订单 🍔", "自定义图片 URL，远程加载完成后自动刷新。",
+        330, 96, 300, 220, image=remote, image_size=128, action="重新加载"
+    )
+
+    default_size = ui.create_empty(
+        hwnd, preview, "默认尺寸 🖼️", "图片按控件宽度自适应。",
+        656, 96, 280, 210, image=small
+    )
+
+    large_size = ui.create_empty(
+        hwnd, preview, "图片尺寸 200 🖼️", "等价于 :image-size=\"200\"。",
+        962, 96, 300, 300, image=wide, image_size=200
+    )
+
+    slot_empty = ui.create_empty(
+        hwnd, preview, "没有匹配内容 🔎", "默认插槽区域挂载真实 Button 子元素。",
+        24, 340, 360, 260, icon="🔎"
+    )
+    slot_btn = ui.create_button(hwnd, slot_empty, "➕", "创建内容", 106, 198, 148, 42)
+
+    local_fallback = ui.create_empty(
+        hwnd, preview, "本地图片回退 🧩", "无网络时也能用本地生成 BMP 演示。",
+        420, 340, 360, 260, image=wide, image_size=150, action="重新筛选"
+    )
+
+    readback = add_demo_panel(hwnd, stage, "📊 状态读回", 28, h - 170, 340, 130)
+
+    def refresh_status():
+        status = (
+            f"📭 图片状态：远程={ui.get_empty_image_status(hwnd, remote_empty)} "
+            f"默认={ui.get_empty_image_status(hwnd, default_size)} "
+            f"200={ui.get_empty_image_status(hwnd, large_size)} "
+            f"本地={ui.get_empty_image_status(hwnd, local_fallback)}；"
+            f"尺寸={ui.get_empty_image_size(hwnd, large_size)}；"
+            f"插槽点击={state['slot']}；内置按钮={state['action']}"
+        )
+        ui.set_element_text(hwnd, status_id, status)
+        ui.set_element_text(hwnd, readback_text, status)
+
+    def on_slot_click(_element_id):
+        state["slot"] += 1
+        refresh_status()
+
+    def on_action_click(_element_id):
+        state["action"] += 1
+        refresh_status()
+
+    set_click(hwnd, slot_btn, on_slot_click)
+    action_cb = keep_callback(ui.ClickCallback(on_action_click))
+    ui.set_empty_action_callback(hwnd, remote_empty, action_cb)
+    ui.set_empty_action_callback(hwnd, local_fallback, action_cb)
+
+    refresh_btn = ui.create_button(hwnd, control, "🔄", "刷新状态", 22, 150, 136, 40)
+    set_click(hwnd, refresh_btn, lambda _eid: refresh_status())
+    add_text(hwnd, control, "样式覆盖", 22, 214, 120, 24, TEXT)
+    add_text(hwnd, control, "✅ 描述文字\n✅ 自定义图片 URL\n✅ 图片尺寸 200\n✅ 真实子按钮插槽\n✅ 内置操作按钮回调", 22, 248, 270, 150, TEXT)
+
+    readback_text = add_text(hwnd, readback, "", 18, 52, 300, 64, MUTED)
+    refresh_status()
+
+
+def showcase_descriptions(hwnd, stage, w, h):
+    state = {"clicks": 0}
+    status_id = add_text(hwnd, stage, "📋 描述列表状态：已展示基础、边框、无边框、垂直、跨列、标签和自定义样式。", 32, 24, w - 64, 28, MUTED)
+
+    control = add_demo_panel(hwnd, stage, "🧭 桌面端样式控制区", 28, 70, 360, 500)
+    add_text(hwnd, control, "面向后台资料页、用户详情页、订单属性面板和运维信息卡片。右侧所有样式都由同一个 C++ Descriptions 组件绘制。", 22, 58, 316, 70, MUTED)
+
+    preview = add_demo_panel(hwnd, stage, "🖥️ 用户资料工作台", 416, 70, w - 444, 500)
+    base_items = [
+        {"label": "用户名", "content": "kooriookami", "label_icon": "👤"},
+        {"label": "手机号", "content": "18100000000", "label_icon": "📱"},
+        {"label": "居住地", "content": "苏州市", "label_icon": "📍"},
+        {"label": "备注", "content": "学校", "label_icon": "🏷️", "content_type": 1, "tag_type": 1},
+        {"label": "联系地址", "content": "江苏省苏州市吴中区吴中大道 1188 号", "label_icon": "🏢", "span": 2, "content_align": 2},
+    ]
+    bordered = ui.create_descriptions(hwnd, preview, "📋 带边框列表", base_items, 3, True, 22, 58, 610, 190,
+                                      label_width=104, min_row_height=42, wrap_values=True, responsive=False)
+    ui.set_descriptions_extra(hwnd, bordered, "⚙️", "操作", True, 1)
+    ui.set_descriptions_items_ex(hwnd, bordered, base_items)
+    plain = ui.create_descriptions(hwnd, preview, "🧾 无边框列表", base_items, 3, False, 660, 58, 560, 190,
+                                   label_width=100, min_row_height=42, wrap_values=True, responsive=False)
+    ui.set_descriptions_items_ex(hwnd, plain, base_items)
+    ui.set_descriptions_colors(hwnd, plain, 0, 0, 0, 0xFF9AA6C7, 0, 0)
+
+    def on_extra(_eid):
+        state["clicks"] += 1
+        full = ui.get_descriptions_full_state(hwnd, bordered)
+        count = full["extra_click_count"] if full else state["clicks"]
+        ui.set_element_text(hwnd, status_id, f"⚙️ 右上角操作已点击 {count} 次；当前边框列表为 {full['columns'] if full else 3} 列。")
+
+    set_click(hwnd, bordered, on_extra)
+
+    vertical_panel = add_demo_panel(hwnd, stage, "📐 垂直布局与逐项跨列", 28, 596, 820, 250)
+    vertical_items = [
+        {"label": "用户名", "content": "kooriookami", "label_icon": "👤"},
+        {"label": "手机号", "content": "18100000000", "label_icon": "📱"},
+        {"label": "居住地", "content": "苏州市", "label_icon": "📍", "span": 2},
+        {"label": "备注", "content": "学校", "label_icon": "🏫", "content_type": 1, "tag_type": 2},
+        {"label": "联系地址", "content": "江苏省苏州市吴中区吴中大道 1188 号", "label_icon": "🏢", "span": 3},
+    ]
+    v1 = ui.create_descriptions(hwnd, vertical_panel, "📌 垂直带边框列表", vertical_items, 4, True, 24, 58, 370, 158,
+                                label_width=92, min_row_height=64, wrap_values=True, responsive=False)
+    ui.set_descriptions_layout(hwnd, v1, direction=1, size=0, columns=4, bordered=True)
+    ui.set_descriptions_items_ex(hwnd, v1, vertical_items)
+    v2 = ui.create_descriptions(hwnd, vertical_panel, "🪟 垂直无边框列表", vertical_items, 4, False, 420, 58, 370, 158,
+                                label_width=92, min_row_height=64, wrap_values=True, responsive=False)
+    ui.set_descriptions_layout(hwnd, v2, direction=1, size=2, columns=4, bordered=False)
+    ui.set_descriptions_items_ex(hwnd, v2, vertical_items)
+
+    size_panel = add_demo_panel(hwnd, stage, "🎚️ 四种尺寸与业务密度", 876, 596, w - 904, 250)
+    for title, size_value, x in [("默认", 0, 24), ("中等", 1, 210), ("小型", 2, 396), ("超小", 3, 582)]:
+        did = ui.create_descriptions(
+            hwnd, size_panel, f"✨ {title}",
+            [{"label": "状态", "content": "已同步", "content_type": 1, "tag_type": 1},
+             {"label": "编号", "content": f"NO-{size_value + 1:03d}"}],
+            1, True, x, 58, 168, 150,
+            label_width=72, min_row_height=38, wrap_values=False, responsive=False,
+        )
+        ui.set_descriptions_layout(hwnd, did, direction=0, size=size_value, columns=1, bordered=True)
+        ui.set_descriptions_items_ex(
+            hwnd, did,
+            [{"label": "状态", "content": "已同步", "content_type": 1, "tag_type": 1, "label_icon": "✅"},
+             {"label": "编号", "content": f"NO-{size_value + 1:03d}", "label_icon": "🔢"}],
+        )
+
+    style_panel = add_demo_panel(hwnd, stage, "🎨 自定义 label/content 样式", 28, 872, w - 56, 196)
+    styled_items = [
+        {"label": "用户名", "content": "kooriookami", "label_icon": "👤", "label_bg": 0xFFE1F3D8, "content_bg": 0xFFFDE2E2},
+        {"label": "手机号", "content": "18100000000", "label_icon": "📱"},
+        {"label": "居住地", "content": "苏州市", "label_icon": "📍"},
+        {"label": "备注", "content": "学校", "label_icon": "🏷️", "content_type": 1, "tag_type": 3},
+        {"label": "联系地址", "content": "江苏省苏州市吴中区吴中大道 1188 号", "label_icon": "🏢", "span": 2, "content_align": 2},
+    ]
+    styled = ui.create_descriptions(hwnd, style_panel, "🎨 自定义样式列表", styled_items, 3, True, 24, 58, w - 104, 106,
+                                    label_width=112, min_row_height=42, wrap_values=True, responsive=False)
+    ui.set_descriptions_items_ex(hwnd, styled, styled_items)
+    ui.set_descriptions_colors(hwnd, styled, BORDER, 0xFFF5F7FA, 0, 0xFF53627A, 0xFF162033, 0xFF162033)
+    add_text(hwnd, style_panel, "同一组件覆盖 label 图标、内容标签、右对齐、逐项背景色和全局主题色覆盖；适合桌面端属性面板。", 24, 158, w - 104, 24, MUTED)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -4520,6 +4680,8 @@ SPECIAL_SHOWCASES = {
     "Gauge": showcase_gauge,
     "Pagination": showcase_pagination,
     "Steps": showcase_steps,
+    "Empty": showcase_empty,
+    "Descriptions": showcase_descriptions,
     "Table": showcase_table,
     "Timeline": showcase_timeline,
     "Statistic": showcase_statistic,

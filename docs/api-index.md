@@ -40,7 +40,7 @@
 | `EU_CreateBadge` | 创建徽标，支持数值、文本、dot、角标位置、独立模式和语义类型 |
 | `EU_CreateProgress` | |
 | `EU_CreateAvatar` | |
-| `EU_CreateEmpty` | |
+| `EU_CreateEmpty` | 创建空状态，支持描述、emoji 图标、图片、尺寸、内置操作按钮和子按钮插槽 |
 | `EU_CreateSkeleton` | |
 | `EU_CreateDescriptions` | |
 | `EU_CreateTable` | 创建表格；兼容旧基础表格协议，高级能力通过 `EU_SetTableColumnsEx` / `EU_SetTableRowsEx` 补齐 |
@@ -386,11 +386,15 @@
 | `EU_SetAvatarFit` | |
 | `EU_GetAvatarImageStatus` | |
 | `EU_GetAvatarOptions` | |
-| `EU_SetEmptyDescription` | |
-| `EU_SetEmptyOptions` | |
-| `EU_SetEmptyActionClicked` | |
-| `EU_GetEmptyActionClicked` | |
-| `EU_SetEmptyActionCallback` | |
+| `EU_SetEmptyDescription` | 设置空状态描述文字 |
+| `EU_SetEmptyOptions` | 设置空状态 emoji 图标和内置操作按钮文字 |
+| `EU_SetEmptyActionClicked` | 设置内置操作按钮点击状态 |
+| `EU_GetEmptyActionClicked` | 读取内置操作按钮点击状态 |
+| `EU_SetEmptyActionCallback` | 设置内置操作按钮回调 |
+| `EU_SetEmptyImage` | 设置空状态图片，支持本地路径、HTTP 和 HTTPS |
+| `EU_SetEmptyImageSize` | 设置空状态图片尺寸，0 为自适应 |
+| `EU_GetEmptyImageStatus` | 读取图片状态：0 默认图标/无图片，1 已加载，2 加载失败，3 加载中 |
+| `EU_GetEmptyImageSize` | 读取图片逻辑尺寸 |
 | `EU_SetSkeletonRows` | |
 | `EU_SetSkeletonAnimated` | |
 | `EU_SetSkeletonLoading` | |
@@ -400,10 +404,15 @@
 | `EU_SetDescriptionsItems` | |
 | `EU_SetDescriptionsColumns` | |
 | `EU_SetDescriptionsBordered` | |
+| `EU_SetDescriptionsLayout` | 设置方向、尺寸、列数和边框 |
+| `EU_SetDescriptionsItemsEx` | 设置高级项目：跨列、图标、标签、对齐和逐项颜色 |
 | `EU_SetDescriptionsOptions` | |
 | `EU_GetDescriptionsItemCount` | |
 | `EU_SetDescriptionsAdvancedOptions` | |
+| `EU_SetDescriptionsColors` | 设置描述列表全局颜色 |
+| `EU_SetDescriptionsExtra` | 设置右上角操作按钮 |
 | `EU_GetDescriptionsOptions` | |
+| `EU_GetDescriptionsFullState` | 读取方向、尺寸、列数、项目数和操作点击次数 |
 | `EU_SetTableData` | 设置旧协议列/行数据 |
 | `EU_SetTableStriped` | 设置斑马纹 |
 | `EU_SetTableBordered` | 设置边框 |
