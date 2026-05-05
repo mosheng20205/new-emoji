@@ -65,6 +65,11 @@ void InputNumber::set_step(int new_step) {
 }
 
 void InputNumber::set_value(int new_value) {
+    if (step_strictly && step > 1) {
+        int offset = new_value - min_value;
+        int rounded = ((offset + step / 2) / step) * step;
+        new_value = min_value + rounded;
+    }
     int next = clamp_value(new_value);
     bool changed = value != next;
     if (changed) value = next;
@@ -74,6 +79,16 @@ void InputNumber::set_value(int new_value) {
     last_input_valid = true;
     invalidate();
     if (changed) notify_value_changed();
+}
+
+void InputNumber::set_step_strictly(bool strict) {
+    step_strictly = strict;
+    if (strict) {
+        int aligned = min_value + ((value - min_value) / step) * step;
+        if (aligned < min_value) aligned = min_value;
+        if (aligned > max_value) aligned = max_value - ((max_value - min_value) % step);
+        if (aligned != value) set_value(aligned);
+    }
 }
 
 void InputNumber::set_precision(int new_precision) {
@@ -250,6 +265,12 @@ void InputNumber::paint(RenderContext& ctx) {
     Color border = has_focus ? t->edit_focus : (style.border_color ? style.border_color : t->edit_border);
     if (!last_input_valid) border = 0xFFE53935;
     Color fg = style.fg_color ? style.fg_color : t->text_primary;
+    if (!enabled) {
+        bool dark = is_dark_theme_for_window(owner_hwnd);
+        bg = dark ? 0xFF2A2D3A : 0xFFE5E7EB;
+        border = dark ? 0xFF3A3D4C : 0xFFD1D5DB;
+        fg = t->text_muted;
+    }
     float r = style.corner_radius > 0.0f ? style.corner_radius : 4.0f;
 
     D2D1_RECT_F rect = { 0, 0, (float)bounds.w, (float)bounds.h };
@@ -269,10 +290,10 @@ void InputNumber::paint(RenderContext& ctx) {
 
     D2D1_RECT_F up_rect = { spinner_x + 1.0f, 1.0f, (float)bounds.w - 1.0f, (float)bounds.h * 0.5f };
     D2D1_RECT_F down_rect = { spinner_x + 1.0f, (float)bounds.h * 0.5f, (float)bounds.w - 1.0f, (float)bounds.h - 1.0f };
-    if (m_hover_part == PartUp || m_press_part == PartUp) {
+    if (enabled && (m_hover_part == PartUp || m_press_part == PartUp)) {
         ctx.rt->FillRectangle(up_rect, ctx.get_brush(m_press_part == PartUp ? t->button_press : t->button_hover));
     }
-    if (m_hover_part == PartDown || m_press_part == PartDown) {
+    if (enabled && (m_hover_part == PartDown || m_press_part == PartDown)) {
         ctx.rt->FillRectangle(down_rect, ctx.get_brush(m_press_part == PartDown ? t->button_press : t->button_hover));
     }
 
@@ -287,7 +308,7 @@ void InputNumber::paint(RenderContext& ctx) {
     float value_w = spinner_x - value_x - pad_r;
     if (value_w < 1.0f) value_w = 1.0f;
     draw_text(ctx, display_value(), style, fg, value_x, 0.0f, value_w, (float)bounds.h,
-              DWRITE_TEXT_ALIGNMENT_TRAILING);
+              DWRITE_TEXT_ALIGNMENT_CENTER);
 
     Color arrow = (m_hover_part == PartUp || m_hover_part == PartDown) ? t->accent : t->text_secondary;
     draw_text(ctx, L"▲", style, arrow, spinner_x, 0.0f, (float)sw, (float)bounds.h * 0.5f,
@@ -299,6 +320,7 @@ void InputNumber::paint(RenderContext& ctx) {
 }
 
 void InputNumber::on_mouse_move(int x, int y) {
+    if (!enabled) return;
     Part p = part_at(x, y);
     if (p != m_hover_part) {
         m_hover_part = p;
@@ -307,6 +329,7 @@ void InputNumber::on_mouse_move(int x, int y) {
 }
 
 void InputNumber::on_mouse_down(int x, int y, MouseButton) {
+    if (!enabled) return;
     m_press_part = part_at(x, y);
     if (m_press_part == PartMain && !m_editing) start_edit();
     if (m_press_part == PartUp) {
@@ -336,6 +359,7 @@ void InputNumber::on_mouse_up(int x, int y, MouseButton) {
 }
 
 void InputNumber::on_key_down(int vk, int) {
+    if (!enabled) return;
     switch (vk) {
     case VK_UP:
     case VK_RIGHT:
@@ -390,6 +414,7 @@ void InputNumber::on_key_down(int vk, int) {
 }
 
 void InputNumber::on_char(wchar_t ch) {
+    if (!enabled) return;
     if (!m_editing) start_edit();
     if (ch == L'-' && min_value < 0) {
         if (m_replace_on_next_char) {
@@ -427,6 +452,7 @@ void InputNumber::on_char(wchar_t ch) {
 }
 
 void InputNumber::on_focus() {
+    if (!enabled) return;
     has_focus = true;
     start_edit();
 }

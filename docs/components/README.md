@@ -1,6 +1,6 @@
 # 组件文档导航
 
-计划内 81 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
+计划内 84 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
 
 ## 🧱 基础/布局
 `Button` 已补齐 Element 风格常用按钮样式，包括语义变体、朴素、圆角、圆形、加载中和尺寸选项。
@@ -29,6 +29,7 @@
 | `Slider` | 滑块 | `EU_CreateSlider` | 已完成 | [滑块](./slider.md) |
 | `InputNumber` | 数字输入框 | `EU_CreateInputNumber` | 已完成 | [数字输入框](./input-number.md) |
 | `Input` | 输入框 | `EU_CreateInput` | 已完成 | [输入框](./input.md) |
+| `InputGroup` | 组合输入 | `EU_CreateInputGroup` | 已完成 | [组合输入](./input-group.md) |
 | `InputTag` | 标签输入 | `EU_CreateInputTag` | 已完成 | [标签输入](./input-tag.md) |
 | `Select` | 选择器 | `EU_CreateSelect` | 已完成 | [选择器](./select.md) |
 | `SelectV2` | 虚拟选择器 | `EU_CreateSelectV2` | 已完成 | [虚拟选择器](./selectv2.md) |
@@ -45,7 +46,7 @@
 | `Empty` | 空状态 | `EU_CreateEmpty` | 已完成 | [空状态](./empty.md) |
 | `Skeleton` | 骨架屏 | `EU_CreateSkeleton` | 已完成 | [骨架屏](./skeleton.md) |
 | `Descriptions` | 描述列表 | `EU_CreateDescriptions` | 已完成 | [描述列表](./descriptions.md) |
-| `Table` | 表格 | `EU_CreateTable` | 已完成 | [表格](./table.md) |
+| `Table` | 高级表格：固定列、多级表头、纵横滚动条、表头拖拽、Excel 导入导出、单元格点击回调、筛选搜索、树形、合计、内置单元格控件、虚表 | `EU_CreateTable` | 高级样式完成 | [表格](./table.md) |
 | `Card` | 卡片 | `EU_CreateCard` | 已完成 | [卡片](./card.md) |
 | `Collapse` | 折叠面板 | `EU_CreateCollapse` | 已完成 | [折叠面板](./collapse.md) |
 | `Timeline` | 时间线 | `EU_CreateTimeline` | 已完成 | [时间线](./timeline.md) |
@@ -79,7 +80,7 @@
 | `Tree` | 树 | `EU_CreateTree` | 已完成 | [树](./tree.md) |
 | `TreeSelect` | 树选择 | `EU_CreateTreeSelect` | 已完成 | [树选择](./tree-select.md) |
 | `Transfer` | 穿梭框 | `EU_CreateTransfer` | 已完成 | [穿梭框](./transfer.md) |
-| `Autocomplete` | 自动补全 | `EU_CreateAutocomplete` | 已完成 | [自动补全](./autocomplete.md) |
+| `Autocomplete` | 自动补全 | `EU_CreateAutocomplete` | 已完成，支持 placeholder / trigger_on_focus / 图标 / 双行建议项 | [自动补全](./autocomplete.md) |
 | `Mentions` | 提及 | `EU_CreateMentions` | 已完成 | [提及](./mentions.md) |
 | `Cascader` | 级联选择 | `EU_CreateCascader` | 已完成 | [级联选择](./cascader.md) |
 
@@ -105,7 +106,7 @@
 | `Tour` | 漫游引导 | `EU_CreateTour` | 已完成 | [漫游引导](./tour.md) |
 | `Image` | 图片 | `EU_CreateImage` | 已完成 | [图片](./image.md) |
 | `Carousel` | 轮播 | `EU_CreateCarousel` | 已完成 | [轮播](./carousel.md) |
-| `Upload` | 上传 | `EU_CreateUpload` | 已完成 | [上传](./upload.md) |
+| `Upload` | 上传 | `EU_CreateUpload` | 已完成，支持普通列表、头像、图片卡片、图片列表、拖拽、手动上传、系统文件选择和类型过滤 | [上传](./upload.md) |
 | `Scrollbar` | 滚动条 | `EU_CreateScrollbar` | 已完成 | [滚动条](./scrollbar.md) |
 
 ## 💬 反馈/浮层
@@ -113,10 +114,12 @@
 |---|---|---|---|---|
 | `Alert` | 警告提示 | `EU_CreateAlert` | 已完成 | [警告提示](./alert.md) |
 | `Result` | 结果页 | `EU_CreateResult` | 已完成 | [结果页](./result.md) |
-| `Notification` | 通知 | `EU_CreateNotification` | 已完成 | [通知](./notification.md) |
+| `Message` | 消息提示 | `EU_ShowMessage` | 已完成，服务式轻提示，支持四类型、可关闭、居中、富文本、自动关闭、偏移和堆叠 | [消息提示](./message.md) |
+| `MessageBox` | 消息框 | `EU_ShowMessageBoxEx` / `EU_ShowPromptBox` | 已完成，支持 alert/confirm/prompt/msgbox、富文本、区分关闭、loading 和输入校验 | [消息框](./message-box.md) |
+| `Notification` | 通知 | `EU_CreateNotification` / `EU_ShowNotification` | 已完成，支持嵌入式与服务式通知、四角位置、offset、富文本和隐藏关闭按钮 | [通知](./notification.md) |
 | `Loading` | 加载 | `EU_CreateLoading` | 已完成 | [加载](./loading.md) |
-| `Dialog` | 对话框 | `EU_CreateDialog` | 已完成 | [对话框](./dialog.md) |
-| `Drawer` | 抽屉 | `EU_CreateDrawer` | 已完成 | [抽屉](./drawer.md) |
-| `Tooltip` | 文字提示 | `EU_CreateTooltip` | 已完成 | [文字提示](./tooltip.md) |
-| `Popover` | 弹出框 | `EU_CreatePopover` | 已完成 | [弹出框](./popover.md) |
-| `Popconfirm` | 气泡确认框 | `EU_CreatePopconfirm` | 已完成 | [气泡确认框](./popconfirm.md) |
+| `Dialog` | 对话框 | `EU_CreateDialog` | 已完成：slot / before-close / 居中 / 嵌套内容 | [对话框](./dialog.md) |
+| `Drawer` | 抽屉 | `EU_CreateDrawer` | 已完成：四方向 / 无标题栏 / 50% 尺寸 / slot / before-close / 嵌套抽屉 | [抽屉](./drawer.md) |
+| `Tooltip` | 文字提示 | `EU_CreateTooltip` | 已完成：12 方位 / dark-light / disabled / 换行 | [文字提示](./tooltip.md) |
+| `Popover` | 弹出框 | `EU_CreatePopover` | 已完成：slot / 四触发 / 12 方位 / 键盘关闭 | [弹出框](./popover.md) |
+| `Popconfirm` | 气泡确认框 | `EU_CreatePopconfirm` | 已完成：12 方位 / 自定义按钮 / 图标 / 结果回调 | [气泡确认框](./popconfirm.md) |

@@ -1,71 +1,59 @@
 # Dialog 对话框
 
-## 简介
+`Dialog` 是反馈/浮层组件，已补齐本批 Element UI 示例所需的基础提示、居中、遮罩关闭、拖拽、嵌套表格、嵌套表单、外层/内层 Dialog、页脚 slot 和 before-close 关闭拦截能力。
 
-`Dialog` 是 new_emoji 的 反馈/浮层 组件。当前状态：**已完成**。
+## 位置与 slot
 
-已补拖拽、遮罩关闭、打开状态、模态/关闭/尺寸选项、按钮区、焦点循环、键盘/程序按钮触发、按钮回调、文本/完整状态读回和独立中文 emoji 验证
-
-## 创建
-
-| 项目 | 值 |
-|---|---|
-| 创建导出 | `EU_CreateDialog` |
-| 组件分类 | 反馈/浮层 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_dialog` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
-
-## 相关 API
+Dialog 创建后会自动生成两个内部容器：
 
 | API | 说明 |
 |---|---|
-| `EU_CreateDialog` | 当前组件相关导出 |
-| `EU_GetDialogButtonText` | 当前组件相关导出 |
-| `EU_GetDialogFullState` | 当前组件相关导出 |
-| `EU_GetDialogOpen` | 当前组件相关导出 |
-| `EU_GetDialogOptions` | 当前组件相关导出 |
-| `EU_GetDialogText` | 当前组件相关导出 |
-| `EU_SetDialogBody` | 当前组件相关导出 |
-| `EU_SetDialogButtonCallback` | 当前组件相关导出 |
-| `EU_SetDialogButtons` | 当前组件相关导出 |
-| `EU_SetDialogOpen` | 当前组件相关导出 |
-| `EU_SetDialogOptions` | 当前组件相关导出 |
-| `EU_SetDialogTitle` | 当前组件相关导出 |
-| `EU_TriggerDialogButton` | 当前组件相关导出 |
+| `EU_GetDialogContentParent` | 返回内容 slot 容器 ID，可挂载 `Table`、`Text`、`Input`、`Select`、`Button` 等元素 |
+| `EU_GetDialogFooterParent` | 返回页脚 slot 容器 ID；有子元素时替代默认按钮区绘制 |
 
-## Python 使用
+## API
+
+| API | 说明 |
+|---|---|
+| `EU_CreateDialog` | 创建 Dialog |
+| `EU_SetDialogOpen` / `EU_GetDialogOpen` | 设置/读取打开状态 |
+| `EU_SetDialogTitle` / `EU_SetDialogBody` | 设置标题和正文 |
+| `EU_SetDialogOptions` / `EU_GetDialogOptions` | 设置打开、模态、关闭按钮、遮罩关闭、拖拽、宽高 |
+| `EU_SetDialogAdvancedOptions` / `EU_GetDialogAdvancedOptions` | 设置逻辑像素宽度/百分比宽度、标题居中、页脚居中、内容 padding、页脚高度，并读回 slot ID 和关闭待确认状态 |
+| `EU_SetDialogButtons` / `EU_GetDialogButtonText` | 设置和读取默认页脚按钮 |
+| `EU_TriggerDialogButton` | 程序触发按钮 |
+| `EU_SetDialogButtonCallback` | 按钮点击回调 |
+| `EU_SetDialogBeforeCloseCallback` | 关闭前回调；返回 `1` 允许关闭，返回 `0` 拦截 |
+| `EU_ConfirmDialogClose` | before-close 拦截后继续或取消关闭 |
+| `EU_GetDialogText` / `EU_GetDialogFullState` | 文本和完整状态读回 |
+
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
-
-hwnd = ui.create_window("✨ 对话框 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Dialog`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+dlg = ui.create_dialog(hwnd, "📦 收货地址", "", True, True, 680, 360)
+ui.set_dialog_advanced_options(hwnd, dlg, width_mode=0, width_value=680,
+                               center=False, footer_center=False,
+                               content_padding=22, footer_height=62)
+content = ui.get_dialog_content_parent(hwnd, dlg)
+ui.create_table(hwnd, content,
+                ["日期", "姓名", "地址"],
+                [["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄"]],
+                True, True, 0, 0, 620, 120)
+ui.set_dialog_buttons(hwnd, dlg, ["确定 ✅", "取消 ❌"])
 ```
 
-## 易语言调用
+before-close：
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
+```python
+@ui.BeforeCloseCallback
+def on_before_close(element_id, action):
+    print("🛡️ 先拦截关闭，等待用户确认")
+    return 0
 
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+ui.set_dialog_before_close_callback(hwnd, dlg, on_before_close)
+ui.confirm_dialog_close(hwnd, dlg, True)
+```
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_dialog_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Dialog` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+优先运行 `tests/python/test_dialog_complete_components.py`。gallery 的 `Dialog` 详情页覆盖基础、表格 slot、表单 slot、嵌套 Dialog、居中和 before-close 演示。

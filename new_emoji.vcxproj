@@ -182,7 +182,9 @@
     <ClInclude Include="src\element_button.h" />
     <ClInclude Include="src\element_editbox.h" />
     <ClInclude Include="src\element_infobox.h" />
+    <ClInclude Include="src\element_message.h" />
     <ClInclude Include="src\element_messagebox.h" />
+    <ClInclude Include="src\element_rich_text.h" />
     <ClInclude Include="src\element_text.h" />
     <ClInclude Include="src\element_link.h" />
     <ClInclude Include="src\element_icon.h" />
@@ -196,6 +198,7 @@
     <ClInclude Include="src\element_slider.h" />
     <ClInclude Include="src\element_inputnumber.h" />
     <ClInclude Include="src\element_input.h" />
+    <ClInclude Include="src\element_inputgroup.h" />
     <ClInclude Include="src\element_inputtag.h" />
     <ClInclude Include="src\element_select.h" />
     <ClInclude Include="src\element_rate.h" />
@@ -208,6 +211,7 @@
     <ClInclude Include="src\element_skeleton.h" />
     <ClInclude Include="src\element_descriptions.h" />
     <ClInclude Include="src\element_table.h" />
+    <ClInclude Include="src\xlsx_table_io.h" />
     <ClInclude Include="src\element_card.h" />
     <ClInclude Include="src\element_collapse.h" />
     <ClInclude Include="src\element_timeline.h" />
@@ -223,6 +227,7 @@
     <ClInclude Include="src\element_mentions.h" />
     <ClInclude Include="src\element_cascader.h" />
     <ClInclude Include="src\element_datepicker.h" />
+    <ClInclude Include="src\element_daterangepicker.h" />
     <ClInclude Include="src\element_timepicker.h" />
     <ClInclude Include="src\element_datetimepicker.h" />
     <ClInclude Include="src\element_timeselect.h" />
@@ -271,7 +276,9 @@
     <ClCompile Include="src\element_button.cpp" />
     <ClCompile Include="src\element_editbox.cpp" />
     <ClCompile Include="src\element_infobox.cpp" />
+    <ClCompile Include="src\element_message.cpp" />
     <ClCompile Include="src\element_messagebox.cpp" />
+    <ClCompile Include="src\element_rich_text.cpp" />
     <ClCompile Include="src\element_text.cpp" />
     <ClCompile Include="src\element_link.cpp" />
     <ClCompile Include="src\element_icon.cpp" />
@@ -285,6 +292,7 @@
     <ClCompile Include="src\element_slider.cpp" />
     <ClCompile Include="src\element_inputnumber.cpp" />
     <ClCompile Include="src\element_input.cpp" />
+    <ClCompile Include="src\element_inputgroup.cpp" />
     <ClCompile Include="src\element_inputtag.cpp" />
     <ClCompile Include="src\element_select.cpp" />
     <ClCompile Include="src\element_rate.cpp" />
@@ -297,6 +305,9 @@
     <ClCompile Include="src\element_skeleton.cpp" />
     <ClCompile Include="src\element_descriptions.cpp" />
     <ClCompile Include="src\element_table.cpp" />
+    <ClCompile Include="src\element_table_input.cpp" />
+    <ClCompile Include="src\element_table_paint.cpp" />
+    <ClCompile Include="src\xlsx_table_io.cpp" />
     <ClCompile Include="src\element_card.cpp" />
     <ClCompile Include="src\element_collapse.cpp" />
     <ClCompile Include="src\element_timeline.cpp" />
@@ -312,6 +323,7 @@
     <ClCompile Include="src\element_mentions.cpp" />
     <ClCompile Include="src\element_cascader.cpp" />
     <ClCompile Include="src\element_datepicker.cpp" />
+    <ClCompile Include="src\element_daterangepicker.cpp" />
     <ClCompile Include="src\element_timepicker.cpp" />
     <ClCompile Include="src\element_datetimepicker.cpp" />
     <ClCompile Include="src\element_timeselect.cpp" />

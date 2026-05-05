@@ -75,6 +75,13 @@ int __stdcall EU_CreateInput(HWND hwnd, int parent_id,
                              const unsigned char* suffix_bytes, int suffix_len,
                              int clearable,
                              int x, int y, int w, int h);
+int __stdcall EU_CreateInputGroup(HWND hwnd, int parent_id,
+                                  const unsigned char* value_bytes, int value_len,
+                                  const unsigned char* placeholder_bytes, int placeholder_len,
+                                  int size, int clearable, int password,
+                                  int show_word_limit, int autosize,
+                                  int min_rows, int max_rows,
+                                  int x, int y, int w, int h);
 int __stdcall EU_CreateInputTag(HWND hwnd, int parent_id,
                                 const unsigned char* tags_bytes, int tags_len,
                                 const unsigned char* placeholder_bytes, int placeholder_len,
@@ -316,6 +323,15 @@ int __stdcall EU_CreateNotification(HWND hwnd, int parent_id,
                                     const unsigned char* body_bytes, int body_len,
                                     int notify_type, int closable,
                                     int x, int y, int w, int h);
+int __stdcall EU_ShowMessage(HWND hwnd,
+                             const unsigned char* text_bytes, int text_len,
+                             int message_type, int closable, int center, int rich,
+                             int duration_ms, int offset);
+int __stdcall EU_ShowNotification(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* body_bytes, int body_len,
+                                  int notify_type, int closable, int duration_ms,
+                                  int placement, int offset, int rich, int w, int h);
 int __stdcall EU_CreateLoading(HWND hwnd, int parent_id,
                                const unsigned char* text_bytes, int text_len,
                                int active,
@@ -360,6 +376,26 @@ int __stdcall EU_ShowConfirmBox(HWND hwnd,
                                 const unsigned char* confirm_bytes, int confirm_len,
                                 const unsigned char* cancel_bytes, int cancel_len,
                                 MessageBoxResultCallback cb);
+int __stdcall EU_ShowMessageBoxEx(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* text_bytes, int text_len,
+                                  const unsigned char* confirm_bytes, int confirm_len,
+                                  const unsigned char* cancel_bytes, int cancel_len,
+                                  int box_type, int show_cancel, int center, int rich,
+                                  int distinguish_cancel_and_close,
+                                  MessageBoxExCallback cb);
+int __stdcall EU_ShowPromptBox(HWND hwnd,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* text_bytes, int text_len,
+                               const unsigned char* placeholder_bytes, int placeholder_len,
+                               const unsigned char* value_bytes, int value_len,
+                               const unsigned char* pattern_bytes, int pattern_len,
+                               const unsigned char* error_bytes, int error_len,
+                               const unsigned char* confirm_bytes, int confirm_len,
+                               const unsigned char* cancel_bytes, int cancel_len,
+                               int box_type, int center, int rich,
+                               int distinguish_cancel_and_close,
+                               MessageBoxExCallback cb);
 
 // ── Element properties ───────────────────────────────────────────────
 void __stdcall EU_SetElementText(HWND hwnd, int element_id, const unsigned char* bytes, int len);
@@ -504,6 +540,14 @@ void __stdcall EU_SetSwitchTexts(HWND hwnd, int element_id,
                                  const unsigned char* inactive_bytes, int inactive_len);
 int  __stdcall EU_GetSwitchOptions(HWND hwnd, int element_id,
                                   int* checked, int* loading, int* has_active_text, int* has_inactive_text);
+void __stdcall EU_SetSwitchActiveColor(HWND hwnd, int element_id, Color color);
+Color __stdcall EU_GetSwitchActiveColor(HWND hwnd, int element_id);
+void __stdcall EU_SetSwitchInactiveColor(HWND hwnd, int element_id, Color color);
+Color __stdcall EU_GetSwitchInactiveColor(HWND hwnd, int element_id);
+void __stdcall EU_SetSwitchValue(HWND hwnd, int element_id, int value);
+int  __stdcall EU_GetSwitchValue(HWND hwnd, int element_id);
+void __stdcall EU_SetSwitchSize(HWND hwnd, int element_id, int size);
+int  __stdcall EU_GetSwitchSize(HWND hwnd, int element_id);
 void __stdcall EU_SetSliderRange(HWND hwnd, int element_id, int min_value, int max_value);
 void __stdcall EU_SetSliderValue(HWND hwnd, int element_id, int value);
 int  __stdcall EU_GetSliderValue(HWND hwnd, int element_id);
@@ -530,6 +574,8 @@ int  __stdcall EU_GetInputNumberState(HWND hwnd, int element_id,
                                       int* precision, int* editing, int* valid,
                                       int* can_decrease, int* can_increase);
 void __stdcall EU_SetInputNumberValueCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+void __stdcall EU_SetInputNumberStepStrictly(HWND hwnd, int element_id, int strict);
+int  __stdcall EU_GetInputNumberStepStrictly(HWND hwnd, int element_id);
 void __stdcall EU_SetInputValue(HWND hwnd, int element_id,
                                 const unsigned char* value_bytes, int value_len);
 int  __stdcall EU_GetInputValue(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
@@ -538,12 +584,55 @@ void __stdcall EU_SetInputPlaceholder(HWND hwnd, int element_id,
 void __stdcall EU_SetInputAffixes(HWND hwnd, int element_id,
                                   const unsigned char* prefix_bytes, int prefix_len,
                                   const unsigned char* suffix_bytes, int suffix_len);
+void __stdcall EU_SetInputIcons(HWND hwnd, int element_id,
+                                const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                const unsigned char* suffix_icon_bytes, int suffix_icon_len);
+int  __stdcall EU_GetInputIcons(HWND hwnd, int element_id,
+                                unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                                unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size);
 void __stdcall EU_SetInputClearable(HWND hwnd, int element_id, int clearable);
 void __stdcall EU_SetInputOptions(HWND hwnd, int element_id, int readonly, int password, int multiline, int validate_state);
+void __stdcall EU_SetInputVisualOptions(HWND hwnd, int element_id,
+                                        int size, int show_password_toggle,
+                                        int show_word_limit, int autosize,
+                                        int min_rows, int max_rows);
+int  __stdcall EU_GetInputVisualOptions(HWND hwnd, int element_id,
+                                        int* size, int* show_password_toggle,
+                                        int* show_word_limit, int* autosize,
+                                        int* min_rows, int* max_rows);
+void __stdcall EU_SetInputSelection(HWND hwnd, int element_id, int start, int end);
+int  __stdcall EU_GetInputSelection(HWND hwnd, int element_id, int* start, int* end);
+void __stdcall EU_SetInputContextMenuEnabled(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetInputContextMenuEnabled(HWND hwnd, int element_id);
 int  __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable, int* readonly, int* password, int* multiline, int* validate_state);
 void __stdcall EU_SetInputMaxLength(HWND hwnd, int element_id, int max_length);
 int  __stdcall EU_GetInputMaxLength(HWND hwnd, int element_id);
 void __stdcall EU_SetInputTextCallback(HWND hwnd, int element_id, ElementTextCallback cb);
+void __stdcall EU_SetInputGroupValue(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len);
+int  __stdcall EU_GetInputGroupValue(HWND hwnd, int element_id,
+                                     unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetInputGroupOptions(HWND hwnd, int element_id,
+                                       int size, int clearable, int password,
+                                       int show_word_limit, int autosize,
+                                       int min_rows, int max_rows);
+int  __stdcall EU_GetInputGroupOptions(HWND hwnd, int element_id,
+                                       int* size, int* clearable, int* password,
+                                       int* show_word_limit, int* autosize,
+                                       int* min_rows, int* max_rows);
+void __stdcall EU_SetInputGroupTextAddon(HWND hwnd, int element_id, int side,
+                                         const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetInputGroupButtonAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* emoji_bytes, int emoji_len,
+                                           const unsigned char* text_bytes, int text_len,
+                                           int variant);
+void __stdcall EU_SetInputGroupSelectAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* items_bytes, int items_len,
+                                           int selected_index,
+                                           const unsigned char* placeholder_bytes, int placeholder_len);
+void __stdcall EU_ClearInputGroupAddon(HWND hwnd, int element_id, int side);
+int  __stdcall EU_GetInputGroupInputElementId(HWND hwnd, int element_id);
+int  __stdcall EU_GetInputGroupAddonElementId(HWND hwnd, int element_id, int side);
 void __stdcall EU_SetInputTagTags(HWND hwnd, int element_id,
                                   const unsigned char* tags_bytes, int tags_len);
 void __stdcall EU_SetInputTagPlaceholder(HWND hwnd, int element_id,
@@ -608,6 +697,28 @@ void __stdcall EU_SetRateTexts(HWND hwnd, int element_id,
                                const unsigned char* low_bytes, int low_len,
                                const unsigned char* high_bytes, int high_len,
                                int show_score);
+void __stdcall EU_SetRateColors(HWND hwnd, int element_id, Color low_color, Color mid_color, Color high_color);
+int  __stdcall EU_GetRateColors(HWND hwnd, int element_id, Color* low_color, Color* mid_color, Color* high_color);
+void __stdcall EU_SetRateIcons(HWND hwnd, int element_id,
+                               const unsigned char* full_bytes, int full_len,
+                               const unsigned char* void_bytes, int void_len,
+                               const unsigned char* low_bytes, int low_len,
+                               const unsigned char* mid_bytes, int mid_len,
+                               const unsigned char* high_bytes, int high_len);
+int  __stdcall EU_GetRateIcons(HWND hwnd, int element_id,
+                               unsigned char* full_buffer, int full_buffer_size,
+                               unsigned char* void_buffer, int void_buffer_size,
+                               unsigned char* low_buffer, int low_buffer_size,
+                               unsigned char* mid_buffer, int mid_buffer_size,
+                               unsigned char* high_buffer, int high_buffer_size);
+void __stdcall EU_SetRateTextItems(HWND hwnd, int element_id,
+                                   const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetRateDisplayOptions(HWND hwnd, int element_id,
+                                        int show_text, int show_score, Color text_color,
+                                        const unsigned char* template_bytes, int template_len);
+int  __stdcall EU_GetRateDisplayOptions(HWND hwnd, int element_id,
+                                        int* show_text, int* show_score, Color* text_color,
+                                        unsigned char* template_buffer, int template_buffer_size);
 void __stdcall EU_SetRateChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetColorPickerColor(HWND hwnd, int element_id, Color color);
 int  __stdcall EU_GetColorPickerColor(HWND hwnd, int element_id);
@@ -721,6 +832,56 @@ int  __stdcall EU_GetTableOptions(HWND hwnd, int element_id,
                                   int* selectable, int* sort_column,
                                   int* sort_desc, int* scroll_row,
                                   int* column_width);
+void __stdcall EU_SetTableColumnsEx(HWND hwnd, int element_id,
+                                    const unsigned char* columns_bytes, int columns_len);
+void __stdcall EU_SetTableRowsEx(HWND hwnd, int element_id,
+                                 const unsigned char* rows_bytes, int rows_len);
+void __stdcall EU_SetTableCellEx(HWND hwnd, int element_id, int row, int col, int type,
+                                 const unsigned char* value_bytes, int value_len,
+                                 const unsigned char* options_bytes, int options_len);
+void __stdcall EU_SetTableRowStyle(HWND hwnd, int element_id, int row,
+                                   unsigned int bg, unsigned int fg,
+                                   int align, int font_flags, int font_size);
+void __stdcall EU_SetTableCellStyle(HWND hwnd, int element_id, int row, int col,
+                                    unsigned int bg, unsigned int fg,
+                                    int align, int font_flags, int font_size);
+void __stdcall EU_SetTableSelectionMode(HWND hwnd, int element_id, int mode);
+void __stdcall EU_SetTableSelectedRows(HWND hwnd, int element_id,
+                                       const unsigned char* rows_bytes, int rows_len);
+void __stdcall EU_SetTableFilter(HWND hwnd, int element_id, int col,
+                                 const unsigned char* value_bytes, int value_len);
+void __stdcall EU_ClearTableFilter(HWND hwnd, int element_id, int col);
+void __stdcall EU_SetTableSearch(HWND hwnd, int element_id,
+                                 const unsigned char* value_bytes, int value_len);
+void __stdcall EU_SetTableSpan(HWND hwnd, int element_id, int row, int col,
+                               int rowspan, int colspan);
+void __stdcall EU_ClearTableSpans(HWND hwnd, int element_id);
+void __stdcall EU_SetTableSummary(HWND hwnd, int element_id,
+                                  const unsigned char* values_bytes, int values_len);
+void __stdcall EU_SetTableRowExpanded(HWND hwnd, int element_id, int row, int expanded);
+void __stdcall EU_SetTableTreeOptions(HWND hwnd, int element_id, int enabled, int indent, int lazy);
+void __stdcall EU_SetTableViewportOptions(HWND hwnd, int element_id, int max_height,
+                                          int fixed_header, int horizontal_scroll,
+                                          int show_summary);
+void __stdcall EU_SetTableScroll(HWND hwnd, int element_id, int scroll_row, int scroll_x);
+void __stdcall EU_SetTableHeaderDragOptions(HWND hwnd, int element_id, int column_resize,
+                                            int header_height_resize, int min_col_width,
+                                            int max_col_width, int min_header_height,
+                                            int max_header_height);
+int  __stdcall EU_ExportTableExcel(HWND hwnd, int element_id,
+                                    const unsigned char* path_bytes, int path_len, int flags);
+int  __stdcall EU_ImportTableExcel(HWND hwnd, int element_id,
+                                    const unsigned char* path_bytes, int path_len, int flags);
+void __stdcall EU_SetTableCellClickCallback(HWND hwnd, int element_id, TableCellCallback cb);
+void __stdcall EU_SetTableCellActionCallback(HWND hwnd, int element_id, TableCellCallback cb);
+void __stdcall EU_SetTableVirtualOptions(HWND hwnd, int element_id, int enabled,
+                                         int row_count, int cache_window);
+void __stdcall EU_SetTableVirtualRowProvider(HWND hwnd, int element_id, TableVirtualRowCallback cb);
+void __stdcall EU_ClearTableVirtualCache(HWND hwnd, int element_id);
+int  __stdcall EU_GetTableCellValue(HWND hwnd, int element_id, int row, int col,
+                                    unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
                               const unsigned char* body_bytes, int body_len);
 void __stdcall EU_SetCardFooter(HWND hwnd, int element_id,
@@ -942,6 +1103,18 @@ void __stdcall EU_SetAutocompleteSelected(HWND hwnd, int element_id, int selecte
 void __stdcall EU_SetAutocompleteAsyncState(HWND hwnd, int element_id, int loading, int request_id);
 void __stdcall EU_SetAutocompleteEmptyText(HWND hwnd, int element_id,
                                            const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                             const unsigned char* text_bytes, int text_len);
+int  __stdcall EU_GetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                             unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetAutocompleteIcons(HWND hwnd, int element_id,
+                                       const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                       const unsigned char* suffix_icon_bytes, int suffix_icon_len);
+int  __stdcall EU_GetAutocompleteIcons(HWND hwnd, int element_id,
+                                       unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                                       unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size);
+void __stdcall EU_SetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int trigger_on_focus);
+int  __stdcall EU_GetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int* trigger_on_focus);
 int  __stdcall EU_GetAutocompleteValue(HWND hwnd, int element_id,
                                        unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetAutocompleteOpen(HWND hwnd, int element_id);
@@ -1006,6 +1179,46 @@ void __stdcall EU_SetDatePickerSelectionRange(HWND hwnd, int element_id,
 int  __stdcall EU_GetDatePickerSelectionRange(HWND hwnd, int element_id,
                                               int* start_yyyymmdd, int* end_yyyymmdd,
                                               int* enabled);
+void __stdcall EU_SetDatePickerPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDatePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len);
+void __stdcall EU_SetDatePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDatePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDatePickerFormat(HWND hwnd, int element_id,
+                                       const unsigned char* fmt_bytes, int fmt_len);
+void __stdcall EU_SetDatePickerAlign(HWND hwnd, int element_id, int align);
+void __stdcall EU_SetDatePickerMode(HWND hwnd, int element_id, int mode);
+int  __stdcall EU_GetDatePickerMode(HWND hwnd, int element_id);
+void __stdcall EU_SetDatePickerMultiSelect(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetDatePickerSelectedDates(HWND hwnd, int element_id, unsigned char* buffer, int buf_size);
+void __stdcall EU_SetDatePickerShortcuts(HWND hwnd, int element_id,
+                                          const unsigned char* shortcuts_bytes, int shortcuts_len);
+void __stdcall EU_SetDatePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                     int (*cb)(int id, int yyyymmdd));
+int  __stdcall EU_CreateDateRangePicker(HWND hwnd, int parent_id,
+                                         int start_yyyymmdd, int end_yyyymmdd,
+                                         int x, int y, int w, int h);
+void __stdcall EU_SetDateRangePickerValue(HWND hwnd, int element_id, int start, int end);
+int  __stdcall EU_GetDateRangePickerValue(HWND hwnd, int element_id, int* start, int* end);
+void __stdcall EU_SetDateRangePickerRange(HWND hwnd, int element_id, int min, int max);
+void __stdcall EU_SetDateRangePickerPlaceholders(HWND hwnd, int element_id,
+                                                  const unsigned char* start_bytes, int start_len,
+                                                  const unsigned char* end_bytes, int end_len);
+void __stdcall EU_SetDateRangePickerSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len);
+void __stdcall EU_SetDateRangePickerFormat(HWND hwnd, int element_id, int fmt);
+void __stdcall EU_SetDateRangePickerAlign(HWND hwnd, int element_id, int align);
+void __stdcall EU_SetDateRangePickerShortcuts(HWND hwnd, int element_id,
+                                               const unsigned char* sc_bytes, int sc_len);
+void __stdcall EU_SetDateRangePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                          int (*cb)(int id, int yyyymmdd));
+void __stdcall EU_SetDateRangePickerOpen(HWND hwnd, int element_id, int open);
+int  __stdcall EU_GetDateRangePickerOpen(HWND hwnd, int element_id);
+void __stdcall EU_DateRangePickerClear(HWND hwnd, int element_id);
+
 void __stdcall EU_SetTimePickerTime(HWND hwnd, int element_id, int hour, int minute);
 void __stdcall EU_SetTimePickerRange(HWND hwnd, int element_id, int min_hhmm, int max_hhmm);
 void __stdcall EU_SetTimePickerOptions(HWND hwnd, int element_id, int step_minutes, int time_format);
@@ -1016,6 +1229,20 @@ int  __stdcall EU_GetTimePickerValue(HWND hwnd, int element_id);
 int  __stdcall EU_GetTimePickerRange(HWND hwnd, int element_id, int* min_hhmm, int* max_hhmm);
 int  __stdcall EU_GetTimePickerOptions(HWND hwnd, int element_id, int* step_minutes, int* time_format);
 int  __stdcall EU_GetTimePickerScroll(HWND hwnd, int element_id, int* hour_scroll, int* minute_scroll);
+void __stdcall EU_SetTimePickerArrowControl(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetTimePickerArrowControl(HWND hwnd, int element_id);
+void __stdcall EU_SetTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                            int start_hhmm, int end_hhmm);
+void __stdcall EU_SetTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len);
+int  __stdcall EU_GetTimePickerRangeValue(HWND hwnd, int element_id,
+                                           int* start_hhmm, int* end_hhmm, int* enabled);
+void __stdcall EU_SetTimeSelectPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len);
 void __stdcall EU_SetDateTimePickerDateTime(HWND hwnd, int element_id,
                                             int year, int month, int day,
                                             int hour, int minute);
@@ -1042,6 +1269,24 @@ int  __stdcall EU_GetDateTimePickerOptions(HWND hwnd, int element_id,
                                            int* minute_step, int* date_format);
 int  __stdcall EU_GetDateTimePickerScroll(HWND hwnd, int element_id,
                                           int* hour_scroll, int* minute_scroll);
+void __stdcall EU_SetDateTimePickerShortcuts(HWND hwnd, int element_id,
+                                              const unsigned char* shortcuts_bytes, int shortcuts_len);
+void __stdcall EU_SetDateTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                     const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDateTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                                   const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetDateTimePickerDefaultTime(HWND hwnd, int element_id, int hour, int minute);
+void __stdcall EU_SetDateTimePickerRangeDefaultTime(HWND hwnd, int element_id,
+                                                     int start_hour, int start_minute,
+                                                     int end_hour, int end_minute);
+void __stdcall EU_SetDateTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                                   const unsigned char* sep_bytes, int sep_len);
+void __stdcall EU_SetDateTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                                int start_date, int start_time,
+                                                int end_date, int end_time);
+int  __stdcall EU_GetDateTimePickerRangeValue(HWND hwnd, int element_id,
+                                               int* start_date, int* start_time,
+                                               int* end_date, int* end_time, int* enabled);
 void __stdcall EU_SetTimeSelectTime(HWND hwnd, int element_id, int hour, int minute);
 void __stdcall EU_SetTimeSelectRange(HWND hwnd, int element_id, int min_hhmm, int max_hhmm);
 void __stdcall EU_SetTimeSelectOptions(HWND hwnd, int element_id, int step_minutes, int time_format);
@@ -1066,6 +1311,24 @@ int  __stdcall EU_GetDropdownState(HWND hwnd, int element_id,
                                    int* selected_index, int* item_count,
                                    int* disabled_count, int* selected_level,
                                    int* hover_index);
+void __stdcall EU_SetDropdownOptions(HWND hwnd, int element_id,
+                                     int trigger_mode, int hide_on_click,
+                                     int split_button, int button_variant,
+                                     int size, int trigger_style);
+int  __stdcall EU_GetDropdownOptions(HWND hwnd, int element_id,
+                                     int* trigger_mode, int* hide_on_click,
+                                     int* split_button, int* button_variant,
+                                     int* size, int* trigger_style);
+void __stdcall EU_SetDropdownItemMeta(HWND hwnd, int element_id,
+                                      const unsigned char* icons_bytes, int icons_len,
+                                      const unsigned char* commands_bytes, int commands_len,
+                                      const int* divided_indices, int divided_count);
+int  __stdcall EU_GetDropdownItemMeta(HWND hwnd, int element_id, int item_index,
+                                      unsigned char* icon_buffer, int icon_buffer_size,
+                                      unsigned char* command_buffer, int command_buffer_size,
+                                      int* divided, int* disabled, int* level);
+void __stdcall EU_SetDropdownCommandCallback(HWND hwnd, int element_id, DropdownCommandCallback cb);
+void __stdcall EU_SetDropdownMainClickCallback(HWND hwnd, int element_id, ElementClickCallback cb);
 void __stdcall EU_SetMenuItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetMenuActive(HWND hwnd, int element_id, int active_index);
@@ -1235,6 +1498,25 @@ void __stdcall EU_SetUploadFiles(HWND hwnd, int element_id,
 void __stdcall EU_SetUploadFileItems(HWND hwnd, int element_id,
                                      const unsigned char* files_bytes, int files_len);
 void __stdcall EU_SetUploadOptions(HWND hwnd, int element_id, int multiple, int auto_upload);
+void __stdcall EU_SetUploadStyle(HWND hwnd, int element_id, int style_mode,
+                                 int show_file_list, int show_tip, int show_actions,
+                                 int drop_enabled);
+int  __stdcall EU_GetUploadStyle(HWND hwnd, int element_id, int* style_mode,
+                                 int* show_file_list, int* show_tip,
+                                 int* show_actions, int* drop_enabled);
+void __stdcall EU_SetUploadTexts(HWND hwnd, int element_id,
+                                 const unsigned char* title_bytes, int title_len,
+                                 const unsigned char* tip_bytes, int tip_len,
+                                 const unsigned char* trigger_bytes, int trigger_len,
+                                 const unsigned char* submit_bytes, int submit_len);
+void __stdcall EU_SetUploadConstraints(HWND hwnd, int element_id, int limit,
+                                       int max_size_kb,
+                                       const unsigned char* accept_bytes, int accept_len);
+int  __stdcall EU_GetUploadConstraints(HWND hwnd, int element_id, int* limit,
+                                       int* max_size_kb,
+                                       unsigned char* accept_buffer, int accept_buffer_size);
+void __stdcall EU_SetUploadPreviewOpen(HWND hwnd, int element_id, int file_index, int open);
+int  __stdcall EU_GetUploadPreviewState(HWND hwnd, int element_id, int* file_index, int* open);
 void __stdcall EU_SetUploadSelectedFiles(HWND hwnd, int element_id,
                                          const unsigned char* files_bytes, int files_len);
 void __stdcall EU_SetUploadFileStatus(HWND hwnd, int element_id,
@@ -1421,6 +1703,8 @@ void __stdcall EU_SetNotificationBody(HWND hwnd, int element_id,
                                       const unsigned char* body_bytes, int body_len);
 void __stdcall EU_SetNotificationType(HWND hwnd, int element_id, int notify_type);
 void __stdcall EU_SetNotificationClosable(HWND hwnd, int element_id, int closable);
+void __stdcall EU_SetNotificationPlacement(HWND hwnd, int element_id, int placement, int offset);
+void __stdcall EU_SetNotificationRichMode(HWND hwnd, int element_id, int rich);
 void __stdcall EU_SetNotificationOptions(HWND hwnd, int element_id,
                                          int notify_type, int closable, int duration_ms);
 void __stdcall EU_SetNotificationClosed(HWND hwnd, int element_id, int closed);
@@ -1439,7 +1723,49 @@ int  __stdcall EU_GetNotificationFullState(HWND hwnd, int element_id,
                                            int* close_count, int* last_action,
                                            int* timer_elapsed_ms, int* timer_running,
                                            int* stack_index, int* stack_gap);
+int  __stdcall EU_GetNotificationFullStateEx(HWND hwnd, int element_id,
+                                             int* notify_type, int* closable,
+                                             int* duration_ms, int* closed,
+                                             int* close_hover, int* close_down,
+                                             int* close_count, int* last_action,
+                                             int* timer_elapsed_ms, int* timer_running,
+                                             int* stack_index, int* stack_gap,
+                                             int* placement, int* offset, int* rich);
 void __stdcall EU_SetNotificationCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+
+void __stdcall EU_SetMessageText(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetMessageOptions(HWND hwnd, int element_id, int message_type,
+                                    int closable, int center, int rich,
+                                    int duration_ms, int offset);
+void __stdcall EU_SetMessageClosed(HWND hwnd, int element_id, int closed);
+int  __stdcall EU_GetMessageOptions(HWND hwnd, int element_id, int* message_type,
+                                    int* closable, int* center, int* rich,
+                                    int* duration_ms, int* closed, int* offset);
+int  __stdcall EU_GetMessageFullState(HWND hwnd, int element_id, int* message_type,
+                                      int* closable, int* center, int* rich,
+                                      int* duration_ms, int* closed,
+                                      int* close_hover, int* close_down,
+                                      int* close_count, int* last_action,
+                                      int* timer_elapsed_ms, int* timer_running,
+                                      int* stack_index, int* stack_gap, int* offset);
+void __stdcall EU_TriggerMessageClose(HWND hwnd, int element_id);
+void __stdcall EU_SetMessageCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+
+void __stdcall EU_SetMessageBoxBeforeClose(HWND hwnd, int element_id,
+                                           int delay_ms,
+                                           const unsigned char* loading_bytes, int loading_len);
+void __stdcall EU_SetMessageBoxInput(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len,
+                                     const unsigned char* placeholder_bytes, int placeholder_len,
+                                     const unsigned char* pattern_bytes, int pattern_len,
+                                     const unsigned char* error_bytes, int error_len);
+int  __stdcall EU_GetMessageBoxInput(HWND hwnd, int element_id,
+                                     unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetMessageBoxFullState(HWND hwnd, int element_id,
+                                         int* box_type, int* show_cancel, int* center,
+                                         int* rich, int* distinguish, int* prompt,
+                                         int* confirm_loading, int* input_error_visible,
+                                         int* last_action, int* timer_elapsed_ms);
 void __stdcall EU_SetLoadingActive(HWND hwnd, int element_id, int active);
 void __stdcall EU_SetLoadingOptions(HWND hwnd, int element_id,
                                     int active, int fullscreen, int progress);
@@ -1461,6 +1787,21 @@ void __stdcall EU_SetDialogBody(HWND hwnd, int element_id,
 void __stdcall EU_SetDialogOptions(HWND hwnd, int element_id, int open, int modal,
                                    int closable, int close_on_mask, int draggable,
                                    int w, int h);
+void __stdcall EU_SetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                           int width_mode, int width_value,
+                                           int center, int footer_center,
+                                           int content_padding, int footer_height);
+int  __stdcall EU_GetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                           int* width_mode, int* width_value,
+                                           int* center, int* footer_center,
+                                           int* content_padding, int* footer_height,
+                                           int* content_parent_id, int* footer_parent_id,
+                                           int* close_pending);
+int  __stdcall EU_GetDialogContentParent(HWND hwnd, int element_id);
+int  __stdcall EU_GetDialogFooterParent(HWND hwnd, int element_id);
+void __stdcall EU_SetDialogBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb);
+void __stdcall EU_ConfirmDialogClose(HWND hwnd, int element_id, int allow);
 int  __stdcall EU_GetDialogOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetDialogOptions(HWND hwnd, int element_id,
                                    int* open, int* modal, int* closable,
@@ -1490,6 +1831,22 @@ void __stdcall EU_SetDrawerBody(HWND hwnd, int element_id,
 void __stdcall EU_SetDrawerPlacement(HWND hwnd, int element_id, int placement);
 void __stdcall EU_SetDrawerOptions(HWND hwnd, int element_id, int placement, int open,
                                    int modal, int closable, int close_on_mask, int size);
+void __stdcall EU_SetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_close,
+                                           int close_on_escape, int content_padding,
+                                           int footer_height, int size_mode,
+                                           int size_value);
+int  __stdcall EU_GetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                           int* show_header, int* show_close,
+                                           int* close_on_escape, int* content_padding,
+                                           int* footer_height, int* size_mode,
+                                           int* size_value, int* content_parent_id,
+                                           int* footer_parent_id, int* close_pending);
+int  __stdcall EU_GetDrawerContentParent(HWND hwnd, int element_id);
+int  __stdcall EU_GetDrawerFooterParent(HWND hwnd, int element_id);
+void __stdcall EU_SetDrawerBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb);
+void __stdcall EU_ConfirmDrawerClose(HWND hwnd, int element_id, int allow);
 int  __stdcall EU_GetDrawerOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetDrawerOptions(HWND hwnd, int element_id,
                                    int* placement, int* open, int* modal,
@@ -1516,6 +1873,14 @@ int  __stdcall EU_GetTooltipOptions(HWND hwnd, int element_id,
 void __stdcall EU_SetTooltipBehavior(HWND hwnd, int element_id,
                                      int show_delay, int hide_delay,
                                      int trigger_mode, int show_arrow);
+void __stdcall EU_SetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int effect,
+                                            int disabled, int show_arrow,
+                                            int offset, int max_width);
+int  __stdcall EU_GetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                            int* placement, int* effect,
+                                            int* disabled, int* show_arrow,
+                                            int* offset, int* max_width);
 void __stdcall EU_TriggerTooltip(HWND hwnd, int element_id, int open);
 int  __stdcall EU_GetTooltipText(HWND hwnd, int element_id, int text_kind,
                                  unsigned char* buffer, int buffer_size);
@@ -1534,6 +1899,17 @@ void __stdcall EU_SetPopoverTitle(HWND hwnd, int element_id,
                                   const unsigned char* title_bytes, int title_len);
 void __stdcall EU_SetPopoverOptions(HWND hwnd, int element_id, int placement, int open,
                                     int popup_width, int popup_height, int closable);
+void __stdcall EU_SetPopoverAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int open,
+                                            int popup_width, int popup_height,
+                                            int closable);
+void __stdcall EU_SetPopoverBehavior(HWND hwnd, int element_id,
+                                     int trigger_mode, int close_on_outside,
+                                     int show_arrow, int offset);
+int  __stdcall EU_GetPopoverBehavior(HWND hwnd, int element_id,
+                                     int* trigger_mode, int* close_on_outside,
+                                     int* show_arrow, int* offset);
+int  __stdcall EU_GetPopoverContentParent(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopoverOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopoverOptions(HWND hwnd, int element_id,
                                     int* placement, int* open,
@@ -1553,12 +1929,23 @@ void __stdcall EU_SetPopoverActionCallback(HWND hwnd, int element_id, ElementVal
 void __stdcall EU_SetPopconfirmOpen(HWND hwnd, int element_id, int open);
 void __stdcall EU_SetPopconfirmOptions(HWND hwnd, int element_id, int placement, int open,
                                        int popup_width, int popup_height);
+void __stdcall EU_SetPopconfirmAdvancedOptions(HWND hwnd, int element_id,
+                                               int placement, int open,
+                                               int popup_width, int popup_height,
+                                               int trigger_mode, int close_on_outside,
+                                               int show_arrow, int offset);
 void __stdcall EU_SetPopconfirmContent(HWND hwnd, int element_id,
                                        const unsigned char* title_bytes, int title_len,
                                        const unsigned char* content_bytes, int content_len);
 void __stdcall EU_SetPopconfirmButtons(HWND hwnd, int element_id,
                                        const unsigned char* confirm_bytes, int confirm_len,
                                        const unsigned char* cancel_bytes, int cancel_len);
+void __stdcall EU_SetPopconfirmIcon(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    Color icon_color, int visible);
+int  __stdcall EU_GetPopconfirmIcon(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size,
+                                    Color* icon_color, int* visible);
 void __stdcall EU_ResetPopconfirmResult(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopconfirmOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetPopconfirmResult(HWND hwnd, int element_id);

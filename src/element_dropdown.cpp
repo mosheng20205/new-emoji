@@ -2,13 +2,69 @@
 #include "emoji_fallback.h"
 #include "render_context.h"
 #include "theme.h"
+#include "utf8_helpers.h"
 #include <algorithm>
 #include <cmath>
+#include <string>
 
 #define ROUNDED(r, rx, ry) D2D1_ROUNDED_RECT{ (r), (rx), (ry) }
 
 static int round_px(float v) {
     return (int)std::lround(v);
+}
+
+static Color with_alpha(Color color, unsigned alpha) {
+    return (color & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
+}
+
+static Color mix_color(Color a, Color b, float t) {
+    if (t <= 0.0f) return a;
+    if (t >= 1.0f) return b;
+    auto mix = [t](unsigned ca, unsigned cb) -> unsigned {
+        return (unsigned)std::lround((float)ca + ((float)cb - (float)ca) * t);
+    };
+    unsigned aa = (a >> 24) & 0xFF;
+    unsigned ar = (a >> 16) & 0xFF;
+    unsigned ag = (a >> 8) & 0xFF;
+    unsigned ab = a & 0xFF;
+    unsigned ba = (b >> 24) & 0xFF;
+    unsigned br = (b >> 16) & 0xFF;
+    unsigned bg = (b >> 8) & 0xFF;
+    unsigned bb = b & 0xFF;
+    return (mix(aa, ba) << 24) | (mix(ar, br) << 16) | (mix(ag, bg) << 8) | mix(ab, bb);
+}
+
+static Color variant_color(int variant, const Theme* t) {
+    switch (variant) {
+    case 1: return t->accent;
+    case 2: return 0xFF16A34A;
+    case 3: return 0xFFF59E0B;
+    case 4: return 0xFFDC2626;
+    case 6: return 0xFF0EA5E9;
+    default: return t->button_bg;
+    }
+}
+
+static Color variant_text_color(int variant, const Theme* t) {
+    switch (variant) {
+    case 1: return 0xFFFFFFFF;
+    case 2: return 0xFFFFFFFF;
+    case 3: return 0xFF1F2937;
+    case 4: return 0xFFFFFFFF;
+    case 5: return t->accent;
+    case 6: return 0xFFFFFFFF;
+    default: return t->text_primary;
+    }
+}
+
+static Color hover_variant_color(Color solid, bool dark) {
+    return dark ? mix_color(solid, 0xFFFFFFFF, 0.10f) : mix_color(solid, 0xFF000000, 0.08f);
+}
+
+static int clamp_int(int value, int lo, int hi) {
+    if (value < lo) return lo;
+    if (value > hi) return hi;
+    return value;
 }
 
 static std::wstring trim_marker_space(const std::wstring& value) {
@@ -34,9 +90,39 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+float Dropdown::effective_font_size() const {
+    float base = style.font_size > 0.0f ? style.font_size : 14.0f;
+    if (size == 2) return base * (13.0f / 14.0f);
+    if (size == 3) return base * (12.0f / 14.0f);
+    return base;
+}
+
+int Dropdown::trigger_pad_x() const {
+    float scale = style.font_size > 0.0f ? style.font_size / 14.0f : 1.0f;
+    int pad = 12;
+    if (size == 1) pad = 10;
+    else if (size == 2) pad = 8;
+    else if (size == 3) pad = 6;
+    return (std::max)(4, round_px((float)pad * scale));
+}
+
 int Dropdown::row_height() const {
-    int h = round_px(style.font_size * 1.9f);
-    return h < 28 ? 28 : h;
+    float scale = style.font_size > 0.0f ? style.font_size / 14.0f : 1.0f;
+    int h = 34;
+    if (size == 1) h = 32;
+    else if (size == 2) h = 30;
+    else if (size == 3) h = 28;
+    return (std::max)(24, round_px((float)h * scale));
+}
+
+int Dropdown::arrow_width() const {
+    float scale = style.font_size > 0.0f ? style.font_size / 14.0f : 1.0f;
+    return (std::max)(20, round_px(24.0f * scale));
+}
+
+int Dropdown::split_arrow_width() const {
+    float scale = style.font_size > 0.0f ? style.font_size / 14.0f : 1.0f;
+    return (std::max)(32, round_px(38.0f * scale));
 }
 
 int Dropdown::visible_row_count() const {
@@ -46,7 +132,8 @@ int Dropdown::visible_row_count() const {
 }
 
 int Dropdown::menu_width() const {
-    return (std::max)(bounds.w, 150);
+    int min_width = split_button ? bounds.w : (std::max)(bounds.w, 150);
+    return (std::max)(min_width, 150);
 }
 
 int Dropdown::menu_height() const {
@@ -61,14 +148,27 @@ int Dropdown::menu_y() const {
     return bounds.h + 4;
 }
 
+void Dropdown::resize_meta() {
+    item_icons.resize(items.size());
+    item_commands.resize(items.size());
+    divided_items.resize(items.size(), false);
+    marker_disabled_items.resize(items.size(), false);
+    if (disabled_items.size() != items.size()) disabled_items.resize(items.size(), false);
+
+    disabled_items = marker_disabled_items;
+    for (int index : m_runtime_disabled_indices) {
+        if (index >= 0 && index < (int)disabled_items.size()) disabled_items[index] = true;
+    }
+}
+
 void Dropdown::set_items(const std::vector<std::wstring>& values) {
     items = values;
     display_items.clear();
     item_levels.clear();
-    disabled_items.clear();
+    marker_disabled_items.clear();
     display_items.reserve(items.size());
     item_levels.reserve(items.size());
-    disabled_items.reserve(items.size());
+    marker_disabled_items.reserve(items.size());
 
     for (const auto& raw_value : items) {
         std::wstring value = trim_marker_space(raw_value);
@@ -90,10 +190,12 @@ void Dropdown::set_items(const std::vector<std::wstring>& values) {
         }
         display_items.push_back(value.empty() ? raw_value : value);
         item_levels.push_back(level);
-        disabled_items.push_back(disabled);
+        marker_disabled_items.push_back(disabled);
     }
 
     m_scroll = 0;
+    m_hover_index = -1;
+    resize_meta();
     if (items.empty()) selected_index = -1;
     else set_selected_index(selected_index);
     invalidate();
@@ -123,22 +225,63 @@ void Dropdown::set_open(bool next_open) {
     invalidate();
 }
 
+void Dropdown::set_options(int next_trigger_mode, int next_hide_on_click, int next_split_button,
+                           int next_button_variant, int next_size, int next_trigger_style) {
+    trigger_mode = clamp_int(next_trigger_mode, 0, 2);
+    hide_on_click = next_hide_on_click != 0;
+    split_button = next_split_button != 0;
+    button_variant = clamp_int(next_button_variant, 0, 6);
+    size = clamp_int(next_size, 0, 3);
+    trigger_style = clamp_int(next_trigger_style, 0, 1);
+    if (trigger_mode == 2) m_hover_part = PartNone;
+    invalidate();
+}
+
+void Dropdown::set_item_meta(const std::vector<std::wstring>& icons,
+                             const std::vector<std::wstring>& commands,
+                             const std::vector<int>& divided_indices) {
+    item_icons.assign(items.size(), L"");
+    item_commands.assign(items.size(), L"");
+    divided_items.assign(items.size(), false);
+
+    for (size_t i = 0; i < item_icons.size() && i < icons.size(); ++i) item_icons[i] = icons[i];
+    for (size_t i = 0; i < item_commands.size() && i < commands.size(); ++i) item_commands[i] = commands[i];
+    for (int index : divided_indices) {
+        if (index >= 0 && index < (int)divided_items.size()) divided_items[index] = true;
+    }
+    invalidate();
+}
+
+void Dropdown::set_disabled_indices(const std::vector<int>& indices) {
+    m_runtime_disabled_indices = indices;
+    resize_meta();
+    if (selected_index >= 0 && is_disabled(selected_index)) set_selected_index(selected_index);
+    clamp_scroll();
+    invalidate();
+}
+
+const std::wstring& Dropdown::item_icon(int index) const {
+    static const std::wstring empty;
+    if (index < 0 || index >= (int)item_icons.size()) return empty;
+    return item_icons[(size_t)index];
+}
+
+const std::wstring& Dropdown::item_command(int index) const {
+    static const std::wstring empty;
+    if (index < 0 || index >= (int)item_commands.size()) return empty;
+    return item_commands[(size_t)index];
+}
+
+bool Dropdown::is_divided(int index) const {
+    return index >= 0 && index < (int)divided_items.size() && divided_items[(size_t)index];
+}
+
 bool Dropdown::is_open() const {
     return open;
 }
 
 int Dropdown::item_count() const {
     return (int)items.size();
-}
-
-void Dropdown::set_disabled_indices(const std::vector<int>& indices) {
-    if (disabled_items.size() != items.size()) disabled_items.assign(items.size(), false);
-    for (int index : indices) {
-        if (index >= 0 && index < (int)disabled_items.size()) disabled_items[index] = true;
-    }
-    if (selected_index >= 0 && is_disabled(selected_index)) set_selected_index(selected_index);
-    clamp_scroll();
-    invalidate();
 }
 
 int Dropdown::disabled_count() const {
@@ -159,7 +302,7 @@ int Dropdown::hover_index() const {
 }
 
 bool Dropdown::is_disabled(int index) const {
-    return index < 0 || index >= (int)disabled_items.size() || disabled_items[index];
+    return index < 0 || index >= (int)disabled_items.size() || disabled_items[(size_t)index];
 }
 
 bool Dropdown::has_child(int index) const {
@@ -196,6 +339,21 @@ int Dropdown::next_enabled_index(int start, int delta) const {
     return -1;
 }
 
+void Dropdown::fire_command(int index) {
+    if (!command_cb || index < 0 || index >= (int)items.size()) return;
+    std::wstring value = item_command(index);
+    if (value.empty()) value = index < (int)display_items.size() ? display_items[index] : items[index];
+    std::string utf8 = wide_to_utf8(value);
+    command_cb(id, index, reinterpret_cast<const unsigned char*>(utf8.data()), (int)utf8.size());
+}
+
+void Dropdown::choose_item(int index) {
+    if (is_disabled(index)) return;
+    set_selected_index(index);
+    fire_command(index);
+    if (hide_on_click) open = false;
+}
+
 int Dropdown::item_at(int x, int y) const {
     if (!open || items.empty()) return -1;
     int my = menu_y();
@@ -209,7 +367,12 @@ Dropdown::Part Dropdown::part_at(int x, int y, int* item_index) const {
     int idx = item_at(x, y);
     if (item_index) *item_index = idx;
     if (idx >= 0) return PartItem;
-    if (x >= 0 && y >= 0 && x < bounds.w && y < bounds.h) return PartMain;
+    if (x >= 0 && y >= 0 && x < bounds.w && y < bounds.h) {
+        if (split_button && trigger_style == 0) {
+            return x >= bounds.w - split_arrow_width() ? PartSplitArrow : PartSplitMain;
+        }
+        return PartMain;
+    }
     return PartNone;
 }
 
@@ -236,26 +399,71 @@ void Dropdown::paint(RenderContext& ctx) {
         (float)bounds.x, (float)bounds.y));
 
     const Theme* t = theme_for_window(owner_hwnd);
-    Color bg = style.bg_color ? style.bg_color : t->button_bg;
-    Color border = open || has_focus ? t->edit_focus : (style.border_color ? style.border_color : t->border_default);
-    Color fg = style.fg_color ? style.fg_color : t->text_primary;
-    if (hovered && !open) bg = t->button_hover;
-    if (pressed) bg = t->button_press;
-
+    bool dark = is_dark_theme_for_window(owner_hwnd);
+    ElementStyle text_style = style;
+    text_style.font_size = effective_font_size();
+    int pad_x = trigger_pad_x();
     float radius = style.corner_radius > 0.0f ? style.corner_radius : 4.0f;
+    Color accent = t->accent;
+    Color fg = style.fg_color ? style.fg_color : t->text_primary;
+
+    if (trigger_style == 1) {
+        Color link_color = style.fg_color ? style.fg_color : accent;
+        if (hovered || open) link_color = hover_variant_color(link_color, dark);
+        float arrow_w = (float)arrow_width();
+        draw_text(ctx, text.empty() ? L"下拉菜单" : text, text_style, link_color,
+                  0.0f, 0.0f, (float)bounds.w - arrow_w, (float)bounds.h,
+                  DWRITE_TEXT_ALIGNMENT_LEADING);
+        draw_text(ctx, open ? L"▲" : L"▼", text_style, link_color,
+                  (float)bounds.w - arrow_w, 0.0f, arrow_w, (float)bounds.h);
+        ctx.rt->SetTransform(saved);
+        return;
+    }
+
+    Color bg = style.bg_color ? style.bg_color : t->button_bg;
+    Color border = style.border_color ? style.border_color : t->border_default;
+    if (button_variant >= 1) {
+        bg = variant_color(button_variant, t);
+        border = bg;
+        fg = variant_text_color(button_variant, t);
+    }
+    if (!enabled) {
+        bg = dark ? 0xFF2A2D3A : 0xFFE5E7EB;
+        border = dark ? 0xFF3A3D4C : 0xFFD1D5DB;
+        fg = t->text_muted;
+    } else if (pressed) {
+        bg = button_variant >= 1 ? hover_variant_color(bg, dark) : t->button_press;
+        border = button_variant >= 1 ? bg : t->button_press;
+    } else if (hovered || open || has_focus) {
+        bg = button_variant >= 1 ? hover_variant_color(bg, dark) : t->button_hover;
+        border = open || has_focus ? t->edit_focus : (button_variant >= 1 ? bg : t->button_hover);
+    }
+
     D2D1_RECT_F rect = { 0, 0, (float)bounds.w, (float)bounds.h };
     ctx.rt->FillRoundedRectangle(ROUNDED(rect, radius, radius), ctx.get_brush(bg));
     ctx.rt->DrawRoundedRectangle(ROUNDED(D2D1::RectF(0.5f, 0.5f,
         (float)bounds.w - 0.5f, (float)bounds.h - 0.5f), radius, radius),
         ctx.get_brush(border), open || has_focus ? 1.5f : 1.0f);
 
-    float arrow_w = 24.0f;
-    draw_text(ctx, text.empty() ? L"下拉菜单" : text, style, fg,
-              (float)style.pad_left, 0.0f,
-              (float)bounds.w - style.pad_left - style.pad_right - arrow_w,
-              (float)bounds.h, DWRITE_TEXT_ALIGNMENT_LEADING);
-    draw_text(ctx, open ? L"▲" : L"▼", style, t->text_secondary,
-              (float)bounds.w - style.pad_right - arrow_w, 0.0f, arrow_w, (float)bounds.h);
+    float arrow_w = split_button ? (float)split_arrow_width() : (float)arrow_width();
+    if (split_button) {
+        float split_x = (float)bounds.w - arrow_w;
+        D2D1_RECT_F arrow_rect = { split_x, 1.0f, (float)bounds.w - 1.0f, (float)bounds.h - 1.0f };
+        Color overlay = 0;
+        if (m_press_part == PartSplitArrow) overlay = with_alpha(0xFF000000, dark ? 0x26 : 0x12);
+        else if (m_hover_part == PartSplitArrow || open) overlay = with_alpha(0xFFFFFFFF, dark ? 0x12 : 0x22);
+        if (overlay) ctx.rt->FillRectangle(arrow_rect, ctx.get_brush(overlay));
+        ctx.rt->DrawLine(D2D1::Point2F(split_x, 6.0f),
+                         D2D1::Point2F(split_x, (float)bounds.h - 6.0f),
+                         ctx.get_brush(with_alpha(fg, 0x66)), 1.0f);
+    }
+
+    draw_text(ctx, text.empty() ? L"下拉菜单" : text, text_style, fg,
+              (float)pad_x, 0.0f,
+              (float)bounds.w - (float)pad_x * 2.0f - arrow_w,
+              (float)bounds.h, DWRITE_TEXT_ALIGNMENT_CENTER);
+    draw_text(ctx, open ? L"▲" : L"▼", text_style, fg,
+              (float)bounds.w - arrow_w, 0.0f, arrow_w, (float)bounds.h);
 
     ctx.rt->SetTransform(saved);
 }
@@ -269,6 +477,8 @@ void Dropdown::paint_overlay(RenderContext& ctx) {
         (float)bounds.x, (float)bounds.y));
 
     const Theme* t = theme_for_window(owner_hwnd);
+    ElementStyle text_style = style;
+    text_style.font_size = effective_font_size();
     Color fg = style.fg_color ? style.fg_color : t->text_primary;
     Color bg = is_dark_theme_for_window(owner_hwnd) ? 0xFF242637 : 0xFFFFFFFF;
     int my = menu_y();
@@ -286,19 +496,29 @@ void Dropdown::paint_overlay(RenderContext& ctx) {
     for (int i = m_scroll; i < end; ++i) {
         float y = (float)(my + (i - m_scroll) * rh);
         bool disabled = is_disabled(i);
+        if (is_divided(i)) {
+            ctx.rt->DrawLine(D2D1::Point2F(8.0f, y + 0.5f),
+                             D2D1::Point2F((float)mw - 8.0f, y + 0.5f),
+                             ctx.get_brush(t->border_default), 1.0f);
+        }
         if (!disabled && (i == m_hover_index || i == selected_index)) {
             Color row_bg = i == selected_index ? (t->accent & 0x33FFFFFF) : t->button_hover;
             D2D1_RECT_F row = { 2.0f, y + 1.0f, (float)mw - 2.0f, y + (float)rh - 1.0f };
             ctx.rt->FillRectangle(row, ctx.get_brush(row_bg));
         }
         int level = i < (int)item_levels.size() ? item_levels[i] : 0;
-        float indent = (float)(style.pad_left + level * 18);
+        float indent = (float)(trigger_pad_x() + level * 18);
         Color item_color = disabled ? t->text_secondary : (i == selected_index ? t->accent : fg);
-        draw_text(ctx, i < (int)display_items.size() ? display_items[i] : items[i], style, item_color,
-                  indent, y, (float)mw - indent - style.pad_right - 20.0f, (float)rh,
+        const std::wstring& icon = item_icon(i);
+        float icon_w = icon.empty() ? 0.0f : 22.0f;
+        if (!icon.empty()) {
+            draw_text(ctx, icon, text_style, item_color, indent, y, icon_w, (float)rh);
+        }
+        draw_text(ctx, i < (int)display_items.size() ? display_items[i] : items[i], text_style, item_color,
+                  indent + icon_w, y, (float)mw - indent - icon_w - style.pad_right - 20.0f, (float)rh,
                   DWRITE_TEXT_ALIGNMENT_LEADING);
         if (has_child(i)) {
-            draw_text(ctx, L">", style, disabled ? t->text_secondary : t->text_secondary,
+            draw_text(ctx, L">", text_style, disabled ? t->text_secondary : t->text_secondary,
                       (float)mw - style.pad_right - 18.0f, y, 18.0f, (float)rh);
         }
     }
@@ -316,11 +536,22 @@ void Dropdown::paint_overlay(RenderContext& ctx) {
     ctx.rt->SetTransform(saved);
 }
 
+void Dropdown::on_mouse_enter() {
+    hovered = true;
+    if (trigger_mode == 1) set_open(true);
+    invalidate();
+}
+
 void Dropdown::on_mouse_move(int x, int y) {
-    int idx = item_at(x, y);
+    int idx = -1;
+    Part part = part_at(x, y, &idx);
     if (idx >= 0 && is_disabled(idx)) idx = -1;
-    if (idx != m_hover_index) {
+    if (trigger_mode == 1 && (part == PartMain || part == PartSplitArrow || part == PartSplitMain)) {
+        set_open(true);
+    }
+    if (idx != m_hover_index || part != m_hover_part) {
         m_hover_index = idx;
+        m_hover_part = part;
         invalidate();
     }
 }
@@ -330,7 +561,9 @@ void Dropdown::on_mouse_leave() {
     pressed = false;
     m_hover_index = -1;
     m_press_index = -1;
+    m_hover_part = PartNone;
     m_press_part = PartNone;
+    if (trigger_mode == 1) open = false;
     invalidate();
 }
 
@@ -348,9 +581,12 @@ void Dropdown::on_mouse_up(int x, int y, MouseButton) {
     int idx = -1;
     Part part = part_at(x, y, &idx);
     if (part == PartItem && m_press_part == PartItem && idx == m_press_index && !is_disabled(idx)) {
-        set_selected_index(idx);
-        open = false;
-    } else if (part == PartMain && m_press_part == PartMain) {
+        choose_item(idx);
+    } else if (split_button && part == PartSplitMain && m_press_part == PartSplitMain) {
+        if (main_click_cb) main_click_cb(id);
+    } else if ((part == PartMain || part == PartSplitArrow) &&
+               (m_press_part == PartMain || m_press_part == PartSplitArrow) &&
+               trigger_mode == 0) {
         open = !open;
         if (open) ensure_selected_visible();
     }
@@ -369,44 +605,41 @@ void Dropdown::on_mouse_wheel(int, int, int delta) {
 
 void Dropdown::on_key_down(int vk, int) {
     if (vk == VK_RETURN || vk == VK_SPACE) {
-        if (!open) {
+        if (!open && trigger_mode != 2) {
             open = true;
             ensure_selected_visible();
-        } else {
+        } else if (open) {
             int idx = m_hover_index >= 0 ? m_hover_index : selected_index;
-            if (!is_disabled(idx)) {
-                set_selected_index(idx);
-                open = false;
-            }
+            if (!is_disabled(idx)) choose_item(idx);
         }
     } else if (vk == VK_ESCAPE) {
         open = false;
     } else if (vk == VK_DOWN) {
-        if (!open) open = true;
+        if (!open && trigger_mode != 2) open = true;
         int next = next_enabled_index(selected_index, 1);
         if (next >= 0) set_selected_index(next);
     } else if (vk == VK_UP) {
-        if (!open) open = true;
+        if (!open && trigger_mode != 2) open = true;
         int next = next_enabled_index(selected_index, -1);
         if (next >= 0) set_selected_index(next);
     } else if (vk == VK_NEXT) {
-        if (!open) open = true;
+        if (!open && trigger_mode != 2) open = true;
         for (int i = 0; i < visible_row_count(); ++i) {
             int next = next_enabled_index(selected_index, 1);
             if (next >= 0) set_selected_index(next);
         }
     } else if (vk == VK_PRIOR) {
-        if (!open) open = true;
+        if (!open && trigger_mode != 2) open = true;
         for (int i = 0; i < visible_row_count(); ++i) {
             int next = next_enabled_index(selected_index, -1);
             if (next >= 0) set_selected_index(next);
         }
     } else if (vk == VK_HOME) {
-        if (!open) open = true;
+        if (!open && trigger_mode != 2) open = true;
         int next = next_enabled_index(-1, 1);
         if (next >= 0) set_selected_index(next);
     } else if (vk == VK_END) {
-        if (!open) open = true;
+        if (!open && trigger_mode != 2) open = true;
         int next = next_enabled_index((int)items.size(), -1);
         if (next >= 0) set_selected_index(next);
     }
@@ -417,6 +650,7 @@ void Dropdown::on_blur() {
     has_focus = false;
     open = false;
     m_hover_index = -1;
+    m_hover_part = PartNone;
     m_press_part = PartNone;
     invalidate();
 }

@@ -49,7 +49,14 @@ typedef void (__stdcall *ElementClickCallback)(int element_id);
 typedef void (__stdcall *ElementKeyCallback)(int element_id, int vk_code, int key_down, int shift, int ctrl, int alt);
 typedef void (__stdcall *ElementTextCallback)(int element_id, const unsigned char* utf8, int len);
 typedef void (__stdcall *ElementValueCallback)(int element_id, int value, int range_start, int range_end);
+typedef int  (__stdcall *ElementBeforeCloseCallback)(int element_id, int action);
+typedef void (__stdcall *TableCellCallback)(int table_id, int row, int col, int action, int value);
+typedef int  (__stdcall *TableVirtualRowCallback)(int table_id, int row, unsigned char* buffer, int buffer_size);
+typedef void (__stdcall *DropdownCommandCallback)(int element_id, int item_index,
+                                                 const unsigned char* command_utf8, int command_len);
 typedef void (__stdcall *WindowResizeCallback)(HWND hwnd, int width, int height);
 typedef void (__stdcall *WindowCloseCallback)(HWND hwnd);
 typedef void (__stdcall *WindowDestroyCallback)(HWND hwnd);
 typedef void (__stdcall *MessageBoxResultCallback)(int messagebox_id, int result);
+typedef void (__stdcall *MessageBoxExCallback)(int messagebox_id, int action,
+                                               const unsigned char* value_utf8, int value_len);

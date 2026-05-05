@@ -8,6 +8,7 @@ public:
     std::vector<std::wstring> options;
     int selected_index = -1;
     bool open = false;
+    std::wstring placeholder = L"请选择";
     std::wstring search_text;
     std::set<int> disabled_indices;
     bool multiple = false;
@@ -31,6 +32,7 @@ public:
     void set_selected_index(int index);
     void set_open(bool is_open);
     void set_search_text(const std::wstring& value);
+    void set_placeholder(const std::wstring& value);
     void set_option_disabled(int index, bool disabled);
     void set_multiple(bool enabled);
     void set_selected_indices(const std::vector<int>& indices);

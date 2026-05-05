@@ -2,69 +2,116 @@
 
 ## 简介
 
-`Autocomplete` 是 new_emoji 的 复杂选择 组件。当前状态：**已完成**。
+`Autocomplete` 在现有基础上已补齐常用 Element 风格能力：
 
-已补异步加载状态、请求ID、空状态、值/选项读回、Python 封装和独立中文 emoji 验证
+- `placeholder`
+- `trigger_on_focus`
+- `prefix_icon` / `suffix_icon`
+- 单行建议项
+- 双行建议项：`标题 + 副标题 + 写回值`
+- 异步加载状态
+- 空状态文案
+- 键盘上下、回车、ESC
 
 ## 创建
 
 | 项目 | 值 |
 |---|---|
 | 创建导出 | `EU_CreateAutocomplete` |
+| Python helper | `create_autocomplete(...)` |
 | 组件分类 | 复杂选择 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_autocomplete` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
+| 当前状态 | 已完成 |
 
-## 相关 API
+## 相关导出
 
-| API | 说明 |
-|---|---|
-| `EU_CreateAutocomplete` | 当前组件相关导出 |
-| `EU_GetAutocompleteOpen` | 当前组件相关导出 |
-| `EU_GetAutocompleteOptions` | 当前组件相关导出 |
-| `EU_GetAutocompleteSelected` | 当前组件相关导出 |
-| `EU_GetAutocompleteSuggestionCount` | 当前组件相关导出 |
-| `EU_GetAutocompleteValue` | 当前组件相关导出 |
-| `EU_SetAutocompleteAsyncState` | 当前组件相关导出 |
-| `EU_SetAutocompleteEmptyText` | 当前组件相关导出 |
-| `EU_SetAutocompleteOpen` | 当前组件相关导出 |
-| `EU_SetAutocompleteSelected` | 当前组件相关导出 |
-| `EU_SetAutocompleteSuggestions` | 当前组件相关导出 |
-| `EU_SetAutocompleteValue` | 当前组件相关导出 |
+### 创建与基础状态
 
-## Python 使用
+- `EU_CreateAutocomplete`
+- `EU_SetAutocompleteSuggestions`
+- `EU_SetAutocompleteValue`
+- `EU_SetAutocompleteOpen`
+- `EU_SetAutocompleteSelected`
+- `EU_SetAutocompleteAsyncState`
+- `EU_SetAutocompleteEmptyText`
+- `EU_GetAutocompleteValue`
+- `EU_GetAutocompleteOpen`
+- `EU_GetAutocompleteSelected`
+- `EU_GetAutocompleteSuggestionCount`
+- `EU_GetAutocompleteOptions`
 
-```python
-import sys
+### 新增视觉与行为接口
 
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
+- `EU_SetAutocompletePlaceholder`
+- `EU_GetAutocompletePlaceholder`
+- `EU_SetAutocompleteIcons`
+- `EU_GetAutocompleteIcons`
+- `EU_SetAutocompleteBehaviorOptions`
+- `EU_GetAutocompleteBehaviorOptions`
 
-hwnd = ui.create_window("✨ 自动补全 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Autocomplete`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+## 建议项格式
+
+### 旧格式
+
+单行纯文本，兼容原有调用：
+
+```text
+北京
+上海
+深圳
 ```
 
-## 易语言调用
+### 新格式
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
+逐行 UTF-8：
 
-## 状态与交互
+```text
+标题<Tab>副标题<Tab>写回值
+标题<Tab>副标题<Tab>写回值
+```
 
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
+规则：
 
-## DPI 与首次窗口尺寸
+- 没有第三列时，写回值默认使用标题
+- 没有副标题时，按单行建议项绘制
 
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+## 行为选项
 
-## 测试
+`EU_SetAutocompleteBehaviorOptions(hwnd, id, trigger_on_focus)`
 
-优先运行对应完整测试文件，例如 `tests/python/test_autocomplete_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
+- `trigger_on_focus = 1`
+  - 聚焦即展开建议
+- `trigger_on_focus = 0`
+  - 输入后再匹配展开
 
-## 文档维护
+## Python 示例
 
-如果 `Autocomplete` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+```python
+import new_emoji_ui as ui
+
+ui.create_autocomplete(
+    hwnd,
+    root,
+    value="",
+    placeholder="请输入餐厅名 🍜",
+    prefix_icon="🔎",
+    trigger_on_focus=False,
+    suggestions=[
+        ("三全鲜食（北新泾店）", "长宁区新渔路144号", "三全鲜食（北新泾店）"),
+        ("新旺角茶餐厅", "普陀区真北路988号", "新旺角茶餐厅"),
+        ("Monica 摩托主题咖啡店", "嘉定区曹安公路2409号", "Monica 摩托主题咖啡店"),
+    ],
+    x=40, y=60, w=460, h=40,
+)
+```
+
+## 说明
+
+- `suffix_icon` 只补尾部图标点击语义，不扩展成任意 slot 模板
+- 双行建议项是本轮固定样式，不做通用富模板系统
+- 异步状态和空状态仍可与旧 API 兼容混用
+
+## 对应示例与测试
+
+- 图库：`examples/python/component_gallery.py` 的 `Autocomplete` 专页
+- 测试：
+  - `tests/python/test_autocomplete_complete_components.py`

@@ -93,14 +93,10 @@ void Element::paint_overlay(RenderContext& ctx) {
     ctx.rt->SetTransform(saved * D2D1::Matrix3x2F::Translation(
         (float)bounds.x, (float)bounds.y));
 
-    D2D1_RECT_F clip = { 0, 0, (float)bounds.w, (float)bounds.h };
-    ctx.push_clip(clip);
-
     for (auto& ch : children) {
         if (ch->visible) ch->paint_overlay(ctx);
     }
 
-    ctx.pop_clip();
     ctx.rt->SetTransform(saved);
 }
 

@@ -28,8 +28,30 @@ ClickCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int)
 ResizeCallback = ctypes.WINFUNCTYPE(None, wintypes.HWND, ctypes.c_int, ctypes.c_int)
 CloseCallback  = ctypes.WINFUNCTYPE(None, wintypes.HWND)
 MessageBoxCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int)
+MessageBoxExCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 TextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 ValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+BeforeCloseCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
+TableCellCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+
+EXTENDED_PLACEMENTS = {
+    "top-start": 0, "top": 1, "top-end": 2,
+    "bottom-start": 3, "bottom": 4, "bottom-end": 5,
+    "left-start": 6, "left": 7, "left-end": 8,
+    "right-start": 9, "right": 10, "right-end": 11,
+}
+
+TRIGGER_MODES = {
+    "click": 0,
+    "hover": 1,
+    "focus": 2,
+    "manual": 3,
+}
 
 # 鈹€鈹€ Export signatures 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -144,6 +166,67 @@ dll.EU_CreateInput.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateInput.restype = ctypes.c_int
+
+dll.EU_CreateInputGroup.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateInputGroup.restype = ctypes.c_int
+
+dll.EU_SetInputIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputIcons.restype = ctypes.c_int
+dll.EU_SetInputVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputVisualOptions.restype = ctypes.c_int
+dll.EU_SetInputSelection.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputSelection.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputSelection.restype = ctypes.c_int
+dll.EU_SetInputContextMenuEnabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputContextMenuEnabled.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputContextMenuEnabled.restype = ctypes.c_int
+dll.EU_SetInputGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputGroupValue.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetInputGroupValue.restype = ctypes.c_int
+dll.EU_SetInputGroupOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputGroupOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                        ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputGroupOptions.restype = ctypes.c_int
+dll.EU_SetInputGroupTextAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetInputGroupButtonAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.c_int]
+dll.EU_SetInputGroupSelectAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_ClearInputGroupAddon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputGroupInputElementId.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputGroupInputElementId.restype = ctypes.c_int
+dll.EU_GetInputGroupAddonElementId.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputGroupAddonElementId.restype = ctypes.c_int
 
 dll.EU_CreateInputTag.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -357,6 +440,23 @@ dll.EU_CreateAutocomplete.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateAutocomplete.restype = ctypes.c_int
 
+dll.EU_SetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.restype = ctypes.c_int
+dll.EU_SetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.restype = ctypes.c_int
+dll.EU_SetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                  ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetAutocompleteBehaviorOptions.restype = ctypes.c_int
+
 dll.EU_CreateMentions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -516,6 +616,20 @@ dll.EU_CreateNotification.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateNotification.restype = ctypes.c_int
 
+dll.EU_ShowMessage.argtypes = [wintypes.HWND,
+                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                               ctypes.c_int, ctypes.c_int]
+dll.EU_ShowMessage.restype = ctypes.c_int
+
+dll.EU_ShowNotification.argtypes = [wintypes.HWND,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int]
+dll.EU_ShowNotification.restype = ctypes.c_int
+
 dll.EU_CreateLoading.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                  ctypes.c_int,
@@ -575,6 +689,28 @@ dll.EU_ShowConfirmBox.argtypes = [wintypes.HWND,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   MessageBoxCallback]
 dll.EU_ShowConfirmBox.restype = ctypes.c_int
+
+dll.EU_ShowMessageBoxEx.argtypes = [wintypes.HWND,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, MessageBoxExCallback]
+dll.EU_ShowMessageBoxEx.restype = ctypes.c_int
+
+dll.EU_ShowPromptBox.argtypes = [wintypes.HWND,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 MessageBoxExCallback]
+dll.EU_ShowPromptBox.restype = ctypes.c_int
 
 dll.EU_SetElementColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32]
 dll.EU_SetElementText.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -815,6 +951,18 @@ dll.EU_GetSwitchOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetSwitchOptions.restype = ctypes.c_int
+dll.EU_SetSwitchActiveColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetSwitchActiveColor.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchActiveColor.restype = ctypes.c_uint32
+dll.EU_SetSwitchInactiveColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetSwitchInactiveColor.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchInactiveColor.restype = ctypes.c_uint32
+dll.EU_SetSwitchValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSwitchValue.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchValue.restype = ctypes.c_int
+dll.EU_SetSwitchSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSwitchSize.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSwitchSize.restype = ctypes.c_int
 dll.EU_SetSliderRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSliderValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetSliderValue.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -862,6 +1010,9 @@ dll.EU_GetInputNumberState.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetInputNumberState.restype = ctypes.c_int
 dll.EU_SetInputNumberValueCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_SetInputNumberStepStrictly.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputNumberStepStrictly.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetInputNumberStepStrictly.restype = ctypes.c_int
 dll.EU_SetInputValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetInputValue.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -978,6 +1129,34 @@ dll.EU_SetRateTexts.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.c_int]
+dll.EU_SetRateColors.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetRateColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                 ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetRateColors.restype = ctypes.c_int
+dll.EU_SetRateIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateIcons.restype = ctypes.c_int
+dll.EU_SetRateTextItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetRateDisplayOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_uint32,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateDisplayOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_uint32),
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetRateDisplayOptions.restype = ctypes.c_int
 dll.EU_SetRateChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetColorPickerColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32]
 dll.EU_GetColorPickerColor.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -1121,6 +1300,56 @@ dll.EU_GetTableOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                    ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTableOptions.restype = ctypes.c_int
+dll.EU_SetTableColumnsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableRowsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableCellEx.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableRowStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                     ctypes.c_uint32, ctypes.c_uint32,
+                                     ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableCellStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_uint32, ctypes.c_uint32,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableSelectionMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableSelectedRows.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableFilter.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_ClearTableFilter.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableSearch.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableSpan.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int]
+dll.EU_ClearTableSpans.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetTableSummary.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTableRowExpanded.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableTreeOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableViewportOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableHeaderDragOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                              ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_ExportTableExcel.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+dll.EU_ExportTableExcel.restype = ctypes.c_int
+dll.EU_ImportTableExcel.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+dll.EU_ImportTableExcel.restype = ctypes.c_int
+dll.EU_SetTableCellClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
+dll.EU_SetTableCellActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
+dll.EU_SetTableVirtualOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableVirtualRowProvider.argtypes = [wintypes.HWND, ctypes.c_int, TableVirtualRowCallback]
+dll.EU_ClearTableVirtualCache.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTableCellValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTableCellValue.restype = ctypes.c_int
+dll.EU_GetTableFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTableFullState.restype = ctypes.c_int
 dll.EU_SetCardBody.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardFooter.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1410,6 +1639,22 @@ dll.EU_SetAutocompleteSuggestions.argtypes = [wintypes.HWND, ctypes.c_int,
                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAutocompleteValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompletePlaceholder.restype = ctypes.c_int
+dll.EU_SetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAutocompleteIcons.restype = ctypes.c_int
+dll.EU_SetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetAutocompleteBehaviorOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                  ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetAutocompleteBehaviorOptions.restype = ctypes.c_int
 dll.EU_SetAutocompleteOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAutocompleteSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAutocompleteAsyncState.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1505,6 +1750,34 @@ dll.EU_GetDatePickerSelectionRange.argtypes = [wintypes.HWND, ctypes.c_int,
                                                ctypes.POINTER(ctypes.c_int),
                                                ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDatePickerSelectionRange.restype = ctypes.c_int
+dll.EU_SetDatePickerPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerFormat.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDatePickerMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDatePickerMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDatePickerMode.restype = ctypes.c_int
+dll.EU_SetDatePickerMultiSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDatePickerSelectedDates.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDatePickerSelectedDates.restype = ctypes.c_int
+dll.EU_SetDatePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDatePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_CreateDateRangePicker.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateDateRangePicker.restype = ctypes.c_int
+dll.EU_SetDateRangePickerValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateRangePickerValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDateRangePickerValue.restype = ctypes.c_int
+dll.EU_SetDateRangePickerRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateRangePickerPlaceholders.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateRangePickerSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateRangePickerFormat.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateRangePickerAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateRangePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateRangePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_SetDateRangePickerOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateRangePickerOpen.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDateRangePickerOpen.restype = ctypes.c_int
+dll.EU_DateRangePickerClear.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_SetTimePickerTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int]
 dll.EU_SetTimePickerRange.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1526,6 +1799,15 @@ dll.EU_GetTimePickerOptions.restype = ctypes.c_int
 dll.EU_GetTimePickerScroll.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimePickerScroll.restype = ctypes.c_int
+dll.EU_SetTimePickerArrowControl.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTimePickerArrowControl.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTimePickerArrowControl.restype = ctypes.c_int
+dll.EU_SetTimePickerRangeSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTimePickerStartPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTimePickerEndPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTimePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTimePickerRangeValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTimePickerRangeValue.restype = ctypes.c_int
 dll.EU_SetDateTimePickerDateTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                              ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                              ctypes.c_int, ctypes.c_int]
@@ -1558,6 +1840,15 @@ dll.EU_GetDateTimePickerOptions.restype = ctypes.c_int
 dll.EU_GetDateTimePickerScroll.argtypes = [wintypes.HWND, ctypes.c_int,
                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDateTimePickerScroll.restype = ctypes.c_int
+dll.EU_SetDateTimePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerStartPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerEndPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerDefaultTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateTimePickerRangeDefaultTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDateTimePickerRangeSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetDateTimePickerRangeSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDateTimePickerRangeValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDateTimePickerRangeValue.restype = ctypes.c_int
 dll.EU_SetTimeSelectTime.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int]
 dll.EU_SetTimeSelectRange.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1580,6 +1871,7 @@ dll.EU_GetTimeSelectState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimeSelectState.restype = ctypes.c_int
+dll.EU_SetTimeSelectPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDropdownItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDropdownSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1597,6 +1889,26 @@ dll.EU_GetDropdownState.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                     ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDropdownState.restype = ctypes.c_int
+dll.EU_SetDropdownOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDropdownOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDropdownOptions.restype = ctypes.c_int
+dll.EU_SetDropdownItemMeta.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int), ctypes.c_int]
+dll.EU_GetDropdownItemMeta.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDropdownItemMeta.restype = ctypes.c_int
+dll.EU_SetDropdownCommandCallback.argtypes = [wintypes.HWND, ctypes.c_int, DropdownCommandCallback]
+dll.EU_SetDropdownMainClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
 dll.EU_SetMenuItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetMenuActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1813,6 +2125,39 @@ dll.EU_SetUploadFiles.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetUploadFileItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetUploadOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetUploadStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int]
+dll.EU_GetUploadStyle.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetUploadStyle.restype = ctypes.c_int
+dll.EU_SetUploadTexts.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_SetUploadConstraints.argtypes = [
+    wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_GetUploadConstraints.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_GetUploadConstraints.restype = ctypes.c_int
+dll.EU_SetUploadPreviewOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetUploadPreviewState.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetUploadPreviewState.restype = ctypes.c_int
 dll.EU_SetUploadSelectedFiles.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetUploadFileStatus.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2052,10 +2397,53 @@ dll.EU_GetResultFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetResultFullState.restype = ctypes.c_int
 dll.EU_SetResultActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_SetMessageBoxBeforeClose.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMessageBoxInput.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetMessageBoxInput.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetMessageBoxInput.restype = ctypes.c_int
+dll.EU_GetMessageBoxFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMessageBoxFullState.restype = ctypes.c_int
+dll.EU_SetMessageText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMessageOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                     ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMessageClosed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetMessageOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                     ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMessageOptions.restype = ctypes.c_int
+dll.EU_GetMessageFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                       ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMessageFullState.restype = ctypes.c_int
+dll.EU_TriggerMessageClose.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetMessageCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetNotificationBody.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetNotificationType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetNotificationClosable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetNotificationPlacement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetNotificationRichMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetNotificationOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetNotificationClosed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2078,6 +2466,16 @@ dll.EU_GetNotificationFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetNotificationFullState.restype = ctypes.c_int
+dll.EU_GetNotificationFullStateEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetNotificationFullStateEx.restype = ctypes.c_int
 dll.EU_SetNotificationCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetLoadingActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetLoadingOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2108,6 +2506,23 @@ dll.EU_SetDialogOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int]
+dll.EU_SetDialogAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int]
+dll.EU_GetDialogAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDialogAdvancedOptions.restype = ctypes.c_int
+dll.EU_GetDialogContentParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDialogContentParent.restype = ctypes.c_int
+dll.EU_GetDialogFooterParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDialogFooterParent.restype = ctypes.c_int
+dll.EU_SetDialogBeforeCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, BeforeCloseCallback]
+dll.EU_ConfirmDialogClose.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDialogOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDialogOpen.restype = ctypes.c_int
 dll.EU_GetDialogOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2147,6 +2562,24 @@ dll.EU_SetDrawerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int]
+dll.EU_SetDrawerAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int]
+dll.EU_GetDrawerAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDrawerAdvancedOptions.restype = ctypes.c_int
+dll.EU_GetDrawerContentParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDrawerContentParent.restype = ctypes.c_int
+dll.EU_GetDrawerFooterParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetDrawerFooterParent.restype = ctypes.c_int
+dll.EU_SetDrawerBeforeCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, BeforeCloseCallback]
+dll.EU_ConfirmDrawerClose.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDrawerOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDrawerOpen.restype = ctypes.c_int
 dll.EU_GetDrawerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2183,6 +2616,15 @@ dll.EU_GetTooltipOptions.restype = ctypes.c_int
 dll.EU_SetTooltipBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int]
+dll.EU_SetTooltipAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int]
+dll.EU_GetTooltipAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTooltipAdvancedOptions.restype = ctypes.c_int
 dll.EU_TriggerTooltip.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTooltipText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -2205,6 +2647,18 @@ dll.EU_SetPopoverTitle.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetPopoverOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int]
+dll.EU_GetPopoverBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetPopoverBehavior.restype = ctypes.c_int
+dll.EU_GetPopoverContentParent.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetPopoverContentParent.restype = ctypes.c_int
 dll.EU_GetPopoverOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopoverOpen.restype = ctypes.c_int
 dll.EU_GetPopoverOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2230,12 +2684,24 @@ dll.EU_SetPopconfirmOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopconfirmOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopconfirmAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopconfirmContent.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetPopconfirmButtons.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetPopconfirmIcon.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.c_uint32, ctypes.c_int]
+dll.EU_GetPopconfirmIcon.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetPopconfirmIcon.restype = ctypes.c_int
 dll.EU_ResetPopconfirmResult.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopconfirmOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopconfirmOpen.restype = ctypes.c_int
@@ -2268,7 +2734,56 @@ def make_utf8(text: str) -> bytes:
     return text.encode('utf-8')
 
 def bytes_arg(data: bytes):
+    if not data:
+        return None
     return (ctypes.c_ubyte * len(data))(*data)
+
+def _extended_placement_value(placement, default="bottom"):
+    if isinstance(placement, str):
+        return EXTENDED_PLACEMENTS.get(placement, EXTENDED_PLACEMENTS[default])
+    try:
+        value = int(placement)
+    except (TypeError, ValueError):
+        value = EXTENDED_PLACEMENTS[default]
+    return max(0, min(11, value))
+
+def _trigger_mode_value(trigger_mode, default="click"):
+    if isinstance(trigger_mode, str):
+        return TRIGGER_MODES.get(trigger_mode, TRIGGER_MODES[default])
+    try:
+        value = int(trigger_mode)
+    except (TypeError, ValueError):
+        value = TRIGGER_MODES[default]
+    return max(0, min(3, value))
+
+def _autocomplete_suggestions_data(suggestions):
+    if suggestions is None:
+        suggestions = ["北京", "上海", "广州", "深圳"]
+    rows = []
+    for item in suggestions:
+        if isinstance(item, (list, tuple)):
+            if not item:
+                continue
+            title = str(item[0])
+            subtitle = str(item[1]) if len(item) >= 2 else ""
+            write_value = str(item[2]) if len(item) >= 3 else title
+            rows.append("\t".join([title, subtitle, write_value]))
+        else:
+            rows.append(str(item))
+    return make_utf8("\n".join(rows))
+
+def _input_group_select_items_data(items):
+    rows = []
+    for item in items or []:
+        if isinstance(item, (list, tuple)):
+            label = str(item[0]) if len(item) >= 1 else ""
+            value = str(item[1]) if len(item) >= 2 else label
+        else:
+            label = str(item)
+            value = label
+        if label:
+            rows.append(f"{label}\t{value}")
+    return make_utf8("\n".join(rows))
 
 def create_window(title="New Emoji Test", x=300, y=200, w=800, h=600):
     data = make_utf8(title)
@@ -3032,6 +3547,30 @@ def get_switch_options(hwnd, element_id):
         return None
     return bool(checked.value), bool(loading.value), bool(has_active.value), bool(has_inactive.value)
 
+def set_switch_active_color(hwnd, element_id, color):
+    dll.EU_SetSwitchActiveColor(hwnd, element_id, color)
+
+def get_switch_active_color(hwnd, element_id):
+    return dll.EU_GetSwitchActiveColor(hwnd, element_id)
+
+def set_switch_inactive_color(hwnd, element_id, color):
+    dll.EU_SetSwitchInactiveColor(hwnd, element_id, color)
+
+def get_switch_inactive_color(hwnd, element_id):
+    return dll.EU_GetSwitchInactiveColor(hwnd, element_id)
+
+def set_switch_value(hwnd, element_id, value):
+    dll.EU_SetSwitchValue(hwnd, element_id, value)
+
+def get_switch_value(hwnd, element_id):
+    return dll.EU_GetSwitchValue(hwnd, element_id)
+
+def set_switch_size(hwnd, element_id, size):
+    dll.EU_SetSwitchSize(hwnd, element_id, size)
+
+def get_switch_size(hwnd, element_id):
+    return dll.EU_GetSwitchSize(hwnd, element_id)
+
 def create_slider(hwnd, parent_id, text="Slider", min_value=0, max_value=100, value=40,
                   x=0, y=0, w=360, h=54, step=None, show_tooltip=None):
     data = make_utf8(text)
@@ -3148,6 +3687,12 @@ def get_input_number_state(hwnd, element_id):
         return None
     return precision.value, bool(editing.value), bool(valid.value), bool(can_decrease.value), bool(can_increase.value)
 
+def set_input_number_step_strictly(hwnd, element_id, strict=True):
+    dll.EU_SetInputNumberStepStrictly(hwnd, element_id, 1 if strict else 0)
+
+def get_input_number_step_strictly(hwnd, element_id):
+    return bool(dll.EU_GetInputNumberStepStrictly(hwnd, element_id))
+
 def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
                  prefix="", suffix="", clearable=False,
                  x=0, y=0, w=260, h=36):
@@ -3211,6 +3756,230 @@ def get_input_state(hwnd, element_id):
         cursor.value, length.value, bool(clearable.value), bool(readonly.value),
         bool(password.value), bool(multiline.value), validate_state.value,
     )
+
+def set_input_icons(hwnd, element_id, prefix_icon="", suffix_icon=""):
+    prefix_data = make_utf8(prefix_icon)
+    suffix_data = make_utf8(suffix_icon)
+    dll.EU_SetInputIcons(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+    )
+
+def get_input_icons(hwnd, element_id, buffer_size=512):
+    prefix = (ctypes.c_ubyte * buffer_size)()
+    suffix = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetInputIcons(hwnd, element_id, prefix, buffer_size, suffix, buffer_size)
+    if not ok:
+        return None
+    return (
+        bytes(prefix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+        bytes(suffix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+    )
+
+def set_input_visual_options(hwnd, element_id, size=0, show_password_toggle=False,
+                             show_word_limit=False, autosize=False,
+                             min_rows=0, max_rows=0):
+    dll.EU_SetInputVisualOptions(
+        hwnd, element_id,
+        size, 1 if show_password_toggle else 0,
+        1 if show_word_limit else 0, 1 if autosize else 0,
+        min_rows, max_rows,
+    )
+
+def get_input_visual_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetInputVisualOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = ["size", "show_password_toggle", "show_word_limit", "autosize", "min_rows", "max_rows"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("show_password_toggle", "show_word_limit", "autosize"):
+        state[key] = bool(state[key])
+    return state
+
+def set_input_selection(hwnd, element_id, start=0, end=0):
+    dll.EU_SetInputSelection(hwnd, element_id, start, end)
+
+def get_input_selection(hwnd, element_id):
+    start = ctypes.c_int()
+    end = ctypes.c_int()
+    ok = dll.EU_GetInputSelection(hwnd, element_id, ctypes.byref(start), ctypes.byref(end))
+    if not ok:
+        return None
+    return start.value, end.value
+
+def set_input_context_menu_enabled(hwnd, element_id, enabled=True):
+    dll.EU_SetInputContextMenuEnabled(hwnd, element_id, 1 if enabled else 0)
+
+def get_input_context_menu_enabled(hwnd, element_id):
+    return bool(dll.EU_GetInputContextMenuEnabled(hwnd, element_id))
+
+def create_input(hwnd, parent_id, value="", placeholder="请输入内容",
+                 prefix="", suffix="", clearable=False,
+                 size=0, prefix_icon="", suffix_icon="",
+                 password=False, show_password=False,
+                 show_word_limit=False, multiline=False, autosize=False,
+                 min_rows=0, max_rows=0, readonly=False, validate_state=0,
+                 max_length=0,
+                 x=0, y=0, w=260, h=36, context_menu=True):
+    if (
+        type(size) is int and
+        type(prefix_icon) is int and
+        type(suffix_icon) is int and
+        type(password) is int and
+        show_password is False and
+        show_word_limit is False and
+        multiline is False and
+        autosize is False and
+        min_rows == 0 and max_rows == 0 and
+        readonly is False and validate_state == 0 and max_length == 0
+    ):
+        x, y, w, h = size, prefix_icon, suffix_icon, password
+        size = 0
+        prefix_icon = ""
+        suffix_icon = ""
+        password = False
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    prefix_data = make_utf8(prefix)
+    suffix_data = make_utf8(suffix)
+    element_id = dll.EU_CreateInput(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+        1 if clearable else 0,
+        x, y, w, h
+    )
+    if not element_id:
+        return 0
+    password_mode = bool(password or show_password)
+    if prefix_icon or suffix_icon:
+        set_input_icons(hwnd, element_id, prefix_icon, suffix_icon)
+    if readonly or password_mode or multiline or validate_state:
+        set_input_options(hwnd, element_id, readonly=readonly, password=password_mode,
+                          multiline=multiline, validate_state=validate_state)
+    if size or show_password or show_word_limit or autosize or min_rows or max_rows:
+        set_input_visual_options(hwnd, element_id, size=size,
+                                 show_password_toggle=show_password,
+                                 show_word_limit=show_word_limit,
+                                 autosize=autosize, min_rows=min_rows, max_rows=max_rows)
+    if max_length:
+        set_input_max_length(hwnd, element_id, max_length)
+    if not context_menu:
+        set_input_context_menu_enabled(hwnd, element_id, False)
+    return element_id
+
+def _apply_input_group_addon(hwnd, element_id, side, addon):
+    addon_type = (addon or {}).get("type", "")
+    if addon_type == "text":
+        set_input_group_text_addon(hwnd, element_id, side, addon.get("text", ""))
+    elif addon_type == "button":
+        set_input_group_button_addon(
+            hwnd, element_id, side,
+            emoji=addon.get("emoji", ""), text=addon.get("text", ""),
+            variant=addon.get("variant", 1),
+        )
+    elif addon_type == "select":
+        set_input_group_select_addon(
+            hwnd, element_id, side,
+            items=addon.get("items", []),
+            selected=addon.get("selected", -1),
+            placeholder=addon.get("placeholder", "请选择"),
+        )
+
+def create_input_group(hwnd, parent_id, value="", placeholder="请输入内容",
+                       prepend=None, append=None,
+                       size=0, clearable=False, password=False,
+                       show_word_limit=False, autosize=False,
+                       min_rows=0, max_rows=0,
+                       x=0, y=0, w=360, h=36):
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    element_id = dll.EU_CreateInputGroup(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        size, 1 if clearable else 0, 1 if password else 0,
+        1 if show_word_limit else 0, 1 if autosize else 0,
+        min_rows, max_rows,
+        x, y, w, h,
+    )
+    if not element_id:
+        return 0
+    if prepend:
+        _apply_input_group_addon(hwnd, element_id, 0, prepend)
+    if append:
+        _apply_input_group_addon(hwnd, element_id, 1, append)
+    return element_id
+
+def set_input_group_value(hwnd, element_id, value=""):
+    data = make_utf8(value)
+    dll.EU_SetInputGroupValue(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_input_group_value(hwnd, element_id):
+    needed = dll.EU_GetInputGroupValue(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetInputGroupValue(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def set_input_group_options(hwnd, element_id, size=0, clearable=False, password=False,
+                            show_word_limit=False, autosize=False,
+                            min_rows=0, max_rows=0):
+    dll.EU_SetInputGroupOptions(
+        hwnd, element_id,
+        size, 1 if clearable else 0, 1 if password else 0,
+        1 if show_word_limit else 0, 1 if autosize else 0,
+        min_rows, max_rows,
+    )
+
+def get_input_group_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(7)]
+    ok = dll.EU_GetInputGroupOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = ["size", "clearable", "password", "show_word_limit", "autosize", "min_rows", "max_rows"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("clearable", "password", "show_word_limit", "autosize"):
+        state[key] = bool(state[key])
+    return state
+
+def set_input_group_text_addon(hwnd, element_id, side, text=""):
+    data = make_utf8(text)
+    dll.EU_SetInputGroupTextAddon(hwnd, element_id, side, bytes_arg(data), len(data))
+
+def set_input_group_button_addon(hwnd, element_id, side, emoji="", text="", variant=1):
+    emoji_data = make_utf8(emoji)
+    text_data = make_utf8(text)
+    dll.EU_SetInputGroupButtonAddon(
+        hwnd, element_id, side,
+        bytes_arg(emoji_data), len(emoji_data),
+        bytes_arg(text_data), len(text_data),
+        variant,
+    )
+
+def set_input_group_select_addon(hwnd, element_id, side, items=None, selected=-1, placeholder="请选择"):
+    items_data = _input_group_select_items_data(items or [])
+    placeholder_data = make_utf8(placeholder)
+    dll.EU_SetInputGroupSelectAddon(
+        hwnd, element_id, side,
+        bytes_arg(items_data), len(items_data),
+        selected,
+        bytes_arg(placeholder_data), len(placeholder_data),
+    )
+
+def clear_input_group_addon(hwnd, element_id, side):
+    dll.EU_ClearInputGroupAddon(hwnd, element_id, side)
+
+def get_input_group_input_element_id(hwnd, element_id):
+    return dll.EU_GetInputGroupInputElementId(hwnd, element_id)
+
+def get_input_group_addon_element_id(hwnd, element_id, side):
+    return dll.EU_GetInputGroupAddonElementId(hwnd, element_id, side)
 
 def create_input_tag(hwnd, parent_id, tags=None, placeholder="输入标签，回车提交",
                      x=0, y=0, w=360, h=84):
@@ -3398,7 +4167,9 @@ def get_select_v2_scroll_index(hwnd, element_id):
 
 def create_rate(hwnd, parent_id, text="Rate", value=3, max_value=5,
                 x=0, y=0, w=220, h=36,
-                allow_clear=None, allow_half=None, readonly=None, value_x2=None):
+                allow_clear=None, allow_half=None, readonly=None, value_x2=None,
+                colors=None, icons=None, text_items=None, show_text=None,
+                show_score=None, text_color=0, score_template="{value}"):
     data = make_utf8(text)
     element_id = dll.EU_CreateRate(
         hwnd, parent_id, bytes_arg(data), len(data),
@@ -3413,6 +4184,20 @@ def create_rate(hwnd, parent_id, text="Rate", value=3, max_value=5,
         )
     if element_id and value_x2 is not None:
         dll.EU_SetRateValueX2(hwnd, element_id, value_x2)
+    if element_id and colors:
+        set_rate_colors(hwnd, element_id, *colors)
+    if element_id and icons:
+        set_rate_icons(hwnd, element_id, **icons)
+    if element_id and text_items:
+        set_rate_text_items(hwnd, element_id, text_items)
+    if element_id and (show_text is not None or show_score is not None or text_color or score_template != "{value}"):
+        set_rate_display_options(
+            hwnd, element_id,
+            show_text=bool(show_text),
+            show_score=bool(show_score),
+            text_color=text_color,
+            score_template=score_template,
+        )
     return element_id
 
 def set_rate_value(hwnd, element_id, value=0):
@@ -3467,6 +4252,79 @@ def set_rate_texts(hwnd, element_id, low_text="待评分", high_text="已评分"
 
 def set_rate_change_callback(hwnd, element_id, callback):
     dll.EU_SetRateChangeCallback(hwnd, element_id, callback)
+
+def set_rate_colors(hwnd, element_id, low_color=0, mid_color=0, high_color=0):
+    dll.EU_SetRateColors(hwnd, element_id, low_color, mid_color, high_color)
+
+def get_rate_colors(hwnd, element_id):
+    low = ctypes.c_uint32()
+    mid = ctypes.c_uint32()
+    high = ctypes.c_uint32()
+    ok = dll.EU_GetRateColors(hwnd, element_id, ctypes.byref(low), ctypes.byref(mid), ctypes.byref(high))
+    if not ok:
+        return None
+    return low.value, mid.value, high.value
+
+def set_rate_icons(hwnd, element_id, full_icon="★", void_icon="☆",
+                   low_icon="", mid_icon="", high_icon=""):
+    full_data = make_utf8(full_icon)
+    void_data = make_utf8(void_icon)
+    low_data = make_utf8(low_icon)
+    mid_data = make_utf8(mid_icon)
+    high_data = make_utf8(high_icon)
+    dll.EU_SetRateIcons(
+        hwnd, element_id,
+        bytes_arg(full_data), len(full_data),
+        bytes_arg(void_data), len(void_data),
+        bytes_arg(low_data), len(low_data),
+        bytes_arg(mid_data), len(mid_data),
+        bytes_arg(high_data), len(high_data),
+    )
+
+def get_rate_icons(hwnd, element_id):
+    buffers = [ctypes.create_string_buffer(64) for _ in range(5)]
+    ptrs = [ctypes.cast(buffer, ctypes.POINTER(ctypes.c_ubyte)) for buffer in buffers]
+    ok = dll.EU_GetRateIcons(
+        hwnd, element_id,
+        ptrs[0], len(buffers[0]),
+        ptrs[1], len(buffers[1]),
+        ptrs[2], len(buffers[2]),
+        ptrs[3], len(buffers[3]),
+        ptrs[4], len(buffers[4]),
+    )
+    if not ok:
+        return None
+    return tuple(buffer.value.decode("utf-8") for buffer in buffers)
+
+def set_rate_text_items(hwnd, element_id, items):
+    data = make_utf8("\n".join(items or []))
+    dll.EU_SetRateTextItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_rate_display_options(hwnd, element_id, show_text=False, show_score=False,
+                             text_color=0, score_template="{value}"):
+    data = make_utf8(score_template)
+    dll.EU_SetRateDisplayOptions(
+        hwnd, element_id,
+        1 if show_text else 0,
+        1 if show_score else 0,
+        text_color,
+        bytes_arg(data), len(data),
+    )
+
+def get_rate_display_options(hwnd, element_id):
+    show_text = ctypes.c_int()
+    show_score = ctypes.c_int()
+    text_color = ctypes.c_uint32()
+    template = ctypes.create_string_buffer(256)
+    template_ptr = ctypes.cast(template, ctypes.POINTER(ctypes.c_ubyte))
+    ok = dll.EU_GetRateDisplayOptions(
+        hwnd, element_id,
+        ctypes.byref(show_text), ctypes.byref(show_score), ctypes.byref(text_color),
+        template_ptr, len(template),
+    )
+    if not ok:
+        return None
+    return bool(show_text.value), bool(show_score.value), text_color.value, template.value.decode("utf-8")
 
 def create_colorpicker(hwnd, parent_id, text="Color", color=0xFF1E66F5,
                        x=0, y=0, w=220, h=36, alpha=None, open_panel=None,
@@ -3906,8 +4764,8 @@ def create_table(hwnd, parent_id, columns=None, rows=None,
     if element_id and (row_height is not None or header_height is not None or selectable is not None):
         dll.EU_SetTableOptions(
             hwnd, element_id, 1 if striped else 0, 1 if bordered else 0,
-            30 if row_height is None else row_height,
-            32 if header_height is None else header_height,
+            42 if row_height is None else row_height,
+            48 if header_height is None else header_height,
             1 if selectable is None else int(bool(selectable))
         )
     if element_id and sort_column is not None:
@@ -3937,6 +4795,340 @@ def get_table_options(hwnd, element_id):
         bool(values[4].value), values[5].value, bool(values[6].value),
         values[7].value, values[8].value
     )
+
+TABLE_CELL_TYPES = {
+    "text": 0, "index": 1, "selection": 2, "expand": 3,
+    "button": 4, "buttons": 5, "combo": 6, "switch": 7,
+    "select": 8, "progress": 9, "status": 10, "tag": 11,
+    "popover_tag": 12,
+}
+TABLE_CELL_TYPE_NAMES = {value: key for key, value in TABLE_CELL_TYPES.items()}
+
+def table_cell_type(value):
+    if isinstance(value, int):
+        return value
+    return TABLE_CELL_TYPES.get(str(value or "text").lower(), 0)
+
+def table_cell_type_name(value):
+    if isinstance(value, str):
+        return value
+    return TABLE_CELL_TYPE_NAMES.get(table_cell_type(value), "text")
+
+def table_escape(value):
+    text = "" if value is None else str(value)
+    return (text.replace("\\", "\\\\")
+                .replace("\n", "\\n")
+                .replace("\t", "\\t")
+                .replace("=", "\\=")
+                .replace("|", "\\|"))
+
+def table_kv_line(fields):
+    if isinstance(fields, dict):
+        iterable = fields.items()
+    else:
+        iterable = fields or []
+    parts = []
+    for key, value in iterable:
+        if value is None:
+            continue
+        if isinstance(value, bool):
+            value = 1 if value else 0
+        parts.append(f"{key}={table_escape(value)}")
+    return "\t".join(parts)
+
+def table_options(options=None):
+    if options is None:
+        return ""
+    if isinstance(options, str):
+        return options
+    if isinstance(options, dict):
+        return table_kv_line(options)
+    return table_kv_line(options)
+
+def _table_join_values(values):
+    return "|".join(table_escape(v) for v in (values or []))
+
+def _table_column_title(column, index):
+    if isinstance(column, dict):
+        return column.get("title", column.get("label", f"列 {index + 1}"))
+    return str(column)
+
+def _table_column_key(column, index):
+    if isinstance(column, dict):
+        return column.get("key", f"c{index}")
+    return f"c{index}"
+
+def table_column_line(column, index=0):
+    if isinstance(column, dict):
+        fields = dict(column)
+        fields.setdefault("title", fields.get("label", f"列 {index + 1}"))
+        fields.setdefault("key", f"c{index}")
+    else:
+        fields = {"title": column, "key": f"c{index}"}
+    if "type" in fields:
+        fields["type"] = table_cell_type_name(fields["type"])
+    if "options" in fields and not isinstance(fields["options"], str):
+        fields["options"] = _table_join_values(fields["options"])
+    return table_kv_line(fields)
+
+def _table_cell_payload(cell):
+    if isinstance(cell, dict):
+        value = cell.get("value", cell.get("text", ""))
+        if value == "" and "items" in cell:
+            value = cell["items"]
+        if value == "" and "parts" in cell:
+            value = cell["parts"]
+        if isinstance(value, (list, tuple)):
+            value = _table_join_values(value)
+        cell_type = cell.get("type")
+        options = dict(cell.get("options", {}) or {})
+        for key in ("checked", "status", "value", "disabled"):
+            if key in cell:
+                options[key] = cell[key]
+        return value, cell_type, options
+    if isinstance(cell, (list, tuple)):
+        return _table_join_values(cell), None, {}
+    return cell, None, {}
+
+def table_row_line(row, columns=None):
+    fields = []
+    column_count = len(columns or [])
+    if isinstance(row, dict):
+        meta_map = {
+            "key": "key", "parent": "parent", "parent_key": "parent",
+            "level": "level", "expanded": "expanded", "children": "children",
+            "has_children": "children", "hasChildren": "haschildren", "lazy": "lazy",
+            "disabled": "disabled", "bg": "bg", "fg": "fg", "align": "align",
+            "font_flags": "font_flags", "font_size": "font_size",
+        }
+        for source, target in meta_map.items():
+            if source in row:
+                fields.append((target, row[source]))
+        raw_cells = row.get("cells")
+        if raw_cells is None:
+            raw_cells = row.get("values")
+        if raw_cells is not None:
+            for index, cell in enumerate(raw_cells):
+                value, cell_type, options = _table_cell_payload(cell)
+                base = f"c{index}"
+                fields.append((base, value))
+                if cell_type is not None:
+                    fields.append((f"{base}_type", table_cell_type_name(cell_type)))
+                if options:
+                    fields.append((f"{base}_options", table_options(options)))
+        else:
+            for index in range(column_count):
+                key = _table_column_key(columns[index], index)
+                value = row.get(key, row.get(f"c{index}", ""))
+                fields.append((f"c{index}", value))
+        existing = {name for name, _ in fields}
+        for key, value in row.items():
+            if key in meta_map or key in ("cells", "values", "options"):
+                continue
+            if key.startswith("c") and key not in existing:
+                fields.append((key, value))
+    else:
+        for index, cell in enumerate(row or []):
+            value, cell_type, options = _table_cell_payload(cell)
+            base = f"c{index}"
+            fields.append((base, value))
+            if cell_type is not None:
+                fields.append((f"{base}_type", table_cell_type_name(cell_type)))
+            if options:
+                fields.append((f"{base}_options", table_options(options)))
+    return table_kv_line(fields)
+
+def set_table_columns_ex(hwnd, element_id, columns):
+    data = make_utf8("\n".join(table_column_line(col, i) for i, col in enumerate(columns or [])))
+    dll.EU_SetTableColumnsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_rows_ex(hwnd, element_id, rows, columns=None):
+    data = make_utf8("\n".join(table_row_line(row, columns) for row in (rows or [])))
+    dll.EU_SetTableRowsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_cell(hwnd, element_id, row, col, cell_type="text", value="", options=None):
+    if isinstance(value, (list, tuple)):
+        value = _table_join_values(value)
+    value_data = make_utf8(str(value))
+    option_data = make_utf8(table_options(options))
+    dll.EU_SetTableCellEx(
+        hwnd, element_id, row, col, table_cell_type(cell_type),
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(option_data), len(option_data)
+    )
+
+def set_table_row_style(hwnd, element_id, row, bg=0, fg=0, align=-1, font_flags=-1, font_size=0):
+    dll.EU_SetTableRowStyle(hwnd, element_id, row, bg, fg, align, font_flags, font_size)
+
+def set_table_cell_style(hwnd, element_id, row, col, bg=0, fg=0, align=-1, font_flags=-1, font_size=0):
+    dll.EU_SetTableCellStyle(hwnd, element_id, row, col, bg, fg, align, font_flags, font_size)
+
+def set_table_selection_mode(hwnd, element_id, mode=1):
+    dll.EU_SetTableSelectionMode(hwnd, element_id, mode)
+
+def set_table_selected_rows(hwnd, element_id, rows):
+    if isinstance(rows, str):
+        spec = rows
+    else:
+        spec = "|".join(str(int(r)) for r in (rows or []))
+    data = make_utf8(spec)
+    dll.EU_SetTableSelectedRows(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_filter(hwnd, element_id, col, value):
+    if value is None:
+        dll.EU_ClearTableFilter(hwnd, element_id, col)
+        return
+    data = make_utf8(str(value))
+    dll.EU_SetTableFilter(hwnd, element_id, col, bytes_arg(data), len(data))
+
+def clear_table_filter(hwnd, element_id, col=-1):
+    dll.EU_ClearTableFilter(hwnd, element_id, col)
+
+def set_table_search(hwnd, element_id, value=""):
+    data = make_utf8(str(value or ""))
+    dll.EU_SetTableSearch(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_span(hwnd, element_id, row, col, rowspan=1, colspan=1):
+    dll.EU_SetTableSpan(hwnd, element_id, row, col, rowspan, colspan)
+
+def clear_table_spans(hwnd, element_id):
+    dll.EU_ClearTableSpans(hwnd, element_id)
+
+def set_table_summary(hwnd, element_id, values):
+    spec = values if isinstance(values, str) else "|".join(table_escape(v) for v in (values or []))
+    data = make_utf8(spec)
+    dll.EU_SetTableSummary(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_table_row_expanded(hwnd, element_id, row, expanded=True):
+    dll.EU_SetTableRowExpanded(hwnd, element_id, row, 1 if expanded else 0)
+
+def set_table_tree_options(hwnd, element_id, enabled=True, indent=18, lazy=False):
+    dll.EU_SetTableTreeOptions(hwnd, element_id, 1 if enabled else 0, indent, 1 if lazy else 0)
+
+def set_table_viewport_options(hwnd, element_id, max_height=0, fixed_header=True,
+                               horizontal_scroll=True, show_summary=False):
+    dll.EU_SetTableViewportOptions(
+        hwnd, element_id, max_height,
+        1 if fixed_header else 0,
+        1 if horizontal_scroll else 0,
+        1 if show_summary else 0
+    )
+
+def set_table_scroll(hwnd, element_id, scroll_row=0, scroll_x=0):
+    dll.EU_SetTableScroll(hwnd, element_id, scroll_row, scroll_x)
+
+def set_table_header_drag_options(hwnd, element_id, column_resize=False, header_height_resize=False,
+                                  min_col_width=48, max_col_width=720,
+                                  min_header_height=34, max_header_height=180):
+    dll.EU_SetTableHeaderDragOptions(
+        hwnd, element_id,
+        1 if column_resize else 0,
+        1 if header_height_resize else 0,
+        min_col_width, max_col_width, min_header_height, max_header_height,
+    )
+
+def export_table_excel(hwnd, element_id, path, flags=0):
+    data = make_utf8(path)
+    return bool(dll.EU_ExportTableExcel(hwnd, element_id, bytes_arg(data), len(data), flags))
+
+def import_table_excel(hwnd, element_id, path, flags=0):
+    data = make_utf8(path)
+    return bool(dll.EU_ImportTableExcel(hwnd, element_id, bytes_arg(data), len(data), flags))
+
+def set_table_cell_click_callback(hwnd, element_id, callback):
+    dll.EU_SetTableCellClickCallback(hwnd, element_id, callback)
+
+def set_table_cell_action_callback(hwnd, element_id, callback):
+    dll.EU_SetTableCellActionCallback(hwnd, element_id, callback)
+
+_table_virtual_row_provider_refs = {}
+
+def set_table_virtual_options(hwnd, element_id, enabled=True, row_count=0, cache_window=32):
+    dll.EU_SetTableVirtualOptions(hwnd, element_id, 1 if enabled else 0, row_count, cache_window)
+
+def set_table_virtual_row_provider(hwnd, element_id, provider):
+    key = (int(hwnd), int(element_id))
+    if provider is None:
+        _table_virtual_row_provider_refs.pop(key, None)
+        dll.EU_SetTableVirtualRowProvider(hwnd, element_id, TableVirtualRowCallback(0))
+        return
+    if not callable(provider):
+        raise TypeError("provider must be callable or None")
+    def _native(table_id, row_index, buffer, buffer_size):
+        text = provider(table_id, row_index)
+        data = make_utf8("" if text is None else str(text))
+        needed = len(data)
+        if not buffer or buffer_size <= 0:
+            return needed
+        n = min(needed, max(0, buffer_size - 1))
+        if n > 0:
+            ctypes.memmove(buffer, data, n)
+        if buffer_size > 0:
+            buffer[n] = 0
+        return needed
+    cb = TableVirtualRowCallback(_native)
+    _table_virtual_row_provider_refs[key] = cb
+    dll.EU_SetTableVirtualRowProvider(hwnd, element_id, cb)
+
+def clear_table_virtual_cache(hwnd, element_id):
+    dll.EU_ClearTableVirtualCache(hwnd, element_id)
+
+def _read_table_text(fn, *args, buffer_size=4096):
+    buf = ctypes.create_string_buffer(buffer_size)
+    ptr = ctypes.cast(buf, ctypes.POINTER(ctypes.c_ubyte))
+    needed = fn(*args, ptr, buffer_size)
+    if needed >= buffer_size:
+        buf = ctypes.create_string_buffer(needed + 1)
+        ptr = ctypes.cast(buf, ctypes.POINTER(ctypes.c_ubyte))
+        fn(*args, ptr, needed + 1)
+    return buf.value.decode("utf-8", errors="replace")
+
+def get_table_cell_value(hwnd, element_id, row, col):
+    return _read_table_text(dll.EU_GetTableCellValue, hwnd, element_id, row, col)
+
+def get_table_full_state(hwnd, element_id):
+    return _read_table_text(dll.EU_GetTableFullState, hwnd, element_id)
+
+def create_table_ex(hwnd, parent_id, columns=None, rows=None,
+                    striped=True, bordered=True, x=0, y=0, w=640, h=220,
+                    selection_mode=0, tree=False, lazy=False, max_height=0,
+                    fixed_header=True, horizontal_scroll=True, summary=None,
+                    row_height=None, header_height=None):
+    if columns is None:
+        columns = [
+            {"title": "序号", "key": "idx", "type": "index", "width": 64, "fixed": "left", "align": "center"},
+            {"title": "事项", "key": "task", "width": 170, "sortable": True, "tooltip": True},
+            {"title": "状态", "key": "state", "type": "status", "width": 120, "align": "center"},
+            {"title": "进度", "key": "progress", "type": "progress", "width": 150},
+        ]
+    if rows is None:
+        rows = [
+            {"cells": [{"type": "index"}, "🍜 备菜", {"type": "status", "value": "1", "options": {"status": 1}}, {"type": "progress", "value": 66}]},
+            {"cells": [{"type": "index"}, "🚚 配送", {"type": "status", "value": "2", "options": {"status": 2}}, {"type": "progress", "value": 88}]},
+        ]
+    legacy_columns = [_table_column_title(col, i) for i, col in enumerate(columns)]
+    legacy_rows = []
+    for row in rows:
+        if isinstance(row, dict):
+            raw_cells = row.get("cells", row.get("values", []))
+            legacy_rows.append([str(_table_cell_payload(cell)[0]) for cell in raw_cells])
+        else:
+            legacy_rows.append([str(_table_cell_payload(cell)[0]) for cell in row])
+    element_id = create_table(
+        hwnd, parent_id, legacy_columns, legacy_rows,
+        striped, bordered, x, y, w, h,
+        row_height=row_height, header_height=header_height,
+        selectable=selection_mode != 0
+    )
+    if element_id:
+        set_table_columns_ex(hwnd, element_id, columns)
+        set_table_rows_ex(hwnd, element_id, rows, columns)
+        set_table_selection_mode(hwnd, element_id, selection_mode)
+        set_table_tree_options(hwnd, element_id, tree, 18, lazy)
+        set_table_viewport_options(hwnd, element_id, max_height, fixed_header, horizontal_scroll, summary is not None)
+        if summary is not None:
+            set_table_summary(hwnd, element_id, summary)
+    return element_id
 
 def create_card(hwnd, parent_id, title="🧩 卡片", body="", shadow=1,
                 x=0, y=0, w=280, h=140):
@@ -4741,6 +5933,86 @@ def get_autocomplete_options(hwnd, element_id):
         "request_id": request_id.value,
     }
 
+def set_autocomplete_placeholder(hwnd, element_id, text="请输入内容"):
+    data = make_utf8(text)
+    dll.EU_SetAutocompletePlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_autocomplete_placeholder(hwnd, element_id):
+    needed = dll.EU_GetAutocompletePlaceholder(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetAutocompletePlaceholder(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def set_autocomplete_icons(hwnd, element_id, prefix_icon="", suffix_icon=""):
+    prefix_data = make_utf8(prefix_icon)
+    suffix_data = make_utf8(suffix_icon)
+    dll.EU_SetAutocompleteIcons(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+    )
+
+def get_autocomplete_icons(hwnd, element_id, buffer_size=512):
+    prefix = (ctypes.c_ubyte * buffer_size)()
+    suffix = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetAutocompleteIcons(hwnd, element_id, prefix, buffer_size, suffix, buffer_size)
+    if not ok:
+        return None
+    return (
+        bytes(prefix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+        bytes(suffix).split(b"\0", 1)[0].decode("utf-8", errors="replace"),
+    )
+
+def set_autocomplete_behavior_options(hwnd, element_id, trigger_on_focus=True):
+    dll.EU_SetAutocompleteBehaviorOptions(hwnd, element_id, 1 if trigger_on_focus else 0)
+
+def get_autocomplete_behavior_options(hwnd, element_id):
+    trigger = ctypes.c_int()
+    ok = dll.EU_GetAutocompleteBehaviorOptions(hwnd, element_id, ctypes.byref(trigger))
+    if not ok:
+        return None
+    return {"trigger_on_focus": bool(trigger.value)}
+
+def create_autocomplete(hwnd, parent_id, value="", suggestions=None,
+                        placeholder="请输入内容", trigger_on_focus=True,
+                        prefix_icon="", suffix_icon="",
+                        x=0, y=0, w=260, h=36):
+    if (
+        type(placeholder) is int and
+        type(trigger_on_focus) is int and
+        type(prefix_icon) is int and
+        type(suffix_icon) is int and
+        x == 0 and y == 0 and w == 260 and h == 36
+    ):
+        x, y, w, h = placeholder, trigger_on_focus, prefix_icon, suffix_icon
+        placeholder = "请输入内容"
+        trigger_on_focus = True
+        prefix_icon = ""
+        suffix_icon = ""
+    value_data = make_utf8(value)
+    suggestion_data = _autocomplete_suggestions_data(suggestions)
+    element_id = dll.EU_CreateAutocomplete(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(suggestion_data), len(suggestion_data),
+        x, y, w, h
+    )
+    if not element_id:
+        return 0
+    if placeholder:
+        set_autocomplete_placeholder(hwnd, element_id, placeholder)
+    if prefix_icon or suffix_icon:
+        set_autocomplete_icons(hwnd, element_id, prefix_icon, suffix_icon)
+    if not trigger_on_focus:
+        set_autocomplete_behavior_options(hwnd, element_id, trigger_on_focus=False)
+    return element_id
+
+def set_autocomplete_suggestions(hwnd, element_id, suggestions=None):
+    data = _autocomplete_suggestions_data(suggestions)
+    dll.EU_SetAutocompleteSuggestions(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_mentions_value(hwnd, element_id, value=""):
     data = make_utf8(value)
     dll.EU_SetMentionsValue(hwnd, element_id, bytes_arg(data), len(data))
@@ -4994,6 +6266,86 @@ def get_datepicker_selection_range(hwnd, element_id):
     )
     return (start_value.value, end_value.value, bool(enabled.value)) if ok else None
 
+def set_datepicker_placeholder(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetDatePickerPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datepicker_range_separator(hwnd, element_id, sep):
+    data = make_utf8(sep)
+    dll.EU_SetDatePickerRangeSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datepicker_format(hwnd, element_id, fmt):
+    data = make_utf8(fmt)
+    dll.EU_SetDatePickerFormat(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datepicker_align(hwnd, element_id, align=0):
+    dll.EU_SetDatePickerAlign(hwnd, element_id, align)
+
+def set_datepicker_mode(hwnd, element_id, mode=0):
+    dll.EU_SetDatePickerMode(hwnd, element_id, mode)
+
+def get_datepicker_mode(hwnd, element_id):
+    return dll.EU_GetDatePickerMode(hwnd, element_id)
+
+def set_datepicker_multi_select(hwnd, element_id, enabled=True):
+    dll.EU_SetDatePickerMultiSelect(hwnd, element_id, 1 if enabled else 0)
+
+def get_datepicker_selected_dates(hwnd, element_id):
+    needed = dll.EU_GetDatePickerSelectedDates(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return []
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    copied = dll.EU_GetDatePickerSelectedDates(hwnd, element_id, buf, needed + 1)
+    raw = bytes(buf[:min(copied, needed)])
+    return [int(s) for s in raw.decode("utf-8", errors="replace").split(",") if s]
+
+def set_datepicker_shortcuts(hwnd, element_id, shortcuts_text):
+    data = make_utf8(shortcuts_text)
+    dll.EU_SetDatePickerShortcuts(hwnd, element_id, bytes_arg(data), len(data))
+
+def create_date_range_picker(hwnd, parent_id, start=0, end=0,
+                              x=0, y=0, w=360, h=42):
+    return dll.EU_CreateDateRangePicker(hwnd, parent_id, start, end, x, y, w, h)
+
+def set_date_range_picker_value(hwnd, element_id, start, end):
+    dll.EU_SetDateRangePickerValue(hwnd, element_id, start, end)
+
+def get_date_range_picker_value(hwnd, element_id):
+    s = ctypes.c_int(); e = ctypes.c_int()
+    if dll.EU_GetDateRangePickerValue(hwnd, element_id, ctypes.byref(s), ctypes.byref(e)):
+        return (s.value, e.value)
+    return None
+
+def set_date_range_picker_range(hwnd, element_id, min_v, max_v):
+    dll.EU_SetDateRangePickerRange(hwnd, element_id, min_v, max_v)
+
+def set_date_range_picker_placeholders(hwnd, element_id, start_text, end_text):
+    sd = make_utf8(start_text); ed = make_utf8(end_text)
+    dll.EU_SetDateRangePickerPlaceholders(hwnd, element_id, bytes_arg(sd), len(sd), bytes_arg(ed), len(ed))
+
+def set_date_range_picker_separator(hwnd, element_id, sep):
+    data = make_utf8(sep)
+    dll.EU_SetDateRangePickerSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_date_range_picker_format(hwnd, element_id, fmt=0):
+    dll.EU_SetDateRangePickerFormat(hwnd, element_id, fmt)
+
+def set_date_range_picker_align(hwnd, element_id, align=0):
+    dll.EU_SetDateRangePickerAlign(hwnd, element_id, align)
+
+def set_date_range_picker_shortcuts(hwnd, element_id, shortcuts_text):
+    data = make_utf8(shortcuts_text)
+    dll.EU_SetDateRangePickerShortcuts(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_date_range_picker_open(hwnd, element_id, open_state):
+    dll.EU_SetDateRangePickerOpen(hwnd, element_id, 1 if open_state else 0)
+
+def get_date_range_picker_open(hwnd, element_id):
+    return bool(dll.EU_GetDateRangePickerOpen(hwnd, element_id))
+
+def date_range_picker_clear(hwnd, element_id):
+    dll.EU_DateRangePickerClear(hwnd, element_id)
+
 def set_timepicker_time(hwnd, element_id, hour=9, minute=30):
     dll.EU_SetTimePickerTime(hwnd, element_id, hour, minute)
 
@@ -5034,6 +6386,38 @@ def get_timepicker_scroll(hwnd, element_id):
         hwnd, element_id, ctypes.byref(hour_scroll), ctypes.byref(minute_scroll)
     )
     return (hour_scroll.value, minute_scroll.value) if ok else None
+
+def set_timepicker_arrow_control(hwnd, element_id, enabled=True):
+    dll.EU_SetTimePickerArrowControl(hwnd, element_id, 1 if enabled else 0)
+
+def get_timepicker_arrow_control(hwnd, element_id):
+    return bool(dll.EU_GetTimePickerArrowControl(hwnd, element_id))
+
+def set_timepicker_range_select(hwnd, element_id, enabled=True, start_hhmm=0, end_hhmm=2359):
+    dll.EU_SetTimePickerRangeSelect(hwnd, element_id, 1 if enabled else 0, start_hhmm, end_hhmm)
+
+def set_timepicker_start_placeholder(hwnd, element_id, text="开始时间"):
+    data = make_utf8(text)
+    dll.EU_SetTimePickerStartPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_timepicker_end_placeholder(hwnd, element_id, text="结束时间"):
+    data = make_utf8(text)
+    dll.EU_SetTimePickerEndPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_timepicker_range_placeholders(hwnd, element_id, start_text="开始时间", end_text="结束时间"):
+    set_timepicker_start_placeholder(hwnd, element_id, start_text)
+    set_timepicker_end_placeholder(hwnd, element_id, end_text)
+
+def set_timepicker_range_separator(hwnd, element_id, sep=" 至 "):
+    data = make_utf8(sep)
+    dll.EU_SetTimePickerRangeSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_timepicker_range_value(hwnd, element_id):
+    st = ctypes.c_int()
+    en = ctypes.c_int()
+    enabled = ctypes.c_int()
+    ok = dll.EU_GetTimePickerRangeValue(hwnd, element_id, ctypes.byref(st), ctypes.byref(en), ctypes.byref(enabled))
+    return (st.value, en.value, bool(enabled.value)) if ok else None
 
 def set_datetimepicker_datetime(hwnd, element_id, year=2026, month=5, day=2,
                                 hour=9, minute=30):
@@ -5113,6 +6497,48 @@ def get_datetimepicker_scroll(hwnd, element_id):
     )
     return (hour_scroll.value, minute_scroll.value) if ok else None
 
+def set_datetimepicker_shortcuts(hwnd, element_id, shortcuts_text):
+    data = make_utf8(shortcuts_text)
+    dll.EU_SetDateTimePickerShortcuts(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_start_placeholder(hwnd, element_id, text="开始日期时间"):
+    data = make_utf8(text)
+    dll.EU_SetDateTimePickerStartPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_end_placeholder(hwnd, element_id, text="结束日期时间"):
+    data = make_utf8(text)
+    dll.EU_SetDateTimePickerEndPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_range_placeholders(hwnd, element_id,
+                                          start_text="开始日期时间", end_text="结束日期时间"):
+    set_datetimepicker_start_placeholder(hwnd, element_id, start_text)
+    set_datetimepicker_end_placeholder(hwnd, element_id, end_text)
+
+def set_datetimepicker_default_time(hwnd, element_id, hour=9, minute=0):
+    dll.EU_SetDateTimePickerDefaultTime(hwnd, element_id, hour, minute)
+
+def set_datetimepicker_range_default_time(hwnd, element_id,
+                                          start_hour=0, start_minute=0,
+                                          end_hour=0, end_minute=0):
+    dll.EU_SetDateTimePickerRangeDefaultTime(
+        hwnd, element_id, start_hour, start_minute, end_hour, end_minute
+    )
+
+def set_datetimepicker_range_separator(hwnd, element_id, sep=" 至 "):
+    data = make_utf8(sep)
+    dll.EU_SetDateTimePickerRangeSeparator(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_datetimepicker_range_select(hwnd, element_id, enabled=True,
+                                     start_date=0, start_time=0, end_date=0, end_time=0):
+    dll.EU_SetDateTimePickerRangeSelect(hwnd, element_id, 1 if enabled else 0,
+                                         start_date, start_time, end_date, end_time)
+
+def get_datetimepicker_range_value(hwnd, element_id):
+    sd = ctypes.c_int(); st = ctypes.c_int(); ed = ctypes.c_int(); et = ctypes.c_int(); en = ctypes.c_int()
+    ok = dll.EU_GetDateTimePickerRangeValue(hwnd, element_id,
+        ctypes.byref(sd), ctypes.byref(st), ctypes.byref(ed), ctypes.byref(et), ctypes.byref(en))
+    return (sd.value, st.value, ed.value, et.value, bool(en.value)) if ok else None
+
 def set_time_select_time(hwnd, element_id, hour=9, minute=30):
     dll.EU_SetTimeSelectTime(hwnd, element_id, hour, minute)
 
@@ -5162,6 +6588,10 @@ def get_time_select_state(hwnd, element_id):
         group_count.value,
         active_index.value,
     ) if ok else None
+
+def set_time_select_placeholder(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetTimeSelectPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
 
 def create_dropdown(hwnd, parent_id, text="📂 更多操作", items=None, selected=0,
                     x=0, y=0, w=180, h=36):
@@ -5222,6 +6652,81 @@ def get_dropdown_state(hwnd, element_id):
         "level": level.value,
         "hover": hover.value,
     } if ok else None
+
+def set_dropdown_options(hwnd, element_id, trigger_mode=0, hide_on_click=True,
+                         split_button=False, button_variant=0, size=0, trigger_style=0):
+    dll.EU_SetDropdownOptions(
+        hwnd, element_id,
+        int(trigger_mode), 1 if hide_on_click else 0,
+        1 if split_button else 0, int(button_variant),
+        int(size), int(trigger_style),
+    )
+
+def get_dropdown_options(hwnd, element_id):
+    trigger_mode = ctypes.c_int()
+    hide_on_click = ctypes.c_int()
+    split_button = ctypes.c_int()
+    button_variant = ctypes.c_int()
+    size = ctypes.c_int()
+    trigger_style = ctypes.c_int()
+    ok = dll.EU_GetDropdownOptions(
+        hwnd, element_id,
+        ctypes.byref(trigger_mode), ctypes.byref(hide_on_click),
+        ctypes.byref(split_button), ctypes.byref(button_variant),
+        ctypes.byref(size), ctypes.byref(trigger_style),
+    )
+    return {
+        "trigger_mode": trigger_mode.value,
+        "hide_on_click": bool(hide_on_click.value),
+        "split_button": bool(split_button.value),
+        "button_variant": button_variant.value,
+        "size": size.value,
+        "trigger_style": trigger_style.value,
+    } if ok else None
+
+def set_dropdown_item_meta(hwnd, element_id, icons=None, commands=None, divided=None):
+    icons = icons or []
+    commands = commands or []
+    divided = divided or []
+    icons_data = make_utf8("|".join(icons))
+    commands_data = make_utf8("|".join(commands))
+    arr_type = ctypes.c_int * len(divided)
+    arr = arr_type(*divided) if divided else None
+    dll.EU_SetDropdownItemMeta(
+        hwnd, element_id,
+        bytes_arg(icons_data), len(icons_data),
+        bytes_arg(commands_data), len(commands_data),
+        arr, len(divided),
+    )
+
+def get_dropdown_item_meta(hwnd, element_id, item_index):
+    icon_buf = (ctypes.c_ubyte * 256)()
+    command_buf = (ctypes.c_ubyte * 256)()
+    divided = ctypes.c_int()
+    disabled = ctypes.c_int()
+    level = ctypes.c_int()
+    ok = dll.EU_GetDropdownItemMeta(
+        hwnd, element_id, item_index,
+        icon_buf, len(icon_buf), command_buf, len(command_buf),
+        ctypes.byref(divided), ctypes.byref(disabled), ctypes.byref(level),
+    )
+    if not ok:
+        return None
+    icon = bytes(icon_buf).split(b"\0", 1)[0].decode("utf-8", errors="replace")
+    command = bytes(command_buf).split(b"\0", 1)[0].decode("utf-8", errors="replace")
+    return {
+        "icon": icon,
+        "command": command,
+        "divided": bool(divided.value),
+        "disabled": bool(disabled.value),
+        "level": level.value,
+    }
+
+def set_dropdown_command_callback(hwnd, element_id, callback):
+    dll.EU_SetDropdownCommandCallback(hwnd, element_id, callback)
+
+def set_dropdown_main_click_callback(hwnd, element_id, callback):
+    dll.EU_SetDropdownMainClickCallback(hwnd, element_id, callback)
 
 def create_menu(hwnd, parent_id, items=None, active=0, orientation=0,
                 x=0, y=0, w=420, h=48):
@@ -6118,12 +7623,79 @@ def set_upload_file_items(hwnd, element_id, items):
         status = int(item[1]) if len(item) > 1 else 1
         progress = int(item[2]) if len(item) > 2 else 100
         path = str(item[3]) if len(item) > 3 else name
-        rows.append(f"{name}\t{status}\t{progress}\t{path}")
+        thumbnail = str(item[4]) if len(item) > 4 else path
+        size = int(item[5]) if len(item) > 5 else 0
+        rows.append(f"{name}\t{status}\t{progress}\t{path}\t{thumbnail}\t{size}")
     data = make_utf8("|".join(rows))
     dll.EU_SetUploadFileItems(hwnd, element_id, bytes_arg(data), len(data))
 
 def set_upload_options(hwnd, element_id, multiple=True, auto_upload=False):
     dll.EU_SetUploadOptions(hwnd, element_id, 1 if multiple else 0, 1 if auto_upload else 0)
+
+def set_upload_style(hwnd, element_id, style_mode=5, show_file_list=True,
+                     show_tip=True, show_actions=True, drop_enabled=False):
+    dll.EU_SetUploadStyle(
+        hwnd, element_id, int(style_mode),
+        1 if show_file_list else 0,
+        1 if show_tip else 0,
+        1 if show_actions else 0,
+        1 if drop_enabled else 0,
+    )
+
+def get_upload_style(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(5)]
+    ok = dll.EU_GetUploadStyle(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = ["style_mode", "show_file_list", "show_tip", "show_actions", "drop_enabled"]
+    result = {key: value.value for key, value in zip(keys, values)}
+    for key in keys[1:]:
+        result[key] = bool(result[key])
+    return result
+
+def set_upload_texts(hwnd, element_id, title="", tip="", trigger="", submit=""):
+    title_data = make_utf8(title)
+    tip_data = make_utf8(tip)
+    trigger_data = make_utf8(trigger)
+    submit_data = make_utf8(submit)
+    dll.EU_SetUploadTexts(
+        hwnd, element_id,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(tip_data), len(tip_data),
+        bytes_arg(trigger_data), len(trigger_data),
+        bytes_arg(submit_data), len(submit_data),
+    )
+
+def set_upload_constraints(hwnd, element_id, limit=0, max_size_kb=0, accept=""):
+    accept_data = make_utf8(accept)
+    dll.EU_SetUploadConstraints(
+        hwnd, element_id, int(limit), int(max_size_kb),
+        bytes_arg(accept_data), len(accept_data),
+    )
+
+def get_upload_constraints(hwnd, element_id):
+    limit = ctypes.c_int()
+    max_size_kb = ctypes.c_int()
+    needed = dll.EU_GetUploadConstraints(
+        hwnd, element_id, ctypes.byref(limit), ctypes.byref(max_size_kb), None, 0
+    )
+    accept = ""
+    if needed > 0:
+        buf = (ctypes.c_ubyte * (needed + 1))()
+        dll.EU_GetUploadConstraints(
+            hwnd, element_id, ctypes.byref(limit), ctypes.byref(max_size_kb), buf, needed + 1
+        )
+        accept = bytes(buf[:needed]).decode("utf-8", errors="replace")
+    return {"limit": limit.value, "max_size_kb": max_size_kb.value, "accept": accept}
+
+def set_upload_preview_open(hwnd, element_id, index=0, open=True):
+    dll.EU_SetUploadPreviewOpen(hwnd, element_id, int(index), 1 if open else 0)
+
+def get_upload_preview_state(hwnd, element_id):
+    index = ctypes.c_int()
+    open_value = ctypes.c_int()
+    ok = dll.EU_GetUploadPreviewState(hwnd, element_id, ctypes.byref(index), ctypes.byref(open_value))
+    return {"file_index": index.value, "open": bool(open_value.value)} if ok else None
 
 def set_upload_selected_files(hwnd, element_id, files):
     data = make_utf8("|".join(files))
@@ -6658,6 +8230,99 @@ def create_notification(hwnd, parent_id, title="通知", body="",
         notify_type, 1 if closable else 0, x, y, w, h
     )
 
+def show_message(hwnd, text, message_type=0, closable=False, center=False,
+                 rich=False, duration_ms=3000, offset=20):
+    data = make_utf8(text)
+    return dll.EU_ShowMessage(
+        hwnd, bytes_arg(data), len(data),
+        message_type, 1 if closable else 0, 1 if center else 0, 1 if rich else 0,
+        duration_ms, offset
+    )
+
+def message_success(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=1, **kwargs)
+
+def message_warning(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=2, **kwargs)
+
+def message_error(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=3, **kwargs)
+
+def message_info(hwnd, text, **kwargs):
+    return show_message(hwnd, text, message_type=0, **kwargs)
+
+def set_message_text(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetMessageText(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_message_options(hwnd, element_id, message_type=0, closable=False,
+                        center=False, rich=False, duration_ms=3000, offset=20):
+    dll.EU_SetMessageOptions(
+        hwnd, element_id, message_type, 1 if closable else 0,
+        1 if center else 0, 1 if rich else 0, duration_ms, offset
+    )
+
+def set_message_closed(hwnd, element_id, closed=True):
+    dll.EU_SetMessageClosed(hwnd, element_id, 1 if closed else 0)
+
+def get_message_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(7)]
+    ok = dll.EU_GetMessageOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    return tuple(v.value for v in values) if ok else None
+
+def get_message_full_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(15)]
+    ok = dll.EU_GetMessageFullState(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = [
+        "message_type", "closable", "center", "rich", "duration_ms", "closed",
+        "close_hover", "close_down", "close_count", "last_action",
+        "timer_elapsed_ms", "timer_running", "stack_index", "stack_gap", "offset",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
+def trigger_message_close(hwnd, element_id):
+    dll.EU_TriggerMessageClose(hwnd, element_id)
+
+def set_message_close_callback(hwnd, element_id, callback):
+    dll.EU_SetMessageCloseCallback(hwnd, element_id, callback)
+
+def _placement_value(position):
+    if isinstance(position, int):
+        return position
+    return {
+        "top-right": 0,
+        "bottom-right": 1,
+        "bottom-left": 2,
+        "top-left": 3,
+    }.get(str(position), 0)
+
+def show_notification(hwnd, title="通知", message="", notify_type=0, closable=True,
+                      duration_ms=4500, position="top-right", offset=20,
+                      rich=False, w=330, h=96):
+    title_data = make_utf8(title)
+    body_data = make_utf8(message)
+    return dll.EU_ShowNotification(
+        hwnd,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(body_data), len(body_data),
+        notify_type, 1 if closable else 0, duration_ms,
+        _placement_value(position), offset, 1 if rich else 0, w, h
+    )
+
+def notify_success(hwnd, title="成功", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=1, **kwargs)
+
+def notify_warning(hwnd, title="警告", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=2, **kwargs)
+
+def notify_error(hwnd, title="错误", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=3, **kwargs)
+
+def notify_info(hwnd, title="消息", message="", **kwargs):
+    return show_notification(hwnd, title, message, notify_type=0, **kwargs)
+
 def get_notification_options(hwnd, element_id):
     notify_type = ctypes.c_int()
     closable = ctypes.c_int()
@@ -6679,6 +8344,12 @@ def set_notification_type(hwnd, element_id, notify_type):
 
 def set_notification_closable(hwnd, element_id, closable=True):
     dll.EU_SetNotificationClosable(hwnd, element_id, 1 if closable else 0)
+
+def set_notification_placement(hwnd, element_id, position="top-right", offset=20):
+    dll.EU_SetNotificationPlacement(hwnd, element_id, _placement_value(position), offset)
+
+def set_notification_rich_mode(hwnd, element_id, rich=True):
+    dll.EU_SetNotificationRichMode(hwnd, element_id, 1 if rich else 0)
 
 def set_notification_options(hwnd, element_id, notify_type=0, closable=True, duration_ms=0):
     dll.EU_SetNotificationOptions(hwnd, element_id, notify_type, 1 if closable else 0, duration_ms)
@@ -6712,6 +8383,22 @@ def get_notification_full_state(hwnd, element_id):
         "notify_type", "closable", "duration_ms", "closed",
         "close_hover", "close_down", "close_count", "last_action",
         "timer_elapsed_ms", "timer_running", "stack_index", "stack_gap",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
+def get_notification_full_state_ex(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(15)]
+    ok = dll.EU_GetNotificationFullStateEx(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "notify_type", "closable", "duration_ms", "closed",
+        "close_hover", "close_down", "close_count", "last_action",
+        "timer_elapsed_ms", "timer_running", "stack_index", "stack_gap",
+        "placement", "offset", "rich",
     ]
     return {key: value.value for key, value in zip(keys, values)}
 
@@ -6770,7 +8457,7 @@ def set_result_actions(hwnd, element_id, actions):
     data = make_utf8("|".join(actions))
     dll.EU_SetResultActions(hwnd, element_id, bytes_arg(data), len(data))
 
-def create_dialog(hwnd, title="Dialog", body="", modal=True, closable=True,
+def create_dialog(hwnd, title="对话框", body="", modal=True, closable=True,
                   w=460, h=250):
     title_data = make_utf8(title)
     body_data = make_utf8(body)
@@ -6798,6 +8485,46 @@ def set_dialog_options(hwnd, element_id, open=True, modal=True, closable=True,
         1 if close_on_mask else 0, 1 if draggable else 0,
         w, h
     )
+
+def set_dialog_advanced_options(hwnd, element_id, width_mode=0, width_value=460,
+                                center=False, footer_center=False,
+                                content_padding=20, footer_height=58):
+    dll.EU_SetDialogAdvancedOptions(
+        hwnd, element_id,
+        width_mode, width_value,
+        1 if center else 0, 1 if footer_center else 0,
+        content_padding, footer_height,
+    )
+
+def get_dialog_advanced_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(9)]
+    ok = dll.EU_GetDialogAdvancedOptions(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "width_mode", "width_value", "center", "footer_center",
+        "content_padding", "footer_height", "content_parent_id",
+        "footer_parent_id", "close_pending",
+    ]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("center", "footer_center", "close_pending"):
+        state[key] = bool(state[key])
+    return state
+
+def get_dialog_content_parent(hwnd, element_id):
+    return dll.EU_GetDialogContentParent(hwnd, element_id)
+
+def get_dialog_footer_parent(hwnd, element_id):
+    return dll.EU_GetDialogFooterParent(hwnd, element_id)
+
+def set_dialog_before_close_callback(hwnd, element_id, callback):
+    dll.EU_SetDialogBeforeCloseCallback(hwnd, element_id, callback)
+
+def confirm_dialog_close(hwnd, element_id, allow=True):
+    dll.EU_ConfirmDialogClose(hwnd, element_id, 1 if allow else 0)
 
 def get_dialog_options(hwnd, element_id):
     open_value = ctypes.c_int()
@@ -6889,6 +8616,50 @@ def set_drawer_options(hwnd, element_id, placement=1, open=True,
         1 if close_on_mask else 0, size
     )
 
+def set_drawer_advanced_options(hwnd, element_id, show_header=True, show_close=True,
+                                close_on_escape=True, content_padding=20,
+                                footer_height=58, size_mode=0, size_value=0):
+    dll.EU_SetDrawerAdvancedOptions(
+        hwnd, element_id,
+        1 if show_header else 0,
+        1 if show_close else 0,
+        1 if close_on_escape else 0,
+        content_padding,
+        footer_height,
+        size_mode,
+        size_value,
+    )
+
+def get_drawer_advanced_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(10)]
+    ok = dll.EU_GetDrawerAdvancedOptions(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "show_header", "show_close", "close_on_escape", "content_padding",
+        "footer_height", "size_mode", "size_value", "content_parent_id",
+        "footer_parent_id", "close_pending",
+    ]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("show_header", "show_close", "close_on_escape", "close_pending"):
+        state[key] = bool(state[key])
+    return state
+
+def get_drawer_content_parent(hwnd, element_id):
+    return dll.EU_GetDrawerContentParent(hwnd, element_id)
+
+def get_drawer_footer_parent(hwnd, element_id):
+    return dll.EU_GetDrawerFooterParent(hwnd, element_id)
+
+def set_drawer_before_close_callback(hwnd, element_id, callback):
+    dll.EU_SetDrawerBeforeCloseCallback(hwnd, element_id, callback)
+
+def confirm_drawer_close(hwnd, element_id, allow=True):
+    dll.EU_ConfirmDrawerClose(hwnd, element_id, 1 if allow else 0)
+
 def get_drawer_options(hwnd, element_id):
     placement = ctypes.c_int()
     open_value = ctypes.c_int()
@@ -6944,7 +8715,7 @@ def get_drawer_full_state(hwnd, element_id):
 def set_drawer_close_callback(hwnd, element_id, callback):
     dll.EU_SetDrawerCloseCallback(hwnd, element_id, callback)
 
-def create_tooltip(hwnd, parent_id, label="Tooltip", content="", placement=2,
+def create_tooltip(hwnd, parent_id, label="文字提示", content="", placement=2,
                    x=0, y=0, w=140, h=36):
     label_data = make_utf8(label)
     content_data = make_utf8(content)
@@ -6979,8 +8750,36 @@ def set_tooltip_behavior(hwnd, element_id, show_delay=220, hide_delay=120,
                          trigger_mode=0, show_arrow=True):
     dll.EU_SetTooltipBehavior(
         hwnd, element_id, show_delay, hide_delay,
-        trigger_mode, 1 if show_arrow else 0,
+        _trigger_mode_value(trigger_mode), 1 if show_arrow else 0,
     )
+
+def set_tooltip_advanced_options(hwnd, element_id, placement="top", effect="dark",
+                                 disabled=False, show_arrow=True, offset=8,
+                                 max_width=280):
+    effect_value = 1 if effect == "light" else int(effect) if isinstance(effect, int) else 0
+    dll.EU_SetTooltipAdvancedOptions(
+        hwnd, element_id,
+        _extended_placement_value(placement, "top"),
+        effect_value,
+        1 if disabled else 0,
+        1 if show_arrow else 0,
+        offset,
+        max_width,
+    )
+
+def get_tooltip_advanced_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetTooltipAdvancedOptions(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = ["placement", "effect", "disabled", "show_arrow", "offset", "max_width"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("disabled", "show_arrow"):
+        state[key] = bool(state[key])
+    return state
 
 def trigger_tooltip(hwnd, element_id, open=True):
     dll.EU_TriggerTooltip(hwnd, element_id, 1 if open else 0)
@@ -7011,7 +8810,7 @@ def get_tooltip_full_state(hwnd, element_id):
         state[key] = bool(state[key])
     return state
 
-def create_popover(hwnd, parent_id, label="Popover", title="Popover",
+def create_popover(hwnd, parent_id, label="弹出框", title="弹出框",
                    content="", placement=3, x=0, y=0, w=140, h=36):
     label_data = make_utf8(label)
     title_data = make_utf8(title)
@@ -7038,6 +8837,44 @@ def set_popover_options(hwnd, element_id, placement=3, open=False,
         hwnd, element_id, placement, 1 if open else 0,
         popup_width, popup_height, 1 if closable else 0
     )
+
+def set_popover_advanced_options(hwnd, element_id, placement="bottom", open=False,
+                                 popup_width=250, popup_height=132,
+                                 closable=True):
+    dll.EU_SetPopoverAdvancedOptions(
+        hwnd, element_id,
+        _extended_placement_value(placement, "bottom"),
+        1 if open else 0,
+        popup_width, popup_height,
+        1 if closable else 0,
+    )
+
+def set_popover_behavior(hwnd, element_id, trigger_mode="click",
+                         close_on_outside=True, show_arrow=True, offset=8):
+    dll.EU_SetPopoverBehavior(
+        hwnd, element_id,
+        _trigger_mode_value(trigger_mode),
+        1 if close_on_outside else 0,
+        1 if show_arrow else 0,
+        offset,
+    )
+
+def get_popover_behavior(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(4)]
+    ok = dll.EU_GetPopoverBehavior(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    if not ok:
+        return None
+    keys = ["trigger_mode", "close_on_outside", "show_arrow", "offset"]
+    state = {key: value.value for key, value in zip(keys, values)}
+    for key in ("close_on_outside", "show_arrow"):
+        state[key] = bool(state[key])
+    return state
+
+def get_popover_content_parent(hwnd, element_id):
+    return dll.EU_GetPopoverContentParent(hwnd, element_id)
 
 def get_popover_options(hwnd, element_id):
     placement = ctypes.c_int()
@@ -7089,8 +8926,8 @@ def get_popover_full_state(hwnd, element_id):
 def set_popover_action_callback(hwnd, element_id, callback):
     dll.EU_SetPopoverActionCallback(hwnd, element_id, callback)
 
-def create_popconfirm(hwnd, parent_id, label="Popconfirm", title="Confirm",
-                      content="", confirm="OK", cancel="Cancel", placement=3,
+def create_popconfirm(hwnd, parent_id, label="气泡确认", title="确认操作",
+                      content="", confirm="确定", cancel="取消", placement=3,
                       x=0, y=0, w=150, h=36):
     label_data = make_utf8(label)
     title_data = make_utf8(title)
@@ -7122,6 +8959,22 @@ def set_popconfirm_options(hwnd, element_id, placement=3, open=False,
         hwnd, element_id, placement, 1 if open else 0, popup_width, popup_height
     )
 
+def set_popconfirm_advanced_options(hwnd, element_id, placement="top", open=False,
+                                    popup_width=286, popup_height=146,
+                                    trigger_mode="click",
+                                    close_on_outside=True, show_arrow=True,
+                                    offset=8):
+    dll.EU_SetPopconfirmAdvancedOptions(
+        hwnd, element_id,
+        _extended_placement_value(placement, "top"),
+        1 if open else 0,
+        popup_width, popup_height,
+        _trigger_mode_value(trigger_mode),
+        1 if close_on_outside else 0,
+        1 if show_arrow else 0,
+        offset,
+    )
+
 def get_popconfirm_options(hwnd, element_id):
     placement = ctypes.c_int()
     open_value = ctypes.c_int()
@@ -7149,6 +9002,38 @@ def set_popconfirm_buttons(hwnd, element_id, confirm="确定 ✅", cancel="取�
         bytes_arg(confirm_data), len(confirm_data),
         bytes_arg(cancel_data), len(cancel_data)
     )
+
+def set_popconfirm_icon(hwnd, element_id, icon="!", color=0xFFE6A23C, visible=True):
+    data = make_utf8(icon)
+    dll.EU_SetPopconfirmIcon(
+        hwnd, element_id,
+        bytes_arg(data), len(data),
+        color,
+        1 if visible else 0,
+    )
+
+def get_popconfirm_icon(hwnd, element_id):
+    needed = dll.EU_GetPopconfirmIcon(hwnd, element_id, None, 0, None, None)
+    if needed <= 0:
+        icon = ""
+    else:
+        buf = (ctypes.c_ubyte * (needed + 1))()
+        color = ctypes.c_uint32()
+        visible = ctypes.c_int()
+        dll.EU_GetPopconfirmIcon(
+            hwnd, element_id, buf, needed + 1,
+            ctypes.byref(color), ctypes.byref(visible),
+        )
+        return {
+            "icon": bytes(buf[:needed]).decode("utf-8", errors="replace"),
+            "color": color.value,
+            "visible": bool(visible.value),
+        }
+    color = ctypes.c_uint32()
+    visible = ctypes.c_int()
+    dll.EU_GetPopconfirmIcon(hwnd, element_id, None, 0,
+                             ctypes.byref(color), ctypes.byref(visible))
+    return {"icon": icon, "color": color.value, "visible": bool(visible.value)}
 
 def trigger_popconfirm_result(hwnd, element_id, result=True):
     dll.EU_TriggerPopconfirmResult(hwnd, element_id, 1 if result else 0)
@@ -7207,6 +9092,101 @@ def show_confirmbox(hwnd, title="纭", text="", confirm="纭畾", cance
     )
 
 # 鈹€鈹€ Callbacks 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
+
+def show_alert_box(hwnd, title="提示", text="", confirm="确定",
+                   box_type=0, center=False, rich=False, callback=None):
+    return show_msgbox(hwnd, title, text, confirm, "", box_type,
+                       False, center, rich, False, callback)
+
+def show_confirm_box(hwnd, title="提示", text="", confirm="确定", cancel="取消",
+                     box_type=0, center=False, rich=False,
+                     distinguish_cancel_and_close=False, callback=None):
+    return show_msgbox(hwnd, title, text, confirm, cancel, box_type,
+                       True, center, rich, distinguish_cancel_and_close, callback)
+
+def show_msgbox(hwnd, title="消息", text="", confirm="确定", cancel="取消",
+                box_type=0, show_cancel=True, center=False, rich=False,
+                distinguish_cancel_and_close=False, callback=None):
+    title_data = make_utf8(title)
+    text_data = make_utf8(text)
+    confirm_data = make_utf8(confirm)
+    cancel_data = make_utf8(cancel)
+    cb = callback or on_messagebox_ex_result
+    return dll.EU_ShowMessageBoxEx(
+        hwnd,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(text_data), len(text_data),
+        bytes_arg(confirm_data), len(confirm_data),
+        bytes_arg(cancel_data), len(cancel_data),
+        box_type, 1 if show_cancel else 0, 1 if center else 0, 1 if rich else 0,
+        1 if distinguish_cancel_and_close else 0,
+        cb
+    )
+
+def show_prompt_box(hwnd, title="提示", text="", placeholder="请输入内容", value="",
+                    pattern="", error="输入内容格式不正确",
+                    confirm="确定", cancel="取消", box_type=0, center=False,
+                    rich=False, distinguish_cancel_and_close=False, callback=None):
+    title_data = make_utf8(title)
+    text_data = make_utf8(text)
+    placeholder_data = make_utf8(placeholder)
+    value_data = make_utf8(value)
+    pattern_data = make_utf8(pattern)
+    error_data = make_utf8(error)
+    confirm_data = make_utf8(confirm)
+    cancel_data = make_utf8(cancel)
+    cb = callback or on_messagebox_ex_result
+    return dll.EU_ShowPromptBox(
+        hwnd,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(text_data), len(text_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(pattern_data), len(pattern_data),
+        bytes_arg(error_data), len(error_data),
+        bytes_arg(confirm_data), len(confirm_data),
+        bytes_arg(cancel_data), len(cancel_data),
+        box_type, 1 if center else 0, 1 if rich else 0,
+        1 if distinguish_cancel_and_close else 0,
+        cb
+    )
+
+def set_messagebox_before_close(hwnd, element_id, delay_ms=0, loading_text="执行中..."):
+    data = make_utf8(loading_text)
+    dll.EU_SetMessageBoxBeforeClose(hwnd, element_id, delay_ms, bytes_arg(data), len(data))
+
+def set_messagebox_input(hwnd, element_id, value="", placeholder="", pattern="", error=""):
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    pattern_data = make_utf8(pattern)
+    error_data = make_utf8(error)
+    dll.EU_SetMessageBoxInput(
+        hwnd, element_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        bytes_arg(pattern_data), len(pattern_data),
+        bytes_arg(error_data), len(error_data),
+    )
+
+def get_messagebox_input(hwnd, element_id):
+    needed = dll.EU_GetMessageBoxInput(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetMessageBoxInput(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_messagebox_full_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(10)]
+    ok = dll.EU_GetMessageBoxFullState(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    keys = [
+        "box_type", "show_cancel", "center", "rich", "distinguish",
+        "prompt", "confirm_loading", "input_error_visible",
+        "last_action", "timer_elapsed_ms",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
 
 g_hwnd = None
 g_message_button_id = 0
@@ -7320,6 +9300,14 @@ def on_button_click(btn_id):
 def on_messagebox_result(messagebox_id, result):
     label = {1: "confirm", 0: "cancel", -1: "close"}.get(result, str(result))
     print(f"[MessageBox] #{messagebox_id} result: {label}")
+
+@MessageBoxExCallback
+def on_messagebox_ex_result(messagebox_id, action, value_ptr, value_len):
+    label = {1: "confirm", 0: "cancel", -1: "close"}.get(action, str(action))
+    value = ""
+    if value_ptr and value_len > 0:
+        value = ctypes.string_at(value_ptr, value_len).decode("utf-8", errors="replace")
+    print(f"[MessageBoxEx] #{messagebox_id} action={label} value={value}")
 
 # 鈹€鈹€ Test 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 

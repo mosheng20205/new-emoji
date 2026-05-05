@@ -4,7 +4,7 @@
 
 `Switch` 是 new_emoji 的 表单/选择 组件。当前状态：**已完成**。
 
-已补加载态、状态文本插槽、键盘点击回调、禁用态、完整选项读回、Python 封装和独立中文 emoji 验证
+已补加载态、状态文本插槽、键盘点击回调、禁用态、自定义选中/未选中颜色、自定义开关值（非布尔）、尺寸变体、完整选项读回、Python 封装和独立中文 emoji 验证
 
 ## 创建
 
@@ -25,7 +25,15 @@
 | `EU_GetSwitchOptions` | 当前组件相关导出 |
 | `EU_SetSwitchChecked` | 当前组件相关导出 |
 | `EU_SetSwitchLoading` | 当前组件相关导出 |
-| `EU_SetSwitchTexts` | 当前组件相关导出 |
+| `EU_SetSwitchTexts` | 设置开关状态文本 |
+| `EU_SetSwitchActiveColor` | 设置选中态自定义颜色（ARGB，0=主题默认） |
+| `EU_GetSwitchActiveColor` | 获取选中态自定义颜色 |
+| `EU_SetSwitchInactiveColor` | 设置未选中态自定义颜色（ARGB，0=主题默认） |
+| `EU_GetSwitchInactiveColor` | 获取未选中态自定义颜色 |
+| `EU_SetSwitchValue` | 设置开关值（支持非布尔值） |
+| `EU_GetSwitchValue` | 获取开关值 |
+| `EU_SetSwitchSize` | 设置尺寸（0=默认 1=中等 2=小型） |
+| `EU_GetSwitchSize` | 获取当前尺寸 |
 
 ## Python 使用
 

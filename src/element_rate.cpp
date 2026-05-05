@@ -4,6 +4,20 @@
 #include "theme.h"
 #include <algorithm>
 
+static Color opaque_color(Color color) {
+    return (color != 0 && (color >> 24) == 0) ? (color | 0xFF000000) : color;
+}
+
+static std::wstring replace_all(std::wstring value, const std::wstring& from, const std::wstring& to) {
+    if (from.empty()) return value;
+    size_t pos = 0;
+    while ((pos = value.find(from, pos)) != std::wstring::npos) {
+        value.replace(pos, from.size(), to);
+        pos += to.size();
+    }
+    return value;
+}
+
 static void draw_text(RenderContext& ctx, const std::wstring& text, const ElementStyle& style,
                       Color color, float x, float y, float w, float h,
                       float font_scale = 1.0f,
@@ -36,6 +50,7 @@ void Rate::set_max_value(int max_v) {
     if (max_v < 1) max_v = 1;
     if (max_v > 10) max_v = 10;
     max_value = max_v;
+    if ((int)text_items.size() > max_value) text_items.resize((size_t)max_value);
     set_value_x2(value_x2);
 }
 
@@ -68,6 +83,79 @@ void Rate::set_texts(const std::wstring& low, const std::wstring& high, bool sho
     high_text = high;
     show_score_text = show_score;
     invalidate();
+}
+
+void Rate::set_colors(Color low, Color mid, Color high) {
+    low_color = opaque_color(low);
+    mid_color = opaque_color(mid);
+    high_color = opaque_color(high);
+    invalidate();
+}
+
+void Rate::set_icons(const std::wstring& full, const std::wstring& empty,
+                     const std::wstring& low, const std::wstring& mid, const std::wstring& high) {
+    full_icon = full.empty() ? L"\u2605" : full;
+    void_icon = empty.empty() ? L"\u2606" : empty;
+    low_icon = low;
+    mid_icon = mid;
+    high_icon = high;
+    invalidate();
+}
+
+void Rate::set_text_items(const std::vector<std::wstring>& items) {
+    text_items = items;
+    if ((int)text_items.size() > max_value) text_items.resize((size_t)max_value);
+    invalidate();
+}
+
+void Rate::set_display_options(bool next_show_text, bool next_show_score,
+                               Color next_text_color, const std::wstring& next_score_template) {
+    show_text = next_show_text;
+    show_score = next_show_score;
+    score_text_color = opaque_color(next_text_color);
+    score_template = next_score_template.empty() ? L"{value}" : next_score_template;
+    show_score_text = show_text || show_score;
+    invalidate();
+}
+
+Color Rate::active_color(const Theme* theme, int display_value_x2) const {
+    if (!enabled) return theme->text_secondary;
+    if (display_value_x2 <= 0) return theme->accent;
+    if (low_color == 0 && mid_color == 0 && high_color == 0) return theme->accent;
+    int max_x2 = (std::max)(1, max_value * 2);
+    int percent = display_value_x2 * 100 / max_x2;
+    if (percent <= 40) return low_color ? low_color : theme->accent;
+    if (percent <= 80) return mid_color ? mid_color : theme->accent;
+    return high_color ? high_color : theme->accent;
+}
+
+std::wstring Rate::active_icon(int display_value_x2) const {
+    if (display_value_x2 <= 0) return full_icon.empty() ? L"\u2605" : full_icon;
+    int max_x2 = (std::max)(1, max_value * 2);
+    int percent = display_value_x2 * 100 / max_x2;
+    if (percent <= 40 && !low_icon.empty()) return low_icon;
+    if (percent <= 80 && !mid_icon.empty()) return mid_icon;
+    if (percent > 80 && !high_icon.empty()) return high_icon;
+    return full_icon.empty() ? L"\u2605" : full_icon;
+}
+
+std::wstring Rate::score_text() const {
+    std::wstring value_text = (value_x2 % 2) == 0
+        ? std::to_wstring(value_x2 / 2)
+        : std::to_wstring(value_x2 / 2) + L".5";
+    std::wstring result = score_template.empty() ? L"{value}" : score_template;
+    result = replace_all(result, L"{value}", value_text);
+    result = replace_all(result, L"{max}", std::to_wstring(max_value));
+    return result;
+}
+
+std::wstring Rate::item_text() const {
+    if (value_x2 <= 0) return low_text;
+    int index = (value_x2 + 1) / 2 - 1;
+    if (index >= 0 && index < (int)text_items.size() && !text_items[(size_t)index].empty()) {
+        return text_items[(size_t)index];
+    }
+    return high_text;
 }
 
 void Rate::notify_changed() {
@@ -104,7 +192,7 @@ void Rate::paint(RenderContext& ctx) {
         ctx.rt->FillRectangle(bg, ctx.get_brush(style.bg_color));
     }
 
-    Color fg = style.fg_color ? style.fg_color : t->text_primary;
+    Color fg = score_text_color ? score_text_color : (style.fg_color ? style.fg_color : t->text_primary);
     if (readonly || !enabled) fg = t->text_secondary;
     float label_w = label_width();
     if (!text.empty()) {
@@ -113,6 +201,8 @@ void Rate::paint(RenderContext& ctx) {
     }
 
     int display_value_x2 = (enabled && !readonly && m_hover_value_x2 > 0) ? m_hover_value_x2 : value_x2;
+    Color filled_color = active_color(t, display_value_x2);
+    std::wstring filled_icon = active_icon(display_value_x2);
     float s = star_size();
     float gap = 4.0f * style.font_size / 14.0f;
     float start_x = (float)style.pad_left + label_w + (label_w > 0.0f ? 10.0f : 0.0f);
@@ -120,17 +210,17 @@ void Rate::paint(RenderContext& ctx) {
         int star_full_x2 = (i + 1) * 2;
         int star_half_x2 = i * 2 + 1;
         float sx = start_x + (s + gap) * (float)i;
-        draw_text(ctx, L"\u2606", style, t->border_default,
+        draw_text(ctx, void_icon.empty() ? L"\u2606" : void_icon, style, t->border_default,
                   sx, 0.0f, s + gap, (float)bounds.h,
                   1.35f, DWRITE_TEXT_ALIGNMENT_CENTER);
         if (display_value_x2 >= star_full_x2) {
-            draw_text(ctx, L"\u2605", style, enabled ? t->accent : t->text_secondary,
+            draw_text(ctx, filled_icon, style, filled_color,
                       sx, 0.0f, s + gap, (float)bounds.h,
                       1.35f, DWRITE_TEXT_ALIGNMENT_CENTER);
         } else if (display_value_x2 == star_half_x2) {
             D2D1_RECT_F clip = { sx, 0.0f, sx + (s + gap) * 0.5f, (float)bounds.h };
             ctx.push_clip(clip);
-            draw_text(ctx, L"\u2605", style, enabled ? t->accent : t->text_secondary,
+            draw_text(ctx, filled_icon, style, filled_color,
                       sx, 0.0f, s + gap, (float)bounds.h,
                       1.35f, DWRITE_TEXT_ALIGNMENT_CENTER);
             ctx.pop_clip();
@@ -138,12 +228,17 @@ void Rate::paint(RenderContext& ctx) {
     }
 
     if (show_score_text) {
-        std::wstring score = (value_x2 % 2) == 0
-            ? std::to_wstring(value_x2 / 2)
-            : std::to_wstring(value_x2 / 2) + L".5";
-        score += L"/" + std::to_wstring(max_value);
-        if (!low_text.empty() || !high_text.empty()) {
-            score += L" ";
+        std::wstring score;
+        if (show_score) score = score_text();
+        if (show_text) {
+            std::wstring label = item_text();
+            if (!label.empty()) {
+                if (!score.empty()) score += L" ";
+                score += label;
+            }
+        } else if (!show_score && (!low_text.empty() || !high_text.empty())) {
+            score = score_text();
+            score += L"/" + std::to_wstring(max_value) + L" ";
             score += value_x2 > 0 ? high_text : low_text;
         }
         float text_x = start_x + (s + gap) * (float)max_value + 8.0f;

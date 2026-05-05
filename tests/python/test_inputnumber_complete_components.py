@@ -11,6 +11,8 @@ g_stock_id = 0
 g_status_id = 0
 g_apply_id = 0
 g_invalid_id = 0
+g_disabled_id = 0
+g_strict_id = 0
 g_value_callback = None
 
 
@@ -55,7 +57,7 @@ def main():
     global g_hwnd, g_amount_id, g_stock_id, g_status_id
     global g_apply_id, g_invalid_id, g_value_callback
 
-    hwnd = ui.create_window("🔢 InputNumber 完整封装验证", 220, 120, 920, 600)
+    hwnd = ui.create_window("🔢 InputNumber 完整封装验证", 220, 120, 920, 680)
     if not hwnd:
         print("错误：窗口创建失败")
         return
@@ -64,7 +66,7 @@ def main():
     g_value_callback = on_value_change
     ui.dll.EU_SetWindowCloseCallback(hwnd, on_close)
 
-    content_id = ui.create_container(hwnd, 0, 0, 0, 900, 550)
+    content_id = ui.create_container(hwnd, 0, 0, 0, 900, 630)
     ui.create_text(hwnd, content_id, "🔢 数字输入框完整能力", 28, 24, 420, 36)
     intro_id = ui.create_text(
         hwnd, content_id,
@@ -88,7 +90,21 @@ def main():
     )
     ui.dll.EU_SetInputNumberValueCallback(hwnd, g_stock_id, g_value_callback)
 
-    panel_id = ui.create_panel(hwnd, content_id, 560, 150, 300, 220)
+    ui.create_text(hwnd, content_id, "🚫 禁用态（不可交互）", 36, 390, 260, 26)
+    g_disabled_id = ui.create_input_number(
+        hwnd, content_id, "禁用 🚫", value=5, min_value=0, max_value=10, step=1,
+        x=36, y=424, w=280, h=40,
+    )
+    ui.set_element_enabled(hwnd, g_disabled_id, False)
+
+    ui.create_text(hwnd, content_id, "🔒 严格步进（步长×2）", 36, 500, 260, 26)
+    g_strict_id = ui.create_input_number(
+        hwnd, content_id, "严格 🔒", value=4, min_value=0, max_value=10, step=2,
+        x=36, y=534, w=280, h=40,
+    )
+    ui.set_input_number_step_strictly(hwnd, g_strict_id, True)
+
+    panel_id = ui.create_panel(hwnd, content_id, 400, 390, 460, 220)
     ui.set_panel_style(hwnd, panel_id, 0x1043A047, 0x6643A047, 1.0, 12.0, 16)
     ui.create_text(hwnd, panel_id, "🧪 验证状态", 0, 0, 180, 30)
     g_status_id = ui.create_text(hwnd, panel_id, "等待自动写入与无效输入校验。", 0, 48, 250, 110)
@@ -117,6 +133,17 @@ def main():
         elif auto_stage == 1 and elapsed > 2.0:
             on_click(g_invalid_id)
             auto_stage = 2
+        elif auto_stage == 2 and elapsed > 3.0:
+            # Step-strictly test: set value to 7 with step=2, should round to 6 or 8
+            ui.dll.EU_SetInputNumberValue(hwnd, g_strict_id, 7)
+            strict_val = ui.dll.EU_GetInputNumberValue(hwnd, g_strict_id)
+            strict_on = ui.get_input_number_step_strictly(hwnd, g_strict_id)
+            print(f"[严格步进] step=2, set_value(7) → 实际={strict_val}, 严格模式={'开启' if strict_on else '关闭'}")
+            update_status(f"🔒 严格步进验证：输入 7 → 舍入为 {strict_val}")
+            # Disabled test: disabled value should remain at 5
+            disabled_val = ui.dll.EU_GetInputNumberValue(hwnd, g_disabled_id)
+            print(f"[禁用态] 禁用组件值={disabled_val}（应保持 5）")
+            auto_stage = 3
         handled = False
         while user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, 1):
             handled = True

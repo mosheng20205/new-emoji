@@ -29,6 +29,31 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+static Element* child_by_id(Element& el, int id) {
+    if (id <= 0) return nullptr;
+    for (auto& ch : el.children) {
+        if (ch && ch->id == id) return ch.get();
+    }
+    return nullptr;
+}
+
+static const Element* child_by_id_const(const Element& el, int id) {
+    if (id <= 0) return nullptr;
+    for (const auto& ch : el.children) {
+        if (ch && ch->id == id) return ch.get();
+    }
+    return nullptr;
+}
+
+static bool child_has_visible_content(const Element& el, int id) {
+    const Element* child = child_by_id_const(el, id);
+    if (!child) return false;
+    for (const auto& ch : child->children) {
+        if (ch && ch->visible) return true;
+    }
+    return false;
+}
+
 float Dialog::scale() const {
     float s = style.font_size / 14.0f;
     return s < 0.75f ? 0.75f : s;
@@ -60,6 +85,10 @@ void Dialog::set_closable(bool value) {
 
 void Dialog::set_open(bool value) {
     visible = value;
+    if (value) {
+        close_pending = false;
+        pending_close_action = 0;
+    }
     last_action = 1;
     invalidate();
 }
@@ -75,7 +104,21 @@ void Dialog::set_options(bool open, bool modal_value, bool closable_value,
         int next_w = w > 0 ? w : logical_bounds.w;
         int next_h = h > 0 ? h : logical_bounds.h;
         set_logical_bounds({ logical_bounds.x, logical_bounds.y, next_w, next_h });
+        if (width_mode == 0 && w > 0) width_value = w;
     }
+    last_action = 1;
+    invalidate();
+}
+
+void Dialog::set_advanced_options(int width_mode_value, int width_value_value,
+                                  bool center_value, bool footer_center_value,
+                                  int content_padding_value, int footer_height_value) {
+    width_mode = width_mode_value == 1 ? 1 : 0;
+    if (width_value_value > 0) width_value = width_value_value;
+    center = center_value;
+    footer_center = footer_center_value;
+    if (content_padding_value >= 0) content_padding = content_padding_value;
+    if (footer_height_value >= 0) footer_height = footer_height_value;
     last_action = 1;
     invalidate();
 }
@@ -96,30 +139,73 @@ void Dialog::trigger_button(int index, int action) {
     last_action = action;
     ++button_click_count;
     if (button_cb) button_cb(id, last_button, (int)buttons.size(), last_action);
-    visible = false;
-    ++close_count;
+    close_dialog(action);
     invalidate();
 }
 
 void Dialog::close_dialog(int action) {
     if (!closable && action != 5) return;
     if (!visible) return;
+    if (before_close_cb) {
+        int allow = before_close_cb(id, action);
+        if (!allow) {
+            close_pending = true;
+            pending_close_action = action;
+            last_action = action;
+            invalidate();
+            return;
+        }
+    }
     visible = false;
+    close_pending = false;
+    pending_close_action = 0;
     last_action = action;
     ++close_count;
+    invalidate();
+}
+
+void Dialog::confirm_pending_close(bool allow) {
+    if (!close_pending) return;
+    int action = pending_close_action ? pending_close_action : 4;
+    close_pending = false;
+    pending_close_action = 0;
+    if (allow) {
+        visible = false;
+        last_action = action;
+        ++close_count;
+    } else {
+        last_action = 1;
+    }
     invalidate();
 }
 
 void Dialog::layout(const Rect& available) {
     bounds = available;
     update_layout();
+    Rect content = content_rect_in_dialog();
+    Rect footer = footer_rect_in_dialog();
+    for (auto& ch : children) {
+        if (!ch || !ch->visible) continue;
+        if (ch->id == content_parent_id) {
+            ch->layout(content);
+        } else if (ch->id == footer_parent_id) {
+            ch->layout(footer);
+        } else {
+            ch->layout(ch->bounds);
+        }
+    }
 }
 
 void Dialog::update_layout() {
     float s = scale();
     int margin = round_px(28.0f * s);
     int min_w = round_px(300.0f * s);
-    int dialog_w = logical_bounds.w > 0 ? round_px((float)logical_bounds.w * s) : round_px(460.0f * s);
+    int logical_w = width_value > 0 ? width_value : logical_bounds.w;
+    int dialog_w = logical_w > 0 ? round_px((float)logical_w * s) : round_px(460.0f * s);
+    if (width_mode == 1 && width_value > 0) {
+        int pct = (std::max)(10, (std::min)(100, width_value));
+        dialog_w = round_px((float)bounds.w * (float)pct / 100.0f);
+    }
     int dialog_h = logical_bounds.h > 0 ? round_px((float)logical_bounds.h * s) : round_px(250.0f * s);
 
     int max_w = (std::max)(0, bounds.w - margin * 2);
@@ -147,6 +233,40 @@ void Dialog::update_layout() {
         close_size,
         close_size
     };
+}
+
+Rect Dialog::content_rect_in_dialog() const {
+    float s = scale();
+    int pad = round_px((float)content_padding * s);
+    int header_h = round_px(52.0f * s);
+    int footer_h = footer_rect_in_dialog().h;
+    Rect r = {
+        m_dialog_rect.x + pad,
+        m_dialog_rect.y + header_h + round_px(12.0f * s),
+        m_dialog_rect.w - pad * 2,
+        m_dialog_rect.h - header_h - footer_h - round_px(24.0f * s)
+    };
+    if (r.w < 0) r.w = 0;
+    if (r.h < 0) r.h = 0;
+    return r;
+}
+
+Rect Dialog::footer_rect_in_dialog() const {
+    if (buttons.empty() && !child_has_visible_content(*this, footer_parent_id)) {
+        return {};
+    }
+    float s = scale();
+    int footer_h = round_px((float)(footer_height > 0 ? footer_height : 58) * s);
+    int pad = round_px(18.0f * s);
+    Rect r = {
+        m_dialog_rect.x + pad,
+        m_dialog_rect.y + m_dialog_rect.h - footer_h,
+        m_dialog_rect.w - pad * 2,
+        footer_h
+    };
+    if (r.w < 0) r.w = 0;
+    if (r.h < 0) r.h = 0;
+    return r;
 }
 
 void Dialog::clamp_offset(int dialog_w, int dialog_h) {
@@ -177,15 +297,17 @@ Dialog::Part Dialog::part_at(int x, int y) const {
 
 Rect Dialog::button_rect(int index) const {
     if (index < 0 || index >= (int)buttons.size()) return {};
-    int s = round_px(scale());
-    if (s < 1) s = 1;
+    if (child_has_visible_content(*this, footer_parent_id)) return {};
     int button_w = round_px(92.0f * scale());
     int button_h = round_px(34.0f * scale());
     int gap = round_px(10.0f * scale());
     int pad = round_px(18.0f * scale());
     int count = (int)buttons.size();
     int total_w = count * button_w + (count - 1) * gap;
-    int x = m_dialog_rect.x + m_dialog_rect.w - pad - total_w + index * (button_w + gap);
+    int start_x = footer_center
+        ? m_dialog_rect.x + (m_dialog_rect.w - total_w) / 2
+        : m_dialog_rect.x + m_dialog_rect.w - pad - total_w;
+    int x = start_x + index * (button_w + gap);
     int y = m_dialog_rect.y + m_dialog_rect.h - pad - button_h;
     return { x, y, button_w, button_h };
 }
@@ -201,7 +323,15 @@ Element* Dialog::hit_test(int x, int y) {
     if (!visible || !enabled) return nullptr;
     int lx = x - bounds.x;
     int ly = y - bounds.y;
-    return part_at(lx, ly) != PartNone ? this : nullptr;
+    Part part = part_at(lx, ly);
+    if (part == PartDialog) {
+        for (auto it = children.rbegin(); it != children.rend(); ++it) {
+            if (!(*it)->visible) continue;
+            Element* hit = (*it)->hit_test(lx, ly);
+            if (hit) return hit;
+        }
+    }
+    return part != PartNone ? this : nullptr;
 }
 
 void Dialog::paint(RenderContext& ctx) {
@@ -240,10 +370,11 @@ void Dialog::paint(RenderContext& ctx) {
 
     float pad = 20.0f * s;
     float header_h = 52.0f * s;
-    draw_text(ctx, title.empty() ? L"Dialog" : title, style, title_fg,
+    draw_text(ctx, title.empty() ? L"对话框" : title, style, title_fg,
               dialog.left + pad, dialog.top + 14.0f * s,
-              (float)m_dialog_rect.w - pad * 2.0f - 28.0f * s,
-              26.0f * s, 1.12f, DWRITE_TEXT_ALIGNMENT_LEADING,
+              (float)m_dialog_rect.w - pad * 2.0f - (closable ? 28.0f * s : 0.0f),
+              26.0f * s, 1.12f,
+              center ? DWRITE_TEXT_ALIGNMENT_CENTER : DWRITE_TEXT_ALIGNMENT_LEADING,
               DWRITE_PARAGRAPH_ALIGNMENT_CENTER, DWRITE_WORD_WRAPPING_NO_WRAP);
 
     if (closable) {
@@ -265,13 +396,21 @@ void Dialog::paint(RenderContext& ctx) {
     ctx.rt->DrawLine(D2D1::Point2F(dialog.left, dialog.top + header_h),
                      D2D1::Point2F(dialog.right, dialog.top + header_h),
                      ctx.get_brush(border), 1.0f);
-    float footer_h = buttons.empty() ? 0.0f : 58.0f * s;
-    draw_text(ctx, text, style, body_fg,
-              dialog.left + pad, dialog.top + header_h + 16.0f * s,
-              (float)m_dialog_rect.w - pad * 2.0f,
-              (float)m_dialog_rect.h - header_h - 32.0f * s - footer_h);
+    bool has_content_slot = child_has_visible_content(*this, content_parent_id);
+    bool has_footer_slot = child_has_visible_content(*this, footer_parent_id);
+    float footer_h = footer_rect_in_dialog().h > 0 ? (float)footer_rect_in_dialog().h : 0.0f;
+    if (!has_content_slot) {
+        draw_text(ctx, text, style, body_fg,
+                  dialog.left + pad, dialog.top + header_h + 16.0f * s,
+                  (float)m_dialog_rect.w - pad * 2.0f,
+                  (float)m_dialog_rect.h - header_h - 32.0f * s - footer_h);
+    }
 
-    for (int i = 0; i < (int)buttons.size(); ++i) {
+    if (Element* content_el = child_by_id(*this, content_parent_id)) {
+        if (content_el->visible) content_el->paint(ctx);
+    }
+
+    if (!has_footer_slot) for (int i = 0; i < (int)buttons.size(); ++i) {
         Rect br = button_rect(i);
         D2D1_RECT_F rr = { (float)br.x, (float)br.y, (float)(br.x + br.w), (float)(br.y + br.h) };
         bool primary = i == 0;
@@ -286,6 +425,10 @@ void Dialog::paint(RenderContext& ctx) {
         draw_text(ctx, buttons[i], style, fg, rr.left, rr.top, (float)br.w, (float)br.h,
                   0.92f, DWRITE_TEXT_ALIGNMENT_CENTER, DWRITE_PARAGRAPH_ALIGNMENT_CENTER,
                   DWRITE_WORD_WRAPPING_NO_WRAP);
+    }
+
+    if (Element* footer_el = child_by_id(*this, footer_parent_id)) {
+        if (footer_el->visible) footer_el->paint(ctx);
     }
 
     ctx.rt->SetTransform(saved);

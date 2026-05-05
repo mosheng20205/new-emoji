@@ -1,69 +1,46 @@
 # Popover 弹出框
 
-## 简介
+`Popover` 已补齐 hover、click、focus、manual 四种触发方式，支持 12 方位、外部点击关闭、箭头、键盘 Escape/Tab/Enter 和内容 slot。无 slot 子元素时继续绘制原纯文本内容。
 
-`Popover` 是 new_emoji 的 反馈/浮层 组件。当前状态：**已完成**。
-
-已补触发方式、定位、外部关闭、标题/正文、尺寸、焦点管理、Tab/Enter/Escape 键盘操作、动作回调、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证
-
-## 创建
-
-| 项目 | 值 |
-|---|---|
-| 创建导出 | `EU_CreatePopover` |
-| 组件分类 | 反馈/浮层 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_popover` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
-
-## 相关 API
+## 内容 slot
 
 | API | 说明 |
 |---|---|
-| `EU_CreatePopover` | 当前组件相关导出 |
-| `EU_GetPopoverFullState` | 当前组件相关导出 |
-| `EU_GetPopoverOpen` | 当前组件相关导出 |
-| `EU_GetPopoverOptions` | 当前组件相关导出 |
-| `EU_GetPopoverText` | 当前组件相关导出 |
-| `EU_SetPopoverActionCallback` | 当前组件相关导出 |
-| `EU_SetPopoverContent` | 当前组件相关导出 |
-| `EU_SetPopoverOpen` | 当前组件相关导出 |
-| `EU_SetPopoverOptions` | 当前组件相关导出 |
-| `EU_SetPopoverTitle` | 当前组件相关导出 |
-| `EU_TriggerPopover` | 当前组件相关导出 |
+| `EU_GetPopoverContentParent` | 返回 Popover 内容容器 ID，可挂载 `Table`、`Text`、`Button` 等组件 |
 
-## Python 使用
+## API
+
+| API | 说明 |
+|---|---|
+| `EU_CreatePopover` | 创建 Popover |
+| `EU_SetPopoverOpen` / `EU_GetPopoverOpen` | 设置/读取打开状态 |
+| `EU_SetPopoverTitle` / `EU_SetPopoverContent` | 设置标题和纯文本内容 |
+| `EU_SetPopoverOptions` / `EU_GetPopoverOptions` | 旧四方位、打开状态、尺寸、关闭按钮 |
+| `EU_SetPopoverAdvancedOptions` | 设置 12 方位、打开状态、尺寸、关闭按钮 |
+| `EU_SetPopoverBehavior` / `EU_GetPopoverBehavior` | 设置/读取触发方式、外部关闭、箭头、offset |
+| `EU_GetPopoverContentParent` | 获取内容 slot 容器 |
+| `EU_TriggerPopover` | 程序打开/关闭 |
+| `EU_SetPopoverActionCallback` | 打开/关闭动作回调 |
+| `EU_GetPopoverText` / `EU_GetPopoverFullState` | 文本和完整状态读回 |
+
+触发方式：`0 click`、`1 hover`、`2 focus`、`3 manual`。
+
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
-
-hwnd = ui.create_window("✨ 弹出框 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Popover`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+pop = ui.create_popover(hwnd, root, "收货地址 📦", "📦 收货地址", "", 3, 60, 90, 160, 38)
+ui.set_popover_advanced_options(hwnd, pop, placement="right",
+                                open=False, popup_width=430,
+                                popup_height=230, closable=True)
+ui.set_popover_behavior(hwnd, pop, trigger_mode="click",
+                        close_on_outside=True, show_arrow=True, offset=10)
+content = ui.get_popover_content_parent(hwnd, pop)
+ui.create_table(hwnd, content,
+                ["日期", "姓名", "地址"],
+                [["2016-05-02", "王小虎", "上海市普陀区金沙江路 1518 弄"]],
+                True, True, 0, 0, 380, 128)
 ```
-
-## 易语言调用
-
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_popover_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Popover` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+优先运行 `tests/python/test_popover_complete_components.py`。gallery 的 `Popover` 详情页覆盖四触发、嵌套表格和删除确认式组合内容。

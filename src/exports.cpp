@@ -12,6 +12,7 @@ extern HMODULE g_module;
 #include "element_button.h"
 #include "element_editbox.h"
 #include "element_infobox.h"
+#include "element_message.h"
 #include "element_messagebox.h"
 #include "element_text.h"
 #include "element_link.h"
@@ -26,6 +27,7 @@ extern HMODULE g_module;
 #include "element_slider.h"
 #include "element_inputnumber.h"
 #include "element_input.h"
+#include "element_inputgroup.h"
 #include "element_inputtag.h"
 #include "element_select.h"
 #include "element_rate.h"
@@ -38,6 +40,7 @@ extern HMODULE g_module;
 #include "element_skeleton.h"
 #include "element_descriptions.h"
 #include "element_table.h"
+#include "xlsx_table_io.h"
 #include "element_card.h"
 #include "element_collapse.h"
 #include "element_timeline.h"
@@ -53,6 +56,7 @@ extern HMODULE g_module;
 #include "element_mentions.h"
 #include "element_cascader.h"
 #include "element_datepicker.h"
+#include "element_daterangepicker.h"
 #include "element_timepicker.h"
 #include "element_datetimepicker.h"
 #include "element_timeselect.h"
@@ -125,7 +129,7 @@ HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
     DWORD style = WS_POPUP | WS_CLIPCHILDREN;
 
     HWND hwnd = CreateWindowExW(
-        0, L"NewEmojiWindow", title.c_str(), style,
+        WS_EX_ACCEPTFILES, L"NewEmojiWindow", title.c_str(), style,
         x, y, sw, sh,
         nullptr, nullptr, g_module,
         (LPVOID)(UINT_PTR)titlebar_color);
@@ -363,6 +367,23 @@ static std::vector<std::wstring> split_option_list(const unsigned char* bytes, i
     return items;
 }
 
+static std::vector<std::wstring> split_option_list_keep_empty(const unsigned char* bytes, int len) {
+    std::vector<std::wstring> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    if (full.empty()) return items;
+    std::wstring current;
+    for (wchar_t ch : full) {
+        if (ch == L'|' || ch == L'\n' || ch == L'\r') {
+            items.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(ch);
+        }
+    }
+    items.push_back(current);
+    return items;
+}
+
 static std::vector<std::wstring> split_wide_list(const std::wstring& full,
                                                  const std::wstring& separators) {
     std::vector<std::wstring> items;
@@ -416,6 +437,41 @@ static std::vector<std::wstring> parse_checkbox_checked_values(const unsigned ch
         if (!value.empty()) values.push_back(value);
     }
     return values;
+}
+
+static std::vector<AutocompleteSuggestion> parse_autocomplete_suggestions(const unsigned char* bytes, int len) {
+    std::vector<AutocompleteSuggestion> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    if (full.find(L'\t') == std::wstring::npos) {
+        for (const auto& value : split_option_list(bytes, len)) {
+            if (value.empty()) continue;
+            items.push_back({ value, L"", value });
+        }
+        return items;
+    }
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        AutocompleteSuggestion item;
+        item.title = fields.empty() ? row : fields[0];
+        item.subtitle = fields.size() >= 2 ? fields[1] : L"";
+        item.value = fields.size() >= 3 ? fields[2] : item.title;
+        if (!item.title.empty()) items.push_back(item);
+    }
+    return items;
+}
+
+static std::vector<std::pair<std::wstring, std::wstring>> parse_select_pairs(const unsigned char* bytes, int len) {
+    std::vector<std::pair<std::wstring, std::wstring>> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        std::wstring label = fields.empty() ? row : fields[0];
+        std::wstring value = fields.size() >= 2 ? fields[1] : label;
+        if (!label.empty()) items.push_back({ label, value });
+    }
+    return items;
 }
 
 static std::vector<std::pair<std::wstring, std::wstring>>
@@ -581,8 +637,10 @@ static std::vector<UploadFileItem> parse_upload_file_items(const unsigned char* 
         UploadFileItem item;
         item.name = fields.empty() ? entry : fields[0];
         item.full_path = fields.size() >= 4 ? fields[3] : item.name;
+        item.thumbnail_path = fields.size() >= 5 ? fields[4] : item.full_path;
         item.status = fields.size() >= 2 ? _wtoi(fields[1].c_str()) : 1;
         item.progress = fields.size() >= 3 ? _wtoi(fields[2].c_str()) : (item.status == 2 ? 50 : 100);
+        item.size_bytes = fields.size() >= 6 ? _wtoi64(fields[5].c_str()) : 0;
         if (item.status < 0) item.status = 0;
         if (item.status > 3) item.status = 3;
         if (item.progress < 0) item.progress = 0;
@@ -947,6 +1005,52 @@ int __stdcall EU_CreateInputNumber(HWND hwnd, int parent_id,
     return raw->id;
 }
 
+static void init_default_input_style(Input* el) {
+    if (!el) return;
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 4.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 12;
+    logical_style.pad_top = 0;
+    logical_style.pad_right = 12;
+    logical_style.pad_bottom = 0;
+    el->set_logical_style(logical_style);
+    el->set_visual_options(0, false, false, false, 0, 0);
+}
+
+static void init_default_button_style(Button* el) {
+    if (!el) return;
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 4.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 10;
+    logical_style.pad_top = 0;
+    logical_style.pad_right = 10;
+    logical_style.pad_bottom = 0;
+    el->set_logical_style(logical_style);
+}
+
+static void init_default_select_style(Select* el) {
+    if (!el) return;
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 4.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 10;
+    logical_style.pad_top = 4;
+    logical_style.pad_right = 10;
+    logical_style.pad_bottom = 4;
+    el->set_logical_style(logical_style);
+}
+
 int __stdcall EU_CreateInput(HWND hwnd, int parent_id,
                              const unsigned char* text_bytes, int text_len,
                              const unsigned char* placeholder_bytes, int placeholder_len,
@@ -964,23 +1068,48 @@ int __stdcall EU_CreateInput(HWND hwnd, int parent_id,
     el->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
     el->set_affixes(utf8_to_wide(prefix_bytes, prefix_len), utf8_to_wide(suffix_bytes, suffix_len));
     el->set_clearable(clearable != 0);
-
-    ElementStyle logical_style = el->style;
-    logical_style.bg_color = 0;
-    logical_style.border_color = 0;
-    logical_style.fg_color = 0;
-    logical_style.corner_radius = 4.0f;
-    logical_style.font_size = 14.0f;
-    logical_style.pad_left = 8;
-    logical_style.pad_top = 0;
-    logical_style.pad_right = 8;
-    logical_style.pad_bottom = 0;
-    el->set_logical_style(logical_style);
+    init_default_input_style(el.get());
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
+}
+
+int __stdcall EU_CreateInputGroup(HWND hwnd, int parent_id,
+                                  const unsigned char* value_bytes, int value_len,
+                                  const unsigned char* placeholder_bytes, int placeholder_len,
+                                  int size, int clearable, int password,
+                                  int show_word_limit, int autosize,
+                                  int min_rows, int max_rows,
+                                  int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto group = std::make_unique<InputGroup>();
+    group->set_logical_bounds({ x, y, w, h });
+    group->mouse_passthrough = true;
+    group->set_options(size, clearable != 0, password != 0,
+                       show_word_limit != 0, autosize != 0,
+                       min_rows, max_rows);
+
+    InputGroup* group_ptr = group.get();
+    Element* raw_group = st->element_tree->add_child(parent, std::move(group));
+
+    auto input = std::make_unique<Input>();
+    input->set_value(utf8_to_wide(value_bytes, value_len));
+    input->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
+    init_default_input_style(input.get());
+    input->set_clearable(clearable != 0);
+    input->set_options(false, password != 0, false, 0);
+    input->set_visual_options(size, password != 0, show_word_limit != 0, autosize != 0, min_rows, max_rows);
+    Element* raw_input = st->element_tree->add_child(group_ptr, std::move(input));
+    group_ptr->set_input_element_id(raw_input->id);
+
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw_group->id;
 }
 
 int __stdcall EU_CreateInputTag(HWND hwnd, int parent_id,
@@ -2040,7 +2169,7 @@ int __stdcall EU_CreateAutocomplete(HWND hwnd, int parent_id,
     Element* parent = find_parent_or_root(st, parent_id);
     auto el = std::make_unique<Autocomplete>();
     el->set_logical_bounds({ x, y, w, h });
-    el->set_suggestions(split_option_list(suggestions_bytes, suggestions_len));
+    el->set_suggestions(parse_autocomplete_suggestions(suggestions_bytes, suggestions_len));
     el->set_value(utf8_to_wide(value_bytes, value_len));
 
     ElementStyle logical_style = el->style;
@@ -2816,6 +2945,128 @@ int __stdcall EU_CreateNotification(HWND hwnd, int parent_id,
     return raw->id;
 }
 
+static Rect logical_client_rect(WindowState* st) {
+    RECT rc{};
+    if (!st || !st->hwnd) return { 0, 0, 800, 600 };
+    GetClientRect(st->hwnd, &rc);
+    float scale = st->dpi_scale > 0.0f ? st->dpi_scale : 1.0f;
+    return { 0, 0, (int)std::lround((rc.right - rc.left) / scale),
+             (int)std::lround((rc.bottom - rc.top) / scale) };
+}
+
+template <typename T>
+static int visible_service_count(Element* root) {
+    if (!root) return 0;
+    int count = 0;
+    for (auto& ch : root->children) {
+        if (ch && ch->visible && dynamic_cast<T*>(ch.get())) ++count;
+    }
+    return count;
+}
+
+int __stdcall EU_ShowMessage(HWND hwnd,
+                             const unsigned char* text_bytes, int text_len,
+                             int message_type, int closable, int center, int rich,
+                             int duration_ms, int offset) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Rect client = logical_client_rect(st);
+    int w = (std::min)(420, (std::max)(260, client.w - 48));
+    int h = 46;
+    int gap = 12;
+    int index = visible_service_count<Message>(st->element_tree->root());
+    int x = (client.w - w) / 2;
+    int y = (std::max)(0, offset) + index * (h + gap);
+
+    auto el = std::make_unique<Message>();
+    el->set_logical_bounds({ x, y, w, h });
+    el->set_text(utf8_to_wide(text_bytes, text_len));
+    el->set_options(message_type, closable != 0, center != 0, rich != 0, duration_ms, offset);
+    el->stack_index = index;
+    el->stack_gap = gap;
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 6.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 16;
+    logical_style.pad_right = 12;
+    logical_style.pad_top = 8;
+    logical_style.pad_bottom = 8;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+static Rect notification_service_rect(WindowState* st, int placement, int offset, int w, int h, int index, int gap) {
+    Rect client = logical_client_rect(st);
+    if (w <= 0) w = 330;
+    if (h <= 0) h = 96;
+    int off = (std::max)(0, offset);
+    bool left = placement == 2 || placement == 3;
+    bool bottom = placement == 1 || placement == 2;
+    int x = left ? off : client.w - w - off;
+    int y = bottom ? client.h - h - off - index * (h + gap) : off + index * (h + gap);
+    if (x < 0) x = 0;
+    if (y < 0) y = 0;
+    return { x, y, w, h };
+}
+
+static int visible_notification_count(Element* root, int placement) {
+    if (!root) return 0;
+    int count = 0;
+    for (auto& ch : root->children) {
+        auto* n = ch ? dynamic_cast<Notification*>(ch.get()) : nullptr;
+        if (n && n->visible && !n->closed && n->placement == placement) ++count;
+    }
+    return count;
+}
+
+int __stdcall EU_ShowNotification(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* body_bytes, int body_len,
+                                  int notify_type, int closable, int duration_ms,
+                                  int placement, int offset, int rich, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    int gap = 14;
+    int normalized_placement = placement >= 0 && placement <= 3 ? placement : 0;
+    int index = visible_notification_count(st->element_tree->root(), normalized_placement);
+    Rect r = notification_service_rect(st, normalized_placement, offset, w, h, index, gap);
+
+    auto el = std::make_unique<Notification>();
+    el->set_logical_bounds(r);
+    el->text = utf8_to_wide(title_bytes, title_len);
+    el->set_body(utf8_to_wide(body_bytes, body_len));
+    el->set_options(notify_type, closable != 0, duration_ms < 0 ? 4500 : duration_ms);
+    el->set_placement(normalized_placement, offset);
+    el->set_rich(rich != 0);
+    el->stack_index = index;
+    el->stack_gap = gap;
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 6.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 18;
+    logical_style.pad_top = 14;
+    logical_style.pad_right = 14;
+    logical_style.pad_bottom = 14;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
 int __stdcall EU_CreateLoading(HWND hwnd, int parent_id,
                                const unsigned char* text_bytes, int text_len,
                                int active,
@@ -2876,6 +3127,16 @@ int __stdcall EU_CreateDialog(HWND hwnd,
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    if (auto* dlg = dynamic_cast<Dialog*>(raw)) {
+        auto content = std::make_unique<Panel>();
+        content->mouse_passthrough = true;
+        Element* content_raw = st->element_tree->add_child(dlg, std::move(content));
+        dlg->content_parent_id = content_raw ? content_raw->id : 0;
+        auto footer = std::make_unique<Panel>();
+        footer->mouse_passthrough = true;
+        Element* footer_raw = st->element_tree->add_child(dlg, std::move(footer));
+        dlg->footer_parent_id = footer_raw ? footer_raw->id : 0;
+    }
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -2891,6 +3152,7 @@ int __stdcall EU_CreateDrawer(HWND hwnd,
 
     auto el = std::make_unique<Drawer>();
     el->set_logical_bounds({ 0, 0, size, size });
+    el->size_value = size;
     el->set_title(utf8_to_wide(title_bytes, title_len));
     el->set_body(utf8_to_wide(body_bytes, body_len));
     el->set_placement(placement);
@@ -2909,6 +3171,16 @@ int __stdcall EU_CreateDrawer(HWND hwnd,
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(el));
+    if (auto* drawer = dynamic_cast<Drawer*>(raw)) {
+        auto content = std::make_unique<Panel>();
+        content->mouse_passthrough = true;
+        Element* content_raw = st->element_tree->add_child(drawer, std::move(content));
+        drawer->content_parent_id = content_raw ? content_raw->id : 0;
+        auto footer = std::make_unique<Panel>();
+        footer->mouse_passthrough = true;
+        Element* footer_raw = st->element_tree->add_child(drawer, std::move(footer));
+        drawer->footer_parent_id = footer_raw ? footer_raw->id : 0;
+    }
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -2977,6 +3249,12 @@ int __stdcall EU_CreatePopover(HWND hwnd, int parent_id,
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
+    if (auto* pop = dynamic_cast<Popover*>(raw)) {
+        auto content = std::make_unique<Panel>();
+        content->mouse_passthrough = true;
+        Element* content_raw = st->element_tree->add_child(pop, std::move(content));
+        pop->content_parent_id = content_raw ? content_raw->id : 0;
+    }
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
@@ -3086,6 +3364,106 @@ int __stdcall EU_ShowConfirmBox(HWND hwnd,
                                 MessageBoxResultCallback cb) {
     return create_message_box(hwnd, title_bytes, title_len, text_bytes, text_len,
                               confirm_bytes, confirm_len, cancel_bytes, cancel_len, true, cb);
+}
+
+static int create_message_box_ex(HWND hwnd,
+                                 const unsigned char* title_bytes, int title_len,
+                                 const unsigned char* text_bytes, int text_len,
+                                 const unsigned char* confirm_bytes, int confirm_len,
+                                 const unsigned char* cancel_bytes, int cancel_len,
+                                 int box_type, int show_cancel, int center, int rich,
+                                 int distinguish_cancel_and_close,
+                                 MessageBoxExCallback cb) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    auto box = std::make_unique<MessageBoxElement>();
+    box->title = utf8_or_default(title_bytes, title_len, L"提示");
+    box->text = utf8_to_wide(text_bytes, text_len);
+    box->confirm_text = utf8_or_default(confirm_bytes, confirm_len, L"确定");
+    box->cancel_text = utf8_or_default(cancel_bytes, cancel_len, L"取消");
+    box->show_cancel = show_cancel != 0;
+    box->result_ex_cb = cb;
+    box->set_options(box_type, center != 0, rich != 0, distinguish_cancel_and_close != 0);
+
+    ElementStyle logical_style = box->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 8.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 20;
+    logical_style.pad_right = 20;
+    logical_style.pad_top = 18;
+    logical_style.pad_bottom = 20;
+    box->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(box));
+    st->element_tree->layout();
+    st->element_tree->set_focus(raw);
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_ShowMessageBoxEx(HWND hwnd,
+                                  const unsigned char* title_bytes, int title_len,
+                                  const unsigned char* text_bytes, int text_len,
+                                  const unsigned char* confirm_bytes, int confirm_len,
+                                  const unsigned char* cancel_bytes, int cancel_len,
+                                  int box_type, int show_cancel, int center, int rich,
+                                  int distinguish_cancel_and_close,
+                                  MessageBoxExCallback cb) {
+    return create_message_box_ex(hwnd, title_bytes, title_len, text_bytes, text_len,
+                                 confirm_bytes, confirm_len, cancel_bytes, cancel_len,
+                                 box_type, show_cancel, center, rich,
+                                 distinguish_cancel_and_close, cb);
+}
+
+int __stdcall EU_ShowPromptBox(HWND hwnd,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* text_bytes, int text_len,
+                               const unsigned char* placeholder_bytes, int placeholder_len,
+                               const unsigned char* value_bytes, int value_len,
+                               const unsigned char* pattern_bytes, int pattern_len,
+                               const unsigned char* error_bytes, int error_len,
+                               const unsigned char* confirm_bytes, int confirm_len,
+                               const unsigned char* cancel_bytes, int cancel_len,
+                               int box_type, int center, int rich,
+                               int distinguish_cancel_and_close,
+                               MessageBoxExCallback cb) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    auto box = std::make_unique<MessageBoxElement>();
+    box->title = utf8_or_default(title_bytes, title_len, L"提示");
+    box->text = utf8_to_wide(text_bytes, text_len);
+    box->confirm_text = utf8_or_default(confirm_bytes, confirm_len, L"确定");
+    box->cancel_text = utf8_or_default(cancel_bytes, cancel_len, L"取消");
+    box->show_cancel = true;
+    box->result_ex_cb = cb;
+    box->set_options(box_type, center != 0, rich != 0, distinguish_cancel_and_close != 0);
+    box->set_input(utf8_to_wide(value_bytes, value_len),
+                   utf8_or_default(placeholder_bytes, placeholder_len, L"请输入内容"),
+                   utf8_to_wide(pattern_bytes, pattern_len),
+                   utf8_or_default(error_bytes, error_len, L"输入内容格式不正确"));
+
+    ElementStyle logical_style = box->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.corner_radius = 8.0f;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 20;
+    logical_style.pad_right = 20;
+    logical_style.pad_top = 18;
+    logical_style.pad_bottom = 20;
+    box->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(st->element_tree->root(), std::move(box));
+    st->element_tree->layout();
+    st->element_tree->set_focus(raw);
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
 }
 
 // ── Element properties ───────────────────────────────────────────────
@@ -3928,6 +4306,58 @@ int __stdcall EU_GetSwitchOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetSwitchActiveColor(HWND hwnd, int element_id, Color color) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_active_color(color);
+    }
+}
+
+Color __stdcall EU_GetSwitchActiveColor(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->active_color;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetSwitchInactiveColor(HWND hwnd, int element_id, Color color) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_inactive_color(color);
+    }
+}
+
+Color __stdcall EU_GetSwitchInactiveColor(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->inactive_color;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetSwitchValue(HWND hwnd, int element_id, int value) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_value(value);
+    }
+}
+
+int __stdcall EU_GetSwitchValue(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->get_value();
+    }
+    return 0;
+}
+
+void __stdcall EU_SetSwitchSize(HWND hwnd, int element_id, int size) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        el->set_size(size);
+    }
+}
+
+int __stdcall EU_GetSwitchSize(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Switch>(hwnd, element_id)) {
+        return el->size;
+    }
+    return 0;
+}
+
 void __stdcall EU_SetSliderRange(HWND hwnd, int element_id, int min_value, int max_value) {
     if (auto* el = find_typed_element<Slider>(hwnd, element_id)) {
         el->set_range(min_value, max_value);
@@ -4088,6 +4518,39 @@ void __stdcall EU_SetInputNumberValueCallback(HWND hwnd, int element_id, Element
     }
 }
 
+void __stdcall EU_SetInputNumberStepStrictly(HWND hwnd, int element_id, int strict) {
+    if (auto* el = find_typed_element<InputNumber>(hwnd, element_id)) {
+        el->set_step_strictly(strict != 0);
+    }
+}
+
+int __stdcall EU_GetInputNumberStepStrictly(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<InputNumber>(hwnd, element_id)) {
+        return el->step_strictly ? 1 : 0;
+    }
+    return 0;
+}
+
+static InputGroup* find_input_group(HWND hwnd, int element_id) {
+    return find_typed_element<InputGroup>(hwnd, element_id);
+}
+
+static Input* find_input_group_child(HWND hwnd, int element_id) {
+    auto* group = find_input_group(hwnd, element_id);
+    return group ? group->input_child() : nullptr;
+}
+
+static void remove_input_group_addon(WindowState* st, InputGroup* group, int side) {
+    if (!st || !st->element_tree || !group) return;
+    int addon_id = group->addon_element_id(side);
+    if (addon_id != 0) {
+        if (Element* addon = st->element_tree->find_by_id(addon_id)) {
+            st->element_tree->remove_child(addon);
+        }
+    }
+    group->clear_addon_spec(side);
+}
+
 void __stdcall EU_SetInputValue(HWND hwnd, int element_id,
                                 const unsigned char* value_bytes, int value_len) {
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
@@ -4122,6 +4585,25 @@ void __stdcall EU_SetInputAffixes(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetInputIcons(HWND hwnd, int element_id,
+                                const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                const unsigned char* suffix_icon_bytes, int suffix_icon_len) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_icons(utf8_to_wide(prefix_icon_bytes, prefix_icon_len),
+                      utf8_to_wide(suffix_icon_bytes, suffix_icon_len));
+    }
+}
+
+int __stdcall EU_GetInputIcons(HWND hwnd, int element_id,
+                               unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                               unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->prefix_icon, prefix_icon_buffer, prefix_icon_buffer_size);
+    copy_wide_as_utf8(el->suffix_icon, suffix_icon_buffer, suffix_icon_buffer_size);
+    return 1;
+}
+
 void __stdcall EU_SetInputClearable(HWND hwnd, int element_id, int clearable) {
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
         el->set_clearable(clearable != 0);
@@ -4132,6 +4614,64 @@ void __stdcall EU_SetInputOptions(HWND hwnd, int element_id, int readonly, int p
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
         el->set_options(readonly != 0, password != 0, multiline != 0, validate_state);
     }
+}
+
+void __stdcall EU_SetInputVisualOptions(HWND hwnd, int element_id,
+                                        int size, int show_password_toggle,
+                                        int show_word_limit, int autosize,
+                                        int min_rows, int max_rows) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_visual_options(size, show_password_toggle != 0,
+                               show_word_limit != 0, autosize != 0,
+                               min_rows, max_rows);
+        if (WindowState* st = window_state(hwnd)) {
+            if (st->element_tree) st->element_tree->layout();
+        }
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetInputVisualOptions(HWND hwnd, int element_id,
+                                       int* size, int* show_password_toggle,
+                                       int* show_word_limit, int* autosize,
+                                       int* min_rows, int* max_rows) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    if (size) *size = el->size;
+    if (show_password_toggle) *show_password_toggle = el->show_password_toggle ? 1 : 0;
+    if (show_word_limit) *show_word_limit = el->show_word_limit ? 1 : 0;
+    if (autosize) *autosize = el->autosize ? 1 : 0;
+    if (min_rows) *min_rows = el->min_rows;
+    if (max_rows) *max_rows = el->max_rows;
+    return 1;
+}
+
+void __stdcall EU_SetInputSelection(HWND hwnd, int element_id, int start, int end) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_selection(start, end);
+    }
+}
+
+int __stdcall EU_GetInputSelection(HWND hwnd, int element_id, int* start, int* end) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    int s = 0;
+    int e = 0;
+    el->get_selection(s, e);
+    if (start) *start = s;
+    if (end) *end = e;
+    return 1;
+}
+
+void __stdcall EU_SetInputContextMenuEnabled(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_context_menu_enabled(enabled != 0);
+    }
+}
+
+int __stdcall EU_GetInputContextMenuEnabled(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    return (el && el->context_menu_enabled) ? 1 : 0;
 }
 
 int __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable,
@@ -4166,6 +4706,157 @@ void __stdcall EU_SetInputTextCallback(HWND hwnd, int element_id, ElementTextCal
     if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
         el->text_cb = cb;
     }
+}
+
+void __stdcall EU_SetInputGroupValue(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len) {
+    if (auto* input = find_input_group_child(hwnd, element_id)) {
+        input->set_value(utf8_to_wide(value_bytes, value_len));
+        if (WindowState* st = window_state(hwnd)) {
+            if (st->element_tree) st->element_tree->layout();
+        }
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetInputGroupValue(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* input = find_input_group_child(hwnd, element_id);
+    if (!input) return 0;
+    return copy_wide_as_utf8(input->value, buffer, buffer_size);
+}
+
+void __stdcall EU_SetInputGroupOptions(HWND hwnd, int element_id,
+                                       int size, int clearable, int password,
+                                       int show_word_limit, int autosize,
+                                       int min_rows, int max_rows) {
+    auto* group = find_input_group(hwnd, element_id);
+    if (!group) return;
+    group->set_options(size, clearable != 0, password != 0,
+                       show_word_limit != 0, autosize != 0,
+                       min_rows, max_rows);
+    if (WindowState* st = window_state(hwnd)) {
+        if (st->element_tree) st->element_tree->layout();
+    }
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+int __stdcall EU_GetInputGroupOptions(HWND hwnd, int element_id,
+                                      int* size, int* clearable, int* password,
+                                      int* show_word_limit, int* autosize,
+                                      int* min_rows, int* max_rows) {
+    auto* group = find_input_group(hwnd, element_id);
+    if (!group) return 0;
+    if (size) *size = group->size;
+    if (clearable) *clearable = group->clearable ? 1 : 0;
+    if (password) *password = group->password ? 1 : 0;
+    if (show_word_limit) *show_word_limit = group->show_word_limit ? 1 : 0;
+    if (autosize) *autosize = group->autosize ? 1 : 0;
+    if (min_rows) *min_rows = group->min_rows;
+    if (max_rows) *max_rows = group->max_rows;
+    return 1;
+}
+
+void __stdcall EU_SetInputGroupTextAddon(HWND hwnd, int element_id, int side,
+                                         const unsigned char* text_bytes, int text_len) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+
+    auto addon = std::make_unique<Button>();
+    addon->text = utf8_to_wide(text_bytes, text_len);
+    addon->emoji.clear();
+    addon->set_options(0, 1, 0, 0, 0, group->size);
+    init_default_button_style(addon.get());
+    Element* raw = st->element_tree->add_child(group, std::move(addon));
+
+    InputGroup::AddonSpec spec;
+    spec.type = InputGroup::AddonText;
+    spec.element_id = raw->id;
+    spec.text = utf8_to_wide(text_bytes, text_len);
+    group->set_addon_spec(side, spec);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_SetInputGroupButtonAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* emoji_bytes, int emoji_len,
+                                           const unsigned char* text_bytes, int text_len,
+                                           int variant) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+
+    auto addon = std::make_unique<Button>();
+    addon->text = utf8_to_wide(text_bytes, text_len);
+    addon->emoji = utf8_to_wide(emoji_bytes, emoji_len);
+    addon->set_options(variant, 0, 0, 0, 0, group->size);
+    init_default_button_style(addon.get());
+    Element* raw = st->element_tree->add_child(group, std::move(addon));
+
+    InputGroup::AddonSpec spec;
+    spec.type = InputGroup::AddonButton;
+    spec.element_id = raw->id;
+    spec.text = utf8_to_wide(text_bytes, text_len);
+    spec.emoji = utf8_to_wide(emoji_bytes, emoji_len);
+    spec.variant = variant;
+    group->set_addon_spec(side, spec);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_SetInputGroupSelectAddon(HWND hwnd, int element_id, int side,
+                                           const unsigned char* items_bytes, int items_len,
+                                           int selected_index,
+                                           const unsigned char* placeholder_bytes, int placeholder_len) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+
+    auto parsed = parse_select_pairs(items_bytes, items_len);
+    std::vector<std::wstring> labels;
+    labels.reserve(parsed.size());
+    for (const auto& pair : parsed) labels.push_back(pair.first);
+
+    auto addon = std::make_unique<Select>();
+    addon->set_options(labels);
+    addon->set_selected_index(selected_index);
+    addon->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
+    init_default_select_style(addon.get());
+    Element* raw = st->element_tree->add_child(group, std::move(addon));
+
+    InputGroup::AddonSpec spec;
+    spec.type = InputGroup::AddonSelect;
+    spec.element_id = raw->id;
+    spec.select_items = labels;
+    spec.select_placeholder = utf8_to_wide(placeholder_bytes, placeholder_len);
+    if (spec.select_placeholder.empty()) spec.select_placeholder = L"请选择";
+    spec.selected_index = selected_index;
+    group->set_addon_spec(side, spec);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_ClearInputGroupAddon(HWND hwnd, int element_id, int side) {
+    WindowState* st = window_state(hwnd);
+    auto* group = find_input_group(hwnd, element_id);
+    if (!st || !st->element_tree || !group) return;
+    remove_input_group_addon(st, group, side);
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+int __stdcall EU_GetInputGroupInputElementId(HWND hwnd, int element_id) {
+    auto* group = find_input_group(hwnd, element_id);
+    return group ? group->input_element_id : 0;
+}
+
+int __stdcall EU_GetInputGroupAddonElementId(HWND hwnd, int element_id, int side) {
+    auto* group = find_input_group(hwnd, element_id);
+    return group ? group->addon_element_id(side) : 0;
 }
 
 void __stdcall EU_SetInputTagTags(HWND hwnd, int element_id,
@@ -4509,6 +5200,80 @@ void __stdcall EU_SetRateTexts(HWND hwnd, int element_id,
                       utf8_to_wide(high_bytes, high_len),
                       show_score != 0);
     }
+}
+
+void __stdcall EU_SetRateColors(HWND hwnd, int element_id, Color low_color, Color mid_color, Color high_color) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_colors(low_color, mid_color, high_color);
+    }
+}
+
+int __stdcall EU_GetRateColors(HWND hwnd, int element_id, Color* low_color, Color* mid_color, Color* high_color) {
+    auto* el = find_typed_element<Rate>(hwnd, element_id);
+    if (!el) return 0;
+    if (low_color) *low_color = el->low_color;
+    if (mid_color) *mid_color = el->mid_color;
+    if (high_color) *high_color = el->high_color;
+    return 1;
+}
+
+void __stdcall EU_SetRateIcons(HWND hwnd, int element_id,
+                               const unsigned char* full_bytes, int full_len,
+                               const unsigned char* void_bytes, int void_len,
+                               const unsigned char* low_bytes, int low_len,
+                               const unsigned char* mid_bytes, int mid_len,
+                               const unsigned char* high_bytes, int high_len) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_icons(utf8_to_wide(full_bytes, full_len),
+                      utf8_to_wide(void_bytes, void_len),
+                      utf8_to_wide(low_bytes, low_len),
+                      utf8_to_wide(mid_bytes, mid_len),
+                      utf8_to_wide(high_bytes, high_len));
+    }
+}
+
+int __stdcall EU_GetRateIcons(HWND hwnd, int element_id,
+                              unsigned char* full_buffer, int full_buffer_size,
+                              unsigned char* void_buffer, int void_buffer_size,
+                              unsigned char* low_buffer, int low_buffer_size,
+                              unsigned char* mid_buffer, int mid_buffer_size,
+                              unsigned char* high_buffer, int high_buffer_size) {
+    auto* el = find_typed_element<Rate>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->full_icon, full_buffer, full_buffer_size);
+    copy_wide_as_utf8(el->void_icon, void_buffer, void_buffer_size);
+    copy_wide_as_utf8(el->low_icon, low_buffer, low_buffer_size);
+    copy_wide_as_utf8(el->mid_icon, mid_buffer, mid_buffer_size);
+    copy_wide_as_utf8(el->high_icon, high_buffer, high_buffer_size);
+    return 1;
+}
+
+void __stdcall EU_SetRateTextItems(HWND hwnd, int element_id,
+                                   const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_text_items(split_option_list(items_bytes, items_len));
+    }
+}
+
+void __stdcall EU_SetRateDisplayOptions(HWND hwnd, int element_id,
+                                        int show_text, int show_score, Color text_color,
+                                        const unsigned char* template_bytes, int template_len) {
+    if (auto* el = find_typed_element<Rate>(hwnd, element_id)) {
+        el->set_display_options(show_text != 0, show_score != 0, text_color,
+                                utf8_to_wide(template_bytes, template_len));
+    }
+}
+
+int __stdcall EU_GetRateDisplayOptions(HWND hwnd, int element_id,
+                                       int* show_text, int* show_score, Color* text_color,
+                                       unsigned char* template_buffer, int template_buffer_size) {
+    auto* el = find_typed_element<Rate>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_text) *show_text = el->show_text ? 1 : 0;
+    if (show_score) *show_score = el->show_score ? 1 : 0;
+    if (text_color) *text_color = el->score_text_color;
+    copy_wide_as_utf8(el->score_template, template_buffer, template_buffer_size);
+    return 1;
 }
 
 void __stdcall EU_SetRateChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
@@ -4989,7 +5754,7 @@ int __stdcall EU_GetTableSelectedRow(HWND hwnd, int element_id) {
 
 int __stdcall EU_GetTableRowCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Table>(hwnd, element_id);
-    return el ? (int)el->rows.size() : 0;
+    return el ? el->row_count() : 0;
 }
 
 int __stdcall EU_GetTableColumnCount(HWND hwnd, int element_id) {
@@ -5041,6 +5806,180 @@ int __stdcall EU_GetTableOptions(HWND hwnd, int element_id,
     if (scroll_row) *scroll_row = el->scroll_row;
     if (column_width) *column_width = el->fixed_column_width;
     return 1;
+}
+
+void __stdcall EU_SetTableColumnsEx(HWND hwnd, int element_id,
+                                    const unsigned char* columns_bytes, int columns_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_columns_ex(utf8_to_wide(columns_bytes, columns_len));
+    }
+}
+
+void __stdcall EU_SetTableRowsEx(HWND hwnd, int element_id,
+                                 const unsigned char* rows_bytes, int rows_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_rows_ex(utf8_to_wide(rows_bytes, rows_len));
+    }
+}
+
+void __stdcall EU_SetTableCellEx(HWND hwnd, int element_id, int row, int col, int type,
+                                 const unsigned char* value_bytes, int value_len,
+                                 const unsigned char* options_bytes, int options_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_cell_ex(row, col, type, utf8_to_wide(value_bytes, value_len),
+                        utf8_to_wide(options_bytes, options_len));
+    }
+}
+
+void __stdcall EU_SetTableRowStyle(HWND hwnd, int element_id, int row,
+                                   unsigned int bg, unsigned int fg,
+                                   int align, int font_flags, int font_size) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_row_style(row, (Color)bg, (Color)fg, align, font_flags, font_size);
+    }
+}
+
+void __stdcall EU_SetTableCellStyle(HWND hwnd, int element_id, int row, int col,
+                                    unsigned int bg, unsigned int fg,
+                                    int align, int font_flags, int font_size) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_cell_style(row, col, (Color)bg, (Color)fg, align, font_flags, font_size);
+    }
+}
+
+void __stdcall EU_SetTableSelectionMode(HWND hwnd, int element_id, int mode) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->set_selection_mode(mode);
+}
+
+void __stdcall EU_SetTableSelectedRows(HWND hwnd, int element_id,
+                                       const unsigned char* rows_bytes, int rows_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_selected_rows_text(utf8_to_wide(rows_bytes, rows_len));
+    }
+}
+
+void __stdcall EU_SetTableFilter(HWND hwnd, int element_id, int col,
+                                 const unsigned char* value_bytes, int value_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_filter(col, utf8_to_wide(value_bytes, value_len));
+    }
+}
+
+void __stdcall EU_ClearTableFilter(HWND hwnd, int element_id, int col) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->clear_filter(col);
+}
+
+void __stdcall EU_SetTableSearch(HWND hwnd, int element_id,
+                                 const unsigned char* value_bytes, int value_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_search(utf8_to_wide(value_bytes, value_len));
+    }
+}
+
+void __stdcall EU_SetTableSpan(HWND hwnd, int element_id, int row, int col,
+                               int rowspan, int colspan) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_span(row, col, rowspan, colspan);
+    }
+}
+
+void __stdcall EU_ClearTableSpans(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->clear_spans();
+}
+
+void __stdcall EU_SetTableSummary(HWND hwnd, int element_id,
+                                  const unsigned char* values_bytes, int values_len) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_summary(utf8_to_wide(values_bytes, values_len));
+    }
+}
+
+void __stdcall EU_SetTableRowExpanded(HWND hwnd, int element_id, int row, int expanded) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->set_row_expanded(row, expanded != 0);
+}
+
+void __stdcall EU_SetTableTreeOptions(HWND hwnd, int element_id, int enabled, int indent, int lazy) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_tree_options(enabled != 0, indent, lazy != 0);
+    }
+}
+
+void __stdcall EU_SetTableViewportOptions(HWND hwnd, int element_id, int max_height,
+                                          int fixed_header, int horizontal_scroll,
+                                          int show_summary) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_viewport_options(max_height, fixed_header != 0, horizontal_scroll != 0, show_summary != 0);
+    }
+}
+
+void __stdcall EU_SetTableScroll(HWND hwnd, int element_id, int scroll_row_value, int scroll_x) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->set_scroll(scroll_row_value, scroll_x);
+}
+
+void __stdcall EU_SetTableHeaderDragOptions(HWND hwnd, int element_id, int column_resize,
+                                            int header_height_resize, int min_col_width,
+                                            int max_col_width, int min_header_height,
+                                            int max_header_height) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_header_drag_options(column_resize != 0, header_height_resize != 0,
+                                    min_col_width, max_col_width,
+                                    min_header_height, max_header_height);
+    }
+}
+
+int __stdcall EU_ExportTableExcel(HWND hwnd, int element_id,
+                                  const unsigned char* path_bytes, int path_len, int flags) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        return export_table_to_xlsx(*el, utf8_to_wide(path_bytes, path_len), flags) ? 1 : 0;
+    }
+    return 0;
+}
+
+int __stdcall EU_ImportTableExcel(HWND hwnd, int element_id,
+                                  const unsigned char* path_bytes, int path_len, int flags) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        return import_table_from_xlsx(*el, utf8_to_wide(path_bytes, path_len), flags) ? 1 : 0;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetTableCellClickCallback(HWND hwnd, int element_id, TableCellCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->cell_click_cb = cb;
+}
+
+void __stdcall EU_SetTableCellActionCallback(HWND hwnd, int element_id, TableCellCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->cell_cb = cb;
+}
+
+void __stdcall EU_SetTableVirtualOptions(HWND hwnd, int element_id, int enabled,
+                                         int row_count, int cache_window) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_virtual_options(enabled != 0, row_count, cache_window);
+    }
+}
+
+void __stdcall EU_SetTableVirtualRowProvider(HWND hwnd, int element_id, TableVirtualRowCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_virtual_row_provider(cb);
+    }
+}
+
+void __stdcall EU_ClearTableVirtualCache(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->clear_virtual_cache();
+    }
+}
+
+int __stdcall EU_GetTableCellValue(HWND hwnd, int element_id, int row, int col,
+                                   unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->get_cell_value(row, col), buffer, buffer_size) : 0;
+}
+
+int __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->full_state_text(), buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
@@ -5939,7 +6878,7 @@ int __stdcall EU_GetTransferDisabledCount(HWND hwnd, int element_id, int side) {
 void __stdcall EU_SetAutocompleteSuggestions(HWND hwnd, int element_id,
                                              const unsigned char* suggestions_bytes, int suggestions_len) {
     if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
-        el->set_suggestions(split_option_list(suggestions_bytes, suggestions_len));
+        el->set_suggestions(parse_autocomplete_suggestions(suggestions_bytes, suggestions_len));
     }
 }
 
@@ -5973,6 +6912,52 @@ void __stdcall EU_SetAutocompleteEmptyText(HWND hwnd, int element_id,
     if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
         el->set_empty_text(utf8_to_wide(text_bytes, text_len));
     }
+}
+
+void __stdcall EU_SetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                             const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
+        el->set_placeholder(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+int __stdcall EU_GetAutocompletePlaceholder(HWND hwnd, int element_id,
+                                            unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Autocomplete>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->placeholder, buffer, buffer_size);
+}
+
+void __stdcall EU_SetAutocompleteIcons(HWND hwnd, int element_id,
+                                       const unsigned char* prefix_icon_bytes, int prefix_icon_len,
+                                       const unsigned char* suffix_icon_bytes, int suffix_icon_len) {
+    if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
+        el->set_icons(utf8_to_wide(prefix_icon_bytes, prefix_icon_len),
+                      utf8_to_wide(suffix_icon_bytes, suffix_icon_len));
+    }
+}
+
+int __stdcall EU_GetAutocompleteIcons(HWND hwnd, int element_id,
+                                      unsigned char* prefix_icon_buffer, int prefix_icon_buffer_size,
+                                      unsigned char* suffix_icon_buffer, int suffix_icon_buffer_size) {
+    auto* el = find_typed_element<Autocomplete>(hwnd, element_id);
+    if (!el) return 0;
+    copy_wide_as_utf8(el->prefix_icon, prefix_icon_buffer, prefix_icon_buffer_size);
+    copy_wide_as_utf8(el->suffix_icon, suffix_icon_buffer, suffix_icon_buffer_size);
+    return 1;
+}
+
+void __stdcall EU_SetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int trigger_on_focus) {
+    if (auto* el = find_typed_element<Autocomplete>(hwnd, element_id)) {
+        el->set_behavior(trigger_on_focus != 0);
+    }
+}
+
+int __stdcall EU_GetAutocompleteBehaviorOptions(HWND hwnd, int element_id, int* trigger_on_focus) {
+    auto* el = find_typed_element<Autocomplete>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_on_focus) *trigger_on_focus = el->trigger_on_focus ? 1 : 0;
+    return 1;
 }
 
 int __stdcall EU_GetAutocompleteValue(HWND hwnd, int element_id,
@@ -6266,6 +7251,186 @@ int __stdcall EU_GetDatePickerSelectionRange(HWND hwnd, int element_id,
     if (enabled) *enabled = range_enabled ? 1 : 0;
     return 1;
 }
+void __stdcall EU_SetDatePickerPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->end_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerFormat(HWND hwnd, int element_id,
+                                       const unsigned char* fmt_bytes, int fmt_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        el->date_format_str = utf8_to_wide(fmt_bytes, fmt_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerAlign(HWND hwnd, int element_id, int align) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        if (align < 0) align = 0; else if (align > 2) align = 2;
+        el->text_align = align;
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDatePickerMode(HWND hwnd, int element_id, int mode) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->set_mode(mode);
+}
+int __stdcall EU_GetDatePickerMode(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) return el->mode();
+    return 0;
+}
+void __stdcall EU_SetDatePickerMultiSelect(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->set_multi_select(enabled != 0);
+}
+int __stdcall EU_GetDatePickerSelectedDates(HWND hwnd, int element_id, unsigned char* buffer, int buf_size) {
+    auto* el = find_typed_element<DatePicker>(hwnd, element_id);
+    if (!el || el->selected_dates.empty()) return 0;
+    std::wstring result;
+    for (size_t i = 0; i < el->selected_dates.size(); ++i) {
+        if (i > 0) result += L",";
+        result += std::to_wstring(el->selected_dates[i]);
+    }
+    std::string utf8 = wide_to_utf8(result);
+    int needed = (int)utf8.size();
+    if (buffer && buf_size > needed) { memcpy(buffer, utf8.data(), needed + 1); }
+    return needed;
+}
+void __stdcall EU_SetDatePickerShortcuts(HWND hwnd, int element_id,
+                                          const unsigned char* sc_bytes, int sc_len) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) {
+        std::wstring text = utf8_to_wide(sc_bytes, sc_len);
+        std::vector<DatePicker::DateShortcut> items;
+        size_t pos = 0;
+        while (pos < text.size()) {
+            size_t nl = text.find(L'\n', pos);
+            if (nl == std::wstring::npos) nl = text.size();
+            std::wstring line = text.substr(pos, nl - pos);
+            size_t p1 = line.find(L'|');
+            if (p1 != std::wstring::npos) {
+                DatePicker::DateShortcut s;
+                s.text = line.substr(0, p1);
+                size_t p2 = line.find(L'|', p1 + 1);
+                std::wstring val1 = (p1 + 1 < line.size()) ? line.substr(p1 + 1, p2 != std::wstring::npos ? p2 - p1 - 1 : std::wstring::npos) : L"";
+                s.yyyymmdd = _wtoi(val1.c_str());
+                s.yyyymmdd_end = (p2 != std::wstring::npos && p2 + 1 < line.size()) ? _wtoi(line.substr(p2 + 1).c_str()) : 0;
+                items.push_back(s);
+            }
+            pos = nl + 1;
+        }
+        el->set_shortcuts(items);
+    }
+}
+void __stdcall EU_SetDatePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                     int (*cb)(int id, int yyyymmdd)) {
+    if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->disabled_date_cb = cb;
+}
+
+int __stdcall EU_CreateDateRangePicker(HWND hwnd, int parent_id,
+                                        int start_yyyymmdd, int end_yyyymmdd,
+                                        int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<DateRangePicker>();
+    el->set_logical_bounds({ x, y, w, h });
+    if (start_yyyymmdd > 0 || end_yyyymmdd > 0) el->set_value(start_yyyymmdd, end_yyyymmdd);
+    ElementStyle ls = el->style;
+    ls.bg_color = 0; ls.border_color = 0; ls.fg_color = 0;
+    ls.corner_radius = 4.0f; ls.font_size = 14.0f;
+    ls.pad_left = 10; ls.pad_top = 4; ls.pad_right = 10; ls.pad_bottom = 4;
+    el->set_logical_style(ls);
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+void __stdcall EU_SetDateRangePickerValue(HWND hwnd, int element_id, int start, int end) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->set_value(start, end);
+}
+int __stdcall EU_GetDateRangePickerValue(HWND hwnd, int element_id, int* start, int* end) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        if (start) *start = el->range_start; if (end) *end = el->range_end; return 1;
+    } return 0;
+}
+void __stdcall EU_SetDateRangePickerRange(HWND hwnd, int element_id, int min, int max) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->set_range(min, max);
+}
+void __stdcall EU_SetDateRangePickerPlaceholders(HWND hwnd, int element_id,
+                                                  const unsigned char* start_bytes, int start_len,
+                                                  const unsigned char* end_bytes, int end_len) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(start_bytes, start_len);
+        el->end_placeholder = utf8_to_wide(end_bytes, end_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateRangePickerSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len); el->invalidate();
+    }
+}
+void __stdcall EU_SetDateRangePickerFormat(HWND hwnd, int element_id, int fmt) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) { el->date_format = fmt; el->invalidate(); }
+}
+void __stdcall EU_SetDateRangePickerAlign(HWND hwnd, int element_id, int align) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) { el->text_align = align; el->invalidate(); }
+}
+void __stdcall EU_SetDateRangePickerShortcuts(HWND hwnd, int element_id,
+                                               const unsigned char* sc_bytes, int sc_len) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) {
+        std::wstring text = utf8_to_wide(sc_bytes, sc_len);
+        std::vector<DateRangePicker::Shortcut> items;
+        size_t pos = 0;
+        while (pos < text.size()) {
+            size_t nl = text.find(L'\n', pos); if (nl == std::wstring::npos) nl = text.size();
+            std::wstring line = text.substr(pos, nl - pos);
+            size_t p1 = line.find(L'|');
+            if (p1 != std::wstring::npos) {
+                DateRangePicker::Shortcut s; s.text = line.substr(0, p1);
+                size_t p2 = line.find(L'|', p1 + 1);
+                s.yyyymmdd = _wtoi(line.substr(p1 + 1, p2 != std::wstring::npos ? p2 - p1 - 1 : std::wstring::npos).c_str());
+                s.yyyymmdd_end = (p2 != std::wstring::npos) ? _wtoi(line.substr(p2 + 1).c_str()) : 0;
+                items.push_back(s);
+            } pos = nl + 1;
+        }
+        el->shortcuts = items; el->invalidate();
+    }
+}
+void __stdcall EU_SetDateRangePickerDisabledDateCallback(HWND hwnd, int element_id,
+                                                          int (*cb)(int id, int yyyymmdd)) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->disabled_date_cb = cb;
+}
+void __stdcall EU_SetDateRangePickerOpen(HWND hwnd, int element_id, int open) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->set_open(open != 0);
+}
+int __stdcall EU_GetDateRangePickerOpen(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) return el->open ? 1 : 0; return 0;
+}
+void __stdcall EU_DateRangePickerClear(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->clear_value();
+}
 
 void __stdcall EU_SetTimePickerTime(HWND hwnd, int element_id, int hour, int minute) {
     if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
@@ -6445,6 +7610,143 @@ int __stdcall EU_GetDateTimePickerScroll(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetDateTimePickerShortcuts(HWND hwnd, int element_id,
+                                              const unsigned char* sc_bytes, int sc_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        std::wstring text = utf8_to_wide(sc_bytes, sc_len);
+        std::vector<DateTimePicker::DateShortcut> items;
+        size_t pos = 0;
+        while (pos < text.size()) {
+            size_t nl = text.find(L'\n', pos);
+            if (nl == std::wstring::npos) nl = text.size();
+            std::wstring line = text.substr(pos, nl - pos);
+            size_t p1 = line.find(L'|');
+            if (p1 != std::wstring::npos) {
+                DateTimePicker::DateShortcut s;
+                s.text = line.substr(0, p1);
+                size_t p2 = line.find(L'|', p1 + 1);
+                std::wstring val1 = (p1 + 1 < line.size()) ? line.substr(p1 + 1, p2 != std::wstring::npos ? p2 - p1 - 1 : std::wstring::npos) : L"";
+                s.yyyymmdd = _wtoi(val1.c_str());
+                s.yyyymmdd_end = (p2 != std::wstring::npos && p2 + 1 < line.size()) ? _wtoi(line.substr(p2 + 1).c_str()) : 0;
+                items.push_back(s);
+            }
+            pos = nl + 1;
+        }
+        el->set_shortcuts(items);
+    }
+}
+void __stdcall EU_SetDateTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                     const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                                   const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->end_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateTimePickerDefaultTime(HWND hwnd, int element_id, int hour, int minute) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->set_default_time(hour, minute);
+    }
+}
+void __stdcall EU_SetDateTimePickerRangeDefaultTime(HWND hwnd, int element_id,
+                                                     int start_hour, int start_minute,
+                                                     int end_hour, int end_minute) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->set_range_default_time(start_hour, start_minute, end_hour, end_minute);
+    }
+}
+void __stdcall EU_SetDateTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                                   const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetDateTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                                int start_date, int start_time,
+                                                int end_date, int end_time) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        el->set_selection_range(start_date, start_time, end_date, end_time, enabled != 0);
+    }
+}
+int __stdcall EU_GetDateTimePickerRangeValue(HWND hwnd, int element_id,
+                                              int* start_date, int* start_time,
+                                              int* end_date, int* end_time, int* enabled) {
+    if (auto* el = find_typed_element<DateTimePicker>(hwnd, element_id)) {
+        int sd = 0, st = 0, ed = 0, et = 0;
+        bool en = false;
+        el->get_selection_range(sd, st, ed, et, en);
+        if (start_date) *start_date = sd;
+        if (start_time) *start_time = st;
+        if (end_date) *end_date = ed;
+        if (end_time) *end_time = et;
+        if (enabled) *enabled = en ? 1 : 0;
+        return 1;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetTimePickerArrowControl(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->arrow_control = enabled != 0;
+        el->invalidate();
+    }
+}
+int __stdcall EU_GetTimePickerArrowControl(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) return el->arrow_control ? 1 : 0;
+    return 0;
+}
+void __stdcall EU_SetTimePickerRangeSelect(HWND hwnd, int element_id, int enabled,
+                                            int start_hhmm, int end_hhmm) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->set_selection_range(start_hhmm, end_hhmm, enabled != 0);
+    }
+}
+int __stdcall EU_GetTimePickerRangeValue(HWND hwnd, int element_id,
+                                          int* start_hhmm, int* end_hhmm, int* enabled) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        if (start_hhmm) *start_hhmm = el->range_start_has_value ? el->range_start : 0;
+        if (end_hhmm) *end_hhmm = el->range_end_has_value ? el->range_end : 0;
+        if (enabled) *enabled = el->range_select ? 1 : 0;
+        return 1;
+    }
+    return 0;
+}
+void __stdcall EU_SetTimePickerStartPlaceholder(HWND hwnd, int element_id,
+                                                 const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->start_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetTimePickerEndPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->end_placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetTimePickerRangeSeparator(HWND hwnd, int element_id,
+                                               const unsigned char* sep_bytes, int sep_len) {
+    if (auto* el = find_typed_element<TimePicker>(hwnd, element_id)) {
+        el->range_separator = utf8_to_wide(sep_bytes, sep_len);
+        el->invalidate();
+    }
+}
+void __stdcall EU_SetTimeSelectPlaceholder(HWND hwnd, int element_id,
+                                            const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<TimeSelect>(hwnd, element_id)) {
+        el->placeholder = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+
 void __stdcall EU_SetTimeSelectTime(HWND hwnd, int element_id, int hour, int minute) {
     if (auto* el = find_typed_element<TimeSelect>(hwnd, element_id)) {
         el->set_time(hour, minute);
@@ -6569,6 +7871,72 @@ int __stdcall EU_GetDropdownState(HWND hwnd, int element_id,
     if (selected_level) *selected_level = el->selected_level();
     if (hover_index) *hover_index = el->hover_index();
     return 1;
+}
+
+void __stdcall EU_SetDropdownOptions(HWND hwnd, int element_id,
+                                     int trigger_mode, int hide_on_click,
+                                     int split_button, int button_variant,
+                                     int size, int trigger_style) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        el->set_options(trigger_mode, hide_on_click, split_button,
+                        button_variant, size, trigger_style);
+    }
+}
+
+int __stdcall EU_GetDropdownOptions(HWND hwnd, int element_id,
+                                    int* trigger_mode, int* hide_on_click,
+                                    int* split_button, int* button_variant,
+                                    int* size, int* trigger_style) {
+    auto* el = find_typed_element<Dropdown>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_mode) *trigger_mode = el->trigger_mode;
+    if (hide_on_click) *hide_on_click = el->hide_on_click ? 1 : 0;
+    if (split_button) *split_button = el->split_button ? 1 : 0;
+    if (button_variant) *button_variant = el->button_variant;
+    if (size) *size = el->size;
+    if (trigger_style) *trigger_style = el->trigger_style;
+    return 1;
+}
+
+void __stdcall EU_SetDropdownItemMeta(HWND hwnd, int element_id,
+                                      const unsigned char* icons_bytes, int icons_len,
+                                      const unsigned char* commands_bytes, int commands_len,
+                                      const int* divided_indices, int divided_count) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        std::vector<int> divided;
+        if (divided_indices && divided_count > 0) {
+            divided.assign(divided_indices, divided_indices + divided_count);
+        }
+        el->set_item_meta(split_option_list_keep_empty(icons_bytes, icons_len),
+                          split_option_list_keep_empty(commands_bytes, commands_len),
+                          divided);
+    }
+}
+
+int __stdcall EU_GetDropdownItemMeta(HWND hwnd, int element_id, int item_index,
+                                     unsigned char* icon_buffer, int icon_buffer_size,
+                                     unsigned char* command_buffer, int command_buffer_size,
+                                     int* divided, int* disabled, int* level) {
+    auto* el = find_typed_element<Dropdown>(hwnd, element_id);
+    if (!el || item_index < 0 || item_index >= el->item_count()) return 0;
+    copy_wide_as_utf8(el->item_icon(item_index), icon_buffer, icon_buffer_size);
+    copy_wide_as_utf8(el->item_command(item_index), command_buffer, command_buffer_size);
+    if (divided) *divided = el->is_divided(item_index) ? 1 : 0;
+    if (disabled) *disabled = (item_index < (int)el->disabled_items.size() && el->disabled_items[item_index]) ? 1 : 0;
+    if (level) *level = (item_index < (int)el->item_levels.size()) ? el->item_levels[item_index] : 0;
+    return 1;
+}
+
+void __stdcall EU_SetDropdownCommandCallback(HWND hwnd, int element_id, DropdownCommandCallback cb) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        el->command_cb = cb;
+    }
+}
+
+void __stdcall EU_SetDropdownMainClickCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
+    if (auto* el = find_typed_element<Dropdown>(hwnd, element_id)) {
+        el->main_click_cb = cb;
+    }
 }
 
 void __stdcall EU_SetMenuItems(HWND hwnd, int element_id,
@@ -7301,6 +8669,72 @@ void __stdcall EU_SetUploadOptions(HWND hwnd, int element_id, int multiple, int 
     if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
         el->set_options(multiple, auto_upload);
     }
+}
+
+void __stdcall EU_SetUploadStyle(HWND hwnd, int element_id, int style_mode,
+                                 int show_file_list, int show_tip, int show_actions,
+                                 int drop_enabled) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_style(style_mode, show_file_list, show_tip, show_actions, drop_enabled);
+    }
+}
+
+int __stdcall EU_GetUploadStyle(HWND hwnd, int element_id, int* style_mode,
+                                int* show_file_list, int* show_tip,
+                                int* show_actions, int* drop_enabled) {
+    auto* el = find_typed_element<Upload>(hwnd, element_id);
+    if (!el) return 0;
+    if (style_mode) *style_mode = el->style_mode;
+    if (show_file_list) *show_file_list = el->show_file_list;
+    if (show_tip) *show_tip = el->show_tip;
+    if (show_actions) *show_actions = el->show_actions;
+    if (drop_enabled) *drop_enabled = el->drop_enabled;
+    return 1;
+}
+
+void __stdcall EU_SetUploadTexts(HWND hwnd, int element_id,
+                                 const unsigned char* title_bytes, int title_len,
+                                 const unsigned char* tip_bytes, int tip_len,
+                                 const unsigned char* trigger_bytes, int trigger_len,
+                                 const unsigned char* submit_bytes, int submit_len) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_texts(utf8_to_wide(title_bytes, title_len),
+                      utf8_to_wide(tip_bytes, tip_len),
+                      utf8_to_wide(trigger_bytes, trigger_len),
+                      utf8_to_wide(submit_bytes, submit_len));
+    }
+}
+
+void __stdcall EU_SetUploadConstraints(HWND hwnd, int element_id, int limit,
+                                       int max_size_kb,
+                                       const unsigned char* accept_bytes, int accept_len) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_constraints(limit, max_size_kb, utf8_to_wide(accept_bytes, accept_len));
+    }
+}
+
+int __stdcall EU_GetUploadConstraints(HWND hwnd, int element_id, int* limit,
+                                      int* max_size_kb,
+                                      unsigned char* accept_buffer, int accept_buffer_size) {
+    auto* el = find_typed_element<Upload>(hwnd, element_id);
+    if (!el) return 0;
+    if (limit) *limit = el->limit;
+    if (max_size_kb) *max_size_kb = el->max_size_kb;
+    return copy_wide_as_utf8(el->accept_filter, accept_buffer, accept_buffer_size);
+}
+
+void __stdcall EU_SetUploadPreviewOpen(HWND hwnd, int element_id, int file_index, int open) {
+    if (auto* el = find_typed_element<Upload>(hwnd, element_id)) {
+        el->set_preview_open(file_index, open != 0);
+    }
+}
+
+int __stdcall EU_GetUploadPreviewState(HWND hwnd, int element_id, int* file_index, int* open) {
+    auto* el = find_typed_element<Upload>(hwnd, element_id);
+    if (!el) return 0;
+    if (file_index) *file_index = el->preview_index;
+    if (open) *open = el->preview_open;
+    return 1;
 }
 
 void __stdcall EU_SetUploadSelectedFiles(HWND hwnd, int element_id,
@@ -8113,6 +9547,128 @@ void __stdcall EU_SetResultActionCallback(HWND hwnd, int element_id, ElementValu
     }
 }
 
+void __stdcall EU_SetMessageBoxBeforeClose(HWND hwnd, int element_id,
+                                           int delay_ms,
+                                           const unsigned char* loading_bytes, int loading_len) {
+    if (auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id)) {
+        el->set_before_close(delay_ms, utf8_to_wide(loading_bytes, loading_len));
+    }
+}
+
+void __stdcall EU_SetMessageBoxInput(HWND hwnd, int element_id,
+                                     const unsigned char* value_bytes, int value_len,
+                                     const unsigned char* placeholder_bytes, int placeholder_len,
+                                     const unsigned char* pattern_bytes, int pattern_len,
+                                     const unsigned char* error_bytes, int error_len) {
+    if (auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id)) {
+        el->set_input(utf8_to_wide(value_bytes, value_len),
+                      utf8_to_wide(placeholder_bytes, placeholder_len),
+                      utf8_to_wide(pattern_bytes, pattern_len),
+                      utf8_to_wide(error_bytes, error_len));
+    }
+}
+
+int __stdcall EU_GetMessageBoxInput(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->input_value, buffer, buffer_size);
+}
+
+int __stdcall EU_GetMessageBoxFullState(HWND hwnd, int element_id,
+                                        int* box_type, int* show_cancel, int* center,
+                                        int* rich, int* distinguish, int* prompt,
+                                        int* confirm_loading, int* input_error_visible,
+                                        int* last_action, int* timer_elapsed_ms) {
+    auto* el = find_typed_element<MessageBoxElement>(hwnd, element_id);
+    if (!el) return 0;
+    if (box_type) *box_type = el->box_type;
+    if (show_cancel) *show_cancel = el->show_cancel ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (rich) *rich = el->rich ? 1 : 0;
+    if (distinguish) *distinguish = el->distinguish_cancel_and_close ? 1 : 0;
+    if (prompt) *prompt = el->prompt ? 1 : 0;
+    if (confirm_loading) *confirm_loading = el->confirm_loading ? 1 : 0;
+    if (input_error_visible) *input_error_visible = el->input_error_visible ? 1 : 0;
+    if (last_action) *last_action = el->last_action;
+    if (timer_elapsed_ms) *timer_elapsed_ms = el->timer_elapsed_ms;
+    return 1;
+}
+
+void __stdcall EU_SetMessageText(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->set_text(utf8_to_wide(bytes, len));
+    }
+}
+
+void __stdcall EU_SetMessageOptions(HWND hwnd, int element_id, int message_type,
+                                    int closable, int center, int rich,
+                                    int duration_ms, int offset) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->set_options(message_type, closable != 0, center != 0, rich != 0, duration_ms, offset);
+    }
+}
+
+void __stdcall EU_SetMessageClosed(HWND hwnd, int element_id, int closed) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->set_closed(closed != 0);
+    }
+}
+
+int __stdcall EU_GetMessageOptions(HWND hwnd, int element_id, int* message_type,
+                                   int* closable, int* center, int* rich,
+                                   int* duration_ms, int* closed, int* offset) {
+    auto* el = find_typed_element<Message>(hwnd, element_id);
+    if (!el) return 0;
+    if (message_type) *message_type = el->message_type;
+    if (closable) *closable = el->closable ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (rich) *rich = el->rich ? 1 : 0;
+    if (duration_ms) *duration_ms = el->duration_ms;
+    if (closed) *closed = el->closed ? 1 : 0;
+    if (offset) *offset = el->offset;
+    return 1;
+}
+
+int __stdcall EU_GetMessageFullState(HWND hwnd, int element_id, int* message_type,
+                                     int* closable, int* center, int* rich,
+                                     int* duration_ms, int* closed,
+                                     int* close_hover, int* close_down,
+                                     int* close_count, int* last_action,
+                                     int* timer_elapsed_ms, int* timer_running,
+                                     int* stack_index, int* stack_gap, int* offset) {
+    auto* el = find_typed_element<Message>(hwnd, element_id);
+    if (!el) return 0;
+    if (message_type) *message_type = el->message_type;
+    if (closable) *closable = el->closable ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (rich) *rich = el->rich ? 1 : 0;
+    if (duration_ms) *duration_ms = el->duration_ms;
+    if (closed) *closed = el->closed ? 1 : 0;
+    if (close_hover) *close_hover = el->close_hover() ? 1 : 0;
+    if (close_down) *close_down = el->close_down() ? 1 : 0;
+    if (close_count) *close_count = el->close_count;
+    if (last_action) *last_action = el->last_action;
+    if (timer_elapsed_ms) *timer_elapsed_ms = el->timer_elapsed_ms;
+    if (timer_running) *timer_running = el->timer_running() ? 1 : 0;
+    if (stack_index) *stack_index = el->stack_index;
+    if (stack_gap) *stack_gap = el->stack_gap;
+    if (offset) *offset = el->offset;
+    return 1;
+}
+
+void __stdcall EU_TriggerMessageClose(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->close_message(4);
+    }
+}
+
+void __stdcall EU_SetMessageCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<Message>(hwnd, element_id)) {
+        el->close_cb = cb;
+    }
+}
+
 void __stdcall EU_SetNotificationBody(HWND hwnd, int element_id,
                                       const unsigned char* body_bytes, int body_len) {
     if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
@@ -8129,6 +9685,18 @@ void __stdcall EU_SetNotificationType(HWND hwnd, int element_id, int notify_type
 void __stdcall EU_SetNotificationClosable(HWND hwnd, int element_id, int closable) {
     if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
         el->set_closable(closable != 0);
+    }
+}
+
+void __stdcall EU_SetNotificationPlacement(HWND hwnd, int element_id, int placement, int offset) {
+    if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
+        el->set_placement(placement, offset);
+    }
+}
+
+void __stdcall EU_SetNotificationRichMode(HWND hwnd, int element_id, int rich) {
+    if (auto* el = find_typed_element<Notification>(hwnd, element_id)) {
+        el->set_rich(rich != 0);
     }
 }
 
@@ -8202,6 +9770,25 @@ int __stdcall EU_GetNotificationFullState(HWND hwnd, int element_id,
     if (timer_running) *timer_running = el->timer_running() ? 1 : 0;
     if (stack_index) *stack_index = el->stack_index;
     if (stack_gap) *stack_gap = el->stack_gap;
+    return 1;
+}
+
+int __stdcall EU_GetNotificationFullStateEx(HWND hwnd, int element_id,
+                                            int* notify_type, int* closable,
+                                            int* duration_ms, int* closed,
+                                            int* close_hover, int* close_down,
+                                            int* close_count, int* last_action,
+                                            int* timer_elapsed_ms, int* timer_running,
+                                            int* stack_index, int* stack_gap,
+                                            int* placement, int* offset, int* rich) {
+    auto* el = find_typed_element<Notification>(hwnd, element_id);
+    if (!el) return 0;
+    EU_GetNotificationFullState(hwnd, element_id, notify_type, closable, duration_ms, closed,
+                                close_hover, close_down, close_count, last_action,
+                                timer_elapsed_ms, timer_running, stack_index, stack_gap);
+    if (placement) *placement = el->placement;
+    if (offset) *offset = el->offset;
+    if (rich) *rich = el->rich ? 1 : 0;
     return 1;
 }
 
@@ -8316,6 +9903,64 @@ void __stdcall EU_SetDialogOptions(HWND hwnd, int element_id, int open, int moda
         el->apply_dpi_scale(st->dpi_scale);
         st->element_tree->layout();
         InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                           int width_mode, int width_value,
+                                           int center, int footer_center,
+                                           int content_padding, int footer_height) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Dialog>(hwnd, element_id)) {
+        el->set_advanced_options(width_mode, width_value, center != 0, footer_center != 0,
+                                 content_padding, footer_height);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetDialogAdvancedOptions(HWND hwnd, int element_id,
+                                          int* width_mode, int* width_value,
+                                          int* center, int* footer_center,
+                                          int* content_padding, int* footer_height,
+                                          int* content_parent_id, int* footer_parent_id,
+                                          int* close_pending) {
+    auto* el = find_typed_element<Dialog>(hwnd, element_id);
+    if (!el) return 0;
+    if (width_mode) *width_mode = el->width_mode;
+    if (width_value) *width_value = el->width_value;
+    if (center) *center = el->center ? 1 : 0;
+    if (footer_center) *footer_center = el->footer_center ? 1 : 0;
+    if (content_padding) *content_padding = el->content_padding;
+    if (footer_height) *footer_height = el->footer_height;
+    if (content_parent_id) *content_parent_id = el->content_parent_id;
+    if (footer_parent_id) *footer_parent_id = el->footer_parent_id;
+    if (close_pending) *close_pending = el->close_pending ? 1 : 0;
+    return 1;
+}
+
+int __stdcall EU_GetDialogContentParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Dialog>(hwnd, element_id);
+    return el ? el->content_parent_id : 0;
+}
+
+int __stdcall EU_GetDialogFooterParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Dialog>(hwnd, element_id);
+    return el ? el->footer_parent_id : 0;
+}
+
+void __stdcall EU_SetDialogBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb) {
+    if (auto* el = find_typed_element<Dialog>(hwnd, element_id)) {
+        el->before_close_cb = cb;
+    }
+}
+
+void __stdcall EU_ConfirmDialogClose(HWND hwnd, int element_id, int allow) {
+    if (auto* el = find_typed_element<Dialog>(hwnd, element_id)) {
+        el->confirm_pending_close(allow != 0);
+        relayout_and_invalidate(hwnd);
     }
 }
 
@@ -8444,6 +10089,71 @@ void __stdcall EU_SetDrawerOptions(HWND hwnd, int element_id, int placement, int
     }
 }
 
+void __stdcall EU_SetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_close,
+                                           int close_on_escape, int content_padding,
+                                           int footer_height, int size_mode,
+                                           int size_value) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Drawer>(hwnd, element_id)) {
+        el->set_advanced_options(show_header != 0, show_close != 0,
+                                 close_on_escape != 0, content_padding,
+                                 footer_height, size_mode, size_value);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetDrawerAdvancedOptions(HWND hwnd, int element_id,
+                                          int* show_header, int* show_close,
+                                          int* close_on_escape, int* content_padding,
+                                          int* footer_height, int* size_mode,
+                                          int* size_value, int* content_parent_id,
+                                          int* footer_parent_id, int* close_pending) {
+    auto* el = find_typed_element<Drawer>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_header) *show_header = el->show_header ? 1 : 0;
+    if (show_close) *show_close = el->show_close ? 1 : 0;
+    if (close_on_escape) *close_on_escape = el->close_on_escape ? 1 : 0;
+    if (content_padding) *content_padding = el->content_padding;
+    if (footer_height) *footer_height = el->footer_height;
+    if (size_mode) *size_mode = el->size_mode;
+    if (size_value) *size_value = el->size_value > 0
+        ? el->size_value
+        : ((el->placement == 0 || el->placement == 1)
+            ? el->logical_bounds.w : el->logical_bounds.h);
+    if (content_parent_id) *content_parent_id = el->content_parent_id;
+    if (footer_parent_id) *footer_parent_id = el->footer_parent_id;
+    if (close_pending) *close_pending = el->close_pending ? 1 : 0;
+    return 1;
+}
+
+int __stdcall EU_GetDrawerContentParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Drawer>(hwnd, element_id);
+    return el ? el->content_parent_id : 0;
+}
+
+int __stdcall EU_GetDrawerFooterParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Drawer>(hwnd, element_id);
+    return el ? el->footer_parent_id : 0;
+}
+
+void __stdcall EU_SetDrawerBeforeCloseCallback(HWND hwnd, int element_id,
+                                               ElementBeforeCloseCallback cb) {
+    if (auto* el = find_typed_element<Drawer>(hwnd, element_id)) {
+        el->before_close_cb = cb;
+    }
+}
+
+void __stdcall EU_ConfirmDrawerClose(HWND hwnd, int element_id, int allow) {
+    if (auto* el = find_typed_element<Drawer>(hwnd, element_id)) {
+        el->confirm_pending_close(allow != 0);
+        relayout_and_invalidate(hwnd);
+    }
+}
+
 int __stdcall EU_GetDrawerOpen(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Drawer>(hwnd, element_id);
     return el && el->is_open() ? 1 : 0;
@@ -8560,6 +10270,30 @@ void __stdcall EU_SetTooltipBehavior(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int effect,
+                                            int disabled, int show_arrow,
+                                            int offset, int max_width) {
+    if (auto* el = find_typed_element<Tooltip>(hwnd, element_id)) {
+        el->set_advanced_options(placement, effect, disabled, show_arrow, offset, max_width);
+    }
+}
+
+int __stdcall EU_GetTooltipAdvancedOptions(HWND hwnd, int element_id,
+                                           int* placement, int* effect,
+                                           int* disabled, int* show_arrow,
+                                           int* offset, int* max_width) {
+    auto* el = find_typed_element<Tooltip>(hwnd, element_id);
+    if (!el) return 0;
+    if (placement) *placement = el->use_advanced_placement ? el->advanced_placement : -1;
+    if (effect) *effect = el->effect;
+    if (disabled) *disabled = el->tooltip_disabled ? 1 : 0;
+    if (show_arrow) *show_arrow = el->show_arrow ? 1 : 0;
+    if (offset) *offset = el->offset;
+    if (max_width) *max_width = el->max_width();
+    return 1;
+}
+
 void __stdcall EU_TriggerTooltip(HWND hwnd, int element_id, int open) {
     if (auto* el = find_typed_element<Tooltip>(hwnd, element_id)) {
         el->trigger_open(open != 0, 5);
@@ -8628,6 +10362,47 @@ void __stdcall EU_SetPopoverOptions(HWND hwnd, int element_id, int placement, in
     if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
         el->set_options(placement, open, popup_width, popup_height, closable);
     }
+}
+
+void __stdcall EU_SetPopoverAdvancedOptions(HWND hwnd, int element_id,
+                                            int placement, int open,
+                                            int popup_width, int popup_height,
+                                            int closable) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        if (placement < 0) placement = 0;
+        if (placement > 11) placement = 11;
+        el->advanced_placement = placement;
+        el->use_advanced_placement = true;
+        el->popup_width = popup_width > 120 ? popup_width : 250;
+        el->popup_height = popup_height > 80 ? popup_height : 132;
+        el->close_enabled = closable != 0;
+        el->set_open(open != 0);
+    }
+}
+
+void __stdcall EU_SetPopoverBehavior(HWND hwnd, int element_id,
+                                     int trigger_mode, int close_on_outside,
+                                     int show_arrow, int offset) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        el->set_behavior(trigger_mode, close_on_outside, show_arrow, offset);
+    }
+}
+
+int __stdcall EU_GetPopoverBehavior(HWND hwnd, int element_id,
+                                    int* trigger_mode, int* close_on_outside,
+                                    int* show_arrow, int* offset) {
+    auto* el = find_typed_element<Popover>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_mode) *trigger_mode = el->trigger_mode;
+    if (close_on_outside) *close_on_outside = el->close_on_outside ? 1 : 0;
+    if (show_arrow) *show_arrow = el->show_arrow ? 1 : 0;
+    if (offset) *offset = el->offset;
+    return 1;
+}
+
+int __stdcall EU_GetPopoverContentParent(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Popover>(hwnd, element_id);
+    return el ? el->content_parent_id : 0;
 }
 
 int __stdcall EU_GetPopoverOpen(HWND hwnd, int element_id) {
@@ -8709,6 +10484,23 @@ void __stdcall EU_SetPopconfirmOptions(HWND hwnd, int element_id, int placement,
     }
 }
 
+void __stdcall EU_SetPopconfirmAdvancedOptions(HWND hwnd, int element_id,
+                                               int placement, int open,
+                                               int popup_width, int popup_height,
+                                               int trigger_mode, int close_on_outside,
+                                               int show_arrow, int offset) {
+    if (auto* el = find_typed_element<Popconfirm>(hwnd, element_id)) {
+        if (placement < 0) placement = 0;
+        if (placement > 11) placement = 11;
+        el->advanced_placement = placement;
+        el->use_advanced_placement = true;
+        el->popup_width = popup_width > 120 ? popup_width : 286;
+        el->popup_height = popup_height > 80 ? popup_height : 146;
+        el->set_behavior(trigger_mode, close_on_outside, show_arrow, offset);
+        el->set_open(open != 0);
+    }
+}
+
 void __stdcall EU_SetPopconfirmContent(HWND hwnd, int element_id,
                                        const unsigned char* title_bytes, int title_len,
                                        const unsigned char* content_bytes, int content_len) {
@@ -8725,6 +10517,24 @@ void __stdcall EU_SetPopconfirmButtons(HWND hwnd, int element_id,
         el->set_buttons(utf8_or_default(confirm_bytes, confirm_len, L"确定"),
                         utf8_or_default(cancel_bytes, cancel_len, L"取消"));
     }
+}
+
+void __stdcall EU_SetPopconfirmIcon(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    Color icon_color, int visible) {
+    if (auto* el = find_typed_element<Popconfirm>(hwnd, element_id)) {
+        el->set_icon(utf8_or_default(icon_bytes, icon_len, L"!"), icon_color, visible != 0);
+    }
+}
+
+int __stdcall EU_GetPopconfirmIcon(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size,
+                                   Color* icon_color, int* visible) {
+    auto* el = find_typed_element<Popconfirm>(hwnd, element_id);
+    if (!el) return 0;
+    if (icon_color) *icon_color = el->icon_color;
+    if (visible) *visible = el->show_icon ? 1 : 0;
+    return copy_wide_as_utf8(el->icon_text, buffer, buffer_size);
 }
 
 void __stdcall EU_ResetPopconfirmResult(HWND hwnd, int element_id) {

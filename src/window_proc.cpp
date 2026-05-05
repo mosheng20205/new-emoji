@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <windowsx.h>
+#include <shellapi.h>
 #include <imm.h>
 #include <d2d1.h>
 #include <dwrite.h>
@@ -9,6 +10,8 @@
 #include "element_button.h"
 #include "element_titlebar.h"
 #include "element_editbox.h"
+#include "element_upload.h"
+#include "element_message.h"
 #include "element_messagebox.h"
 #include "element_carousel.h"
 #include "element_notification.h"
@@ -17,7 +20,9 @@
 #include "element_tooltip.h"
 #include "theme.h"
 #include "dpi_context.h"
+#include "utf8_helpers.h"
 #include <map>
+#include <vector>
 
 extern HMODULE g_module;
 
@@ -26,6 +31,8 @@ static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
 extern std::map<UINT_PTR, Button*> g_button_timer_map;
 extern std::map<UINT_PTR, Carousel*> g_carousel_timer_map;
+extern std::map<UINT_PTR, Message*> g_message_timer_map;
+extern std::map<UINT_PTR, MessageBoxElement*> g_messagebox_timer_map;
 extern std::map<UINT_PTR, Notification*> g_notification_timer_map;
 extern std::map<UINT_PTR, Loading*> g_loading_timer_map;
 extern std::map<UINT_PTR, Drawer*> g_drawer_timer_map;
@@ -92,6 +99,68 @@ static bool is_modal_overlay_point(WindowState* st, int x, int y) {
     return st && st->element_tree && st->element_tree->has_modal_overlay_at(x, y);
 }
 
+static Upload* upload_from_hit(Element* hit) {
+    while (hit) {
+        if (auto* upload = dynamic_cast<Upload*>(hit)) return upload;
+        hit = hit->parent;
+    }
+    return nullptr;
+}
+
+static Upload* find_drop_upload_at(Element* el, int x, int y) {
+    if (!el || !el->visible || !el->enabled) return nullptr;
+    int lx = x - el->bounds.x;
+    int ly = y - el->bounds.y;
+    if (el->parent && (lx < 0 || ly < 0 || lx >= el->bounds.w || ly >= el->bounds.h)) return nullptr;
+
+    for (auto it = el->children.rbegin(); it != el->children.rend(); ++it) {
+        if (auto* upload = find_drop_upload_at(it->get(), lx, ly)) return upload;
+    }
+    auto* upload = dynamic_cast<Upload*>(el);
+    if (upload && upload->wants_dropped_files() && lx >= 0 && ly >= 0 &&
+        lx < upload->bounds.w && ly < upload->bounds.h) {
+        return upload;
+    }
+    return nullptr;
+}
+
+static void handle_drop_files(HWND hwnd, HDROP drop) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree || !drop) {
+        if (drop) DragFinish(drop);
+        return;
+    }
+
+    POINT pt = {};
+    DragQueryPoint(drop, &pt);
+    Upload* upload = st->element_tree->root() ? find_drop_upload_at(st->element_tree->root(), pt.x, pt.y) : nullptr;
+    if (!upload) {
+        Element* hit = st->element_tree->root() ? st->element_tree->root()->hit_test(pt.x, pt.y) : nullptr;
+        upload = upload_from_hit(hit);
+    }
+    if (!upload || !upload->wants_dropped_files()) {
+        DragFinish(drop);
+        return;
+    }
+
+    std::vector<std::wstring> files;
+    UINT count = DragQueryFileW(drop, 0xFFFFFFFF, nullptr, 0);
+    for (UINT i = 0; i < count; ++i) {
+        UINT len = DragQueryFileW(drop, i, nullptr, 0);
+        if (len == 0) continue;
+        std::wstring path((size_t)len + 1, L'\0');
+        DragQueryFileW(drop, i, path.data(), len + 1);
+        path.resize(len);
+        files.push_back(path);
+    }
+    DragFinish(drop);
+
+    if (!files.empty()) {
+        upload->accept_dropped_files(files);
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
 // ── Window class registration ────────────────────────────────────────
 
 void register_window_class() {
@@ -119,6 +188,10 @@ void register_window_class() {
             recreate_render_target(st);
             st->element_tree = new ElementTree(hwnd, st->dpi_scale);
             st->element_tree->layout();
+            DragAcceptFiles(hwnd, TRUE);
+            ChangeWindowMessageFilterEx(hwnd, WM_DROPFILES, MSGFLT_ALLOW, nullptr);
+            ChangeWindowMessageFilterEx(hwnd, WM_COPYDATA, MSGFLT_ALLOW, nullptr);
+            ChangeWindowMessageFilterEx(hwnd, 0x0049, MSGFLT_ALLOW, nullptr);
             return 0;
         }
         case WM_SIZE: {
@@ -171,6 +244,10 @@ void register_window_class() {
         case WM_ERASEBKGND:
             return 1;
 
+        case WM_DROPFILES:
+            handle_drop_files(hwnd, reinterpret_cast<HDROP>(wp));
+            return 0;
+
         case WM_GETMINMAXINFO: {
             auto* mmi = reinterpret_cast<MINMAXINFO*>(lp);
             HMONITOR mon = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
@@ -187,6 +264,26 @@ void register_window_class() {
         }
 
         // ── Hit test: resize cursor only; D2D title bar stays in client area ──
+        case WM_SETCURSOR: {
+            if (LOWORD(lp) == HTCLIENT && st && st->element_tree && st->element_tree->root()) {
+                POINT pt{};
+                if (GetCursorPos(&pt)) {
+                    ScreenToClient(hwnd, &pt);
+                    Element* hit = st->element_tree->root()->hit_test(pt.x, pt.y);
+                    if (auto* mb = dynamic_cast<MessageBoxElement*>(hit)) {
+                        int ox = 0;
+                        int oy = 0;
+                        mb->get_absolute_pos(ox, oy);
+                        if (mb->wants_text_cursor_at(pt.x - ox, pt.y - oy)) {
+                            SetCursor(LoadCursorW(nullptr, IDC_IBEAM));
+                            return TRUE;
+                        }
+                    }
+                }
+            }
+            break;
+        }
+
         case WM_NCHITTEST: {
             POINT pt = { GET_X_LPARAM(lp), GET_Y_LPARAM(lp) };
             ScreenToClient(hwnd, &pt);
@@ -301,6 +398,14 @@ void register_window_class() {
                 if (it->second) it->second->tick(50);
                 return 0;
             }
+            if (auto it = g_message_timer_map.find((UINT_PTR)wp); it != g_message_timer_map.end()) {
+                if (it->second) it->second->tick(50);
+                return 0;
+            }
+            if (auto it = g_messagebox_timer_map.find((UINT_PTR)wp); it != g_messagebox_timer_map.end()) {
+                if (it->second) it->second->tick(50);
+                return 0;
+            }
             if (auto it = g_loading_timer_map.find((UINT_PTR)wp); it != g_loading_timer_map.end()) {
                 if (it->second) it->second->tick(33);
                 return 0;
@@ -323,6 +428,16 @@ void register_window_class() {
             int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
             if (st && st->sizing) { st->sizing = false; ReleaseCapture(); return 0; }
             if (st && st->element_tree) st->element_tree->dispatch_lbutton_up(x, y);
+            return 0;
+        }
+        case WM_RBUTTONDOWN: {
+            int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
+            if (st && st->element_tree) { SetFocus(hwnd); st->element_tree->dispatch_rbutton_down(x, y); }
+            return 0;
+        }
+        case WM_RBUTTONUP: {
+            int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
+            if (st && st->element_tree) st->element_tree->dispatch_rbutton_up(x, y);
             return 0;
         }
         // ── Keyboard ────────────────────────────────────────────────
@@ -388,9 +503,16 @@ void register_window_class() {
                 Element* el = st->element_tree->find_by_id(messagebox_id);
                 if (auto* mb = dynamic_cast<MessageBoxElement*>(el)) {
                     MessageBoxResultCallback cb = mb->result_cb;
+                    MessageBoxExCallback ex_cb = mb->result_ex_cb;
+                    std::string value = wide_to_utf8(mb->input_value);
                     st->element_tree->remove_child(mb);
                     InvalidateRect(hwnd, nullptr, FALSE);
                     if (cb) cb(messagebox_id, result);
+                    if (ex_cb) {
+                        ex_cb(messagebox_id, result,
+                              reinterpret_cast<const unsigned char*>(value.data()),
+                              (int)value.size());
+                    }
                 }
             }
             return 0;
@@ -404,6 +526,7 @@ void register_window_class() {
             DestroyWindow(hwnd); return 0;
         case WM_DESTROY:
             if (st) {
+                DragAcceptFiles(hwnd, FALSE);
                 delete st->element_tree; st->element_tree = nullptr;
                 if (st->render_target) { st->render_target->Release(); st->render_target = nullptr; }
                 g_windows.erase(hwnd); delete st;

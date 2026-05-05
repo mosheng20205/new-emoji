@@ -10,6 +10,15 @@ public:
     int max_time = 2359;
     int step_minutes = 10;
     int time_format = 0;
+    bool arrow_control = false;
+    bool range_select = false;
+    int range_start = 0;
+    int range_end = 0;
+    bool range_start_has_value = false;
+    bool range_end_has_value = false;
+    std::wstring start_placeholder;
+    std::wstring end_placeholder;
+    std::wstring range_separator = L" ~ ";
 
     const wchar_t* type_name() const override { return L"TimePicker"; }
     void paint(RenderContext& ctx) override;
@@ -30,15 +39,18 @@ public:
     void set_open(bool next_open);
     void set_scroll(int next_hour_scroll, int next_minute_scroll);
     void get_scroll(int& next_hour_scroll, int& next_minute_scroll) const;
+    void set_selection_range(int start_hhmm, int end_hhmm, bool enabled);
     int value() const;
     bool is_open() const;
 
 private:
     enum Part {
-        PartNone,
+        PartNone = 0,
         PartMain,
         PartHour,
-        PartMinute
+        PartMinute,
+        PartHourEnd,   // range end hour
+        PartMinuteEnd  // range end minute
     };
 
     int m_hover_part = PartNone;
@@ -47,6 +59,8 @@ private:
     int m_press_value = -1;
     int m_hour_scroll = 0;
     int m_minute_scroll = 0;
+    int m_end_hour_scroll = 0;
+    int m_end_minute_scroll = 0;
     Part m_active_part = PartHour;
 
     int popup_width() const;
@@ -58,9 +72,11 @@ private:
     int minute_row_count() const;
     void clamp_scroll();
     void ensure_selected_visible();
+    void ensure_time_visible(int time_value, int& hour_scroll, int& minute_scroll);
     void scroll_part(Part part, int rows);
     bool select_step(Part part, int delta);
     bool can_select_time(int next_hour, int next_minute) const;
+    bool can_select_range_time(Part part, int next_hour, int next_minute) const;
     Part part_at(int x, int y, int* value = nullptr) const;
     std::wstring display_text() const;
 };

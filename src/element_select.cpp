@@ -90,7 +90,7 @@ Select::Part Select::part_at(int x, int y, int* option_index) const {
 
 std::wstring Select::selected_text() const {
     if (multiple) {
-        if (selected_indices.empty()) return L"\u8bf7\u9009\u62e9";
+        if (selected_indices.empty()) return placeholder.empty() ? L"\u8bf7\u9009\u62e9" : placeholder;
         std::wstring joined;
         int count = 0;
         for (int idx : selected_indices) {
@@ -103,10 +103,10 @@ std::wstring Select::selected_text() const {
                 break;
             }
         }
-        return joined.empty() ? L"\u8bf7\u9009\u62e9" : joined;
+        return joined.empty() ? (placeholder.empty() ? L"\u8bf7\u9009\u62e9" : placeholder) : joined;
     }
     if (selected_index >= 0 && selected_index < (int)options.size()) return options[selected_index];
-    return L"\u8bf7\u9009\u62e9";
+    return placeholder.empty() ? L"\u8bf7\u9009\u62e9" : placeholder;
 }
 
 bool Select::is_option_disabled(int index) const {
@@ -235,6 +235,11 @@ void Select::set_search_text(const std::wstring& value) {
     open = true;
     std::vector<int> visible = visible_indices();
     m_hover_index = visible.empty() ? -1 : visible.front();
+    invalidate();
+}
+
+void Select::set_placeholder(const std::wstring& value) {
+    placeholder = value.empty() ? L"\u8bf7\u9009\u62e9" : value;
     invalidate();
 }
 

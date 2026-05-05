@@ -1,68 +1,60 @@
 # Tooltip 文字提示
 
-## 简介
+`Tooltip` 已补齐用户示例中的 12 方位、dark/light、换行内容、disabled 状态和旧 placement 兼容能力。
 
-`Tooltip` 是 new_emoji 的 反馈/浮层 组件。当前状态：**已完成**。
+## 扩展位置枚举
 
-已补运行时定位、箭头绘制、显示/隐藏延迟、悬停/focus/键盘/手动触发、最大宽度、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证
+旧 API `EU_SetTooltipOptions` 的 `0左 / 1右 / 2上 / 3下` 保持兼容。新高级 API 使用 12 方位：
 
-## 创建
-
-| 项目 | 值 |
+| 值 | 位置 |
 |---|---|
-| 创建导出 | `EU_CreateTooltip` |
-| 组件分类 | 反馈/浮层 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_tooltip` 或同类 helper |
-| 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
+| 0 | `top-start` 上左 |
+| 1 | `top` 上 |
+| 2 | `top-end` 上右 |
+| 3 | `bottom-start` 下左 |
+| 4 | `bottom` 下 |
+| 5 | `bottom-end` 下右 |
+| 6 | `left-start` 左上 |
+| 7 | `left` 左 |
+| 8 | `left-end` 左下 |
+| 9 | `right-start` 右上 |
+| 10 | `right` 右 |
+| 11 | `right-end` 右下 |
 
-## 相关 API
+## API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateTooltip` | 当前组件相关导出 |
-| `EU_GetTooltipFullState` | 当前组件相关导出 |
-| `EU_GetTooltipOpen` | 当前组件相关导出 |
-| `EU_GetTooltipOptions` | 当前组件相关导出 |
-| `EU_GetTooltipText` | 当前组件相关导出 |
-| `EU_SetTooltipBehavior` | 当前组件相关导出 |
-| `EU_SetTooltipContent` | 当前组件相关导出 |
-| `EU_SetTooltipOpen` | 当前组件相关导出 |
-| `EU_SetTooltipOptions` | 当前组件相关导出 |
-| `EU_TriggerTooltip` | 当前组件相关导出 |
+| `EU_CreateTooltip` | 创建文字提示触发器 |
+| `EU_SetTooltipContent` | 设置提示内容，支持换行 |
+| `EU_SetTooltipOpen` / `EU_GetTooltipOpen` | 设置/读取打开状态 |
+| `EU_SetTooltipOptions` / `EU_GetTooltipOptions` | 旧四方位兼容 API |
+| `EU_SetTooltipBehavior` | 设置显示/隐藏延迟、触发方式和箭头 |
+| `EU_SetTooltipAdvancedOptions` / `EU_GetTooltipAdvancedOptions` | 设置 12 方位、dark/light、disabled、箭头、offset、最大宽度 |
+| `EU_TriggerTooltip` | 程序打开/关闭 |
+| `EU_GetTooltipText` / `EU_GetTooltipFullState` | 文本和完整状态读回 |
 
-## Python 使用
+## Python 示例
 
 ```python
-import sys
-
-sys.path.insert(0, "examples/python")
-import new_emoji_ui as ui
-
-hwnd = ui.create_window("✨ 文字提示 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Tooltip`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
-ui.dll.EU_ShowWindow(hwnd, 1)
+tip = ui.create_tooltip(hwnd, root, "上左 📍", "📍 Top Left 提示文字", 2, 40, 80, 130, 36)
+ui.set_tooltip_advanced_options(hwnd, tip,
+                                placement="top-start",
+                                effect="dark",
+                                disabled=False,
+                                show_arrow=True,
+                                offset=8,
+                                max_width=220)
 ```
 
-## 易语言调用
+禁用：
 
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
-## 状态与交互
-
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
-
-## DPI 与首次窗口尺寸
-
-示例窗口传入逻辑尺寸。新增或调整示例时，窗口和容器必须覆盖首屏全部控件，并保留至少 20px 逻辑余量。
+```python
+ui.set_tooltip_advanced_options(hwnd, tip, placement="bottom", effect="light",
+                                disabled=True, show_arrow=True,
+                                offset=8, max_width=220)
+```
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_tooltip_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
-
-## 文档维护
-
-如果 `Tooltip` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+优先运行 `tests/python/test_tooltip_complete_components.py`。gallery 的 `Tooltip` 详情页展示 12 方位矩阵、深浅主题、多行提示和 disabled 切换。

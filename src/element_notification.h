@@ -7,12 +7,15 @@ public:
     int notify_type = 0;
     bool closable = true;
     bool closed = false;
+    bool rich = false;
     int duration_ms = 0;
     int timer_elapsed_ms = 0;
     int close_count = 0;
     int last_action = 0; // 0 none, 1 set, 2 mouse, 3 keyboard, 4 trigger, 5 timer
     int stack_index = 0;
     int stack_gap = 12;
+    int placement = 0; // 0 top-right, 1 bottom-right, 2 bottom-left, 3 top-left
+    int offset = 20;
     ElementValueCallback close_cb = nullptr;
 
     ~Notification() override;
@@ -31,6 +34,8 @@ public:
     void set_closed(bool value);
     void set_options(int type, bool closeable, int duration);
     void set_stack(int index, int gap);
+    void set_placement(int value, int offset_value);
+    void set_rich(bool value);
     void close_notification(int action);
     void reset_timer();
     void tick(int elapsed_ms);

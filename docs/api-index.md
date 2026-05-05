@@ -29,7 +29,8 @@
 | `EU_CreateSwitch` | |
 | `EU_CreateSlider` | |
 | `EU_CreateInputNumber` | |
-| `EU_CreateInput` | |
+| `EU_CreateInput` | 创建 Input 输入框 |
+| `EU_CreateInputGroup` | 创建 InputGroup 组合输入 |
 | `EU_CreateInputTag` | |
 | `EU_CreateSelect` | |
 | `EU_CreateSelectV2` | |
@@ -42,7 +43,7 @@
 | `EU_CreateEmpty` | |
 | `EU_CreateSkeleton` | |
 | `EU_CreateDescriptions` | |
-| `EU_CreateTable` | |
+| `EU_CreateTable` | 创建表格；兼容旧基础表格协议，高级能力通过 `EU_SetTableColumnsEx` / `EU_SetTableRowsEx` 补齐 |
 | `EU_CreateCard` | |
 | `EU_CreateCollapse` | |
 | `EU_CreateTimeline` | |
@@ -61,7 +62,7 @@
 | `EU_CreateTree` | |
 | `EU_CreateTreeSelect` | |
 | `EU_CreateTransfer` | |
-| `EU_CreateAutocomplete` | |
+| `EU_CreateAutocomplete` | 创建 Autocomplete 自动补全 |
 | `EU_CreateMentions` | |
 | `EU_CreateCascader` | |
 | `EU_CreateDatePicker` | |
@@ -90,12 +91,37 @@
 | `EU_CreateNotification` | |
 | `EU_CreateLoading` | |
 | `EU_CreateDialog` | |
-| `EU_CreateDrawer` | |
+| `EU_SetDialogAdvancedOptions` | 设置 Dialog 百分比宽度、居中和 slot 布局 |
+| `EU_GetDialogAdvancedOptions` | 读取 Dialog 高级选项、slot ID 和 before-close 待确认状态 |
+| `EU_GetDialogContentParent` | 获取 Dialog 内容 slot 容器 ID |
+| `EU_GetDialogFooterParent` | 获取 Dialog 页脚 slot 容器 ID |
+| `EU_SetDialogBeforeCloseCallback` | 设置 Dialog 关闭前拦截回调 |
+| `EU_ConfirmDialogClose` | before-close 拦截后确认继续或取消关闭 |
+| `EU_CreateDrawer` | 创建窗口级 Drawer 抽屉 |
+| `EU_SetDrawerAdvancedOptions` | 设置 Drawer 标题栏、关闭按钮、ESC、padding、footer 和像素/百分比尺寸 |
+| `EU_GetDrawerAdvancedOptions` | 读取 Drawer 高级选项、slot ID 和 before-close pending 状态 |
+| `EU_GetDrawerContentParent` | 获取 Drawer 内容 slot 容器 ID |
+| `EU_GetDrawerFooterParent` | 获取 Drawer 页脚 slot 容器 ID |
+| `EU_SetDrawerBeforeCloseCallback` | 设置 Drawer 关闭前拦截回调 |
+| `EU_ConfirmDrawerClose` | before-close 拦截后确认继续或取消关闭 |
 | `EU_CreateTooltip` | |
+| `EU_SetTooltipAdvancedOptions` | 设置 Tooltip 12 方位、明暗主题、disabled、箭头和 offset |
+| `EU_GetTooltipAdvancedOptions` | 读取 Tooltip 高级选项 |
 | `EU_CreatePopover` | |
+| `EU_SetPopoverAdvancedOptions` | 设置 Popover 12 方位和弹层尺寸 |
+| `EU_SetPopoverBehavior` | 设置 Popover hover/click/focus/manual 行为 |
+| `EU_GetPopoverBehavior` | 读取 Popover 行为选项 |
+| `EU_GetPopoverContentParent` | 获取 Popover 内容 slot 容器 ID |
 | `EU_CreatePopconfirm` | |
+| `EU_SetPopconfirmAdvancedOptions` | 设置 Popconfirm 12 方位、触发、外部关闭、箭头和 offset |
+| `EU_SetPopconfirmIcon` | 设置 Popconfirm 图标文本/emoji、颜色和显示状态 |
+| `EU_GetPopconfirmIcon` | 读取 Popconfirm 图标文本/emoji、颜色和显示状态 |
+| `EU_ShowMessage` | 显示服务式 Message 消息提示 |
+| `EU_ShowNotification` | 显示服务式 Notification 通知 |
 | `EU_ShowMessageBox` | |
 | `EU_ShowConfirmBox` | |
+| `EU_ShowMessageBoxEx` | 显示扩展 MessageBox |
+| `EU_ShowPromptBox` | 显示 Prompt 输入消息框 |
 | `EU_SetElementText` | |
 | `EU_GetElementText` | |
 | `EU_SetElementBounds` | |
@@ -213,12 +239,30 @@
 | `EU_GetInputValue` | |
 | `EU_SetInputPlaceholder` | |
 | `EU_SetInputAffixes` | |
+| `EU_SetInputIcons` | 设置 Input 前后图标 |
+| `EU_GetInputIcons` | 读取 Input 前后图标 |
 | `EU_SetInputClearable` | |
 | `EU_SetInputOptions` | |
+| `EU_SetInputVisualOptions` | 设置 Input 尺寸、密码显隐、字数统计与 autosize |
+| `EU_GetInputVisualOptions` | 读取 Input 视觉选项 |
+| `EU_SetInputSelection` | 设置 Input 文本选区 |
+| `EU_GetInputSelection` | 读取 Input 文本选区 |
+| `EU_SetInputContextMenuEnabled` | 设置 Input 右键菜单是否启用 |
+| `EU_GetInputContextMenuEnabled` | 读取 Input 右键菜单是否启用 |
 | `EU_GetInputState` | |
 | `EU_SetInputMaxLength` | |
 | `EU_GetInputMaxLength` | |
 | `EU_SetInputTextCallback` | |
+| `EU_SetInputGroupValue` | 设置 InputGroup 内部输入值 |
+| `EU_GetInputGroupValue` | 读取 InputGroup 内部输入值 |
+| `EU_SetInputGroupOptions` | 设置 InputGroup 尺寸与输入行为选项 |
+| `EU_GetInputGroupOptions` | 读取 InputGroup 尺寸与输入行为选项 |
+| `EU_SetInputGroupTextAddon` | 设置 InputGroup 文本附加项 |
+| `EU_SetInputGroupButtonAddon` | 设置 InputGroup 按钮附加项 |
+| `EU_SetInputGroupSelectAddon` | 设置 InputGroup 选择附加项 |
+| `EU_ClearInputGroupAddon` | 清空 InputGroup 附加项 |
+| `EU_GetInputGroupInputElementId` | 读取 InputGroup 内部 Input 元素 ID |
+| `EU_GetInputGroupAddonElementId` | 读取 InputGroup 某侧附加项元素 ID |
 | `EU_SetInputTagTags` | |
 | `EU_SetInputTagPlaceholder` | |
 | `EU_SetInputTagOptions` | |
@@ -270,6 +314,13 @@
 | `EU_SetRateOptions` | |
 | `EU_GetRateOptions` | |
 | `EU_SetRateTexts` | |
+| `EU_SetRateColors` | |
+| `EU_GetRateColors` | |
+| `EU_SetRateIcons` | |
+| `EU_GetRateIcons` | |
+| `EU_SetRateTextItems` | |
+| `EU_SetRateDisplayOptions` | |
+| `EU_GetRateDisplayOptions` | |
 | `EU_SetRateChangeCallback` | |
 | `EU_SetColorPickerColor` | |
 | `EU_GetColorPickerColor` | |
@@ -332,19 +383,40 @@
 | `EU_GetDescriptionsItemCount` | |
 | `EU_SetDescriptionsAdvancedOptions` | |
 | `EU_GetDescriptionsOptions` | |
-| `EU_SetTableData` | |
-| `EU_SetTableStriped` | |
-| `EU_SetTableBordered` | |
-| `EU_SetTableEmptyText` | |
-| `EU_SetTableSelectedRow` | |
-| `EU_GetTableSelectedRow` | |
-| `EU_GetTableRowCount` | |
-| `EU_GetTableColumnCount` | |
-| `EU_SetTableOptions` | |
-| `EU_SetTableSort` | |
-| `EU_SetTableScrollRow` | |
-| `EU_SetTableColumnWidth` | |
-| `EU_GetTableOptions` | |
+| `EU_SetTableData` | 设置旧协议列/行数据 |
+| `EU_SetTableStriped` | 设置斑马纹 |
+| `EU_SetTableBordered` | 设置边框 |
+| `EU_SetTableEmptyText` | 设置空状态文字 |
+| `EU_SetTableSelectedRow` | 设置单选高亮行 |
+| `EU_GetTableSelectedRow` | 读取当前选中行 |
+| `EU_GetTableRowCount` | 读取表格行数 |
+| `EU_GetTableColumnCount` | 读取表格列数 |
+| `EU_SetTableOptions` | 设置基础表格选项：斑马纹、边框、行高、表头高、可选择 |
+| `EU_SetTableSort` | 设置排序列和方向 |
+| `EU_SetTableScrollRow` | 设置首个可见行 |
+| `EU_SetTableColumnWidth` | 设置统一列宽 |
+| `EU_GetTableOptions` | 读取基础表格选项 |
+| `EU_SetTableColumnsEx` | 设置高级列配置：固定列、多级表头、排序、筛选、宽度、单元格类型 |
+| `EU_SetTableRowsEx` | 设置高级行数据：树形、展开、懒加载、行样式和单元格类型 |
+| `EU_SetTableCellEx` | 设置单元格类型、值和选项 |
+| `EU_SetTableRowStyle` | 设置某一行的颜色、对齐、字体标志和字号 |
+| `EU_SetTableCellStyle` | 设置某一单元格的颜色、对齐、字体标志和字号 |
+| `EU_SetTableSelectionMode` | 设置无选择/单选/多选模式 |
+| `EU_SetTableSelectedRows` | 设置多选行集合 |
+| `EU_SetTableFilter` | 设置列筛选值 |
+| `EU_ClearTableFilter` | 清除单列或全部筛选 |
+| `EU_SetTableSearch` | 设置表头搜索文本 |
+| `EU_SetTableSpan` | 设置行列合并 |
+| `EU_ClearTableSpans` | 清除行列合并 |
+| `EU_SetTableSummary` | 设置合计行文本 |
+| `EU_SetTableRowExpanded` | 设置行展开状态 |
+| `EU_SetTableTreeOptions` | 设置树形、缩进和懒加载模式 |
+| `EU_SetTableViewportOptions` | 设置最大高度、固定表头、横向滚动和合计显示 |
+| `EU_SetTableScroll` | 设置垂直/水平滚动位置；Table 内容溢出时会显示可拖拽滚动条 |
+| `EU_SetTableCellClickCallback` | 设置任意单元格点击回调 |
+| `EU_SetTableCellActionCallback` | 设置单元格按钮、开关、选择、展开等交互回调 |
+| `EU_GetTableCellValue` | 读取单元格值 |
+| `EU_GetTableFullState` | 读取高级表格摘要状态 |
 | `EU_SetCardBody` | |
 | `EU_SetCardFooter` | |
 | `EU_SetCardActions` | |
@@ -472,6 +544,12 @@
 | `EU_GetTransferDisabledCount` | |
 | `EU_SetAutocompleteSuggestions` | |
 | `EU_SetAutocompleteValue` | |
+| `EU_SetAutocompletePlaceholder` | 设置自动补全占位文本 |
+| `EU_GetAutocompletePlaceholder` | 读取自动补全占位文本 |
+| `EU_SetAutocompleteIcons` | 设置自动补全前后图标 |
+| `EU_GetAutocompleteIcons` | 读取自动补全前后图标 |
+| `EU_SetAutocompleteBehaviorOptions` | 设置自动补全行为选项 |
+| `EU_GetAutocompleteBehaviorOptions` | 读取自动补全行为选项 |
 | `EU_SetAutocompleteOpen` | |
 | `EU_SetAutocompleteSelected` | |
 | `EU_SetAutocompleteAsyncState` | |
@@ -526,6 +604,13 @@
 | `EU_GetTimePickerRange` | |
 | `EU_GetTimePickerOptions` | |
 | `EU_GetTimePickerScroll` | |
+| `EU_SetTimePickerArrowControl` | |
+| `EU_GetTimePickerArrowControl` | |
+| `EU_SetTimePickerRangeSelect` | |
+| `EU_SetTimePickerStartPlaceholder` | |
+| `EU_SetTimePickerEndPlaceholder` | |
+| `EU_SetTimePickerRangeSeparator` | |
+| `EU_GetTimePickerRangeValue` | |
 | `EU_SetDateTimePickerDateTime` | |
 | `EU_SetDateTimePickerRange` | |
 | `EU_SetDateTimePickerOptions` | |
@@ -541,6 +626,14 @@
 | `EU_GetDateTimePickerRange` | |
 | `EU_GetDateTimePickerOptions` | |
 | `EU_GetDateTimePickerScroll` | |
+| `EU_SetDateTimePickerShortcuts` | |
+| `EU_SetDateTimePickerStartPlaceholder` | |
+| `EU_SetDateTimePickerEndPlaceholder` | |
+| `EU_SetDateTimePickerDefaultTime` | |
+| `EU_SetDateTimePickerRangeDefaultTime` | |
+| `EU_SetDateTimePickerRangeSeparator` | |
+| `EU_SetDateTimePickerRangeSelect` | |
+| `EU_GetDateTimePickerRangeValue` | |
 | `EU_SetTimeSelectTime` | |
 | `EU_SetTimeSelectRange` | |
 | `EU_SetTimeSelectOptions` | |
@@ -559,6 +652,12 @@
 | `EU_GetDropdownItemCount` | |
 | `EU_SetDropdownDisabled` | |
 | `EU_GetDropdownState` | |
+| `EU_SetDropdownOptions` | |
+| `EU_GetDropdownOptions` | |
+| `EU_SetDropdownItemMeta` | |
+| `EU_GetDropdownItemMeta` | |
+| `EU_SetDropdownCommandCallback` | |
+| `EU_SetDropdownMainClickCallback` | |
 | `EU_SetMenuItems` | |
 | `EU_SetMenuActive` | |
 | `EU_GetMenuActive` | |
@@ -645,6 +744,13 @@
 | `EU_SetUploadFiles` | |
 | `EU_SetUploadFileItems` | |
 | `EU_SetUploadOptions` | |
+| `EU_SetUploadStyle` | |
+| `EU_GetUploadStyle` | |
+| `EU_SetUploadTexts` | |
+| `EU_SetUploadConstraints` | |
+| `EU_GetUploadConstraints` | |
+| `EU_SetUploadPreviewOpen` | |
+| `EU_GetUploadPreviewState` | |
 | `EU_SetUploadSelectedFiles` | |
 | `EU_SetUploadFileStatus` | |
 | `EU_RemoveUploadFile` | |
@@ -743,6 +849,17 @@
 | `EU_GetResultActionText` | |
 | `EU_GetResultFullState` | |
 | `EU_SetResultActionCallback` | |
+| `EU_SetMessageBoxBeforeClose` | 设置 MessageBox 确认按钮 loading 与延迟关闭 |
+| `EU_SetMessageBoxInput` | 设置 Prompt 输入值、占位和校验 |
+| `EU_GetMessageBoxInput` | 读取 Prompt 输入值 |
+| `EU_GetMessageBoxFullState` | 读取 MessageBox 完整状态 |
+| `EU_SetMessageText` | 更新 Message 文本 |
+| `EU_SetMessageOptions` | 设置 Message 类型、关闭、居中、富文本、持续时间和偏移 |
+| `EU_SetMessageClosed` | 设置 Message 关闭状态 |
+| `EU_GetMessageOptions` | 读取 Message 基础选项 |
+| `EU_GetMessageFullState` | 读取 Message 完整状态 |
+| `EU_TriggerMessageClose` | 程序触发 Message 关闭 |
+| `EU_SetMessageCloseCallback` | 设置 Message 关闭回调 |
 | `EU_SetNotificationBody` | |
 | `EU_SetNotificationType` | |
 | `EU_SetNotificationClosable` | |
@@ -750,10 +867,13 @@
 | `EU_SetNotificationClosed` | |
 | `EU_GetNotificationClosed` | |
 | `EU_GetNotificationOptions` | |
+| `EU_SetNotificationPlacement` | 设置 Notification 四角位置和偏移 |
+| `EU_SetNotificationRichMode` | 设置 Notification 轻量富文本模式 |
 | `EU_SetNotificationStack` | |
 | `EU_TriggerNotificationClose` | |
 | `EU_GetNotificationText` | |
 | `EU_GetNotificationFullState` | |
+| `EU_GetNotificationFullStateEx` | 读取 Notification 扩展完整状态 |
 | `EU_SetNotificationCloseCallback` | |
 | `EU_SetLoadingActive` | |
 | `EU_SetLoadingOptions` | |
@@ -766,6 +886,12 @@
 | `EU_SetDialogTitle` | |
 | `EU_SetDialogBody` | |
 | `EU_SetDialogOptions` | |
+| `EU_SetDialogAdvancedOptions` | 设置 Dialog 百分比宽度、居中和 slot 布局 |
+| `EU_GetDialogAdvancedOptions` | 读取 Dialog 高级选项、slot ID 和 before-close 待确认状态 |
+| `EU_GetDialogContentParent` | 获取 Dialog 内容 slot 容器 ID |
+| `EU_GetDialogFooterParent` | 获取 Dialog 页脚 slot 容器 ID |
+| `EU_SetDialogBeforeCloseCallback` | 设置 Dialog 关闭前拦截回调 |
+| `EU_ConfirmDialogClose` | before-close 拦截后确认继续或取消关闭 |
 | `EU_GetDialogOpen` | |
 | `EU_GetDialogOptions` | |
 | `EU_SetDialogButtons` | |
@@ -773,25 +899,41 @@
 | `EU_GetDialogText` | |
 | `EU_GetDialogButtonText` | |
 | `EU_GetDialogFullState` | |
+
+## Table 补充
+
+| 导出 | 说明 |
+|---|---|
+| `EU_SetTableHeaderDragOptions` | 设置 Table 表头拖拽开关、列宽拖拽和表头高度拖拽参数 |
+| `EU_ExportTableExcel` | 导出 Table 到 `.xlsx` |
+| `EU_ImportTableExcel` | 从 `.xlsx` 导入 Table |
 | `EU_SetDialogButtonCallback` | |
-| `EU_SetDrawerOpen` | |
-| `EU_SetDrawerTitle` | |
-| `EU_SetDrawerBody` | |
-| `EU_SetDrawerPlacement` | |
-| `EU_SetDrawerOptions` | |
-| `EU_GetDrawerOpen` | |
-| `EU_GetDrawerOptions` | |
-| `EU_SetDrawerAnimation` | |
-| `EU_TriggerDrawerClose` | |
-| `EU_GetDrawerText` | |
-| `EU_GetDrawerFullState` | |
-| `EU_SetDrawerCloseCallback` | |
+| `EU_SetDrawerOpen` | 设置 Drawer 打开状态 |
+| `EU_SetDrawerTitle` | 设置 Drawer 标题 |
+| `EU_SetDrawerBody` | 设置 Drawer 正文 fallback 文本 |
+| `EU_SetDrawerPlacement` | 设置 Drawer 方向，0左 1右 2上 3下 |
+| `EU_SetDrawerOptions` | 设置 Drawer 基础选项、遮罩关闭和像素尺寸 |
+| `EU_SetDrawerAdvancedOptions` | 设置 Drawer 标题栏、关闭按钮、ESC、padding、footer 和像素/百分比尺寸 |
+| `EU_GetDrawerAdvancedOptions` | 读取 Drawer 高级选项、slot ID 和 before-close pending 状态 |
+| `EU_GetDrawerContentParent` | 获取 Drawer 内容 slot 容器 ID |
+| `EU_GetDrawerFooterParent` | 获取 Drawer 页脚 slot 容器 ID |
+| `EU_SetDrawerBeforeCloseCallback` | 设置 Drawer 关闭前拦截回调 |
+| `EU_ConfirmDrawerClose` | before-close 拦截后确认继续或取消关闭 |
+| `EU_GetDrawerOpen` | 读取 Drawer 打开状态 |
+| `EU_GetDrawerOptions` | 读取 Drawer 基础选项 |
+| `EU_SetDrawerAnimation` | 设置 Drawer 打开动画时长 |
+| `EU_TriggerDrawerClose` | 程序触发 Drawer 关闭 |
+| `EU_GetDrawerText` | 读取 Drawer 标题或正文 |
+| `EU_GetDrawerFullState` | 读取 Drawer 完整基础状态 |
+| `EU_SetDrawerCloseCallback` | 设置 Drawer 实际关闭后的回调 |
 | `EU_SetTooltipContent` | |
 | `EU_SetTooltipOpen` | |
 | `EU_SetTooltipOptions` | |
 | `EU_GetTooltipOpen` | |
 | `EU_GetTooltipOptions` | |
 | `EU_SetTooltipBehavior` | |
+| `EU_SetTooltipAdvancedOptions` | 设置 Tooltip 12 方位、明暗主题、disabled、箭头和 offset |
+| `EU_GetTooltipAdvancedOptions` | 读取 Tooltip 高级选项 |
 | `EU_TriggerTooltip` | |
 | `EU_GetTooltipText` | |
 | `EU_GetTooltipFullState` | |
@@ -799,6 +941,10 @@
 | `EU_SetPopoverContent` | |
 | `EU_SetPopoverTitle` | |
 | `EU_SetPopoverOptions` | |
+| `EU_SetPopoverAdvancedOptions` | 设置 Popover 12 方位和弹层尺寸 |
+| `EU_SetPopoverBehavior` | 设置 Popover hover/click/focus/manual 行为 |
+| `EU_GetPopoverBehavior` | 读取 Popover 行为选项 |
+| `EU_GetPopoverContentParent` | 获取 Popover 内容 slot 容器 ID |
 | `EU_GetPopoverOpen` | |
 | `EU_GetPopoverOptions` | |
 | `EU_TriggerPopover` | |
@@ -807,8 +953,11 @@
 | `EU_SetPopoverActionCallback` | |
 | `EU_SetPopconfirmOpen` | |
 | `EU_SetPopconfirmOptions` | |
+| `EU_SetPopconfirmAdvancedOptions` | 设置 Popconfirm 12 方位、触发、外部关闭、箭头和 offset |
 | `EU_SetPopconfirmContent` | |
 | `EU_SetPopconfirmButtons` | |
+| `EU_SetPopconfirmIcon` | 设置 Popconfirm 图标文本/emoji、颜色和显示状态 |
+| `EU_GetPopconfirmIcon` | 读取 Popconfirm 图标文本/emoji、颜色和显示状态 |
 | `EU_ResetPopconfirmResult` | |
 | `EU_GetPopconfirmOpen` | |
 | `EU_GetPopconfirmResult` | |

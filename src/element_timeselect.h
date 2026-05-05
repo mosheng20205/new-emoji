@@ -10,6 +10,7 @@ public:
     int max_time = 2359;
     int step_minutes = 10;
     int time_format = 0;
+    std::wstring placeholder;
 
     const wchar_t* type_name() const override { return L"TimeSelect"; }
     void paint(RenderContext& ctx) override;

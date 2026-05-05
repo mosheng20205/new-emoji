@@ -30,6 +30,31 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+static Element* child_by_id(Element& el, int id) {
+    if (id <= 0) return nullptr;
+    for (auto& ch : el.children) {
+        if (ch && ch->id == id) return ch.get();
+    }
+    return nullptr;
+}
+
+static const Element* child_by_id_const(const Element& el, int id) {
+    if (id <= 0) return nullptr;
+    for (const auto& ch : el.children) {
+        if (ch && ch->id == id) return ch.get();
+    }
+    return nullptr;
+}
+
+static bool child_has_visible_content(const Element& el, int id) {
+    const Element* child = child_by_id_const(el, id);
+    if (!child) return false;
+    for (const auto& ch : child->children) {
+        if (ch && ch->visible) return true;
+    }
+    return false;
+}
+
 float Drawer::scale() const {
     float s = style.font_size / 14.0f;
     return s < 0.75f ? 0.75f : s;
@@ -74,6 +99,10 @@ void Drawer::set_closable(bool value) {
 void Drawer::set_open(bool value) {
     visible = value;
     animation_progress = value ? 0 : 100;
+    if (value) {
+        close_pending = false;
+        pending_close_action = 0;
+    }
     last_action = 1;
     if (value) ensure_timer();
     else stop_timer();
@@ -87,11 +116,40 @@ void Drawer::set_options(int new_placement, bool open, bool modal_value,
     modal = modal_value;
     closable = closable_value;
     close_on_mask = mask_close;
-    if (size > 0) set_logical_bounds({ logical_bounds.x, logical_bounds.y, size, size });
+    if (size > 0) {
+        size_mode = 0;
+        size_value = size;
+        set_logical_bounds({ logical_bounds.x, logical_bounds.y, size, size });
+    }
+    if (open) {
+        close_pending = false;
+        pending_close_action = 0;
+    }
     animation_progress = open ? 0 : 100;
     last_action = 1;
     if (open) ensure_timer();
     else stop_timer();
+    invalidate();
+}
+
+void Drawer::set_advanced_options(bool show_header_value, bool show_close_value,
+                                  bool close_on_escape_value, int content_padding_value,
+                                  int footer_height_value, int size_mode_value,
+                                  int size_value_value) {
+    show_header = show_header_value;
+    show_close = show_close_value;
+    close_on_escape = close_on_escape_value;
+    if (content_padding_value >= 0) content_padding = content_padding_value;
+    if (footer_height_value >= 0) footer_height = footer_height_value;
+    size_mode = size_mode_value == 1 ? 1 : 0;
+    if (size_value_value > 0) {
+        size_value = size_value_value;
+        if (size_mode == 0) {
+            set_logical_bounds({ logical_bounds.x, logical_bounds.y,
+                                 size_value_value, size_value_value });
+        }
+    }
+    last_action = 1;
     invalidate();
 }
 
@@ -104,12 +162,42 @@ void Drawer::set_animation(int duration_ms) {
 void Drawer::close_drawer(int action) {
     if (!closable && action != 5) return;
     if (!visible) return;
+    if (before_close_cb) {
+        int allow = before_close_cb(id, action);
+        if (!allow) {
+            close_pending = true;
+            pending_close_action = action;
+            last_action = action;
+            invalidate();
+            return;
+        }
+    }
     visible = false;
     animation_progress = 0;
+    close_pending = false;
+    pending_close_action = 0;
     last_action = action;
     ++close_count;
     stop_timer();
     if (close_cb) close_cb(id, close_count, placement, last_action);
+    invalidate();
+}
+
+void Drawer::confirm_pending_close(bool allow) {
+    if (!close_pending) return;
+    int action = pending_close_action ? pending_close_action : 4;
+    close_pending = false;
+    pending_close_action = 0;
+    if (allow) {
+        visible = false;
+        animation_progress = 0;
+        last_action = action;
+        ++close_count;
+        stop_timer();
+        if (close_cb) close_cb(id, close_count, placement, last_action);
+    } else {
+        last_action = 1;
+    }
     invalidate();
 }
 
@@ -145,21 +233,43 @@ void Drawer::stop_timer() {
 void Drawer::layout(const Rect& available) {
     bounds = available;
     update_layout();
+    Rect content = content_rect_in_drawer();
+    Rect footer = footer_rect_in_drawer();
+    for (auto& ch : children) {
+        if (!ch || !ch->visible) continue;
+        if (ch->id == content_parent_id) {
+            ch->layout(content);
+        } else if (ch->id == footer_parent_id) {
+            ch->layout(footer);
+        } else {
+            ch->layout(ch->bounds);
+        }
+    }
 }
 
 void Drawer::update_layout() {
     float s = scale();
     int default_side = round_px(300.0f * s);
-    int panel_w = logical_bounds.w > 0 ? round_px((float)logical_bounds.w * s) : default_side;
-    int panel_h = logical_bounds.h > 0 ? round_px((float)logical_bounds.h * s) : default_side;
+    int base_w = size_value > 0 ? size_value : logical_bounds.w;
+    int base_h = size_value > 0 ? size_value : logical_bounds.h;
+    int panel_w = base_w > 0 ? round_px((float)base_w * s) : default_side;
+    int panel_h = base_h > 0 ? round_px((float)base_h * s) : default_side;
 
     if (placement == 0 || placement == 1) {
+        if (size_mode == 1 && size_value > 0) {
+            int pct = (std::max)(10, (std::min)(100, size_value));
+            panel_w = round_px((float)bounds.w * (float)pct / 100.0f);
+        }
         if (panel_w > bounds.w) panel_w = bounds.w;
         panel_h = bounds.h;
         int x = placement == 0 ? 0 : bounds.w - panel_w;
         m_panel_rect = { x, 0, panel_w, panel_h };
     } else {
         panel_w = bounds.w;
+        if (size_mode == 1 && size_value > 0) {
+            int pct = (std::max)(10, (std::min)(100, size_value));
+            panel_h = round_px((float)bounds.h * (float)pct / 100.0f);
+        }
         if (panel_h > bounds.h) panel_h = bounds.h;
         int y = placement == 2 ? 0 : bounds.h - panel_h;
         m_panel_rect = { 0, y, panel_w, panel_h };
@@ -175,8 +285,41 @@ void Drawer::update_layout() {
     };
 }
 
+Rect Drawer::footer_rect_in_drawer() const {
+    if (!child_has_visible_content(*this, footer_parent_id)) return {};
+    float s = scale();
+    int footer_h = round_px((float)(footer_height > 0 ? footer_height : 58) * s);
+    int pad = round_px((float)content_padding * s);
+    Rect r = {
+        m_panel_rect.x + pad,
+        m_panel_rect.y + m_panel_rect.h - footer_h,
+        m_panel_rect.w - pad * 2,
+        footer_h
+    };
+    if (r.w < 0) r.w = 0;
+    if (r.h < 0) r.h = 0;
+    return r;
+}
+
+Rect Drawer::content_rect_in_drawer() const {
+    float s = scale();
+    int pad = round_px((float)content_padding * s);
+    int header_h = show_header ? round_px(54.0f * s) : 0;
+    int top_gap = show_header ? round_px(16.0f * s) : pad;
+    int footer_h = footer_rect_in_drawer().h;
+    Rect r = {
+        m_panel_rect.x + pad,
+        m_panel_rect.y + header_h + top_gap,
+        m_panel_rect.w - pad * 2,
+        m_panel_rect.h - header_h - top_gap - pad - footer_h
+    };
+    if (r.w < 0) r.w = 0;
+    if (r.h < 0) r.h = 0;
+    return r;
+}
+
 Drawer::Part Drawer::part_at(int x, int y) const {
-    if (closable && m_close_rect.contains(x, y)) return PartClose;
+    if (show_header && show_close && closable && m_close_rect.contains(x, y)) return PartClose;
     if (m_panel_rect.contains(x, y)) return PartPanel;
     return modal ? PartMask : PartNone;
 }
@@ -185,7 +328,15 @@ Element* Drawer::hit_test(int x, int y) {
     if (!visible || !enabled) return nullptr;
     int lx = x - bounds.x;
     int ly = y - bounds.y;
-    return part_at(lx, ly) != PartNone ? this : nullptr;
+    Part part = part_at(lx, ly);
+    if (part == PartPanel) {
+        for (auto it = children.rbegin(); it != children.rend(); ++it) {
+            if (!(*it)->visible) continue;
+            Element* hit = (*it)->hit_test(lx, ly);
+            if (hit) return hit;
+        }
+    }
+    return part != PartNone ? this : nullptr;
 }
 
 void Drawer::paint(RenderContext& ctx) {
@@ -230,7 +381,7 @@ void Drawer::paint(RenderContext& ctx) {
     ctx.rt->DrawRectangle(D2D1::RectF(panel.left + 0.5f, panel.top + 0.5f,
         panel.right - 0.5f, panel.bottom - 0.5f), ctx.get_brush(border), 1.0f);
 
-    float pad = 20.0f * s;
+    float pad = (float)content_padding * s;
     float header_h = 54.0f * s;
     int dx = panel_rect.x - m_panel_rect.x;
     int dy = panel_rect.y - m_panel_rect.y;
@@ -239,14 +390,22 @@ void Drawer::paint(RenderContext& ctx) {
     m_panel_rect = panel_rect;
     m_close_rect.x += dx;
     m_close_rect.y += dy;
+    if (Element* content_el = child_by_id(*this, content_parent_id)) {
+        if (content_el->visible) content_el->layout(content_rect_in_drawer());
+    }
+    if (Element* footer_el = child_by_id(*this, footer_parent_id)) {
+        if (footer_el->visible) footer_el->layout(footer_rect_in_drawer());
+    }
 
-    draw_text(ctx, title.empty() ? L"Drawer" : title, style, title_fg,
-              panel.left + pad, panel.top + 14.0f * s,
-              (float)m_panel_rect.w - pad * 2.0f - 28.0f * s,
-              26.0f * s, 1.1f, DWRITE_TEXT_ALIGNMENT_LEADING,
-              DWRITE_PARAGRAPH_ALIGNMENT_CENTER, DWRITE_WORD_WRAPPING_NO_WRAP);
+    if (show_header) {
+        draw_text(ctx, title.empty() ? L"抽屉" : title, style, title_fg,
+                  panel.left + pad, panel.top + 14.0f * s,
+                  (float)m_panel_rect.w - pad * 2.0f - (show_close ? 28.0f * s : 0.0f),
+                  26.0f * s, 1.1f, DWRITE_TEXT_ALIGNMENT_LEADING,
+                  DWRITE_PARAGRAPH_ALIGNMENT_CENTER, DWRITE_WORD_WRAPPING_NO_WRAP);
+    }
 
-    if (closable) {
+    if (show_header && show_close && closable) {
         Color close_fg = m_hover_part == PartClose ? t->accent : t->text_secondary;
         float cx = (float)m_close_rect.x + m_close_rect.w * 0.5f;
         float cy = (float)m_close_rect.y + m_close_rect.h * 0.5f;
@@ -257,13 +416,34 @@ void Drawer::paint(RenderContext& ctx) {
                          ctx.get_brush(close_fg), 1.5f * s);
     }
 
-    ctx.rt->DrawLine(D2D1::Point2F(panel.left, panel.top + header_h),
-                     D2D1::Point2F(panel.right, panel.top + header_h),
-                     ctx.get_brush(border), 1.0f);
-    draw_text(ctx, text, style, body_fg,
-              panel.left + pad, panel.top + header_h + 16.0f * s,
-              (float)m_panel_rect.w - pad * 2.0f,
-              (float)m_panel_rect.h - header_h - 32.0f * s);
+    if (show_header) {
+        ctx.rt->DrawLine(D2D1::Point2F(panel.left, panel.top + header_h),
+                         D2D1::Point2F(panel.right, panel.top + header_h),
+                         ctx.get_brush(border), 1.0f);
+    }
+
+    bool has_content_slot = child_has_visible_content(*this, content_parent_id);
+    bool has_footer_slot = child_has_visible_content(*this, footer_parent_id);
+    Rect content = content_rect_in_drawer();
+    if (!has_content_slot) {
+        draw_text(ctx, text, style, body_fg,
+                  (float)content.x, (float)content.y,
+                  (float)content.w, (float)content.h);
+    }
+
+    if (Element* content_el = child_by_id(*this, content_parent_id)) {
+        if (content_el->visible) content_el->paint(ctx);
+    }
+
+    if (has_footer_slot) {
+        Rect footer = footer_rect_in_drawer();
+        ctx.rt->DrawLine(D2D1::Point2F((float)m_panel_rect.x, (float)footer.y),
+                         D2D1::Point2F((float)(m_panel_rect.x + m_panel_rect.w), (float)footer.y),
+                         ctx.get_brush(border), 1.0f);
+        if (Element* footer_el = child_by_id(*this, footer_parent_id)) {
+            if (footer_el->visible) footer_el->paint(ctx);
+        }
+    }
 
     ctx.rt->SetTransform(saved);
     m_panel_rect = old_panel;
@@ -302,7 +482,7 @@ void Drawer::on_mouse_up(int x, int y, MouseButton) {
 }
 
 void Drawer::on_key_down(int vk, int) {
-    if (closable && vk == VK_ESCAPE) {
+    if (close_on_escape && closable && vk == VK_ESCAPE) {
         close_drawer(3);
     }
 }

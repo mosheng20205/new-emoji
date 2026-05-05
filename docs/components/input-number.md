@@ -4,7 +4,7 @@
 
 `InputNumber` 是 new_emoji 的 表单/选择 组件。当前状态：**已完成**。
 
-已补按钮长按、固定小数精度、文本输入校验、边界校验、键盘操作、值变化回调、Set/Get、Python 封装和独立中文 emoji 验证
+已补按钮长按、固定小数精度、文本输入校验、边界校验、键盘操作、值变化回调、Set/Get、Python 封装、独立中文 emoji 验证、disabled 禁用态、step-strictly 严格步进
 
 ## 创建
 
@@ -31,7 +31,9 @@
 | `EU_SetInputNumberStep` | 当前组件相关导出 |
 | `EU_SetInputNumberText` | 当前组件相关导出 |
 | `EU_SetInputNumberValue` | 当前组件相关导出 |
-| `EU_SetInputNumberValueCallback` | 当前组件相关导出 |
+| `EU_SetInputNumberValueCallback` | 设置值变化回调 |
+| `EU_SetInputNumberStepStrictly` | 设置严格步进模式（值必须为步长整数倍） |
+| `EU_GetInputNumberStepStrictly` | 获取严格步进模式状态 |
 
 ## Python 使用
 

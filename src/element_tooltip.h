@@ -5,6 +5,11 @@ class Tooltip : public Element {
 public:
     std::wstring content;
     int placement = 2; // 0 left, 1 right, 2 top, 3 bottom
+    int advanced_placement = 1; // 0 top-start, 1 top, 2 top-end, 3 bottom-start, 4 bottom, 5 bottom-end, 6 left-start, 7 left, 8 left-end, 9 right-start, 10 right, 11 right-end
+    bool use_advanced_placement = false;
+    int effect = 0; // 0 dark, 1 light
+    bool tooltip_disabled = false;
+    int offset = 8;
     bool show_arrow = true;
     int show_delay_ms = 220;
     int hide_delay_ms = 120;
@@ -33,6 +38,8 @@ public:
     void set_open(bool value);
     void set_options(int new_placement, int open, int max_width);
     void set_behavior(int show_delay, int hide_delay, int trigger, int arrow);
+    void set_advanced_options(int new_placement, int new_effect, int disabled,
+                              int arrow, int new_offset, int max_width);
     void trigger_open(bool open, int action);
     void tick(int elapsed_ms);
     bool is_open() const { return m_open; }
