@@ -1106,6 +1106,117 @@ def showcase_input_group(hwnd, stage, w, h):
     add_text(hwnd, base, "InputGroup 会暴露内部 element id，外部可以继续用现有 Input / Button / Select 的 Set/Get 和回调。", 36, 212, 900, 24, MUTED)
 
 
+def showcase_input_tag(hwnd, stage, w, h):
+    add_text(hwnd, stage, "🏷️ InputTag 覆盖中文/emoji 输入、回车提交、逗号提交、删除按钮悬停、去重、数量限制、允许重复和运行时 Set/Get。", 36, 28, w - 72, 30, MUTED)
+
+    status = add_text(hwnd, stage, "📌 状态：等待操作。", 36, h - 66, w - 72, 30, MUTED)
+
+    def tag_items(tag_id):
+        count = ui.get_input_tag_count(hwnd, tag_id)
+        return [ui.get_input_tag_item(hwnd, tag_id, i) for i in range(count)]
+
+    def refresh_status(message, tag_id):
+        items = tag_items(tag_id)
+        opts = ui.get_input_tag_options(hwnd, tag_id) or (0, False)
+        draft = ui.get_input_tag_input_value(hwnd, tag_id)
+        ui.set_element_text(
+            hwnd, status,
+            f"{message} · 数量 {len(items)} · 上限 {opts[0] or '不限'} · 允许重复 {'是' if opts[1] else '否'} · 草稿「{draft or '空'}」 · 标签：{'、'.join(items) or '无'}"
+        )
+
+    def set_tags(tag_id, values):
+        data = ui.make_utf8("|".join(values))
+        ui.dll.EU_SetInputTagTags(hwnd, tag_id, ui.bytes_arg(data), len(data))
+
+    main = add_demo_panel(hwnd, stage, "⭐ 基础输入：中文、emoji、回车与删除", 28, 70, w - 56, 220)
+    main_tag = ui.create_input_tag(
+        hwnd, main,
+        ["设计", "D2D", "emoji"],
+        "输入中文、emoji 或数字，按回车提交 🏷️",
+        34, 70, w - 128, 72,
+    )
+    ui.set_input_tag_options(hwnd, main_tag, max_count=8, allow_duplicates=False)
+    add_text(hwnd, main, "把鼠标移到每个标签右侧 x 上可看到 hover；输入「原型✨」后按回车会追加为标签，退格可删除空输入前的最后一项。", 34, 158, w - 128, 28, MUTED)
+
+    def on_main_change(_element_id, payload_ptr, payload_len):
+        payload = ctypes.string_at(payload_ptr, payload_len).decode("utf-8", errors="replace") if payload_ptr and payload_len > 0 else ""
+        ui.set_element_text(hwnd, status, f"📣 change 回调：{payload or '无标签'}")
+
+    ui.dll.EU_SetInputTagChangeCallback(hwnd, main_tag, keep_callback(ui.TextCallback(on_main_change)))
+
+    rules = add_demo_panel(hwnd, stage, "🧩 规则矩阵：去重、上限与允许重复", 28, 318, w - 56, 240)
+    strict = ui.create_input_tag(
+        hwnd, rules,
+        ["前端", "动效", "测试"],
+        "最多 4 个，不允许重复",
+        34, 72, min(700, w - 160), 82,
+    )
+    ui.set_input_tag_options(hwnd, strict, max_count=4, allow_duplicates=False)
+    loose_x = min(780, w // 2 + 24)
+    loose = ui.create_input_tag(
+        hwnd, rules,
+        ["热点", "热点", "活动"],
+        "允许重复，适合搜索词历史",
+        loose_x, 72, max(520, w - loose_x - 72), 82,
+    )
+    ui.set_input_tag_options(hwnd, loose, max_count=0, allow_duplicates=True)
+    add_text(hwnd, rules, "左侧：重复值会被拒绝，上限满后新增失败。右侧：相同标签可共存，适合保留用户输入历史。", 34, 172, w - 112, 28, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🎛️ 运行时 API：增删、预填草稿、重置与聚焦", 28, 586, w - 56, 240)
+    api_tag = ui.create_input_tag(
+        hwnd, api,
+        ["产品", "视觉", "发布"],
+        "API 按钮会操作这一组标签",
+        34, 70, w - 128, 72,
+    )
+    ui.set_input_tag_options(hwnd, api_tag, max_count=6, allow_duplicates=False)
+
+    def add_review(_eid):
+        ok = ui.add_input_tag_item(hwnd, api_tag, "评审✅")
+        refresh_status("✅ 已尝试追加「评审✅」" if ok else "⚠️ 追加失败：重复或超过上限", api_tag)
+
+    def add_duplicate(_eid):
+        ok = ui.add_input_tag_item(hwnd, api_tag, "产品")
+        refresh_status("✅ 已追加重复标签" if ok else "🚫 去重生效：重复的「产品」未加入", api_tag)
+
+    def remove_first(_eid):
+        ok = ui.remove_input_tag_item(hwnd, api_tag, 0)
+        refresh_status("🧹 已删除第一项" if ok else "⚠️ 没有可删除的第一项", api_tag)
+
+    def preset_draft(_eid):
+        ui.set_input_tag_input_value(hwnd, api_tag, "待提交✨")
+        ui.dll.EU_SetElementFocus(hwnd, api_tag)
+        refresh_status("✏️ 已预填草稿并聚焦，按回车可提交", api_tag)
+
+    def reset_api(_eid):
+        set_tags(api_tag, ["产品", "视觉", "发布"])
+        ui.set_input_tag_input_value(hwnd, api_tag, "")
+        refresh_status("🔄 已重置为默认标签", api_tag)
+
+    actions = [
+        ("➕", "追加评审", add_review),
+        ("🚫", "测试重复", add_duplicate),
+        ("🧹", "删除第一项", remove_first),
+        ("✏️", "预填草稿", preset_draft),
+        ("🔄", "重置", reset_api),
+    ]
+    for i, (emoji, label, handler) in enumerate(actions):
+        btn = ui.create_button(hwnd, api, emoji, label, 34 + i * 138, 166, 122, 36, variant=1 if i == 0 else 0)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, api, "按钮覆盖 EU_AddInputTagItem、EU_RemoveInputTagItem、EU_SetInputTagInputValue、EU_SetInputTagTags、EU_SetElementFocus。", 750, 170, max(360, w - 840), 36, MUTED)
+
+    states = add_demo_panel(hwnd, stage, "📚 状态读回与禁用态", 28, 854, w - 56, 190)
+    disabled = ui.create_input_tag(hwnd, states, ["只读展示", "不可编辑"], "禁用态不会接收输入", 34, 70, 520, 66)
+    ui.set_element_enabled(hwnd, disabled, False)
+    read_btn = ui.create_button(hwnd, states, "📤", "读取 API 组状态", 590, 82, 170, 38, variant=1)
+    focus_btn = ui.create_button(hwnd, states, "🎯", "聚焦基础输入", 782, 82, 150, 38)
+    set_click(hwnd, read_btn, lambda _eid: refresh_status("📤 已读取 API 组状态", api_tag))
+    set_click(hwnd, focus_btn, lambda _eid: (ui.dll.EU_SetElementFocus(hwnd, main_tag), refresh_status("🎯 已聚焦基础输入", main_tag)))
+    add_text(hwnd, states, "禁用态用于表单详情页只读展示；读回区会显示标签数量、配置、草稿输入值和每个标签文本。", 34, 142, w - 112, 28, MUTED)
+
+    refresh_status("✅ InputTag 完整演示已加载", main_tag)
+
+
 def showcase_inputnumber(hwnd, stage, w, h):
     basics = add_demo_panel(hwnd, stage, "🔢 基础、精度与范围", 28, 30, w - 56, 170)
     ui.create_input_number(hwnd, basics, "数量 📦", 8, 0, 99, 1, 36, 70, 200, 42)
@@ -5257,6 +5368,7 @@ SPECIAL_SHOWCASES = {
     "Checkbox": showcase_checkbox,
     "Input": showcase_input,
     "InputGroup": showcase_input_group,
+    "InputTag": showcase_input_tag,
     "InputNumber": showcase_inputnumber,
     "Rate": showcase_rate,
     "Switch": showcase_switch,
@@ -5975,7 +6087,7 @@ def build_pages(hwnd, root):
         ("Slider", "🎛️", "滑块", lambda h, p, x, y, w, hh: ui.create_slider(h, p, "满意度", 0, 100, 68, x, y, w, 36)),
         ("InputNumber", "🔢", "数字输入", lambda h, p, x, y, w, hh: ui.create_input_number(h, p, "数量", 8, 0, 99, 1, x, y, w, 36)),
         ("Input", "⌨️", "增强输入", lambda h, p, x, y, w, hh: ui.create_input(h, p, "你好 👋", "请输入内容", x=x, y=y, w=w, h=38)),
-        ("InputTag", "🏷️", "标签输入", lambda h, p, x, y, w, hh: ui.create_input_tag(h, p, ["设计", "D2D", "emoji"], "输入标签", x, y, w, 42), True),
+        ("InputTag", "🏷️", "标签输入", lambda h, p, x, y, w, hh: ui.create_input_tag(h, p, ["设计", "D2D", "emoji"], "输入标签", x, y, w, 58), True),
         ("Select", "📋", "下拉选择", lambda h, p, x, y, w, hh: ui.create_select(h, p, "选择城市", ["北京", "上海", "深圳"], 1, x, y, w, 36), True),
         ("SelectV2", "🧾", "虚拟选择", lambda h, p, x, y, w, hh: ui.create_select_v2(h, p, "选择组件", ["按钮", "表格", "弹窗", "日历"], 2, 5, x, y, w, 36), True),
         ("Rate", "⭐", "评分", lambda h, p, x, y, w, hh: ui.create_rate(h, p, "体验评分", 4, 5, x, y, w, 36)),

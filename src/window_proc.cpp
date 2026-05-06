@@ -10,6 +10,7 @@
 #include "element_button.h"
 #include "element_titlebar.h"
 #include "element_editbox.h"
+#include "element_inputtag.h"
 #include "element_upload.h"
 #include "element_message.h"
 #include "element_messagebox.h"
@@ -481,6 +482,14 @@ void register_window_class() {
                         }
                         if (lp & GCS_COMPSTR) {
                             edit->set_composition_text(get_ime_string(hwnd, imc, GCS_COMPSTR));
+                        }
+                        ImmReleaseContext(hwnd, imc);
+                    }
+                } else if (auto* input_tag = dynamic_cast<InputTag*>(st->element_tree->focused())) {
+                    HIMC imc = ImmGetContext(hwnd);
+                    if (imc) {
+                        if (lp & GCS_RESULTSTR) {
+                            input_tag->commit_text(get_ime_string(hwnd, imc, GCS_RESULTSTR));
                         }
                         ImmReleaseContext(hwnd, imc);
                     }
