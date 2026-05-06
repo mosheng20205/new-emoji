@@ -354,6 +354,8 @@ def message_loop(seconds=180):
     while time.time() - start < seconds:
         handled = False
         while user32.PeekMessageW(ctypes.byref(msg), None, 0, 0, pm_remove):
+            if time.time() - start >= seconds:
+                return
             handled = True
             if msg.message == 0x0012:
                 return
@@ -5708,6 +5710,119 @@ def showcase_space(hwnd, stage, w, h):
     add_text(hwnd, layout_case, "Space 常用于工具栏分组、表单行距、卡片内部留白。它不是装饰元素，所以需要用周围组件的位置变化来观察效果。", 790, 86, max(360, w - 900), 52, MUTED)
 
 
+def showcase_skeleton(hwnd, stage, w, h):
+    status = add_text(
+        hwnd, stage,
+        "💀 Skeleton 覆盖加载态/完成态、动画开关、头像占位、行数上限、紧凑场景和 Set/Get 状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    overview = add_demo_panel(hwnd, stage, "⭐ 形态总览", 28, 72, w - 56, 250)
+    variants = [
+        ("默认骨架", "头像 + 3 行 + 动画", 3, True, True, True),
+        ("无头像骨架", "仅文本条，适合表格行", 4, True, True, False),
+        ("静态骨架", "关闭扫光，适合低频刷新", 5, False, True, True),
+        ("完成态", "loading=false 时显示内容容器", 3, False, False, True),
+    ]
+    cell_gap = 16
+    cell_w = max(260, (w - 56 - 48 - cell_gap * 3) // 4)
+    for i, (title, note, rows, animated, loading, avatar) in enumerate(variants):
+        x = 24 + i * (cell_w + cell_gap)
+        card = add_themed_panel(hwnd, overview, x, 58, cell_w, 158, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        add_text(hwnd, card, f"💡 {title}", 14, 10, cell_w - 28, 24, TEXT)
+        ui.create_skeleton(hwnd, card, rows, animated, 14, 42, cell_w - 28, 74, loading=loading, show_avatar=avatar)
+        add_text(hwnd, card, note, 14, 124, cell_w - 28, 24, MUTED)
+        if not loading:
+            add_text(hwnd, card, "✅ 数据已加载", 26, 62, cell_w - 52, 28, TEXT)
+
+    workbench_w = max(840, w - 516)
+    workbench = add_demo_panel(hwnd, stage, "🎛️ 程序化控制台", 28, 352, workbench_w, 342)
+    live = ui.create_skeleton(hwnd, workbench, 4, True, 28, 66, min(720, workbench_w - 76), 132)
+    readback = add_text(hwnd, workbench, "", 28, 216, workbench_w - 56, 52, TEXT)
+
+    def refresh_state(message="✅ Skeleton 状态已读回。"):
+        options = ui.get_skeleton_options(hwnd, live)
+        if options:
+            rows, animated, loading, show_avatar = options
+            text = (
+                f"{message}\n"
+                f"行数={rows} · 动画={animated} · 加载中={loading} · 显示头像={show_avatar} · "
+                f"加载读回={ui.get_skeleton_loading(hwnd, live)}"
+            )
+        else:
+            text = f"{message}\n未读到 Skeleton 状态。"
+        ui.set_element_text(hwnd, readback, text)
+        ui.set_element_text(hwnd, status, message)
+
+    def set_loading(loading):
+        def handler(_eid):
+            rows, animated, _old_loading, show_avatar = ui.get_skeleton_options(hwnd, live) or (4, True, True, True)
+            ui.set_skeleton_options(hwnd, live, rows, animated, loading, show_avatar)
+            refresh_state("📦 已切换为加载中骨架。" if loading else "✅ 已切换为完成态内容容器。")
+        return handler
+
+    def set_rows(rows):
+        def handler(_eid):
+            _old_rows, animated, loading, show_avatar = ui.get_skeleton_options(hwnd, live) or (4, True, True, True)
+            ui.set_skeleton_rows(hwnd, live, rows)
+            ui.set_skeleton_options(hwnd, live, rows, animated, loading, show_avatar)
+            refresh_state(f"📏 已设置为 {rows} 行，C++ 会把行数限制在 1-12。")
+        return handler
+
+    def toggle_avatar(_eid):
+        rows, animated, loading, show_avatar = ui.get_skeleton_options(hwnd, live) or (4, True, True, True)
+        ui.set_skeleton_options(hwnd, live, rows, animated, loading, not show_avatar)
+        refresh_state("😀 已切换头像占位显示。")
+
+    def toggle_animation(_eid):
+        rows, animated, loading, show_avatar = ui.get_skeleton_options(hwnd, live) or (4, True, True, True)
+        ui.set_skeleton_animated(hwnd, live, not animated)
+        ui.set_skeleton_options(hwnd, live, rows, not animated, loading, show_avatar)
+        refresh_state("✨ 已切换扫光动画。")
+
+    buttons = [
+        ("📦", "加载中", set_loading(True), 1),
+        ("✅", "完成态", set_loading(False), 2),
+        ("1", "1 行", set_rows(1), 5),
+        ("5", "5 行", set_rows(5), 5),
+        ("12", "12 行", set_rows(12), 5),
+        ("😀", "头像", toggle_avatar, 6),
+        ("✨", "动画", toggle_animation, 6),
+        ("🔎", "读回", lambda _eid: refresh_state("🔎 已手动读取当前 Skeleton 选项。"), 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(buttons):
+        btn = ui.create_button(hwnd, workbench, emoji, label, 28 + i * 104, 286, 88, 34, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    feature = add_demo_panel(hwnd, stage, "✨ 展示重点", 52 + workbench_w, 352, 300, 342)
+    add_text(hwnd, feature, "分类：数据展示", 18, 54, 264, 26, MUTED)
+    add_text(hwnd, feature, "能力：骨架屏", 18, 88, 264, 26, MUTED)
+    add_text(
+        hwnd, feature,
+        "✅ 中文文案与 emoji\n✅ 行数 1-12 限制\n✅ 动画/静态预览\n✅ 头像占位开关\n✅ 加载/完成态切换\n✅ 设置与读取状态",
+        18, 132, 264, 170, TEXT
+    )
+
+    scenarios = add_demo_panel(hwnd, stage, "📊 业务场景矩阵", 28, 724, w - 56, 330)
+    scene_specs = [
+        ("表格行加载", "无头像、多行短条", 4, True, True, False),
+        ("用户卡片加载", "头像 + 摘要信息", 3, True, True, True),
+        ("详情页加载", "长文本占位", 6, False, True, False),
+        ("加载完成", "保留完成态容器边界", 2, False, False, True),
+    ]
+    scene_w = max(300, (w - 56 - 48 - cell_gap * 3) // 4)
+    for i, (title, note, rows, animated, loading, avatar) in enumerate(scene_specs):
+        x = 24 + i * (scene_w + cell_gap)
+        card = add_themed_panel(hwnd, scenarios, x, 62, scene_w, 224, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        add_text(hwnd, card, f"🧩 {title}", 16, 12, scene_w - 32, 24, TEXT)
+        ui.create_skeleton(hwnd, card, rows, animated, 16, 50, scene_w - 32, 108, loading=loading, show_avatar=avatar)
+        if not loading:
+            add_text(hwnd, card, "🎉 已拿到真实数据", 30, 86, scene_w - 60, 26, TEXT)
+        add_text(hwnd, card, note, 16, 170, scene_w - 32, 24, MUTED)
+
+    refresh_state("✅ Skeleton 完整功能演示已加载。")
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -5750,6 +5865,7 @@ SPECIAL_SHOWCASES = {
     "Pagination": showcase_pagination,
     "Steps": showcase_steps,
     "Empty": showcase_empty,
+    "Skeleton": showcase_skeleton,
     "Descriptions": showcase_descriptions,
     "Table": showcase_table,
     "Card": showcase_card,
