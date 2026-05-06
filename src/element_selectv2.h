@@ -11,6 +11,8 @@ public:
     int visible_count = 7;
     std::wstring search_text;
     std::set<int> disabled_indices;
+    int option_alignment = 0;
+    int value_alignment = 0;
     ElementValueCallback change_cb = nullptr;
 
     const wchar_t* type_name() const override { return L"SelectV2"; }
@@ -33,6 +35,8 @@ public:
     void set_open(bool is_open);
     void set_search_text(const std::wstring& value);
     void set_option_disabled(int index, bool disabled);
+    void set_option_alignment(int alignment);
+    void set_value_alignment(int alignment);
     void set_scroll_index(int index);
     void scroll_by(int delta_rows);
     int option_count() const;

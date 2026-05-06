@@ -1217,6 +1217,252 @@ def showcase_input_tag(hwnd, stage, w, h):
     refresh_status("✅ InputTag 完整演示已加载", main_tag)
 
 
+def showcase_select(hwnd, stage, w, h):
+    add_text(hwnd, stage, "📋 Select 覆盖基础选择、禁用项、可搜索、多选、程序打开/关闭、动态选项和状态读回。", 36, 28, w - 72, 30, MUTED)
+    status = add_text(hwnd, stage, "📌 状态：等待选择。", 36, h - 66, w - 72, 30, MUTED)
+
+    city_options = ["北京 🏛️", "上海 🌃", "深圳 🌊", "杭州 🌿", "成都 🐼", "西安 🏯"]
+
+    def label_at(options, index):
+        return options[index] if 0 <= index < len(options) else "未选择"
+
+    def selected_labels(select_id, options):
+        indices = ui.get_select_selected_indices(hwnd, select_id)
+        return "、".join(label_at(options, i) for i in indices) or "无"
+
+    def align_name(value):
+        return {0: "左对齐", 1: "居中", 2: "右对齐"}.get(value, "左对齐")
+
+    def refresh_status(message, select_id, options, multiple=False):
+        if multiple:
+            selected = selected_labels(select_id, options)
+        else:
+            selected = label_at(options, ui.get_select_index(hwnd, select_id))
+        ui.set_element_text(
+            hwnd, status,
+            f"{message} · 当前：{selected} · 选项 {ui.get_select_option_count(hwnd, select_id)} · "
+            f"匹配 {ui.get_select_matched_count(hwnd, select_id)} · 表项{align_name(ui.get_select_option_alignment(hwnd, select_id))} · "
+            f"已选值{align_name(ui.get_select_value_alignment(hwnd, select_id))} · 打开 {'是' if ui.get_select_open(hwnd, select_id) else '否'}"
+        )
+
+    basics = add_demo_panel(hwnd, stage, "⭐ 标准演示：默认值、占位符、禁用项、整控件禁用与表项对齐", 28, 70, w - 56, 230)
+    basic = ui.create_select(hwnd, basics, "选择城市", city_options, 1, 36, 72, 360, 40)
+    ui.set_select_open(hwnd, basic, True)
+    ui.set_select_option_disabled(hwnd, basic, 4, True)
+    center = ui.create_select(hwnd, basics, "居中表项", city_options, -1, 430, 72, 360, 40)
+    ui.set_select_option_alignment(hwnd, center, 1)
+    ui.set_select_value_alignment(hwnd, center, 1)
+    ui.set_select_open(hwnd, center, True)
+    disabled = ui.create_select(hwnd, basics, "只读城市", ["南京 📍", "苏州 🧵", "无锡 🌉"], 0, 824, 72, 330, 40)
+    ui.set_element_enabled(hwnd, disabled, False)
+    add_text(hwnd, basics, "左侧保持默认左对齐；中间表项居中；成都被设为禁用项，方便首屏直接检查浮层样式。", 36, 174, w - 128, 28, MUTED)
+
+    @ui.ValueCallback
+    def on_basic_change(_element_id, value, count, action):
+        ui.set_element_text(hwnd, status, f"📣 基础 Select 回调：索引 {value} · 数量 {count} · 动作 {action} · {label_at(city_options, value)}")
+
+    keep_callback(on_basic_change)
+    ui.dll.EU_SetSelectChangeCallback(hwnd, basic, on_basic_change)
+
+    search = add_demo_panel(hwnd, stage, "🔎 搜索过滤与长文本选项", 28, 330, w - 56, 210)
+    search_options = [
+        "前端组件库维护计划 ✨",
+        "后端接口联调任务 🔌",
+        "设计走查与视觉验收 🎨",
+        "发布前冒烟测试 ✅",
+        "用户反馈整理 📮",
+        "性能分析与渲染优化 🚀",
+    ]
+    searchable = ui.create_select(hwnd, search, "选择任务类型", search_options, 0, 36, 72, 520, 40)
+    ui.set_select_search(hwnd, searchable, "测试")
+    ui.set_select_open(hwnd, searchable, True)
+    ui.set_select_option_alignment(hwnd, searchable, 2)
+    ui.set_select_value_alignment(hwnd, searchable, 2)
+    add_text(hwnd, search, "通过 EU_SetSelectSearch 预填「测试」，下拉中只保留匹配项；输入框仍显示当前已选项。", 590, 80, max(420, w - 730), 48, MUTED)
+    add_text(hwnd, search, f"当前匹配数量：{ui.get_select_matched_count(hwnd, searchable)} · 表项右对齐", 36, 154, 480, 26, TEXT)
+
+    multi = add_demo_panel(hwnd, stage, "☑️ 多选模式：预选、追加与清空", 28, 570, w - 56, 230)
+    tag_options = ["需求 📝", "设计 🎨", "开发 💻", "测试 ✅", "发布 🚀", "复盘 📊"]
+    multi_id = ui.create_select(hwnd, multi, "选择流程标签", tag_options, 0, 36, 72, 520, 40)
+    ui.set_select_multiple(hwnd, multi_id, True)
+    ui.set_select_selected_indices(hwnd, multi_id, [0, 2, 4])
+    ui.set_select_open(hwnd, multi_id, True)
+    ui.set_select_option_alignment(hwnd, multi_id, 1)
+
+    def add_test(_eid):
+        ui.set_select_selected_indices(hwnd, multi_id, [0, 2, 3, 4])
+        refresh_status("✅ 已追加「测试」", multi_id, tag_options, True)
+
+    def clear_multi(_eid):
+        ui.set_select_selected_indices(hwnd, multi_id, [])
+        refresh_status("🧹 已清空多选", multi_id, tag_options, True)
+
+    def read_multi(_eid):
+        refresh_status("📤 已读取多选状态", multi_id, tag_options, True)
+
+    buttons = [
+        ("➕", "追加测试", add_test),
+        ("🧹", "清空", clear_multi),
+        ("📤", "读取状态", read_multi),
+    ]
+    for i, (emoji, label, handler) in enumerate(buttons):
+        btn = ui.create_button(hwnd, multi, emoji, label, 600 + i * 132, 74, 116, 36, variant=1 if i == 0 else 0)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, multi, "多选值通过 EU_SetSelectSelectedIndices 写入，勾选列保留在左侧，表项文本区域可独立居中/右对齐。", 36, 154, w - 128, 28, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🎛️ 运行时 API：选项替换、索引、打开状态和禁用项", 28, 830, w - 56, 210)
+    api_options = ["标准套餐 🍱", "专业套餐 🚀", "企业套餐 🏢"]
+    api_select = ui.create_select(hwnd, api, "购买方案", api_options, 1, 36, 72, 380, 40)
+
+    def replace_options(_eid):
+        api_options[:] = ["个人版 🌱", "团队版 🤝", "旗舰版 👑", "教育版 🎓"]
+        ui.set_select_options(hwnd, api_select, api_options)
+        ui.set_select_index(hwnd, api_select, 2)
+        ui.set_select_open(hwnd, api_select, True)
+        refresh_status("🔄 已替换选项并选中旗舰版", api_select, api_options)
+
+    def toggle_open(_eid):
+        ui.set_select_open(hwnd, api_select, not bool(ui.get_select_open(hwnd, api_select)))
+        refresh_status("📂 已切换打开状态", api_select, api_options)
+
+    def disable_second(_eid):
+        disabled_now = not bool(ui.get_select_option_disabled(hwnd, api_select, 1))
+        ui.set_select_option_disabled(hwnd, api_select, 1, disabled_now)
+        refresh_status("🔒 已切换第二项禁用状态", api_select, api_options)
+
+    def cycle_align(_eid):
+        next_align = (ui.get_select_option_alignment(hwnd, api_select) + 1) % 3
+        ui.set_select_option_alignment(hwnd, api_select, next_align)
+        ui.set_select_value_alignment(hwnd, api_select, next_align)
+        ui.set_select_open(hwnd, api_select, True)
+        refresh_status(f"↔️ 已切换表项和已选值{align_name(next_align)}", api_select, api_options)
+
+    for i, (emoji, label, handler) in enumerate([
+        ("🔄", "替换选项", replace_options),
+        ("📂", "开关浮层", toggle_open),
+        ("🔒", "禁用第二项", disable_second),
+        ("↔️", "切换对齐", cycle_align),
+        ("📤", "读取状态", lambda _eid: refresh_status("📤 已读取 API 选择器", api_select, api_options)),
+    ]):
+        btn = ui.create_button(hwnd, api, emoji, label, 444 + i * 122, 74, 108, 36, variant=1 if i == 0 else 0)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, api, "这些按钮覆盖 SetOptions / SetIndex / SetOpen / SetOptionDisabled / SetOptionAlignment / SetValueAlignment。", 36, 154, w - 128, 28, MUTED)
+    refresh_status("✅ Select 完整演示已加载", basic, city_options)
+
+
+def showcase_select_v2(hwnd, stage, w, h):
+    add_text(hwnd, stage, "🧾 SelectV2 重点展示大量候选、虚拟滚动、可见数量、搜索匹配、禁用项、滚动索引、回调和状态读回。", 36, 28, w - 72, 30, MUTED)
+    status = add_text(hwnd, stage, "📌 状态：等待操作。", 36, h - 66, w - 72, 30, MUTED)
+
+    components = [
+        f"{i:02d} · {'基础' if i <= 8 else '业务'}组件 {emoji}"
+        for i, emoji in enumerate([
+            "🧱", "🚀", "⌨️", "📋", "🧾", "⭐", "🎨", "🔎", "📅", "🌳",
+            "🔁", "📤", "🖼️", "🎠", "📊", "💬", "🔔", "📚", "🧭", "✅",
+            "📌", "🪪", "🕒", "📈", "🎯", "🍩", "📑", "🧩", "🛠️", "✨",
+        ], start=1)
+    ]
+
+    def label_at(options, index):
+        return options[index] if 0 <= index < len(options) else "未选择"
+
+    def align_name(value):
+        return {0: "左对齐", 1: "居中", 2: "右对齐"}.get(value, "左对齐")
+
+    def refresh_status(message, select_id, options):
+        ui.set_element_text(
+            hwnd, status,
+            f"{message} · 当前：{label_at(options, ui.get_select_v2_index(hwnd, select_id))} · "
+            f"总数 {ui.get_select_v2_option_count(hwnd, select_id)} · 匹配 {ui.get_select_v2_matched_count(hwnd, select_id)} · "
+            f"可见 {ui.get_select_v2_visible_count(hwnd, select_id)} · 表项{align_name(ui.get_select_v2_option_alignment(hwnd, select_id))} · "
+            f"已选值{align_name(ui.get_select_v2_value_alignment(hwnd, select_id))} · 滚动 {ui.get_select_v2_scroll_index(hwnd, select_id)} · "
+            f"打开 {'是' if ui.get_select_v2_open(hwnd, select_id) else '否'}"
+        )
+
+    large = add_demo_panel(hwnd, stage, "⭐ 大量候选与虚拟列表", 28, 70, w - 56, 250)
+    large_id = ui.create_select_v2(hwnd, large, "选择组件", components, 14, 6, 36, 72, 520, 40)
+    ui.set_select_v2_open(hwnd, large_id, True)
+    ui.set_select_v2_scroll_index(hwnd, large_id, 10)
+    ui.set_select_v2_option_disabled(hwnd, large_id, 17, True)
+    add_text(hwnd, large, "默认左对齐并滚动到第 11 项附近；第 18 项被禁用，适合检查虚拟列表和禁用态绘制。", 590, 82, max(420, w - 730), 52, MUTED)
+
+    @ui.ValueCallback
+    def on_large_change(_element_id, value, count, action):
+        ui.set_element_text(hwnd, status, f"📣 SelectV2 回调：索引 {value} · 数量 {count} · 动作 {action} · {label_at(components, value)}")
+
+    keep_callback(on_large_change)
+    ui.dll.EU_SetSelectV2ChangeCallback(hwnd, large_id, on_large_change)
+
+    search = add_demo_panel(hwnd, stage, "🔎 搜索匹配与可见数量", 28, 350, w - 56, 220)
+    search_id = ui.create_select_v2(hwnd, search, "搜索组件", components, 0, 5, 36, 72, 520, 40)
+    ui.set_select_v2_search(hwnd, search_id, "图")
+    ui.set_select_v2_open(hwnd, search_id, True)
+    ui.set_select_v2_visible_count(hwnd, search_id, 4)
+    ui.set_select_v2_option_alignment(hwnd, search_id, 2)
+    ui.set_select_v2_value_alignment(hwnd, search_id, 2)
+    add_text(hwnd, search, f"搜索词「图」当前匹配 {ui.get_select_v2_matched_count(hwnd, search_id)} 项；可见数量设为 4，表项与已选值右对齐。", 590, 80, max(420, w - 730), 28, MUTED)
+
+    size_panel = add_demo_panel(hwnd, stage, "📏 可见数量矩阵：3 / 6 / 9", 28, 600, w - 56, 230)
+    small = ui.create_select_v2(hwnd, size_panel, "紧凑列表", components, 2, 3, 36, 72, 340, 40)
+    normal = ui.create_select_v2(hwnd, size_panel, "常规列表", components, 8, 6, 416, 72, 340, 40)
+    tall = ui.create_select_v2(hwnd, size_panel, "长列表", components, 20, 9, 796, 72, 340, 40)
+    ui.set_select_v2_option_alignment(hwnd, normal, 1)
+    ui.set_select_v2_option_alignment(hwnd, tall, 2)
+    ui.set_select_v2_value_alignment(hwnd, normal, 1)
+    ui.set_select_v2_value_alignment(hwnd, tall, 2)
+    for sid, scroll in ((small, 0), (normal, 6), (tall, 18)):
+        ui.set_select_v2_open(hwnd, sid, True)
+        ui.set_select_v2_scroll_index(hwnd, sid, scroll)
+    add_text(hwnd, size_panel, "三列分别为左对齐、居中、右对齐；同一数据源用不同 visible_count 呈现不同高度。", 36, 166, w - 128, 28, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🎛️ 运行时 API：替换数据、滚动定位、开关浮层和禁用项", 28, 860, w - 56, 180)
+    api_options = [f"客户 {i:03d} · {'重点' if i % 7 == 0 else '普通'}客户 {'⭐' if i % 7 == 0 else '📇'}" for i in range(1, 81)]
+    api_id = ui.create_select_v2(hwnd, api, "选择客户", api_options, 6, 7, 36, 70, 520, 40)
+
+    def jump_middle(_eid):
+        ui.set_select_v2_scroll_index(hwnd, api_id, 38)
+        ui.set_select_v2_index(hwnd, api_id, 42)
+        ui.set_select_v2_open(hwnd, api_id, True)
+        refresh_status("🎯 已定位到客户 043", api_id, api_options)
+
+    def filter_vip(_eid):
+        ui.set_select_v2_search(hwnd, api_id, "重点")
+        ui.set_select_v2_open(hwnd, api_id, True)
+        refresh_status("⭐ 已筛选重点客户", api_id, api_options)
+
+    def toggle_open(_eid):
+        ui.set_select_v2_open(hwnd, api_id, not bool(ui.get_select_v2_open(hwnd, api_id)))
+        refresh_status("📂 已切换浮层", api_id, api_options)
+
+    def replace_data(_eid):
+        api_options[:] = [f"工单 {i:03d} · {'紧急' if i % 5 == 0 else '待处理'} {'🚨' if i % 5 == 0 else '🧾'}" for i in range(1, 61)]
+        ui.set_select_v2_options(hwnd, api_id, api_options)
+        ui.set_select_v2_search(hwnd, api_id, "")
+        ui.set_select_v2_index(hwnd, api_id, 4)
+        ui.set_select_v2_open(hwnd, api_id, True)
+        refresh_status("🔄 已替换为工单数据", api_id, api_options)
+
+    def cycle_align(_eid):
+        next_align = (ui.get_select_v2_option_alignment(hwnd, api_id) + 1) % 3
+        ui.set_select_v2_option_alignment(hwnd, api_id, next_align)
+        ui.set_select_v2_value_alignment(hwnd, api_id, next_align)
+        ui.set_select_v2_open(hwnd, api_id, True)
+        refresh_status(f"↔️ 已切换表项和已选值{align_name(next_align)}", api_id, api_options)
+
+    for i, (emoji, label, handler) in enumerate([
+        ("🎯", "跳到中段", jump_middle),
+        ("⭐", "筛选重点", filter_vip),
+        ("📂", "开关浮层", toggle_open),
+        ("↔️", "切换对齐", cycle_align),
+        ("🔄", "替换数据", replace_data),
+        ("📤", "读取状态", lambda _eid: refresh_status("📤 已读取 SelectV2 状态", api_id, api_options)),
+    ]):
+        btn = ui.create_button(hwnd, api, emoji, label, 592 + i * 112, 72, 100, 36, variant=1 if i == 0 else 0)
+        set_click(hwnd, btn, handler)
+    add_text(hwnd, api, "SelectV2 的滚动索引、匹配数量和表项对齐适合大数据候选；当前演示用客户和工单模拟。", 36, 142, w - 128, 28, MUTED)
+    refresh_status("✅ SelectV2 完整演示已加载", large_id, components)
+
+
 def showcase_inputnumber(hwnd, stage, w, h):
     basics = add_demo_panel(hwnd, stage, "🔢 基础、精度与范围", 28, 30, w - 56, 170)
     ui.create_input_number(hwnd, basics, "数量 📦", 8, 0, 99, 1, 36, 70, 200, 42)
@@ -5369,6 +5615,8 @@ SPECIAL_SHOWCASES = {
     "Input": showcase_input,
     "InputGroup": showcase_input_group,
     "InputTag": showcase_input_tag,
+    "Select": showcase_select,
+    "SelectV2": showcase_select_v2,
     "InputNumber": showcase_inputnumber,
     "Rate": showcase_rate,
     "Switch": showcase_switch,

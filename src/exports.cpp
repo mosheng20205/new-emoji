@@ -5371,6 +5371,28 @@ void __stdcall EU_SetSelectOptionDisabled(HWND hwnd, int element_id, int option_
     }
 }
 
+void __stdcall EU_SetSelectOptionAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<Select>(hwnd, element_id)) {
+        el->set_option_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectOptionAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Select>(hwnd, element_id);
+    return el ? el->option_alignment : 0;
+}
+
+void __stdcall EU_SetSelectValueAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<Select>(hwnd, element_id)) {
+        el->set_value_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectValueAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Select>(hwnd, element_id);
+    return el ? el->value_alignment : 0;
+}
+
 int __stdcall EU_GetSelectOptionCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Select>(hwnd, element_id);
     return el ? el->option_count() : 0;
@@ -5494,6 +5516,28 @@ void __stdcall EU_SetSelectV2OptionDisabled(HWND hwnd, int element_id, int optio
     if (auto* el = find_typed_element<SelectV2>(hwnd, element_id)) {
         el->set_option_disabled(option_index, disabled != 0);
     }
+}
+
+void __stdcall EU_SetSelectV2OptionAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<SelectV2>(hwnd, element_id)) {
+        el->set_option_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectV2OptionAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<SelectV2>(hwnd, element_id);
+    return el ? el->option_alignment : 0;
+}
+
+void __stdcall EU_SetSelectV2ValueAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<SelectV2>(hwnd, element_id)) {
+        el->set_value_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectV2ValueAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<SelectV2>(hwnd, element_id);
+    return el ? el->value_alignment : 0;
 }
 
 int __stdcall EU_GetSelectV2OptionCount(HWND hwnd, int element_id) {

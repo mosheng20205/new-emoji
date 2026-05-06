@@ -102,6 +102,8 @@ def on_click(element_id):
         ui.set_select_v2_open(g_hwnd, g_select_id, True)
         ui.set_select_v2_visible_count(g_hwnd, g_select_id, 6)
         ui.set_select_v2_option_disabled(g_hwnd, g_select_id, 10, True)
+        ui.set_select_v2_option_alignment(g_hwnd, g_select_id, 2)
+        ui.set_select_v2_value_alignment(g_hwnd, g_select_id, 2)
         ui.set_select_v2_scroll_index(g_hwnd, g_select_id, 40)
         wheel_x, wheel_y = logical_client(g_hwnd, 231, 197)
         send_wheel(g_hwnd, wheel_x, wheel_y, -3)
@@ -115,7 +117,13 @@ def on_click(element_id):
         after_select = ui.get_select_v2_scroll_index(g_hwnd, g_select_id)
         ui.set_select_v2_search(g_hwnd, g_select_id, "城市 12")
         matched = ui.get_select_v2_matched_count(g_hwnd, g_select_id)
-        update_status(f"✅ 滚轮后起点 {after_wheel}，选中 120 后起点 {after_select}，搜索匹配 {matched} 项。")
+        align = ui.get_select_v2_option_alignment(g_hwnd, g_select_id)
+        value_align = ui.get_select_v2_value_alignment(g_hwnd, g_select_id)
+        if align != 2 or value_align != 2:
+            g_failed = f"SelectV2 对齐读回异常：option={align}, value={value_align}"
+            print("[失败]", g_failed)
+            return
+        update_status(f"✅ 滚轮后起点 {after_wheel}，选中 120 后起点 {after_select}，搜索匹配 {matched} 项，表项右对齐已读回。")
         print_state("[应用状态]")
         print(f"[滚轮验证] 设置起点 40，滚轮后 {after_wheel}，选中 120 后可视起点 {after_select}")
     elif element_id == g_reset_id:
@@ -123,6 +131,8 @@ def on_click(element_id):
         ui.set_select_v2_open(g_hwnd, g_select_id, True)
         ui.set_select_v2_visible_count(g_hwnd, g_select_id, 7)
         ui.set_select_v2_option_disabled(g_hwnd, g_select_id, 10, False)
+        ui.set_select_v2_option_alignment(g_hwnd, g_select_id, 0)
+        ui.set_select_v2_value_alignment(g_hwnd, g_select_id, 0)
         ui.set_select_v2_scroll_index(g_hwnd, g_select_id, 0)
         ui.set_select_v2_index(g_hwnd, g_select_id, 3)
         update_status("↩ 已恢复增强选择器默认窗口和选中项。")
@@ -146,7 +156,7 @@ def main():
     intro_id = ui.create_text(
         hwnd,
         content_id,
-        "验证 200 项虚拟列表、滚轮派发、滚动索引读写、Page/Home/End 基础、搜索过滤、禁用项和变化回调。",
+        "验证 200 项虚拟列表、滚轮派发、滚动索引读写、表项/已选值对齐、Page/Home/End 基础、搜索过滤、禁用项和变化回调。",
         28,
         68,
         840,

@@ -1138,6 +1138,12 @@ dll.EU_GetSelectOpen.restype = ctypes.c_int
 dll.EU_SetSelectSearch.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetSelectOptionDisabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetSelectOptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectOptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectOptionAlignment.restype = ctypes.c_int
+dll.EU_SetSelectValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectValueAlignment.restype = ctypes.c_int
 dll.EU_GetSelectOptionCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetSelectOptionCount.restype = ctypes.c_int
 dll.EU_GetSelectMatchedCount.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -1168,6 +1174,12 @@ dll.EU_GetSelectV2Open.restype = ctypes.c_int
 dll.EU_SetSelectV2Search.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetSelectV2OptionDisabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetSelectV2OptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectV2OptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectV2OptionAlignment.restype = ctypes.c_int
+dll.EU_SetSelectV2ValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectV2ValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectV2ValueAlignment.restype = ctypes.c_int
 dll.EU_GetSelectV2OptionCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetSelectV2OptionCount.restype = ctypes.c_int
 dll.EU_GetSelectV2MatchedCount.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -4735,6 +4747,18 @@ def set_select_search(hwnd, element_id, query=""):
 def set_select_option_disabled(hwnd, element_id, option_index=0, disabled=True):
     dll.EU_SetSelectOptionDisabled(hwnd, element_id, option_index, 1 if disabled else 0)
 
+def set_select_option_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectOptionAlignment(hwnd, element_id, alignment)
+
+def get_select_option_alignment(hwnd, element_id):
+    return dll.EU_GetSelectOptionAlignment(hwnd, element_id)
+
+def set_select_value_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectValueAlignment(hwnd, element_id, alignment)
+
+def get_select_value_alignment(hwnd, element_id):
+    return dll.EU_GetSelectValueAlignment(hwnd, element_id)
+
 def get_select_option_count(hwnd, element_id):
     return dll.EU_GetSelectOptionCount(hwnd, element_id)
 
@@ -4809,6 +4833,18 @@ def set_select_v2_search(hwnd, element_id, query=""):
 
 def set_select_v2_option_disabled(hwnd, element_id, option_index=0, disabled=True):
     dll.EU_SetSelectV2OptionDisabled(hwnd, element_id, option_index, 1 if disabled else 0)
+
+def set_select_v2_option_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectV2OptionAlignment(hwnd, element_id, alignment)
+
+def get_select_v2_option_alignment(hwnd, element_id):
+    return dll.EU_GetSelectV2OptionAlignment(hwnd, element_id)
+
+def set_select_v2_value_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectV2ValueAlignment(hwnd, element_id, alignment)
+
+def get_select_v2_value_alignment(hwnd, element_id):
+    return dll.EU_GetSelectV2ValueAlignment(hwnd, element_id)
 
 def get_select_v2_option_count(hwnd, element_id):
     return dll.EU_GetSelectV2OptionCount(hwnd, element_id)

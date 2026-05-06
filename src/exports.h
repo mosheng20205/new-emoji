@@ -688,6 +688,10 @@ int  __stdcall EU_GetSelectOpen(HWND hwnd, int element_id);
 void __stdcall EU_SetSelectSearch(HWND hwnd, int element_id,
                                   const unsigned char* search_bytes, int search_len);
 void __stdcall EU_SetSelectOptionDisabled(HWND hwnd, int element_id, int option_index, int disabled);
+void __stdcall EU_SetSelectOptionAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectOptionAlignment(HWND hwnd, int element_id);
+void __stdcall EU_SetSelectValueAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectValueAlignment(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectOptionCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectMatchedCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectOptionDisabled(HWND hwnd, int element_id, int option_index);
@@ -709,6 +713,10 @@ int  __stdcall EU_GetSelectV2Open(HWND hwnd, int element_id);
 void __stdcall EU_SetSelectV2Search(HWND hwnd, int element_id,
                                     const unsigned char* search_bytes, int search_len);
 void __stdcall EU_SetSelectV2OptionDisabled(HWND hwnd, int element_id, int option_index, int disabled);
+void __stdcall EU_SetSelectV2OptionAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectV2OptionAlignment(HWND hwnd, int element_id);
+void __stdcall EU_SetSelectV2ValueAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectV2ValueAlignment(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectV2OptionCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectV2MatchedCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectV2OptionDisabled(HWND hwnd, int element_id, int option_index);

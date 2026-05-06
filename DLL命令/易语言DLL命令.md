@@ -2383,6 +2383,24 @@
     .参数 选项索引, 整数型
     .参数 是否禁用, 整数型
 
+.DLL命令 设置选择器表项对齐, , "new_emoji.dll", "EU_SetSelectOptionAlignment", , 对应 C++ 导出命令 EU_SetSelectOptionAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取选择器表项对齐, 整数型, "new_emoji.dll", "EU_GetSelectOptionAlignment", , 对应 C++ 导出命令 EU_GetSelectOptionAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置选择器已选值对齐, , "new_emoji.dll", "EU_SetSelectValueAlignment", , 对应 C++ 导出命令 EU_SetSelectValueAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取选择器已选值对齐, 整数型, "new_emoji.dll", "EU_GetSelectValueAlignment", , 对应 C++ 导出命令 EU_GetSelectValueAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 取选择器选项数量, 整数型, "new_emoji.dll", "EU_GetSelectOptionCount", , 对应 C++ 导出命令 EU_GetSelectOptionCount；返回选项数量
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2469,6 +2487,24 @@
     .参数 元素ID, 整数型
     .参数 选项索引, 整数型
     .参数 是否禁用, 整数型
+
+.DLL命令 设置增强选择器表项对齐, , "new_emoji.dll", "EU_SetSelectV2OptionAlignment", , 对应 C++ 导出命令 EU_SetSelectV2OptionAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取增强选择器表项对齐, 整数型, "new_emoji.dll", "EU_GetSelectV2OptionAlignment", , 对应 C++ 导出命令 EU_GetSelectV2OptionAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置增强选择器已选值对齐, , "new_emoji.dll", "EU_SetSelectV2ValueAlignment", , 对应 C++ 导出命令 EU_SetSelectV2ValueAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取增强选择器已选值对齐, 整数型, "new_emoji.dll", "EU_GetSelectV2ValueAlignment", , 对应 C++ 导出命令 EU_GetSelectV2ValueAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 取增强选择器选项数量, 整数型, "new_emoji.dll", "EU_GetSelectV2OptionCount", , 对应 C++ 导出命令 EU_GetSelectV2OptionCount；返回选项数量
     .参数 窗口句柄, 整数型

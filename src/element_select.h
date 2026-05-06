@@ -13,6 +13,8 @@ public:
     std::set<int> disabled_indices;
     bool multiple = false;
     std::set<int> selected_indices;
+    int option_alignment = 0;
+    int value_alignment = 0;
     ElementValueCallback change_cb = nullptr;
 
     const wchar_t* type_name() const override { return L"Select"; }
@@ -34,6 +36,8 @@ public:
     void set_search_text(const std::wstring& value);
     void set_placeholder(const std::wstring& value);
     void set_option_disabled(int index, bool disabled);
+    void set_option_alignment(int alignment);
+    void set_value_alignment(int alignment);
     void set_multiple(bool enabled);
     void set_selected_indices(const std::vector<int>& indices);
     void toggle_index(int index);
