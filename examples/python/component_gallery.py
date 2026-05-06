@@ -5391,6 +5391,417 @@ def showcase_statistic(hwnd, stage, w, h):
     add_text(hwnd, timers, "倒计时卡片支持默认中文时分秒、DD天HH小时mm分钟、HH:mm:ss、增加时间、暂停/继续和结束回调。", 24, 426, w - 112, 34, MUTED)
 
 
+def showcase_kpi_card(hwnd, stage, w, h):
+    status_id = add_text(
+        hwnd, stage,
+        "🎯 KPI Card 指标卡：标题、数值、副标题、趋势标签、趋势颜色、辅助说明、加载态和读回状态都由 C++ 组件绘制。",
+        44, 28, w - 88, 28, MUTED
+    )
+
+    def set_kpi_data(element_id, value, subtitle, trend, trend_type):
+        value_data = ui.make_utf8(value)
+        subtitle_data = ui.make_utf8(subtitle)
+        trend_data = ui.make_utf8(trend)
+        ui.dll.EU_SetKpiCardData(
+            hwnd, element_id,
+            ui.bytes_arg(value_data), len(value_data),
+            ui.bytes_arg(subtitle_data), len(subtitle_data),
+            ui.bytes_arg(trend_data), len(trend_data),
+            trend_type,
+        )
+
+    matrix = add_demo_panel(hwnd, stage, "📌 趋势类型与业务指标矩阵", 28, 68, w - 56, 332)
+    gap = 18
+    card_w = max(250, (w - 56 - 72 - gap * 3) // 4)
+    specs = [
+        ("🚀 收入增长", "128.6万", "本月实时收入", "+18.4%", 1, "绿色上涨趋势"),
+        ("📉 退款率", "1.8%", "低于目标阈值", "-0.6%", -1, "红色下降趋势"),
+        ("🧭 留存率", "72.3%", "与上周持平", "0.0%", 0, "中性趋势标签"),
+        ("⭐ 满意度", "98分", "核心用户反馈", "+4分", 1, "emoji 标题与中文数值"),
+    ]
+    for i, (title, value, subtitle, trend, trend_type, note) in enumerate(specs):
+        x = 24 + i * (card_w + gap)
+        kpi = ui.create_kpi_card(hwnd, matrix, title, value, subtitle, trend, trend_type, x=x, y=72, w=card_w, h=132)
+        ui.set_kpi_card_options(hwnd, kpi, False, note)
+    add_text(
+        hwnd, matrix,
+        "trend_type：1 表示增长，-1 表示下降，0 表示中性；左侧色条、趋势胶囊和箭头颜色会同步变化。",
+        24, 230, w - 112, 42, MUTED
+    )
+
+    workbench = add_demo_panel(hwnd, stage, "🛠️ 运行时数据、辅助说明、加载态与状态读回", 28, 428, w - 56, 360)
+    live = ui.create_kpi_card(
+        hwnd, workbench, "🎯 今日转化率", "24.8%", "比昨日新增 312 个订单", "+3.6%", 1,
+        x=28, y=70, w=440, h=150
+    )
+    ui.set_kpi_card_options(hwnd, live, False, "目标 20%，当前已超额完成")
+    readback = add_text(hwnd, workbench, "", 500, 76, w - 620, 84, TEXT)
+
+    state = {"mode": 0, "loading": False}
+    data_modes = [
+        ("24.8%", "比昨日新增 312 个订单", "+3.6%", 1, "目标 20%，当前已超额完成"),
+        ("18.2%", "晚高峰流量回落", "-2.1%", -1, "建议检查投放渠道质量"),
+        ("20.0%", "刚好达到目标线", "0.0%", 0, "目标达成，继续观察 30 分钟"),
+    ]
+
+    def refresh_state(message="✅ 已读取 KPI Card 当前状态。"):
+        options = ui.get_kpi_card_options(hwnd, live)
+        if options:
+            loading, trend_type = options
+            text = f"{message}\nloading={loading} · trend_type={trend_type} · 支持 EU_GetKpiCardOptions 读回"
+        else:
+            text = f"{message}\n未读到 KPI Card 状态。"
+        ui.set_element_text(hwnd, readback, text)
+        ui.set_element_text(hwnd, status_id, message)
+
+    def apply_mode(index):
+        value, subtitle, trend, trend_type, helper = data_modes[index]
+        set_kpi_data(live, value, subtitle, trend, trend_type)
+        ui.set_kpi_card_options(hwnd, live, state["loading"], helper)
+        refresh_state(f"🎯 已切换为第 {index + 1} 组业务数据。")
+
+    def make_mode_handler(index):
+        def handler(_eid):
+            state["mode"] = index
+            state["loading"] = False
+            apply_mode(index)
+        return handler
+
+    def toggle_loading(_eid):
+        state["loading"] = not state["loading"]
+        value, subtitle, trend, trend_type, helper = data_modes[state["mode"]]
+        set_kpi_data(live, value, subtitle, trend, trend_type)
+        ui.set_kpi_card_options(hwnd, live, state["loading"], helper)
+        refresh_state("⏳ 已切换加载骨架态。" if state["loading"] else "✅ 已恢复真实指标内容。")
+
+    buttons = [
+        ("🚀", "增长数据", make_mode_handler(0), 1),
+        ("📉", "下降数据", make_mode_handler(1), 4),
+        ("🧭", "中性数据", make_mode_handler(2), 6),
+        ("⏳", "加载态", toggle_loading, 3),
+        ("🔎", "读取状态", lambda _eid: refresh_state("🔎 已手动读取 loading 与 trend_type。"), 5),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(buttons):
+        btn = ui.create_button(hwnd, workbench, emoji, label, 28 + i * 132, 248, 112, 38, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    add_text(
+        hwnd, workbench,
+        "EU_SetKpiCardData 可只更新数值、副标题和趋势；EU_SetKpiCardOptions 可切换 loading 并设置右下角辅助说明。",
+        28, 306, w - 112, 34, MUTED
+    )
+
+    scenarios = add_demo_panel(hwnd, stage, "🧩 尺寸、文案长度与仪表盘组合场景", 28, 818, w - 56, 300)
+    small = ui.create_kpi_card(hwnd, scenarios, "💰 小卡收入", "8.2万", "紧凑布局", "+8%", 1, x=24, y=72, w=260, h=104)
+    ui.set_kpi_card_options(hwnd, small, False, "小宽度")
+    wide = ui.create_kpi_card(
+        hwnd, scenarios, "🧾 长标题指标卡也要稳定排版", "1,024,886", "超长数值与中文副标题不会撑乱容器",
+        "+12.8%", 1, x=308, y=72, w=430, h=150
+    )
+    ui.set_kpi_card_options(hwnd, wide, False, "右侧辅助说明")
+    loading = ui.create_kpi_card(hwnd, scenarios, "📡 数据同步中", "--", "等待服务返回", "", 0, x=762, y=72, w=330, h=150)
+    ui.set_kpi_card_options(hwnd, loading, True, "loading=True")
+    danger = ui.create_kpi_card(hwnd, scenarios, "🚨 告警数量", "17", "需要值班同学确认", "+5", -1, x=1116, y=72, w=330, h=150)
+    ui.set_kpi_card_options(hwnd, danger, False, "异常增长")
+    add_text(
+        hwnd, scenarios,
+        "覆盖小卡、宽卡、长中文、千分位数值、加载占位和告警趋势，适合后台首页、运营看板和状态总览。",
+        24, 238, w - 112, 34, MUTED
+    )
+
+    refresh_state("✅ KPI Card 完整功能演示已加载。")
+
+
+def showcase_trend(hwnd, stage, w, h):
+    status_id = add_text(
+        hwnd, stage,
+        "📈 Trend 完整功能演示已加载。",
+        44, 28, w - 88, 28, MUTED
+    )
+
+    def set_trend_data(element_id, value, percent, detail, direction):
+        value_data = ui.make_utf8(value)
+        percent_data = ui.make_utf8(percent)
+        detail_data = ui.make_utf8(detail)
+        ui.dll.EU_SetTrendData(
+            hwnd, element_id,
+            ui.bytes_arg(value_data), len(value_data),
+            ui.bytes_arg(percent_data), len(percent_data),
+            ui.bytes_arg(detail_data), len(detail_data),
+            direction,
+        )
+
+    gap = 16
+    matrix = add_demo_panel(hwnd, stage, "📌 趋势方向与业务语义", 28, 68, w - 56, 250)
+    card_w = max(260, (w - 56 - 64 - gap * 3) // 4)
+    specs = [
+        ("🚀 星标增长", "+128", "12%", "本周新增转化", 1, False, True),
+        ("📉 访问下降", "-42", "8%", "较昨日减少", -1, False, True),
+        ("🧭 排名持平", "0", "0%", "核心指标稳定", 0, False, True),
+        ("💸 成本优化", "-18.5万", "6.2%", "成本越低越好", -1, True, True),
+    ]
+    for i, (title, value, percent, detail, direction, inverse, show_icon) in enumerate(specs):
+        x = 24 + i * (card_w + gap)
+        trend = ui.create_trend(hwnd, matrix, title, value, percent, detail, direction, x=x, y=62, w=card_w, h=92)
+        ui.set_trend_options(hwnd, trend, inverse=inverse, show_icon=show_icon)
+    add_text(
+        hwnd, matrix,
+        "direction=1/-1/0 控制增长、下降和中性；inverse=True 用于成本、错误率等“下降才是好事”的指标。",
+        24, 174, w - 112, 30, MUTED
+    )
+
+    workbench = add_demo_panel(hwnd, stage, "🛠️ 运行时交互工作台", 28, 344, w - 56, 312)
+    live = ui.create_trend(
+        hwnd, workbench, "📈 实时成交趋势", "+256", "15.8%", "最近 30 分钟成交额增长",
+        1, x=28, y=66, w=460, h=96
+    )
+    state_panel = add_themed_panel(hwnd, workbench, 520, 62, w - 632, 104, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    readback = add_text(hwnd, state_panel, "", 18, 18, w - 672, 66, TEXT)
+
+    state = {"mode": 0, "inverse": False, "show_icon": True}
+    modes = [
+        ("+256", "15.8%", "最近 30 分钟成交额增长", 1, "📈 已切换为增长趋势。"),
+        ("-73", "9.4%", "流失用户较昨日上升，需要关注", -1, "📉 已切换为下降趋势。"),
+        ("0", "0%", "数据与上一周期基本持平", 0, "🧭 已切换为中性趋势。"),
+    ]
+
+    def refresh_state(message="✅ 已读取 Trend 当前状态。"):
+        direction = ui.get_trend_direction(hwnd, live)
+        options = ui.get_trend_options(hwnd, live)
+        if options:
+            inverse, show_icon = options
+            text = f"{message}\ndirection={direction} · inverse={inverse} · show_icon={show_icon}"
+        else:
+            text = f"{message}\n未读到 Trend 选项。"
+        ui.set_element_text(hwnd, readback, text)
+        ui.set_element_text(hwnd, status_id, message)
+
+    def apply_current(message):
+        value, percent, detail, direction, _ = modes[state["mode"]]
+        set_trend_data(live, value, percent, detail, direction)
+        ui.set_trend_options(hwnd, live, inverse=state["inverse"], show_icon=state["show_icon"])
+        refresh_state(message)
+
+    def make_mode_handler(index):
+        def handler(_eid):
+            state["mode"] = index
+            apply_current(modes[index][4])
+        return handler
+
+    def toggle_inverse(_eid):
+        state["inverse"] = not state["inverse"]
+        apply_current("🔁 已切换反向语义，颜色按业务好坏反转。")
+
+    def toggle_icon(_eid):
+        state["show_icon"] = not state["show_icon"]
+        apply_current("⭕ 已切换左侧趋势图标显示。")
+
+    buttons = [
+        ("🚀", "增长", make_mode_handler(0), 1),
+        ("📉", "下降", make_mode_handler(1), 4),
+        ("🧭", "中性", make_mode_handler(2), 6),
+        ("🔁", "反向语义", toggle_inverse, 3),
+        ("⭕", "图标", toggle_icon, 5),
+        ("🔎", "读取", lambda _eid: refresh_state("🔎 已手动读取方向与选项。"), 5),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(buttons):
+        btn = ui.create_button(hwnd, workbench, emoji, label, 28 + i * 118, 196, 100, 36, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    add_text(
+        hwnd, workbench,
+        "EU_SetTrendData 更新 value / percent / detail / direction；EU_SetTrendOptions 控制 inverse 和 show_icon。",
+        28, 252, w - 112, 30, MUTED
+    )
+
+    scenarios = add_demo_panel(hwnd, stage, "🧩 仪表盘组合场景", 28, 684, w - 56, 430)
+    col_w = max(300, (w - 56 - 64 - gap * 3) // 4)
+    scene_specs = [
+        ("💰 GMV", "886万", "23%", "今日环比增长", 1, False, True),
+        ("🧯 错误率", "0.18%", "0.06%", "错误率下降为健康", -1, True, True),
+        ("🧾 客单价", "128元", "0%", "保持稳定", 0, False, True),
+        ("📦 轻量行内", "+32", "5%", "无图标紧凑展示", 1, False, False),
+    ]
+    for i, (title, value, percent, detail, direction, inverse, show_icon) in enumerate(scene_specs):
+        x = 24 + i * (col_w + gap)
+        trend = ui.create_trend(hwnd, scenarios, title, value, percent, detail, direction, x=x, y=66, w=col_w, h=92)
+        ui.set_trend_options(hwnd, trend, inverse=inverse, show_icon=show_icon)
+
+    wide_w = min(760, w - 120)
+    wide = ui.create_trend(
+        hwnd, scenarios, "📊 长文案业务说明", "+1,024", "31.6%",
+        "支持中文详情、emoji 标题、百分比右对齐和固定高度卡片排版",
+        1, x=24, y=190, w=wide_w, h=92
+    )
+    ui.set_trend_options(hwnd, wide, inverse=False, show_icon=True)
+
+    note_panel = add_themed_panel(hwnd, scenarios, 24 + wide_w + 24, 190, w - 56 - wide_w - 72, 92, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(
+        hwnd, note_panel,
+        "趋势卡适合放在数据看板的摘要行：同一高度、右侧百分比对齐，扫一眼就能比较变化方向。",
+        18, 20, w - 56 - wide_w - 108, 42, MUTED
+    )
+
+    api_panel = add_themed_panel(hwnd, scenarios, 24, 314, w - 104, 64, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(
+        hwnd, api_panel,
+        "覆盖增长、下降、中性、反向指标、隐藏图标、宽卡与紧凑卡；支持 EU_GetTrendDirection / EU_GetTrendOptions 状态读回。",
+        18, 18, w - 140, 28, TEXT
+    )
+
+    refresh_state("✅ Trend 排版已优化，完整功能演示已加载。")
+
+
+def showcase_status_dot(hwnd, stage, w, h):
+    status_id = add_text(
+        hwnd, stage,
+        "🟢 StatusDot 状态点：状态颜色、主标签、描述、脉冲动画、紧凑模式和状态读回都由 C++ 组件绘制。",
+        44, 28, w - 88, 28, MUTED
+    )
+
+    def set_status_dot(element_id, label, description, status):
+        label_data = ui.make_utf8(label)
+        desc_data = ui.make_utf8(description)
+        ui.dll.EU_SetStatusDot(
+            hwnd, element_id,
+            ui.bytes_arg(label_data), len(label_data),
+            ui.bytes_arg(desc_data), len(desc_data),
+            status,
+        )
+
+    matrix = add_demo_panel(hwnd, stage, "📌 五种状态颜色矩阵", 28, 68, w - 56, 326)
+    gap = 18
+    card_w = max(250, (w - 56 - 72 - gap * 4) // 5)
+    specs = [
+        ("🔵 默认状态", "等待系统分配处理队列", 0, "主题强调色"),
+        ("🟢 运行正常", "服务在线，指标稳定", 1, "成功/在线"),
+        ("🟡 等待处理", "任务排队中，请稍候", 2, "警告/等待"),
+        ("🔴 发生异常", "接口错误率升高", 3, "危险/失败"),
+        ("⚪ 已停用", "暂不参与调度", 4, "禁用/离线"),
+    ]
+    for i, (label, desc, status, note) in enumerate(specs):
+        x = 24 + i * (card_w + gap)
+        panel = add_themed_panel(hwnd, matrix, x, 72, card_w, 132, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        ui.create_status_dot(hwnd, panel, label, desc, status, 18, 26, card_w - 36, 58)
+        add_text(hwnd, panel, note, 18, 92, card_w - 36, 24, MUTED)
+    add_text(
+        hwnd, matrix,
+        "status：0 默认强调色、1 成功、2 警告、3 危险、4 灰色禁用；中文标签和 emoji 可直接参与 D2D 绘制。",
+        24, 226, w - 112, 42, MUTED
+    )
+
+    workbench = add_demo_panel(hwnd, stage, "🛠️ 运行时状态、脉冲动画、紧凑模式与读回", 28, 422, w - 56, 376)
+    live = ui.create_status_dot(
+        hwnd, workbench, "🟢 支付服务正常", "延迟 32ms，最近 5 分钟无异常", 1,
+        28, 82, 480, 74
+    )
+    readback = add_text(hwnd, workbench, "", 548, 82, w - 668, 96, TEXT)
+
+    state = {"status": 1, "pulse": False, "compact": False}
+    modes = [
+        ("🔵 调度中", "任务正在排队等待执行", 0, "🔵 已切换为默认调度状态。"),
+        ("🟢 运行正常", "服务在线，吞吐稳定", 1, "🟢 已切换为成功在线状态。"),
+        ("🟡 等待确认", "有变更需要人工确认", 2, "🟡 已切换为警告等待状态。"),
+        ("🔴 故障告警", "接口超时率超过阈值", 3, "🔴 已切换为危险告警状态。"),
+        ("⚪ 已停用", "该节点已从集群摘除", 4, "⚪ 已切换为禁用离线状态。"),
+    ]
+
+    def refresh_state(message="✅ 已读取 StatusDot 当前状态。"):
+        status = ui.get_status_dot_status(hwnd, live)
+        options = ui.get_status_dot_options(hwnd, live)
+        if options:
+            pulse, compact = options
+            text = (
+                f"{message}\n"
+                f"status={status} · pulse={pulse} · compact={compact} · "
+                "支持 EU_GetStatusDotStatus / EU_GetStatusDotOptions"
+            )
+        else:
+            text = f"{message}\n未读到 StatusDot 选项。"
+        ui.set_element_text(hwnd, readback, text)
+        ui.set_element_text(hwnd, status_id, message)
+
+    def apply_status(index):
+        label, desc, status, message = modes[index]
+        state["status"] = status
+        set_status_dot(live, label, desc, status)
+        ui.set_status_dot_options(hwnd, live, pulse=state["pulse"], compact=state["compact"])
+        refresh_state(message)
+
+    def make_status_handler(index):
+        def handler(_eid):
+            apply_status(index)
+        return handler
+
+    def toggle_pulse(_eid):
+        state["pulse"] = not state["pulse"]
+        ui.set_status_dot_options(hwnd, live, pulse=state["pulse"], compact=state["compact"])
+        refresh_state("✨ 已切换脉冲动画，适合在线、告警和实时刷新状态。")
+
+    def toggle_compact(_eid):
+        state["compact"] = not state["compact"]
+        ui.set_status_dot_options(hwnd, live, pulse=state["pulse"], compact=state["compact"])
+        refresh_state("📏 已切换紧凑模式，描述文本会隐藏以适配列表行。")
+
+    buttons = [
+        ("🔵", "默认", make_status_handler(0), 6),
+        ("🟢", "成功", make_status_handler(1), 2),
+        ("🟡", "警告", make_status_handler(2), 3),
+        ("🔴", "危险", make_status_handler(3), 4),
+        ("⚪", "停用", make_status_handler(4), 5),
+        ("✨", "脉冲", toggle_pulse, 1),
+        ("📏", "紧凑", toggle_compact, 5),
+        ("🔎", "读取", lambda _eid: refresh_state("🔎 已手动读取状态和选项。"), 5),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(buttons):
+        btn = ui.create_button(hwnd, workbench, emoji, label, 28 + i * 96, 248, 82, 38, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    add_text(
+        hwnd, workbench,
+        "EU_SetStatusDot 更新 label / description / status；EU_SetStatusDotOptions 控制 pulse 和 compact。",
+        28, 314, w - 112, 34, MUTED
+    )
+
+    scenarios = add_demo_panel(hwnd, stage, "🧩 列表、监控面板与空描述场景", 28, 832, w - 56, 306)
+    left = add_themed_panel(hwnd, scenarios, 24, 72, 430, 188, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(hwnd, left, "📡 服务健康", 18, 14, 220, 24, TEXT)
+    service_rows = [
+        ("🟢 API 网关", "99.99% 可用", 1, True, False),
+        ("🟡 消息队列", "积压 128 条", 2, True, False),
+        ("🔴 搜索服务", "响应超时", 3, True, False),
+    ]
+    for i, (label, desc, status, pulse, compact) in enumerate(service_rows):
+        dot = ui.create_status_dot(hwnd, left, label, desc, status, 18, 48 + i * 42, 360, 36)
+        ui.set_status_dot_options(hwnd, dot, pulse=pulse, compact=compact)
+
+    middle = add_themed_panel(hwnd, scenarios, 478, 72, 430, 188, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(hwnd, middle, "📋 表格行紧凑状态", 18, 14, 240, 24, TEXT)
+    compact_rows = [
+        ("待审核", "", 0),
+        ("已通过", "", 1),
+        ("已驳回", "", 3),
+        ("已归档", "", 4),
+    ]
+    for i, (label, desc, status) in enumerate(compact_rows):
+        dot = ui.create_status_dot(hwnd, middle, label, desc, status, 18 + (i % 2) * 190, 58 + (i // 2) * 56, 160, 30)
+        ui.set_status_dot_options(hwnd, dot, pulse=False, compact=True)
+
+    right = add_themed_panel(hwnd, scenarios, 932, 72, 430, 188, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(hwnd, right, "🔔 告警摘要", 18, 14, 220, 24, TEXT)
+    alert = ui.create_status_dot(hwnd, right, "🔴 订单同步延迟", "持续 4 分钟，建议立即处理", 3, 18, 54, 360, 56)
+    ui.set_status_dot_options(hwnd, alert, pulse=True, compact=False)
+    ok = ui.create_status_dot(hwnd, right, "🟢 备用通道在线", "可自动切换", 1, 18, 118, 360, 42)
+    ui.set_status_dot_options(hwnd, ok, pulse=False, compact=False)
+    add_text(
+        hwnd, scenarios,
+        "覆盖监控列表、表格紧凑状态、无描述单行、脉冲告警和中文 emoji 文案，适合后台状态展示。",
+        24, 266, w - 112, 28, MUTED
+    )
+
+    refresh_state("✅ StatusDot 完整功能演示已加载。")
+
+
 def showcase_empty(hwnd, stage, w, h):
     wide, _tall, small = image_sample_files()
     remote = "https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png"
@@ -5872,6 +6283,9 @@ SPECIAL_SHOWCASES = {
     "Collapse": showcase_collapse,
     "Timeline": showcase_timeline,
     "Statistic": showcase_statistic,
+    "KPI Card": showcase_kpi_card,
+    "Trend": showcase_trend,
+    "StatusDot": showcase_status_dot,
     "Upload": showcase_upload,
     "Image": showcase_image,
     "Carousel": showcase_carousel,
