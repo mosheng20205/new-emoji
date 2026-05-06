@@ -13,6 +13,7 @@
 
 ## 快速入口
 
+- [下载组件总览独立运行版 EXE](https://github.com/mosheng20205/new-emoji/releases)
 - [文档总览](docs/README.md)
 - [快速开始](docs/quick-start.md)
 - [构建说明](docs/build.md)
@@ -25,6 +26,8 @@
 - [许可证](LICENSE)
 
 ## 组件总览 Demo
+
+如果只想快速体验组件效果，可以前往 [Releases 页面](https://github.com/mosheng20205/new-emoji/releases) 下载 `new_emoji_component_gallery.exe`，双击即可运行，不需要安装 Python 环境。
 
 运行完整组件总览：
 
