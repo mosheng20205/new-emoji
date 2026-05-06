@@ -5745,7 +5745,7 @@ def button_action(hwnd, title, body):
 
 
 def showcase_colorpicker(hwnd, stage, w, h):
-    status = add_text(hwnd, stage, "🎨 ColorPicker 覆盖默认值、空值、透明度、预设色和四种桌面端尺寸。", 36, 28, w - 72, 28, MUTED)
+    status = add_text(hwnd, stage, "🎨 ColorPicker 支持任意色号输入、连续色域、透明度、预设色和四种桌面端尺寸。", 36, 28, w - 72, 28, MUTED)
 
     predefine_colors = [
         0xFFFF4500, 0xFFFF8C00, 0xFFFFD700, 0xFF90EE90,
@@ -5763,7 +5763,7 @@ def showcase_colorpicker(hwnd, stage, w, h):
     cp_open = ui.create_colorpicker(hwnd, left, "品牌色", 0xFF1E90FF, 150, 176, 300, 42, open_panel=True)
     add_text(hwnd, left, "桌面表单中空值不会伪装成白色，读回为空字符串和颜色 0。", 28, 252, 430, 44, MUTED)
 
-    middle = add_demo_panel(hwnd, stage, "🌈 透明度与预设色", 552, 72, 560, 320)
+    middle = add_demo_panel(hwnd, stage, "🌈 任意色号与透明度", 552, 72, 560, 320)
     cp_alpha = ui.create_colorpicker(
         hwnd,
         middle,
@@ -5777,8 +5777,8 @@ def showcase_colorpicker(hwnd, stage, w, h):
         palette=predefine_colors,
         open_panel=True,
     )
-    add_text(hwnd, middle, "预设色：Element Plus 示例中的 14 个颜色已转换为 ARGB。", 28, 232, 480, 26, MUTED)
-    add_text(hwnd, middle, "关闭 show-alpha 时弹层不绘制透明度条，只显示 #RRGGBB。", 28, 264, 480, 26, MUTED)
+    add_text(hwnd, middle, "可直接键入 #RRGGBB 或 #AARRGGBB，也可拖动色域与色相条精确取色。", 28, 232, 500, 26, MUTED)
+    add_text(hwnd, middle, "预设色仍保留为快捷入口；关闭透明度时只读回 #RRGGBB。", 28, 264, 500, 26, MUTED)
 
     right_w = max(420, w - 1164)
     right = add_demo_panel(hwnd, stage, "📏 尺寸矩阵", 1136, 72, right_w, 320)
@@ -5813,7 +5813,7 @@ def showcase_colorpicker(hwnd, stage, w, h):
         color = ui.get_colorpicker_color(hwnd, picker_id) & 0xFFFFFFFF
         return (
             f"{label}: 有值={ui.get_colorpicker_has_value(hwnd, picker_id)} "
-            f"颜色=0x{color:08X} 文本={ui.get_colorpicker_hex(hwnd, picker_id) or '空'} "
+            f"颜色=0x{color:08X} 色号={ui.get_colorpicker_hex(hwnd, picker_id) or '空'} "
             f"alpha={ui.get_colorpicker_alpha(hwnd, picker_id)} "
             f"打开={ui.get_colorpicker_open(hwnd, picker_id)} "
             f"预设={ui.get_colorpicker_palette_count(hwnd, picker_id)} "

@@ -69,7 +69,13 @@ def assert_colorpicker_state():
     alpha_options = ui.get_colorpicker_options(g_hwnd, g_alpha_id)
     assert alpha_options == {"show_alpha": True, "size": 0, "clearable": True}
     assert ui.get_colorpicker_alpha(g_hwnd, g_alpha_id) == 173
+    assert ui.get_colorpicker_hex(g_hwnd, g_alpha_id) == "#ADFF4500"
     assert ui.get_colorpicker_palette_count(g_hwnd, g_alpha_id) == len(PREDEFINE_COLORS)
+
+    assert ui.set_colorpicker_hex(g_hwnd, g_color_id, "#12ABEF") is True
+    assert ui.get_colorpicker_color(g_hwnd, g_color_id) == 0xFF12ABEF
+    assert ui.get_colorpicker_hex(g_hwnd, g_color_id) == "#12ABEF"
+    ui.set_colorpicker_color(g_hwnd, g_color_id, 0xFF409EFF)
 
     for size, picker_id in enumerate(g_size_ids):
         options = ui.get_colorpicker_options(g_hwnd, picker_id)
