@@ -967,6 +967,7 @@ EXPORTS
     EU_SetTabsActiveName
     EU_SetTabsType
     EU_SetTabsPosition
+    EU_SetTabsHeaderAlign
     EU_SetTabsOptions
     EU_SetTabsEditable
     EU_SetTabsContentVisible
@@ -975,6 +976,7 @@ EXPORTS
     EU_SetTabsScroll
     EU_TabsScroll
     EU_GetTabsActive
+    EU_GetTabsHeaderAlign
     EU_GetTabsItemCount
     EU_GetTabsState
     EU_GetTabsItem

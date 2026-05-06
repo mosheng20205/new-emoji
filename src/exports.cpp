@@ -10567,6 +10567,12 @@ void __stdcall EU_SetTabsPosition(HWND hwnd, int element_id, int tab_position) {
     }
 }
 
+void __stdcall EU_SetTabsHeaderAlign(HWND hwnd, int element_id, int align) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_header_align(align);
+    }
+}
+
 void __stdcall EU_SetTabsOptions(HWND hwnd, int element_id,
                                  int tab_type, int closable, int addable) {
     if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
@@ -10614,6 +10620,11 @@ void __stdcall EU_TabsScroll(HWND hwnd, int element_id, int delta) {
 int __stdcall EU_GetTabsActive(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Tabs>(hwnd, element_id);
     return el ? el->active_index : -1;
+}
+
+int __stdcall EU_GetTabsHeaderAlign(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    return el ? el->header_align : 0;
 }
 
 int __stdcall EU_GetTabsItemCount(HWND hwnd, int element_id) {

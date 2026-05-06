@@ -6577,6 +6577,11 @@ JSON 示例：
     .参数 元素ID, 整数型
     .参数 标签位置, 整数型, , 0上 1右 2下 3左
 
+.DLL命令 设置标签页表头对齐, , "new_emoji.dll", "EU_SetTabsHeaderAlign", , 对应 C++ 导出命令 EU_SetTabsHeaderAlign
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0左对齐 1居中 2右对齐
+
 .DLL命令 设置标签页完整选项, , "new_emoji.dll", "EU_SetTabsOptions", , 对应 C++ 导出命令 EU_SetTabsOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -6616,6 +6621,10 @@ JSON 示例：
     .参数 滚动增量, 整数型
 
 .DLL命令 取标签页激活项, 整数型, "new_emoji.dll", "EU_GetTabsActive", , 对应 C++ 导出命令 EU_GetTabsActive；返回整数结果或写入输出参数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取标签页表头对齐, 整数型, "new_emoji.dll", "EU_GetTabsHeaderAlign", , 对应 C++ 导出命令 EU_GetTabsHeaderAlign；返回0左对齐 1居中 2右对齐
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 

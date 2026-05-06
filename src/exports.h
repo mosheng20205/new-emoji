@@ -1915,6 +1915,7 @@ void __stdcall EU_SetTabsActiveName(HWND hwnd, int element_id,
                                     const unsigned char* name_bytes, int name_len);
 void __stdcall EU_SetTabsType(HWND hwnd, int element_id, int tab_type);
 void __stdcall EU_SetTabsPosition(HWND hwnd, int element_id, int tab_position);
+void __stdcall EU_SetTabsHeaderAlign(HWND hwnd, int element_id, int align);
 void __stdcall EU_SetTabsOptions(HWND hwnd, int element_id,
                                  int tab_type, int closable, int addable);
 void __stdcall EU_SetTabsEditable(HWND hwnd, int element_id, int editable);
@@ -1925,6 +1926,7 @@ void __stdcall EU_CloseTabsItem(HWND hwnd, int element_id, int item_index);
 void __stdcall EU_SetTabsScroll(HWND hwnd, int element_id, int offset);
 void __stdcall EU_TabsScroll(HWND hwnd, int element_id, int delta);
 int  __stdcall EU_GetTabsActive(HWND hwnd, int element_id);
+int  __stdcall EU_GetTabsHeaderAlign(HWND hwnd, int element_id);
 int  __stdcall EU_GetTabsItemCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetTabsState(HWND hwnd, int element_id,
                                int* active_index, int* item_count, int* tab_type);

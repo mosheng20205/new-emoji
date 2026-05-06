@@ -2680,6 +2680,7 @@ dll.EU_SetTabsActiveName.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTabsType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTabsPosition.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsHeaderAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTabsOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTabsEditable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTabsContentVisible.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2690,6 +2691,8 @@ dll.EU_SetTabsScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_TabsScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTabsActive.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetTabsActive.restype = ctypes.c_int
+dll.EU_GetTabsHeaderAlign.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTabsHeaderAlign.restype = ctypes.c_int
 dll.EU_GetTabsItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetTabsItemCount.restype = ctypes.c_int
 dll.EU_GetTabsState.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -9924,6 +9927,11 @@ def set_tabs_position(hwnd, element_id, tab_position):
         tab_position = {"top": 0, "right": 1, "bottom": 2, "left": 3}.get(tab_position, 0)
     dll.EU_SetTabsPosition(hwnd, element_id, tab_position)
 
+def set_tabs_header_align(hwnd, element_id, align=0):
+    if isinstance(align, str):
+        align = {"left": 0, "center": 1, "right": 2, "左": 0, "中": 1, "右": 2}.get(align, 0)
+    dll.EU_SetTabsHeaderAlign(hwnd, element_id, align)
+
 def set_tabs_active(hwnd, element_id, active):
     dll.EU_SetTabsActive(hwnd, element_id, active)
 
@@ -9962,6 +9970,9 @@ def get_tabs_state(hwnd, element_id):
         ctypes.byref(active), ctypes.byref(count), ctypes.byref(tab_type),
     )
     return (active.value, count.value, tab_type.value) if ok else None
+
+def get_tabs_header_align(hwnd, element_id):
+    return dll.EU_GetTabsHeaderAlign(hwnd, element_id)
 
 def get_tabs_item(hwnd, element_id, index):
     needed = dll.EU_GetTabsItem(hwnd, element_id, index, None, 0)

@@ -935,6 +935,7 @@
 | `EU_SetTabsActiveName` | 按名称激活标签页 |
 | `EU_SetTabsType` | |
 | `EU_SetTabsPosition` | 设置标签页位置：上、右、下、左 |
+| `EU_SetTabsHeaderAlign` | 设置标签页表头文字对齐：0左 1中 2右 |
 | `EU_SetTabsOptions` | |
 | `EU_SetTabsEditable` | 设置可编辑标签页模式 |
 | `EU_SetTabsContentVisible` | 设置标签页是否绘制内容区 |
@@ -943,6 +944,7 @@
 | `EU_SetTabsScroll` | |
 | `EU_TabsScroll` | |
 | `EU_GetTabsActive` | |
+| `EU_GetTabsHeaderAlign` | 读取标签页表头文字对齐方式 |
 | `EU_GetTabsItemCount` | |
 | `EU_GetTabsState` | |
 | `EU_GetTabsItem` | |

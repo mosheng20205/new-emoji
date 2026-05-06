@@ -19,6 +19,7 @@ public:
     int active_index = 0;
     int tab_type = 0;
     int tab_position = 0;
+    int header_align = 0; // 0 left, 1 center, 2 right
     bool closable = false;
     bool addable = false;
     bool editable = false;
@@ -51,6 +52,7 @@ public:
     void set_active_name(const std::wstring& name);
     void set_tab_type(int value);
     void set_tab_position(int value);
+    void set_header_align(int value);
     void set_options(int type, bool close_enabled, bool add_enabled);
     void set_editable(bool value);
     void set_content_visible(bool value);

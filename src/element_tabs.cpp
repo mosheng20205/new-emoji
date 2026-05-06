@@ -109,6 +109,12 @@ void Tabs::set_tab_position(int value) {
     invalidate();
 }
 
+void Tabs::set_header_align(int value) {
+    header_align = (value >= 0 && value <= 2) ? value : 0;
+    last_action = 1;
+    invalidate();
+}
+
 void Tabs::set_options(int type, bool close_enabled, bool add_enabled) {
     tab_type = (std::max)(0, (std::min)(type, 2));
     closable = close_enabled;
@@ -387,9 +393,12 @@ void Tabs::paint(RenderContext& ctx) {
         float close_e = item_close_enabled(i) ? 24.0f : 0.0f;
         std::wstring title = tab_items[i].icon.empty() ? tab_items[i].label : (tab_items[i].icon + L" " + tab_items[i].label);
         Color text_color = disabled ? t->text_muted : (is_active ? active : fg);
+        DWRITE_TEXT_ALIGNMENT title_align = DWRITE_TEXT_ALIGNMENT_LEADING;
+        if (header_align == 1) title_align = DWRITE_TEXT_ALIGNMENT_CENTER;
+        else if (header_align == 2) title_align = DWRITE_TEXT_ALIGNMENT_TRAILING;
         draw_text(ctx, title, style, text_color,
                   r.left + 8.0f, r.top, r.right - r.left - 14.0f - close_e, r.bottom - r.top,
-                  DWRITE_TEXT_ALIGNMENT_LEADING);
+                  title_align);
         if (item_close_enabled(i)) {
             D2D1_RECT_F xr = D2D1::RectF(r.right - 25.0f, r.top + 7.0f, r.right - 7.0f, r.bottom - 7.0f);
             if (close_hot) {

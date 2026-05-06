@@ -107,6 +107,13 @@ def main():
     left_state = ui.get_tabs_full_state_ex(hwnd, g_tabs_id)
     assert_state(left_state["tab_position"] == 3, "左侧位置设置失败")
 
+    ui.set_tabs_header_align(hwnd, g_tabs_id, "center")
+    assert_state(ui.get_tabs_header_align(hwnd, g_tabs_id) == 1, "表头居中对齐设置失败")
+    ui.set_tabs_header_align(hwnd, g_tabs_id, "right")
+    assert_state(ui.get_tabs_header_align(hwnd, g_tabs_id) == 2, "表头右对齐设置失败")
+    ui.set_tabs_header_align(hwnd, g_tabs_id, "left")
+    assert_state(ui.get_tabs_header_align(hwnd, g_tabs_id) == 0, "表头左对齐恢复失败")
+
     ui.set_tabs_type(hwnd, g_tabs_id, 2)
     border_state = ui.get_tabs_full_state_ex(hwnd, g_tabs_id)
     assert_state(border_state["tab_type"] == 2, "边框卡片类型设置失败")

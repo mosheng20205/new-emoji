@@ -2104,6 +2104,1561 @@ def showcase_gauge(hwnd, stage, w, h):
         add_text(hwnd, rows, desc, x + 18, 114, 230, 24, MUTED)
 
 
+def showcase_ring_progress(hwnd, stage, w, h):
+    def set_ring_value(element_id, value, label, status):
+        label_data = ui.make_utf8(label)
+        ui.dll.EU_SetRingProgressValue(
+            hwnd, element_id, value, ui.bytes_arg(label_data), len(label_data), status
+        )
+
+    def status_name(status):
+        return ["进行中", "成功", "警告", "异常"][max(0, min(3, status))]
+
+    add_text(
+        hwnd, stage,
+        "⭕ RingProgress 覆盖数值动画、状态色、中心文字开关、线宽范围、Set/Get 读回和中文 emoji 标签。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "🚀 实时发布进度工作台", 28, 72, w - 56, 284)
+    main_ring = ui.create_ring_progress(hwnd, hero, "🚀 发布完成度", 68, "构建校验中 🧪", 0, 36, 58, 260, 202)
+    ui.set_ring_progress_options(hwnd, main_ring, 18, True)
+    deploy_ring = ui.create_ring_progress(hwnd, hero, "📦 资源同步", 36, "等待上传 📤", 0, 342, 70, 190, 168)
+    ui.set_ring_progress_options(hwnd, deploy_ring, 10, True)
+    hidden_ring = ui.create_ring_progress(hwnd, hero, "🔕 无中心值", 74, "只展示环与标签", 2, 570, 70, 190, 168)
+    ui.set_ring_progress_options(hwnd, hidden_ring, 16, False)
+
+    readout = add_text(hwnd, hero, "", 806, 68, max(360, w - 930), 112, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "点击左侧按钮会同时调用 EU_SetRingProgressValue 与 EU_SetRingProgressOptions，右侧文本通过 Get API 读回当前值、状态、线宽和中心文字开关。",
+        806, 188, max(360, w - 930), 46, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {"value": 68, "label": "构建校验中 🧪", "status": 0, "stroke": 18, "show_center": True}
+
+    def refresh_readout(message="📊 已读取 RingProgress 当前状态"):
+        options = ui.get_ring_progress_options(hwnd, main_ring) or (0, False)
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"主环：{ui.get_ring_progress_value(hwnd, main_ring)}% · {status_name(ui.get_ring_progress_status(hwnd, main_ring))}\n"
+            f"选项：线宽 {options[0]} · 中心文字 {'显示' if options[1] else '隐藏'}"
+        )
+
+    def apply_main(value, label, status):
+        state["value"] = max(0, min(100, value))
+        state["label"] = label
+        state["status"] = status
+        set_ring_value(main_ring, state["value"], state["label"], state["status"])
+        refresh_readout(f"✨ 已更新：{state['label']}")
+
+    def step(delta):
+        def action(_element_id):
+            value = state["value"] + delta
+            if value >= 100:
+                apply_main(100, "发布完成 🎉", 1)
+            elif value >= 82:
+                apply_main(value, "灰度观察中 👀", 2)
+            elif value <= 28:
+                apply_main(value, "任务受阻 ⚠️", 3)
+            else:
+                apply_main(value, "构建校验中 🧪", 0)
+        return action
+
+    def toggle_center(_element_id):
+        state["show_center"] = not state["show_center"]
+        ui.set_ring_progress_options(hwnd, main_ring, state["stroke"], state["show_center"])
+        refresh_readout("🔁 已切换中心百分比显示")
+
+    def cycle_stroke(_element_id):
+        strokes = [6, 10, 14, 18, 24, 34]
+        current = state["stroke"]
+        state["stroke"] = strokes[(strokes.index(current) + 1) % len(strokes)] if current in strokes else 14
+        ui.set_ring_progress_options(hwnd, main_ring, state["stroke"], state["show_center"])
+        refresh_readout("📏 已切换环形线宽")
+
+    def reset_demo(_element_id):
+        state.update({"value": 68, "label": "构建校验中 🧪", "status": 0, "stroke": 18, "show_center": True})
+        set_ring_value(main_ring, state["value"], state["label"], state["status"])
+        ui.set_ring_progress_options(hwnd, main_ring, state["stroke"], state["show_center"])
+        set_ring_value(deploy_ring, 36, "等待上传 📤", 0)
+        set_ring_value(hidden_ring, 74, "只展示环与标签", 2)
+        refresh_readout("♻️ 已恢复初始演示")
+
+    actions = [
+        ("➖", "减少 12%", step(-12), 4),
+        ("➕", "增加 12%", step(12), 1),
+        ("👁️", "中心开关", toggle_center, 6),
+        ("📏", "切换线宽", cycle_stroke, 6),
+        ("♻️", "重置演示", reset_demo, 3),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, 806 + i * 132, 238, 116, 34, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    states = add_demo_panel(hwnd, stage, "🎨 四种状态色与业务语义", 28, 382, w - 56, 238)
+    status_specs = [
+        ("进行中", "正在处理 🔄", 46, 0),
+        ("成功", "全部完成 ✅", 100, 1),
+        ("警告", "接近阈值 ⚠️", 82, 2),
+        ("异常", "需要处理 🚨", 24, 3),
+    ]
+    status_gap = 18
+    status_w = max(230, (w - 56 - 48 - status_gap * 3) // 4)
+    for i, (title, label, value, status) in enumerate(status_specs):
+        x = 24 + i * (status_w + status_gap)
+        card = add_themed_panel(hwnd, states, x, 58, status_w, 148, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        ring = ui.create_ring_progress(hwnd, card, f"⭕ {title}", value, label, status, 14, 26, status_w - 28, 112)
+        ui.set_ring_progress_options(hwnd, ring, 12 + i * 2, True)
+
+    matrix = add_demo_panel(hwnd, stage, "📐 线宽、尺寸与中心内容矩阵", 28, 646, w - 56, 246)
+    matrix_specs = [
+        ("细环", 6, True, 30, "轻量概览 ✨"),
+        ("标准", 14, True, 58, "卡片指标 📊"),
+        ("粗环", 24, True, 76, "大屏重点 🎯"),
+        ("隐藏中心", 18, False, 91, "列表摘要 🔕"),
+        ("超粗上限", 34, True, 100, "完成庆祝 🎉"),
+    ]
+    item_gap = 16
+    item_w = max(190, (w - 56 - 48 - item_gap * 4) // 5)
+    for i, (title, stroke, show_center, value, label) in enumerate(matrix_specs):
+        x = 24 + i * (item_w + item_gap)
+        card = add_themed_panel(hwnd, matrix, x, 58, item_w, 154, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        ring = ui.create_ring_progress(hwnd, card, f"📏 {title}", value, label, 1 if value >= 100 else 0, 12, 24, item_w - 24, 120)
+        ui.set_ring_progress_options(hwnd, ring, stroke, show_center)
+        add_text(hwnd, card, f"线宽 {stroke} · {'显示中心' if show_center else '隐藏中心'}", 14, 126, item_w - 28, 22, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 916, w - 56, 152)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateRingProgress    ✅ 更新：EU_SetRingProgressValue    ✅ 选项：EU_SetRingProgressOptions\n"
+        "✅ 读回：EU_GetRingProgressValue / Status / Options    ✅ 主题：跟随浅色、深色、系统模式    ✅ DPI：逻辑尺寸首屏完整显示",
+        28, 58, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "中文标题、emoji 标签、状态语义和动画变化都在本页首屏内可直接观察。", 28, 116, w - 112, 26, MUTED)
+    refresh_readout("✅ RingProgress 完整功能演示已加载")
+
+
+def showcase_bullet_progress(hwnd, stage, w, h):
+    def set_bullet_value(element_id, value, target, description, status):
+        desc_data = ui.make_utf8(description)
+        ui.dll.EU_SetBulletProgressValue(
+            hwnd, element_id, value, target, ui.bytes_arg(desc_data), len(desc_data), status
+        )
+
+    def status_name(status):
+        return ["自动阈值", "成功", "警告", "异常"][max(0, min(3, status))]
+
+    add_text(
+        hwnd, stage,
+        "🧭 BulletProgress 覆盖当前值、目标线、阈值自动变色、状态覆盖、目标显隐、Set/Get 读回和业务对比场景。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "🚀 发布目标追踪工作台", 28, 72, w - 56, 280)
+    main = ui.create_bullet_progress(hwnd, hero, "发布准备度", "灰度前检查 🧪", 72, 90, 0, 36, 64, max(720, w - 560), 74)
+    ui.set_bullet_progress_options(hwnd, main, 85, 60, True)
+    quality = ui.create_bullet_progress(hwnd, hero, "质量门禁", "目标 95% ✅", 91, 95, 1, 36, 154, max(720, w - 560), 74)
+    ui.set_bullet_progress_options(hwnd, quality, 90, 70, True)
+    hidden_target = ui.create_bullet_progress(hwnd, hero, "内部任务", "隐藏目标线 🔕", 48, 80, 0, 36, 222, max(720, w - 560), 58)
+    ui.set_bullet_progress_options(hwnd, hidden_target, 75, 40, False)
+
+    readout = add_text(hwnd, hero, "", max(820, w - 500), 64, 430, 112, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "按钮会调用 EU_SetBulletProgressValue / Options；读回区显示 value、target、status、good/warn 阈值和目标线开关。",
+        max(820, w - 500), 174, 430, 34, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {
+        "value": 72,
+        "target": 90,
+        "description": "灰度前检查 🧪",
+        "status": 0,
+        "good": 85,
+        "warn": 60,
+        "show_target": True,
+    }
+
+    def refresh_readout(message="📊 已读取 BulletProgress 当前状态"):
+        options = ui.get_bullet_progress_options(hwnd, main) or (0, 0, False)
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"主进度：{ui.get_bullet_progress_value(hwnd, main)}% / 目标 {ui.get_bullet_progress_target(hwnd, main)}%\n"
+            f"状态：{status_name(ui.get_bullet_progress_status(hwnd, main))}\n"
+            f"阈值：良好 {options[0]} · 预警 {options[1]} · 目标线 {'显示' if options[2] else '隐藏'}"
+        )
+
+    def apply_main(value=None, target=None, description=None, status=None):
+        if value is not None:
+            state["value"] = max(0, min(100, value))
+        if target is not None:
+            state["target"] = max(0, min(100, target))
+        if description is not None:
+            state["description"] = description
+        if status is not None:
+            state["status"] = max(0, min(3, status))
+        set_bullet_value(main, state["value"], state["target"], state["description"], state["status"])
+        refresh_readout(f"✨ 已更新：{state['description']}")
+
+    def step(delta):
+        def action(_element_id):
+            next_value = state["value"] + delta
+            if next_value >= state["target"]:
+                apply_main(next_value, description="目标达成 🎉", status=1)
+            elif next_value >= state["good"]:
+                apply_main(next_value, description="接近目标 👀", status=0)
+            elif next_value <= 30:
+                apply_main(next_value, description="风险阻塞 🚨", status=3)
+            else:
+                apply_main(next_value, description="灰度前检查 🧪", status=0)
+        return action
+
+    def move_target(_element_id):
+        choices = [60, 75, 90, 100]
+        current = state["target"]
+        next_target = choices[(choices.index(current) + 1) % len(choices)] if current in choices else 90
+        apply_main(target=next_target, description=f"目标已调到 {next_target}% 🎯", status=0)
+
+    def toggle_target(_element_id):
+        state["show_target"] = not state["show_target"]
+        ui.set_bullet_progress_options(hwnd, main, state["good"], state["warn"], state["show_target"])
+        refresh_readout("🔁 已切换目标线显示")
+
+    def cycle_threshold(_element_id):
+        plans = [(85, 60), (90, 70), (75, 45), (100, 80)]
+        current = (state["good"], state["warn"])
+        state["good"], state["warn"] = plans[(plans.index(current) + 1) % len(plans)] if current in plans else (85, 60)
+        ui.set_bullet_progress_options(hwnd, main, state["good"], state["warn"], state["show_target"])
+        refresh_readout("📐 已切换良好/预警阈值")
+
+    def reset_demo(_element_id):
+        state.update({
+            "value": 72, "target": 90, "description": "灰度前检查 🧪",
+            "status": 0, "good": 85, "warn": 60, "show_target": True,
+        })
+        set_bullet_value(main, state["value"], state["target"], state["description"], state["status"])
+        ui.set_bullet_progress_options(hwnd, main, state["good"], state["warn"], state["show_target"])
+        set_bullet_value(quality, 91, 95, "目标 95% ✅", 1)
+        set_bullet_value(hidden_target, 48, 80, "隐藏目标线 🔕", 0)
+        refresh_readout("♻️ 已恢复初始演示")
+
+    actions = [
+        ("➖", "减少 10%", step(-10), 4),
+        ("➕", "增加 10%", step(10), 1),
+        ("🎯", "移动目标", move_target, 6),
+        ("👁️", "目标线", toggle_target, 6),
+        ("📐", "切阈值", cycle_threshold, 6),
+        ("♻️", "重置", reset_demo, 3),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(820, w - 500) + (i % 3) * 132, 210 + (i // 3) * 36, 116, 30, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    states = add_demo_panel(hwnd, stage, "🎨 阈值自动色与状态覆盖", 28, 378, w - 56, 304)
+    auto_specs = [
+        ("低于预警", "自动红色 · 待补齐 🚧", 28, 80, 0, 80, 60, True),
+        ("达到预警", "自动黄色 · 加速中 ⚠️", 66, 80, 0, 80, 60, True),
+        ("达到良好", "自动绿色 · 稳定 ✅", 88, 90, 0, 80, 60, True),
+        ("成功覆盖", "强制成功色 🎉", 100, 95, 1, 80, 60, True),
+        ("警告覆盖", "强制警告色 ⚠️", 74, 90, 2, 80, 60, True),
+        ("异常覆盖", "强制异常色 🚨", 42, 90, 3, 80, 60, True),
+    ]
+    row_w = max(470, (w - 56 - 72) // 2)
+    for i, (title, desc, value, target, status, good, warn, show_target) in enumerate(auto_specs):
+        col = i % 2
+        row = i // 2
+        x = 24 + col * (row_w + 24)
+        y = 54 + row * 78
+        bullet = ui.create_bullet_progress(hwnd, states, title, desc, value, target, status, x, y, row_w, 74)
+        ui.set_bullet_progress_options(hwnd, bullet, good, warn, show_target)
+
+    matrix = add_demo_panel(hwnd, stage, "📋 目标线、阈值与业务尺寸矩阵", 28, 706, w - 56, 254)
+    matrix_specs = [
+        ("短任务", "目标线可见 🎯", 54, 70, 0, 70, 45, True),
+        ("冲刺任务", "高门槛 90/70 📈", 76, 92, 0, 90, 70, True),
+        ("后台任务", "无目标线 🔕", 40, 85, 0, 80, 50, False),
+        ("满分任务", "目标 100% 🏁", 100, 100, 1, 95, 75, True),
+    ]
+    item_w = max(300, (w - 56 - 72) // 2)
+    for i, (title, desc, value, target, status, good, warn, show_target) in enumerate(matrix_specs):
+        col = i % 2
+        row = i // 2
+        x = 24 + col * (item_w + 24)
+        y = 58 + row * 88
+        card = add_themed_panel(hwnd, matrix, x, y, item_w, 78, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        bullet = ui.create_bullet_progress(hwnd, card, f"🧭 {title}", desc, value, target, status, 14, 8, item_w - 28, 66)
+        ui.set_bullet_progress_options(hwnd, bullet, good, warn, show_target)
+        add_text(hwnd, card, f"良好 {good} · 预警 {warn} · {'显示目标' if show_target else '隐藏目标'}", item_w - 260, 54, 236, 20, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 984, w - 56, 128)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateBulletProgress    ✅ 更新：EU_SetBulletProgressValue    ✅ 选项：EU_SetBulletProgressOptions\n"
+        "✅ 读回：EU_GetBulletProgressValue / Target / Status / Options    ✅ 阈值：good/warn 自动变色    ✅ 目标线：可显示或隐藏",
+        28, 54, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "中文说明、emoji 标签、目标百分比和阈值策略都在本页首屏完整展示。", 28, 108, w - 112, 24, MUTED)
+    refresh_readout("✅ BulletProgress 完整功能演示已加载")
+
+
+def showcase_line_chart(hwnd, stage, w, h):
+    def set_line_data(element_id, points):
+        data = ui._chart_data(points)
+        ui.dll.EU_SetLineChartData(hwnd, element_id, ui.bytes_arg(data), len(data))
+
+    def options_text(options):
+        if not options:
+            return "读取失败"
+        style, axis, area, tooltip = options
+        return f"样式 {style} · 坐标轴 {'开' if axis else '关'} · 面积 {'开' if area else '关'} · 提示 {'开' if tooltip else '关'}"
+
+    add_text(
+        hwnd, stage,
+        "📈 LineChart 覆盖单序列、多序列、坐标轴、面积填充、tooltip/选中点、数据更新、样式切换和状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "📈 访问趋势分析工作台", 28, 72, w - 56, 340)
+    week_data = [
+        ("周一", 24), ("周二", 38), ("周三", 34), ("周四", 62),
+        ("周五", 58), ("周六", 76), ("周日", 92),
+    ]
+    burst_data = [
+        ("周一", 18), ("周二", 28), ("周三", 52), ("周四", 48),
+        ("周五", 84), ("周六", 70), ("周日", 96),
+    ]
+    calm_data = [
+        ("周一", 12), ("周二", 18), ("周三", 22), ("周四", 30),
+        ("周五", 28), ("周六", 34), ("周日", 40),
+    ]
+    main = ui.create_line_chart(hwnd, hero, "📈 一周访问趋势", week_data, 0, 28, 58, max(760, w - 620), 236)
+    ui.set_line_chart_options(hwnd, main, chart_style=0, show_axis=True, show_area=True, show_tooltip=True)
+    ui.set_line_chart_selected(hwnd, main, 3)
+
+    readout = add_text(hwnd, hero, "", max(840, w - 540), 64, 474, 104, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "按钮会调用 SetLineChartData / Series / Options / Selected；读回区展示 point、series、selected 和显示选项。",
+        max(840, w - 540), 176, 474, 40, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {
+        "dataset": 0,
+        "style": 0,
+        "axis": True,
+        "area": True,
+        "tooltip": True,
+        "selected": 3,
+    }
+
+    def refresh_readout(message="📊 已读取 LineChart 当前状态"):
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"点数：{ui.get_line_chart_point_count(hwnd, main)} · 序列：{ui.get_line_chart_series_count(hwnd, main)}\n"
+            f"选中点：{ui.get_line_chart_selected(hwnd, main)}\n"
+            f"{options_text(ui.get_line_chart_options(hwnd, main))}"
+        )
+
+    def apply_options(message):
+        ui.set_line_chart_options(
+            hwnd, main,
+            chart_style=state["style"],
+            show_axis=state["axis"],
+            show_area=state["area"],
+            show_tooltip=state["tooltip"],
+        )
+        refresh_readout(message)
+
+    def swap_data(_element_id):
+        datasets = [week_data, burst_data, calm_data]
+        labels = ["一周访问趋势", "活动峰值趋势", "稳定低峰趋势"]
+        state["dataset"] = (state["dataset"] + 1) % len(datasets)
+        set_line_data(main, datasets[state["dataset"]])
+        state["selected"] = min(3, len(datasets[state["dataset"]]) - 1)
+        ui.set_line_chart_selected(hwnd, main, state["selected"])
+        refresh_readout(f"🔄 已切换数据：{labels[state['dataset']]}")
+
+    def toggle_area(_element_id):
+        state["area"] = not state["area"]
+        apply_options("🌊 已切换面积填充")
+
+    def toggle_axis(_element_id):
+        state["axis"] = not state["axis"]
+        apply_options("📐 已切换坐标轴")
+
+    def toggle_tooltip(_element_id):
+        state["tooltip"] = not state["tooltip"]
+        apply_options("💬 已切换 tooltip")
+
+    def cycle_style(_element_id):
+        state["style"] = 1 if state["style"] == 0 else 0
+        apply_options("🖊️ 已切换折线样式")
+
+    def next_point(_element_id):
+        count = max(1, ui.get_line_chart_point_count(hwnd, main))
+        state["selected"] = (ui.get_line_chart_selected(hwnd, main) + 1) % count
+        ui.set_line_chart_selected(hwnd, main, state["selected"])
+        refresh_readout("🎯 已选中下一个数据点")
+
+    actions = [
+        ("🔄", "换数据", swap_data, 6),
+        ("🌊", "面积", toggle_area, 1),
+        ("📐", "坐标轴", toggle_axis, 6),
+        ("💬", "提示", toggle_tooltip, 6),
+        ("🖊️", "样式", cycle_style, 6),
+        ("🎯", "选点", next_point, 3),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(840, w - 540) + (i % 3) * 132, 236 + (i // 3) * 38, 116, 32, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    series_panel = add_demo_panel(hwnd, stage, "🌈 多序列对比与图例", 28, 438, w - 56, 250)
+    multi = ui.create_line_chart(
+        hwnd, series_panel, "📊 多渠道访问对比",
+        [("一月", 18), ("二月", 32), ("三月", 46), ("四月", 58), ("五月", 72)],
+        1, 24, 58, max(760, w - 520), 160
+    )
+    ui.set_line_chart_series(hwnd, multi, [
+        [("一月", 18), ("二月", 32), ("三月", 46), ("四月", 58), ("五月", 72)],
+        [("一月", 26), ("二月", 28), ("三月", 40), ("四月", 54), ("五月", 68)],
+        [("一月", 12), ("二月", 22), ("三月", 28), ("四月", 42), ("五月", 62)],
+    ])
+    ui.set_line_chart_options(hwnd, multi, chart_style=1, show_axis=True, show_area=False, show_tooltip=True)
+    add_text(
+        hwnd, series_panel,
+        f"📌 多序列读回：点数 {ui.get_line_chart_point_count(hwnd, multi)} · 序列 {ui.get_line_chart_series_count(hwnd, multi)}\n"
+        "图例由组件绘制，序列颜色跟随主题调色板；多序列模式适合渠道、版本、地区的同屏比较。",
+        max(820, w - 500), 74, 430, 82, MUTED
+    )
+    add_text(hwnd, series_panel, "移动鼠标到曲线附近可以触发选中点；程序也可以通过 EU_SetLineChartSelected 指定当前点。", max(820, w - 500), 168, 430, 34, MUTED)
+
+    matrix = add_demo_panel(hwnd, stage, "🎛️ 样式、轴线、面积与空状态矩阵", 28, 714, w - 56, 226)
+    compact_data = [("A", 20), ("B", 48), ("C", 36), ("D", 82), ("E", 64)]
+    matrix_specs = [
+        ("基础折线", 0, True, False, True, compact_data),
+        ("粗线面积", 1, True, True, True, compact_data),
+        ("无坐标轴", 0, False, True, True, compact_data),
+        ("无提示", 1, True, False, False, compact_data),
+        ("空数据", 0, True, False, True, []),
+    ]
+    gap = 14
+    card_w = max(230, (w - 56 - 48 - gap * 4) // 5)
+    for i, (title, style, axis, area, tooltip, data) in enumerate(matrix_specs):
+        x = 24 + i * (card_w + gap)
+        card = add_themed_panel(hwnd, matrix, x, 58, card_w, 136, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        chart = ui.create_line_chart(hwnd, card, f"📈 {title}", data, style, 10, 18, card_w - 20, 100)
+        ui.set_line_chart_options(hwnd, chart, chart_style=style, show_axis=axis, show_area=area, show_tooltip=tooltip)
+        if data:
+            ui.set_line_chart_selected(hwnd, chart, min(2, len(data) - 1))
+        add_text(hwnd, card, f"{'轴线' if axis else '无轴'} · {'面积' if area else '无面积'} · {'提示' if tooltip else '无提示'}", 12, 110, card_w - 24, 22, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 966, w - 56, 142)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateLineChart    ✅ 数据：EU_SetLineChartData / EU_SetLineChartSeries    ✅ 选项：EU_SetLineChartOptions\n"
+        "✅ 选中：EU_SetLineChartSelected    ✅ 读回：PointCount / SeriesCount / Selected / Options    ✅ 交互：鼠标 hover 和点击选点",
+        28, 56, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "单序列用于趋势分析，多序列用于对比分析；中文标签和 emoji 标题均走 UTF-8 数据通道。", 28, 112, w - 112, 24, MUTED)
+    refresh_readout("✅ LineChart 完整功能演示已加载")
+
+
+def showcase_bar_chart(hwnd, stage, w, h):
+    def set_bar_data(element_id, bars):
+        data = ui._chart_data(bars)
+        ui.dll.EU_SetBarChartData(hwnd, element_id, ui.bytes_arg(data), len(data))
+
+    def options_text(options):
+        if not options:
+            return "读取失败"
+        orientation, show_values, show_axis = options
+        return f"{'纵向柱' if orientation == 1 else '横向条'} · 数值 {'开' if show_values else '关'} · 轴线 {'开' if show_axis else '关'}"
+
+    add_text(
+        hwnd, stage,
+        "📊 BarChart 覆盖横向/纵向柱、数值标签、坐标轴、单组数据、多序列、选中柱、数据更新和状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "📊 组件使用排行工作台", 28, 72, w - 56, 340)
+    usage_data = [
+        ("按钮", 92), ("输入", 76), ("表格", 68), ("弹层", 52), ("导航", 44), ("图表", 36),
+    ]
+    release_data = [
+        ("按钮", 64), ("输入", 58), ("表格", 88), ("弹层", 72), ("导航", 46), ("图表", 66),
+    ]
+    compact_data = [
+        ("移动", 38), ("桌面", 84), ("文档", 42), ("测试", 56), ("发布", 70),
+    ]
+    main = ui.create_bar_chart(hwnd, hero, "📊 组件使用排行", usage_data, 0, 28, 58, max(760, w - 620), 236)
+    ui.set_bar_chart_options(hwnd, main, orientation=0, show_values=True, show_axis=True)
+    ui.set_bar_chart_selected(hwnd, main, 1)
+
+    readout = add_text(hwnd, hero, "", max(840, w - 540), 64, 474, 104, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "按钮会调用 SetBarChartData / Series / Options / Selected；读回区展示 bar、series、selected 和显示选项。",
+        max(840, w - 540), 176, 474, 40, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {
+        "dataset": 0,
+        "orientation": 0,
+        "show_values": True,
+        "show_axis": True,
+        "selected": 1,
+    }
+
+    def refresh_readout(message="📋 已读取 BarChart 当前状态"):
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"柱数：{ui.get_bar_chart_bar_count(hwnd, main)} · 序列：{ui.get_bar_chart_series_count(hwnd, main)}\n"
+            f"选中柱：{ui.get_bar_chart_selected(hwnd, main)}\n"
+            f"{options_text(ui.get_bar_chart_options(hwnd, main))}"
+        )
+
+    def apply_options(message):
+        ui.set_bar_chart_options(
+            hwnd, main,
+            orientation=state["orientation"],
+            show_values=state["show_values"],
+            show_axis=state["show_axis"],
+        )
+        refresh_readout(message)
+
+    def swap_data(_element_id):
+        datasets = [usage_data, release_data, compact_data]
+        labels = ["组件使用排行", "发布工单排行", "端侧需求排行"]
+        state["dataset"] = (state["dataset"] + 1) % len(datasets)
+        set_bar_data(main, datasets[state["dataset"]])
+        state["selected"] = min(1, len(datasets[state["dataset"]]) - 1)
+        ui.set_bar_chart_selected(hwnd, main, state["selected"])
+        refresh_readout(f"🔄 已切换数据：{labels[state['dataset']]}")
+
+    def toggle_orientation(_element_id):
+        state["orientation"] = 1 if state["orientation"] == 0 else 0
+        apply_options("↔️ 已切换横向/纵向布局")
+
+    def toggle_values(_element_id):
+        state["show_values"] = not state["show_values"]
+        apply_options("🔢 已切换数值标签")
+
+    def toggle_axis(_element_id):
+        state["show_axis"] = not state["show_axis"]
+        apply_options("📐 已切换坐标轴")
+
+    def next_bar(_element_id):
+        count = max(1, ui.get_bar_chart_bar_count(hwnd, main))
+        state["selected"] = (ui.get_bar_chart_selected(hwnd, main) + 1) % count
+        ui.set_bar_chart_selected(hwnd, main, state["selected"])
+        refresh_readout("🎯 已选中下一根柱")
+
+    def reset_demo(_element_id):
+        state.update({"dataset": 0, "orientation": 0, "show_values": True, "show_axis": True, "selected": 1})
+        set_bar_data(main, usage_data)
+        ui.set_bar_chart_options(hwnd, main, orientation=0, show_values=True, show_axis=True)
+        ui.set_bar_chart_selected(hwnd, main, 1)
+        refresh_readout("♻️ 已恢复初始演示")
+
+    actions = [
+        ("🔄", "换数据", swap_data, 6),
+        ("↔️", "横/纵", toggle_orientation, 1),
+        ("🔢", "数值", toggle_values, 6),
+        ("📐", "轴线", toggle_axis, 6),
+        ("🎯", "选柱", next_bar, 3),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(840, w - 540) + (i % 3) * 132, 236 + (i // 3) * 38, 116, 32, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    series_panel = add_demo_panel(hwnd, stage, "🌈 多序列柱状对比", 28, 438, w - 56, 250)
+    multi = ui.create_bar_chart(
+        hwnd, series_panel, "📊 月度端侧分布",
+        [("一月", 18), ("二月", 32), ("三月", 46), ("四月", 58), ("五月", 72)],
+        1, 24, 58, max(760, w - 520), 160
+    )
+    ui.set_bar_chart_series(hwnd, multi, [
+        [("一月", 18), ("二月", 32), ("三月", 46), ("四月", 58), ("五月", 72)],
+        [("一月", 26), ("二月", 28), ("三月", 40), ("四月", 54), ("五月", 68)],
+        [("一月", 12), ("二月", 22), ("三月", 28), ("四月", 42), ("五月", 62)],
+    ])
+    ui.set_bar_chart_options(hwnd, multi, orientation=1, show_values=False, show_axis=True)
+    add_text(
+        hwnd, series_panel,
+        f"📌 多序列读回：柱数 {ui.get_bar_chart_bar_count(hwnd, multi)} · 序列 {ui.get_bar_chart_series_count(hwnd, multi)}\n"
+        "多序列目前以纵向分组柱展示，适合月份、渠道、端类型之间的横向对比。",
+        max(820, w - 500), 74, 430, 82, MUTED
+    )
+    add_text(hwnd, series_panel, "鼠标移到单组柱或横向条上会更新选中项；也可以通过 EU_SetBarChartSelected 程序化指定。", max(820, w - 500), 168, 430, 34, MUTED)
+
+    matrix = add_demo_panel(hwnd, stage, "🎛️ 横向、纵向、数值、轴线与空状态矩阵", 28, 714, w - 56, 226)
+    matrix_data = [("A", 20), ("B", 48), ("C", 36), ("D", 82), ("E", 64)]
+    matrix_specs = [
+        ("横向数值", 0, True, True, matrix_data),
+        ("横向无值", 0, False, True, matrix_data),
+        ("纵向柱", 1, True, True, matrix_data),
+        ("无轴线", 1, True, False, matrix_data),
+        ("空数据", 0, True, True, []),
+    ]
+    gap = 14
+    card_w = max(230, (w - 56 - 48 - gap * 4) // 5)
+    for i, (title, orientation, show_values, show_axis, data) in enumerate(matrix_specs):
+        x = 24 + i * (card_w + gap)
+        card = add_themed_panel(hwnd, matrix, x, 58, card_w, 136, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        chart = ui.create_bar_chart(hwnd, card, f"📊 {title}", data, orientation, 10, 18, card_w - 20, 100)
+        ui.set_bar_chart_options(hwnd, chart, orientation=orientation, show_values=show_values, show_axis=show_axis)
+        if data:
+            ui.set_bar_chart_selected(hwnd, chart, min(2, len(data) - 1))
+        add_text(hwnd, card, f"{'纵向' if orientation == 1 else '横向'} · {'数值' if show_values else '无值'} · {'轴线' if show_axis else '无轴'}", 12, 110, card_w - 24, 22, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 966, w - 56, 142)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateBarChart    ✅ 数据：EU_SetBarChartData / EU_SetBarChartSeries    ✅ 选项：EU_SetBarChartOptions\n"
+        "✅ 选中：EU_SetBarChartSelected    ✅ 读回：BarCount / SeriesCount / Selected / Options    ✅ 交互：鼠标 hover 和点击选柱",
+        28, 56, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "横向条适合排行，纵向柱适合时间维度；中文标签和 emoji 标题均走 UTF-8 数据通道。", 28, 112, w - 112, 24, MUTED)
+    refresh_readout("✅ BarChart 完整功能演示已加载")
+
+
+def showcase_donut_chart(hwnd, stage, w, h):
+    def set_donut_data(element_id, slices, active_index=0):
+        data = ui._chart_data(slices)
+        ui.dll.EU_SetDonutChartData(hwnd, element_id, ui.bytes_arg(data), len(data), active_index)
+
+    def options_text(options):
+        if not options:
+            return "读取失败"
+        show_legend, ring_width, show_labels = options
+        return f"图例 {'开' if show_legend else '关'} · 环宽 {ring_width} · 标签 {'开' if show_labels else '关'}"
+
+    add_text(
+        hwnd, stage,
+        "🍩 DonutChart 覆盖切片数据、激活扇区、图例、环宽、百分比标签、鼠标选中、空状态和 Options 读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "🍩 组件分类占比工作台", 28, 72, w - 56, 340)
+    category_data = [("基础布局", 18), ("表单输入", 26), ("数据展示", 22), ("图表导航", 19), ("反馈流程", 15)]
+    usage_data = [("按钮", 32), ("输入", 24), ("表格", 18), ("弹层", 14), ("图表", 12)]
+    health_data = [("已完成", 68), ("完善中", 19), ("基础封装", 9), ("待验证", 4)]
+    main = ui.create_donut_chart(hwnd, hero, "🍩 组件分类占比", category_data, 1, 34, 56, 520, 246)
+    ui.set_donut_chart_advanced_options(hwnd, main, show_legend=True, ring_width=26, show_labels=True)
+
+    readout = add_text(hwnd, hero, "", max(700, w - 600), 64, 540, 108, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "按钮会调用 SetDonutChartData / Options / AdvancedOptions / Active；读回区展示切片数、激活项、图例、环宽和标签开关。",
+        max(700, w - 600), 178, 540, 42, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {"dataset": 0, "active": 1, "legend": True, "ring": 26, "labels": True}
+
+    def refresh_readout(message="📋 已读取 DonutChart 当前状态"):
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"切片：{ui.get_donut_chart_slice_count(hwnd, main)} · 激活：{ui.get_donut_chart_active(hwnd, main)}\n"
+            f"基础选项：{ui.get_donut_chart_options(hwnd, main)}\n"
+            f"{options_text(ui.get_donut_chart_advanced_options(hwnd, main))}"
+        )
+
+    def apply_options(message):
+        ui.set_donut_chart_advanced_options(
+            hwnd, main,
+            show_legend=state["legend"],
+            ring_width=state["ring"],
+            show_labels=state["labels"],
+        )
+        refresh_readout(message)
+
+    def swap_data(_element_id):
+        datasets = [category_data, usage_data, health_data]
+        labels = ["组件分类占比", "高频组件占比", "封装健康度"]
+        state["dataset"] = (state["dataset"] + 1) % len(datasets)
+        state["active"] = min(1, len(datasets[state["dataset"]]) - 1)
+        set_donut_data(main, datasets[state["dataset"]], state["active"])
+        refresh_readout(f"🔄 已切换数据：{labels[state['dataset']]}")
+
+    def next_slice(_element_id):
+        count = max(1, ui.get_donut_chart_slice_count(hwnd, main))
+        state["active"] = (ui.get_donut_chart_active(hwnd, main) + 1) % count
+        ui.set_donut_chart_active(hwnd, main, state["active"])
+        refresh_readout("🎯 已激活下一个扇区")
+
+    def toggle_legend(_element_id):
+        state["legend"] = not state["legend"]
+        apply_options("🧾 已切换图例显示")
+
+    def toggle_labels(_element_id):
+        state["labels"] = not state["labels"]
+        apply_options("🏷️ 已切换百分比标签")
+
+    def cycle_ring(_element_id):
+        widths = [10, 18, 26, 34, 42]
+        state["ring"] = widths[(widths.index(state["ring"]) + 1) % len(widths)] if state["ring"] in widths else 26
+        apply_options("📏 已切换环形宽度")
+
+    def reset_demo(_element_id):
+        state.update({"dataset": 0, "active": 1, "legend": True, "ring": 26, "labels": True})
+        set_donut_data(main, category_data, state["active"])
+        ui.set_donut_chart_advanced_options(hwnd, main, True, state["ring"], True)
+        refresh_readout("♻️ 已恢复初始演示")
+
+    actions = [
+        ("🔄", "换数据", swap_data, 6),
+        ("🎯", "切扇区", next_slice, 1),
+        ("🧾", "图例", toggle_legend, 6),
+        ("🏷️", "标签", toggle_labels, 6),
+        ("📏", "环宽", cycle_ring, 3),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(700, w - 600) + (i % 3) * 132, 236 + (i // 3) * 38, 116, 32, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    variants = add_demo_panel(hwnd, stage, "🎛️ 图例、标签与环宽组合", 28, 438, w - 56, 292)
+    variant_specs = [
+        ("标准图例", True, 22, True, 0, "图例与百分比标签同时显示"),
+        ("隐藏图例", False, 22, True, 1, "适合空间紧凑的摘要视图"),
+        ("粗环无标签", True, 42, False, 2, "突出激活扇区和中心数值"),
+    ]
+    gap = 18
+    card_w = max(360, (w - 56 - 48 - gap * 2) // 3)
+    for i, (title, legend, ring, labels, active, note) in enumerate(variant_specs):
+        x = 24 + i * (card_w + gap)
+        card = add_themed_panel(hwnd, variants, x, 58, card_w, 210, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        chart_w = 330 if legend else 250
+        chart = ui.create_donut_chart(hwnd, card, f"🍩 {title}", category_data, active, 10, 10, chart_w, 204)
+        ui.set_donut_chart_advanced_options(hwnd, chart, show_legend=legend, ring_width=ring, show_labels=labels)
+        add_text(hwnd, card, f"{'图例' if legend else '无图例'} · 环宽 {ring} · {'标签' if labels else '无标签'}", 352, 52, max(120, card_w - 372), 28, TEXT)
+        add_text(hwnd, card, note, 352, 92, max(120, card_w - 372), 56, MUTED)
+
+    data_panel = add_demo_panel(hwnd, stage, "📊 数据更新、激活项与空状态", 28, 746, w - 56, 250)
+    data_specs = [
+        ("分类数据", category_data, 0),
+        ("使用数据", usage_data, 2),
+        ("健康度", health_data, 0),
+        ("空数据", [], 0),
+    ]
+    data_w = max(330, (w - 56 - 72) // 4)
+    for i, (title, data, active) in enumerate(data_specs):
+        x = 24 + i * (data_w + 16)
+        card = add_themed_panel(hwnd, data_panel, x, 58, data_w, 164, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        chart = ui.create_donut_chart(hwnd, card, f"🍩 {title}", data, active, 10, 8, min(200, data_w - 140), 150)
+        ui.set_donut_chart_advanced_options(hwnd, chart, show_legend=False, ring_width=22, show_labels=False)
+        add_text(hwnd, card, f"切片 {ui.get_donut_chart_slice_count(hwnd, chart)}", data_w - 92, 48, 70, 24, TEXT)
+        add_text(hwnd, card, f"激活 {ui.get_donut_chart_active(hwnd, chart)}", data_w - 92, 82, 70, 24, MUTED)
+        add_text(hwnd, card, "空数据会显示组件内置空状态" if not data else "验证数据替换与激活项", data_w - 134, 126, 112, 42, MUTED)
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 1018, w - 56, 100)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateDonutChart    ✅ 数据：EU_SetDonutChartData    ✅ 选项：EU_SetDonutChartOptions / AdvancedOptions\n"
+        "✅ 激活：EU_SetDonutChartActive    ✅ 读回：SliceCount / Active / Options / AdvancedOptions    ✅ 交互：鼠标 hover 和点击激活扇区",
+        28, 44, w - 112, 44, TEXT
+    )
+    add_text(hwnd, api, "环形图适合占比结构展示；中文标签和 emoji 标题均走 UTF-8 数据通道。", 28, 82, w - 112, 20, MUTED)
+    refresh_readout("✅ DonutChart 完整功能演示已加载")
+
+
+def showcase_anchor(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "⚓ Anchor 覆盖锚点列表、激活项、滚动位置联动、目标位置、偏移量、目标容器、hover/键盘和状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    items = ["📌 概览", "🧩 组件", "📊 数据", "🎛️ 配置", "✅ 验收", "🚀 发布"]
+    targets = [0, 180, 420, 720, 1040, 1380]
+
+    hero = add_demo_panel(hwnd, stage, "⚓ 滚动联动工作台", 28, 72, w - 56, 334)
+    anchor = ui.create_anchor(hwnd, hero, items, 0, 28, 62, 220, 220)
+    ui.set_anchor_targets(hwnd, anchor, targets)
+    ui.set_anchor_options(hwnd, anchor, 80, 2026)
+
+    content = add_themed_panel(hwnd, hero, 284, 56, max(620, w - 900), 236, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    section_title = add_text(hwnd, content, "📌 概览", 24, 22, 260, 30, TEXT)
+    section_body = add_text(
+        hwnd, content,
+        "模拟右侧内容区跟随滚动变化：点击按钮会写入 scroll_position，Anchor 根据 targets + offset 自动计算当前 active。",
+        24, 62, max(520, w - 980), 54, MUTED
+    )
+    ui.set_text_options(hwnd, section_body, wrap=True, ellipsis=False)
+    section_cards = []
+    for i, label in enumerate(items[:4]):
+        x = 24 + i * 154
+        card = add_themed_panel(hwnd, content, x, 132, 136, 72, "panel_neutral", "panel_neutral_border", 1.0, 8.0, 8)
+        add_text(hwnd, card, label, 12, 12, 112, 24, TEXT)
+        add_text(hwnd, card, f"目标 {targets[i]}", 12, 42, 112, 22, MUTED)
+        section_cards.append(card)
+
+    readout = add_text(hwnd, hero, "", max(940, w - 520), 62, 456, 132, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "鼠标悬停会更新 hover；键盘聚焦后可用 ↑/↓/Home/End 切换；程序侧可通过 SetAnchorActive 或 SetAnchorScroll 驱动。",
+        max(940, w - 520), 204, 456, 44, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {"scroll": 0, "offset": 80, "container": 2026}
+
+    def refresh_readout(message="📋 已读取 Anchor 当前状态"):
+        s = ui.get_anchor_state(hwnd, anchor) or {}
+        active = s.get("active", -1)
+        label = items[active] if 0 <= active < len(items) else "无"
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"active={s.get('active', '-')} · {label}\n"
+            f"count={s.get('count', '-')} · scroll={s.get('scroll', '-')} · target={s.get('target', '-')}\n"
+            f"offset={s.get('offset', '-')} · container={s.get('container', '-')} · hover={s.get('hover', '-')}"
+        )
+        ui.set_element_text(hwnd, section_title, label)
+        ui.set_element_text(hwnd, section_body, f"当前滚动位置 {s.get('scroll', 0)}，偏移 {s.get('offset', 0)}，目标位置 {s.get('target', 0)}。锚点会选择不大于 scroll + offset 的最近目标。")
+
+    def set_scroll(value, message):
+        state["scroll"] = max(0, value)
+        ui.set_anchor_scroll(hwnd, anchor, state["scroll"])
+        refresh_readout(message)
+
+    def scroll_step(delta):
+        def action(_element_id):
+            set_scroll(state["scroll"] + delta, f"🧭 已滚动 {delta:+d}")
+        return action
+
+    def next_active(_element_id):
+        current = ui.get_anchor_active(hwnd, anchor)
+        next_index = (current + 1) % max(1, ui.get_anchor_item_count(hwnd, anchor))
+        ui.set_anchor_active(hwnd, anchor, next_index)
+        state["scroll"] = targets[next_index]
+        refresh_readout("🎯 已程序化激活下一项")
+
+    def toggle_offset(_element_id):
+        state["offset"] = 160 if state["offset"] == 80 else 80
+        ui.set_anchor_options(hwnd, anchor, state["offset"], state["container"])
+        ui.set_anchor_scroll(hwnd, anchor, state["scroll"])
+        refresh_readout("📏 已切换滚动偏移量")
+
+    def replace_items(_element_id):
+        new_items = ["🏠 首页", "🧪 测试", "📦 构建", "📣 通知", "📚 文档"]
+        new_targets = [0, 220, 520, 860, 1200]
+        ui.set_anchor_items(hwnd, anchor, new_items)
+        ui.set_anchor_targets(hwnd, anchor, new_targets)
+        items[:] = new_items
+        targets[:] = new_targets
+        state["scroll"] = 0
+        ui.set_anchor_scroll(hwnd, anchor, 0)
+        refresh_readout("🔄 已替换锚点项目与目标位置")
+
+    def reset_demo(_element_id):
+        base_items = ["📌 概览", "🧩 组件", "📊 数据", "🎛️ 配置", "✅ 验收", "🚀 发布"]
+        base_targets = [0, 180, 420, 720, 1040, 1380]
+        items[:] = base_items
+        targets[:] = base_targets
+        state.update({"scroll": 0, "offset": 80, "container": 2026})
+        ui.set_anchor_items(hwnd, anchor, items)
+        ui.set_anchor_targets(hwnd, anchor, targets)
+        ui.set_anchor_options(hwnd, anchor, state["offset"], state["container"])
+        ui.set_anchor_scroll(hwnd, anchor, 0)
+        refresh_readout("♻️ 已恢复初始锚点演示")
+
+    actions = [
+        ("⬆️", "上滚", scroll_step(-220), 6),
+        ("⬇️", "下滚", scroll_step(220), 1),
+        ("🎯", "下一项", next_active, 3),
+        ("📏", "偏移", toggle_offset, 6),
+        ("🔄", "换项目", replace_items, 6),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(940, w - 520) + (i % 3) * 132, 262 + (i // 3) * 38, 116, 32, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    matrix = add_demo_panel(hwnd, stage, "🧭 目标位置、偏移量与状态读回", 28, 432, w - 56, 256)
+    scenarios = [
+        ("基础定位", ["📌 起点", "📋 中段", "✅ 结尾"], [0, 300, 760], 0, 0, 0),
+        ("带偏移", ["🔝 顶部", "🧩 模块", "🚀 发布"], [0, 360, 900], 1, 120, 260),
+        ("滚动联动", ["📊 数据", "🎛️ 配置", "📣 反馈", "📚 文档"], [0, 220, 520, 920], 0, 60, 540),
+        ("空项目", [], [], 0, 0, 0),
+    ]
+    card_gap = 18
+    card_w = max(330, (w - 56 - 48 - card_gap * 3) // 4)
+    for i, (title, labels, pos, active, offset, scroll) in enumerate(scenarios):
+        x = 24 + i * (card_w + card_gap)
+        card = add_themed_panel(hwnd, matrix, x, 58, card_w, 158, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        aid = ui.create_anchor(hwnd, card, labels, active, 14, 18, 150, 112)
+        ui.set_anchor_targets(hwnd, aid, pos)
+        ui.set_anchor_options(hwnd, aid, offset, 100 + i)
+        ui.set_anchor_scroll(hwnd, aid, scroll)
+        s = ui.get_anchor_state(hwnd, aid) or {}
+        add_text(hwnd, card, title, 180, 22, card_w - 196, 26, TEXT)
+        add_text(hwnd, card, f"active {s.get('active', '-')} / count {s.get('count', '-')}", 180, 58, card_w - 196, 24, MUTED)
+        add_text(hwnd, card, f"scroll {s.get('scroll', '-')} · target {s.get('target', '-')}", 180, 88, card_w - 196, 24, MUTED)
+        add_text(hwnd, card, f"offset {s.get('offset', '-')} · hover {s.get('hover', '-')}", 180, 118, card_w - 196, 24, MUTED)
+
+    behavior = add_demo_panel(hwnd, stage, "⌨️ 交互状态与键盘说明", 28, 716, w - 56, 168)
+    left = ui.create_anchor(hwnd, behavior, ["⬆️ 上一节", "⬇️ 下一节", "🏠 首页", "🏁 末尾"], 1, 28, 54, 230, 92)
+    ui.set_anchor_targets(hwnd, left, [0, 260, 0, 1200])
+    add_text(hwnd, behavior, "鼠标悬停：hover_index 会变化；点击：active_index 更新并写入 last_target_position。", 292, 58, 620, 28, MUTED)
+    add_text(hwnd, behavior, "键盘：↑/↓ 切换相邻项，Home 到第一项，End 到最后一项。演示页可通过读回区观察 active/target。", 292, 94, 720, 28, MUTED)
+    add_text(hwnd, behavior, f"当前交互样例：{ui.get_anchor_state(hwnd, left)}", 292, 128, w - 380, 24, TEXT)
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 912, w - 56, 148)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateAnchor    ✅ 项目：EU_SetAnchorItems    ✅ 激活：EU_SetAnchorActive / EU_GetAnchorActive\n"
+        "✅ 目标：EU_SetAnchorTargets    ✅ 选项：EU_SetAnchorOptions    ✅ 滚动：EU_SetAnchorScroll    ✅ 读回：EU_GetAnchorState / ItemCount",
+        28, 56, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "锚点文本支持中文与 emoji；target_positions + offset 用于模拟滚动容器中的自动定位。", 28, 112, w - 112, 24, MUTED)
+    refresh_readout("✅ Anchor 完整功能演示已加载")
+
+
+def showcase_backtop(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "⬆️ Backtop 覆盖宿主滚动状态、阈值显示、目标位置、目标容器、动画时长、触发记录、点击/键盘和完整状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "⬆️ 宿主滚动状态工作台", 28, 72, w - 56, 334)
+    viewport = add_themed_panel(hwnd, hero, 28, 56, max(640, w - 880), 236, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(hwnd, viewport, "📄 宿主传入的滚动状态", 24, 20, 300, 28, TEXT)
+    scroll_text = add_text(hwnd, viewport, "", 24, 58, max(520, w - 1000), 140, MUTED)
+    ui.set_text_options(hwnd, scroll_text, wrap=True, ellipsis=False)
+    add_text(hwnd, viewport, "宿主模拟滚动条", max(500, w - 1120), 20, 120, 24, TEXT)
+    scroll_track = add_themed_panel(hwnd, viewport, max(530, w - 1090), 52, 18, 112, "panel_neutral", "panel_neutral_border", 1.0, 9.0, 0)
+    scroll_thumb = add_themed_panel(hwnd, scroll_track, 2, 2, 14, 28, "panel_blue", "panel_blue_border", 0.0, 7.0, 0)
+    add_text(hwnd, viewport, "说明：滚动条由宿主演示层绘制，Backtop 只接收 scroll/threshold 并暴露触发状态。", 24, 194, max(520, w - 1000), 28, TEXT)
+    backtop = ui.create_backtop(hwnd, viewport, "⬆️", max(500, w - 1120), 162, 52, 52)
+    ui.set_backtop_options(hwnd, backtop, scroll_position=360, threshold=240, target_position=0, container_id=9001, duration_ms=260)
+
+    readout = add_text(hwnd, hero, "", max(820, w - 560), 62, 500, 150, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "visible 由 scroll >= threshold 自动计算；返回顶部效果需要宿主在触发后把真实滚动容器滚到 target。",
+        max(820, w - 560), 218, 500, 42, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    state = {"scroll": 360, "threshold": 240, "target": 0, "container": 9001, "duration": 260}
+
+    def refresh_readout(message="📋 已读取 Backtop 当前状态"):
+        s = ui.get_backtop_full_state(hwnd, backtop) or {}
+        thumb_y = 2 + min(82, max(0, int(s.get("scroll", 0) * 82 / 1200)))
+        ui.dll.EU_SetElementBounds(hwnd, scroll_thumb, 2, thumb_y, 14, 28)
+        ui.set_element_text(
+            hwnd, scroll_text,
+            f"宿主当前 scroll_position：{s.get('scroll', 0)}\n"
+            f"显示阈值 threshold：{s.get('threshold', 0)}，目标状态 target_position：{s.get('target', 0)}\n"
+            f"目标容器 id：{s.get('container', 0)}，动画时长参数：{s.get('duration', 0)}ms\n"
+            f"组件可见：{'是' if s.get('visible', 0) else '否'}。触发后宿主应把真实容器滚到 target。"
+        )
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"visible={s.get('visible', '-')} · scroll={s.get('scroll', '-')}\n"
+            f"threshold={s.get('threshold', '-')} · target={s.get('target', '-')}\n"
+            f"container={s.get('container', '-')} · duration={s.get('duration', '-')}ms\n"
+            f"last_scroll={s.get('last_scroll', '-')} · activated={s.get('activated', '-')}"
+        )
+
+    def apply_options(message):
+        ui.set_backtop_options(
+            hwnd, backtop,
+            state["scroll"], state["threshold"], state["target"],
+            state["container"], state["duration"],
+        )
+        refresh_readout(message)
+
+    def scroll_step(delta):
+        def action(_element_id):
+            state["scroll"] = max(0, min(1200, state["scroll"] + delta))
+            ui.set_backtop_scroll(hwnd, backtop, state["scroll"])
+            refresh_readout(f"🧭 已模拟宿主 scroll {delta:+d}")
+        return action
+
+    def trigger(_element_id):
+        ui.trigger_backtop(hwnd, backtop)
+        state["scroll"] = state["target"]
+        refresh_readout("⬆️ 已触发，宿主模拟滚到 target")
+
+    def toggle_threshold(_element_id):
+        state["threshold"] = 520 if state["threshold"] == 240 else 240
+        apply_options("📏 已切换显示阈值")
+
+    def cycle_target(_element_id):
+        targets = [0, 80, 160]
+        state["target"] = targets[(targets.index(state["target"]) + 1) % len(targets)] if state["target"] in targets else 0
+        apply_options("🎯 已切换目标状态位置")
+
+    def cycle_duration(_element_id):
+        durations = [0, 180, 260, 600]
+        state["duration"] = durations[(durations.index(state["duration"]) + 1) % len(durations)] if state["duration"] in durations else 260
+        apply_options("⏱️ 已切换动画时长")
+
+    def reset_demo(_element_id):
+        state.update({"scroll": 360, "threshold": 240, "target": 0, "container": 9001, "duration": 260})
+        apply_options("♻️ 已恢复初始演示")
+
+    actions = [
+        ("⬆️", "减 scroll", scroll_step(-180), 6),
+        ("⬇️", "加 scroll", scroll_step(180), 1),
+        ("🚀", "触发", trigger, 3),
+        ("📏", "阈值", toggle_threshold, 6),
+        ("🎯", "目标", cycle_target, 6),
+        ("⏱️", "时长", cycle_duration, 6),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(820, w - 560) + (i % 4) * 118, 270 + (i // 4) * 36, 104, 30, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    matrix = add_demo_panel(hwnd, stage, "🎛️ 阈值、目标状态与可见状态矩阵", 28, 432, w - 56, 256)
+    scenarios = [
+        ("未到阈值", "⬆️", 120, 240, 0, 1, 180),
+        ("达到阈值", "🔝", 320, 240, 0, 2, 260),
+        ("自定义目标状态", "🏠", 760, 200, 120, 3, 600),
+        ("立即更新状态", "⚡", 900, 300, 0, 4, 0),
+    ]
+    card_gap = 18
+    card_w = max(330, (w - 56 - 48 - card_gap * 3) // 4)
+    for i, (title, icon, scroll, threshold, target, container_id, duration) in enumerate(scenarios):
+        x = 24 + i * (card_w + card_gap)
+        card = add_themed_panel(hwnd, matrix, x, 58, card_w, 158, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        bid = ui.create_backtop(hwnd, card, icon, 24, 28, 52, 52)
+        ui.set_backtop_options(hwnd, bid, scroll, threshold, target, container_id, duration)
+        s = ui.get_backtop_full_state(hwnd, bid) or {}
+        add_text(hwnd, card, title, 96, 24, card_w - 116, 26, TEXT)
+        add_text(hwnd, card, f"scroll {s.get('scroll', '-')} · threshold {s.get('threshold', '-')}", 96, 58, card_w - 116, 24, MUTED)
+        add_text(hwnd, card, f"target {s.get('target', '-')} · duration {s.get('duration', '-')}ms", 96, 88, card_w - 116, 24, MUTED)
+        add_text(hwnd, card, f"visible {s.get('visible', '-')} · container {s.get('container', '-')}", 96, 118, card_w - 116, 24, MUTED)
+
+    trigger_panel = add_demo_panel(hwnd, stage, "⌨️ 触发方式与状态记录", 28, 716, w - 56, 168)
+    trigger_demo = ui.create_backtop(hwnd, trigger_panel, "🚀", 34, 62, 58, 58)
+    ui.set_backtop_options(hwnd, trigger_demo, 888, 120, 0, 777, 240)
+    trigger_state = add_text(hwnd, trigger_panel, "", 124, 58, 460, 80, TEXT)
+
+    def refresh_trigger_state(message="等待触发"):
+        s = ui.get_backtop_full_state(hwnd, trigger_demo) or {}
+        ui.set_element_text(hwnd, trigger_state, f"{message}\nscroll={s.get('scroll')} last={s.get('last_scroll')} activated={s.get('activated')} visible={s.get('visible')}")
+
+    def trigger_program(_element_id):
+        ui.trigger_backtop(hwnd, trigger_demo)
+        refresh_trigger_state("✅ 已通过 EU_TriggerBacktop 触发")
+
+    trigger_btn = ui.create_button(hwnd, trigger_panel, "🚀", "程序触发", 620, 64, 128, 36, variant=1)
+    reset_btn = ui.create_button(hwnd, trigger_panel, "♻️", "恢复滚动", 766, 64, 128, 36, variant=6)
+    set_click(hwnd, trigger_btn, trigger_program)
+    set_click(hwnd, reset_btn, lambda _eid: (ui.set_backtop_options(hwnd, trigger_demo, 888, 120, 0, 777, 240), refresh_trigger_state("♻️ 已恢复可见状态")))
+    add_text(hwnd, trigger_panel, "点击按钮、键盘 Enter/Space、或调用 EU_TriggerBacktop 会记录触发前 scroll；随后宿主应执行真实滚动。", 620, 112, w - 720, 30, MUTED)
+    refresh_trigger_state("✅ 触发演示已加载")
+
+    api = add_demo_panel(hwnd, stage, "🔌 API 覆盖清单", 28, 912, w - 56, 148)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateBacktop    ✅ 基础状态：EU_SetBacktopState / EU_GetBacktopState / EU_GetBacktopVisible\n"
+        "✅ 完整选项：EU_SetBacktopOptions    ✅ 宿主滚动状态：EU_SetBacktopScroll    ✅ 触发状态：EU_TriggerBacktop    ✅ 读回：EU_GetBacktopFullState",
+        28, 56, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "Backtop 不内置滚动条；演示滚动条属于宿主模拟层，用来展示实际项目里的接入方式。", 28, 112, w - 112, 24, MUTED)
+    refresh_readout("✅ Backtop 完整功能演示已加载")
+
+
+def showcase_segmented(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "🔀 Segmented 覆盖分段创建、激活项读写、禁用项自动跳过、动态项目替换、状态读回、鼠标悬停和键盘切换场景。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "🔀 视图切换工作台", 28, 72, w - 56, 334)
+    canvas = add_themed_panel(hwnd, hero, 28, 56, max(680, w - 880), 236, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(hwnd, canvas, "📊 报表视图", 24, 20, 180, 28, TEXT)
+    main = ui.create_segmented(hwnd, canvas, ["📅 日视图", "📆 周视图", "🗓️ 月视图", "📈 年视图"], 1, 24, 58, 500, 44)
+    ui.set_segmented_disabled(hwnd, main, [3])
+    preview = add_themed_panel(hwnd, canvas, 24, 122, max(560, w - 1040), 82, "panel_neutral", "panel_neutral_border", 1.0, 8.0, 6)
+    preview_title = add_text(hwnd, preview, "", 18, 14, max(420, w - 1180), 28, TEXT)
+    preview_body = add_text(hwnd, preview, "", 18, 46, max(500, w - 1120), 24, MUTED)
+
+    state = {
+        "items": ["📅 日视图", "📆 周视图", "🗓️ 月视图", "📈 年视图"],
+        "disabled": [3],
+        "preset": 0,
+    }
+    readout = add_text(hwnd, hero, "", max(820, w - 560), 62, 500, 148, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "点击分段会更新 active；禁用项不可选。键盘 ←/→/Home/End 会在可用项之间移动，状态读回可观察 active、count、disabled 和 hover。",
+        max(820, w - 560), 218, 500, 42, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    def active_label(index):
+        if 0 <= index < len(state["items"]):
+            return state["items"][index]
+        return "暂无选中"
+
+    def refresh_readout(message="✅ Segmented 状态已读回"):
+        s = ui.get_segmented_state(hwnd, main) or {}
+        active = s.get("active", -1)
+        ui.set_element_text(hwnd, preview_title, f"当前视图：{active_label(active)}")
+        ui.set_element_text(
+            hwnd, preview_body,
+            f"共 {s.get('count', 0)} 项，禁用 {s.get('disabled', 0)} 项；当前用于展示报表筛选、时间粒度和模式切换。"
+        )
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"active={s.get('active', '-')} · count={s.get('count', '-')}\n"
+            f"disabled={s.get('disabled', '-')} · hover={s.get('hover', '-')}\n"
+            f"当前标签：{active_label(active)}"
+        )
+
+    def set_active(delta):
+        def action(_element_id):
+            s = ui.get_segmented_state(hwnd, main) or {}
+            ui.set_segmented_active(hwnd, main, s.get("active", 0) + delta)
+            refresh_readout("🎯 已切换激活项，禁用项会自动跳过")
+        return action
+
+    def disable_active(_element_id):
+        s = ui.get_segmented_state(hwnd, main) or {}
+        active = s.get("active", -1)
+        if 0 <= active < len(state["items"]) and active not in state["disabled"]:
+            state["disabled"].append(active)
+        ui.set_segmented_disabled(hwnd, main, state["disabled"])
+        refresh_readout("🚫 已禁用当前项，组件自动选择下一个可用项")
+
+    def clear_disabled(_element_id):
+        state["disabled"] = []
+        ui.set_segmented_disabled(hwnd, main, [])
+        refresh_readout("✅ 已清空禁用项")
+
+    def replace_items(_element_id):
+        presets = [
+            (["🌅 上午", "🌙 晚间", "🚀 发布"], [1], 0),
+            (["🧩 设计", "💻 开发", "🧪 测试", "📦 交付", "📌 复盘"], [2, 4], 1),
+            (["📅 日视图", "📆 周视图", "🗓️ 月视图", "📈 年视图"], [3], 1),
+        ]
+        state["preset"] = (state["preset"] + 1) % len(presets)
+        items, disabled, active = presets[state["preset"]]
+        state["items"] = items
+        state["disabled"] = list(disabled)
+        ui.set_segmented_items(hwnd, main, items)
+        ui.set_segmented_disabled(hwnd, main, disabled)
+        ui.set_segmented_active(hwnd, main, active)
+        refresh_readout("🔁 已替换项目数据并重建禁用状态")
+
+    def reset_demo(_element_id):
+        state["items"] = ["📅 日视图", "📆 周视图", "🗓️ 月视图", "📈 年视图"]
+        state["disabled"] = [3]
+        state["preset"] = 0
+        ui.set_segmented_items(hwnd, main, state["items"])
+        ui.set_segmented_disabled(hwnd, main, state["disabled"])
+        ui.set_segmented_active(hwnd, main, 1)
+        refresh_readout("♻️ 已恢复初始分段")
+
+    actions = [
+        ("⬅️", "上一项", set_active(-1), 6),
+        ("➡️", "下一项", set_active(1), 1),
+        ("🚫", "禁用当前", disable_active, 3),
+        ("✅", "清空禁用", clear_disabled, 6),
+        ("🔁", "换项目", replace_items, 1),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(820, w - 560) + (i % 3) * 124, 270 + (i // 3) * 36, 110, 30, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    variants = add_demo_panel(hwnd, stage, "🧱 尺寸、禁用与标签组合", 28, 432, w - 56, 256)
+    scenarios = [
+        ("基础三段", ["日", "周", "月"], 1, [], 340, "适合轻量时间范围切换"),
+        ("带 emoji 标签", ["🎨 设计", "🧪 测试", "🚀 发布"], 0, [1], 430, "禁用项变灰并跳过选择"),
+        ("长中文标签", ["基础布局", "表单输入", "图表导航", "反馈流程"], 2, [], 560, "等分宽度展示较长文本"),
+        ("多项目紧凑", ["全部", "待办", "进行中", "已完成", "已归档"], 3, [4], 560, "用于列表筛选和状态分组"),
+    ]
+    gap = 18
+    card_w = max(360, (w - 56 - 48 - gap * 1) // 2)
+    for i, (title, items, active, disabled, seg_w, note) in enumerate(scenarios):
+        x = 24 + (i % 2) * (card_w + gap)
+        y = 58 + (i // 2) * 86
+        card = add_themed_panel(hwnd, variants, x, y, card_w, 74, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        sid = ui.create_segmented(hwnd, card, items, active, 16, 20, min(seg_w, card_w - 220), 38)
+        ui.set_segmented_disabled(hwnd, sid, disabled)
+        s = ui.get_segmented_state(hwnd, sid) or {}
+        add_text(hwnd, card, f"🔀 {title}", min(seg_w, card_w - 220) + 32, 16, 172, 24, TEXT)
+        add_text(hwnd, card, f"active {s.get('active', '-')} · 禁用 {s.get('disabled', '-')}", min(seg_w, card_w - 220) + 32, 42, 172, 22, MUTED)
+        add_text(hwnd, card, note, card_w - 236, 22, 208, 32, MUTED)
+
+    behavior = add_demo_panel(hwnd, stage, "⌨️ 交互状态与读回矩阵", 28, 716, w - 56, 168)
+    keyboard = ui.create_segmented(hwnd, behavior, ["🏠 首页", "📊 数据", "⚙️ 设置", "🧾 审计"], 0, 28, 58, 520, 44)
+    ui.set_segmented_disabled(hwnd, keyboard, [2])
+    k_state = ui.get_segmented_state(hwnd, keyboard) or {}
+    add_text(hwnd, behavior, "鼠标：hover_index 会随悬停变化；点击会更新 active_index。", 586, 50, 610, 24, MUTED)
+    add_text(hwnd, behavior, "键盘：←/→ 切换相邻可用项，Home/End 跳到首尾可用项，禁用项会自动略过。", 586, 82, 720, 24, MUTED)
+    add_text(hwnd, behavior, f"当前读回：active {k_state.get('active', '-')} · count {k_state.get('count', '-')} · disabled {k_state.get('disabled', '-')} · hover {k_state.get('hover', '-')}", 586, 114, w - 680, 24, TEXT)
+
+    api = add_demo_panel(hwnd, stage, "🔧 API 覆盖清单", 28, 912, w - 56, 148)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateSegmented    ✅ 项目：EU_SetSegmentedItems    ✅ 激活：EU_SetSegmentedActive / EU_GetSegmentedActive\n"
+        "✅ 数量：EU_GetSegmentedItemCount    ✅ 禁用：EU_SetSegmentedDisabled    ✅ 状态：EU_GetSegmentedState",
+        28, 56, w - 112, 58, TEXT
+    )
+    add_text(hwnd, api, "Segmented 适合视图模式、筛选条件、时间粒度和互斥选项；中文与 emoji 标签、禁用项和动态替换都已覆盖。", 28, 112, w - 112, 24, MUTED)
+    refresh_readout("✅ Segmented 完整功能演示已加载")
+
+
+def showcase_pageheader(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "📄 PageHeader 覆盖标题、副标题、返回入口、面包屑路径、右侧操作、激活状态、触发返回和完整状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "📄 详情页头工作台", 28, 72, w - 56, 334)
+    canvas_w = max(720, w - 870)
+    canvas = add_themed_panel(hwnd, hero, 28, 56, canvas_w, 236, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    header = ui.create_pageheader(
+        hwnd, canvas,
+        "📄 组件详情",
+        "正在查看 PageHeader 的组合能力与状态读回",
+        "返回总览",
+        22, 24, canvas_w - 44, 92
+    )
+    ui.set_pageheader_breadcrumbs(hwnd, header, ["🏠 首页", "🧩 组件库", "📄 页头"])
+    ui.set_pageheader_actions(hwnd, header, ["🔄 刷新", "💾 保存", "🚀 发布"])
+    ui.set_pageheader_active_action(hwnd, header, 1)
+    ui.set_pageheader_breadcrumb_active(hwnd, header, 2)
+    add_text(hwnd, canvas, "当前页头可同时承载返回、路径、标题说明和页面级操作，适合详情页、设置页与编辑页顶部区域。", 24, 142, canvas_w - 48, 28, MUTED)
+    add_text(hwnd, canvas, "内部点击会更新 action/back 状态；演示按钮用于模拟业务代码主动切换属性。", 24, 178, canvas_w - 48, 28, TEXT)
+
+    readout = add_text(hwnd, hero, "", max(820, w - 560), 62, 500, 150, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "返回按钮可由鼠标点击、键盘触发或 EU_TriggerPageHeaderBack 主动触发；动作按钮和面包屑可分别读取 hover 与 active 状态。",
+        max(820, w - 560), 218, 500, 42, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    model = {
+        "title": 0,
+        "breadcrumbs": 2,
+        "action": 1,
+        "actions_alt": False,
+    }
+
+    def refresh_readout(message="✅ PageHeader 状态已读回"):
+        s = ui.get_pageheader_state(hwnd, header) or {}
+        action_result = ui.get_pageheader_action(hwnd, header)
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"active_action={s.get('active_action', '-')} · action_count={s.get('action_count', '-')}\n"
+            f"active_breadcrumb={s.get('active_breadcrumb', '-')} · breadcrumb_count={s.get('breadcrumb_count', '-')}\n"
+            f"back_clicked={s.get('back_clicked', '-')} · back_hovered={s.get('back_hovered', '-')}\n"
+            f"action_hover={s.get('action_hover', '-')} · breadcrumb_hover={s.get('breadcrumb_hover', '-')}\n"
+            f"最后动作返回值：{action_result}"
+        )
+
+    def cycle_title(_element_id):
+        titles = [
+            ("📄 组件详情", "正在查看 PageHeader 的组合能力与状态读回", "返回总览"),
+            ("🧾 审批记录", "单据编号：A-2026-0506，包含中文与 emoji", "返回列表"),
+            ("⚙️ 页面设置", "当前修改会影响整个项目的展示策略", "退出设置"),
+        ]
+        model["title"] = (model["title"] + 1) % len(titles)
+        title, subtitle, back_text = titles[model["title"]]
+        ui.set_pageheader_text(hwnd, header, title, subtitle)
+        ui.set_pageheader_back_text(hwnd, header, back_text)
+        refresh_readout("📝 已切换标题、副标题和返回文案")
+
+    def cycle_breadcrumb(_element_id):
+        paths = [
+            ["🏠 首页", "🧩 组件库", "📄 页头"],
+            ["🏠 首页", "📊 图表导航", "🔀 分段控制", "📄 页头"],
+            ["🏢 控制台", "⚙️ 系统设置", "👤 权限详情"],
+        ]
+        model["breadcrumbs"] = (model["breadcrumbs"] + 1) % len(paths)
+        items = paths[model["breadcrumbs"]]
+        ui.set_pageheader_breadcrumbs(hwnd, header, items)
+        ui.set_pageheader_breadcrumb_active(hwnd, header, len(items) - 1)
+        refresh_readout("🍞 已替换面包屑路径并激活末级")
+
+    def cycle_action(_element_id):
+        s = ui.get_pageheader_state(hwnd, header) or {}
+        count = max(1, s.get("action_count", 1))
+        next_action = (s.get("active_action", 0) + 1) % count
+        ui.set_pageheader_active_action(hwnd, header, next_action)
+        refresh_readout("🎯 已切换右侧激活动作")
+
+    def replace_actions(_element_id):
+        model["actions_alt"] = not model["actions_alt"]
+        items = ["👁️ 预览", "📤 提交", "🧹 清理", "⭐ 收藏"] if model["actions_alt"] else ["🔄 刷新", "💾 保存", "🚀 发布"]
+        ui.set_pageheader_actions(hwnd, header, items)
+        ui.set_pageheader_active_action(hwnd, header, 0)
+        refresh_readout("🧰 已替换右侧操作按钮组")
+
+    def trigger_back(_element_id):
+        ui.trigger_pageheader_back(hwnd, header)
+        refresh_readout("⬅️ 已触发返回，back_clicked 状态已记录")
+
+    def reset_demo(_element_id):
+        model.update({"title": 0, "breadcrumbs": 2, "action": 1, "actions_alt": False})
+        ui.set_pageheader_text(hwnd, header, "📄 组件详情", "正在查看 PageHeader 的组合能力与状态读回")
+        ui.set_pageheader_back_text(hwnd, header, "返回总览")
+        ui.set_pageheader_breadcrumbs(hwnd, header, ["🏠 首页", "🧩 组件库", "📄 页头"])
+        ui.set_pageheader_actions(hwnd, header, ["🔄 刷新", "💾 保存", "🚀 发布"])
+        ui.set_pageheader_active_action(hwnd, header, 1)
+        ui.set_pageheader_breadcrumb_active(hwnd, header, 2)
+        ui.reset_pageheader_result(hwnd, header)
+        refresh_readout("♻️ 已恢复 PageHeader 初始状态")
+
+    actions = [
+        ("📝", "换标题", cycle_title, 1),
+        ("🍞", "换路径", cycle_breadcrumb, 6),
+        ("🎯", "切动作", cycle_action, 1),
+        ("🧰", "换按钮", replace_actions, 6),
+        ("⬅️", "触发返回", trigger_back, 3),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(820, w - 560) + (i % 3) * 124, 270 + (i // 3) * 36, 110, 30, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    variants = add_demo_panel(hwnd, stage, "🧱 布局组合与业务场景", 28, 432, w - 56, 256)
+    scenarios = [
+        ("详情页", "📄 用户详情", "展示只读信息和返回路径", "返回列表", ["🏠 首页", "👤 用户", "详情"], ["✏️ 编辑", "🗑️ 删除"], 0),
+        ("编辑页", "🧾 发票编辑", "右侧提供保存、提交和预览", "返回草稿", ["🏠 首页", "💼 财务", "发票"], ["👁️ 预览", "💾 保存", "📤 提交"], 1),
+        ("设置页", "⚙️ 权限设置", "长标题和多级路径也能保持层次", "退出设置", ["🏢 控制台", "⚙️ 系统", "👤 权限", "角色"], ["✅ 启用", "🧪 测试"], 0),
+        ("只读页", "📊 审计报告", "动作按钮可少量保留为导出入口", "返回报表", ["🏠 首页", "📊 报表", "审计"], ["📥 导出"], 0),
+    ]
+    gap = 18
+    card_w = max(560, (w - 56 - 48 - gap) // 2)
+    for i, (label, title, subtitle, back_text, crumbs, acts, active) in enumerate(scenarios):
+        x = 24 + (i % 2) * (card_w + gap)
+        y = 58 + (i // 2) * 86
+        card = add_themed_panel(hwnd, variants, x, y, card_w, 74, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        ph = ui.create_pageheader(hwnd, card, title, subtitle, back_text, 12, 10, card_w - 150, 56)
+        ui.set_pageheader_breadcrumbs(hwnd, ph, crumbs)
+        ui.set_pageheader_actions(hwnd, ph, acts)
+        ui.set_pageheader_active_action(hwnd, ph, active)
+        ui.set_pageheader_breadcrumb_active(hwnd, ph, len(crumbs) - 1)
+        ps = ui.get_pageheader_state(hwnd, ph) or {}
+        add_text(hwnd, card, f"📌 {label}", card_w - 126, 14, 104, 24, TEXT)
+        add_text(hwnd, card, f"动作 {ps.get('action_count', '-')}", card_w - 126, 40, 104, 22, MUTED)
+
+    behavior = add_demo_panel(hwnd, stage, "⌨️ 触发方式与状态矩阵", 28, 716, w - 56, 168)
+    sample = ui.create_pageheader(hwnd, behavior, "🧪 状态测试", "观察返回、动作和路径 hover/active 值", "返回", 28, 52, 620, 70)
+    ui.set_pageheader_breadcrumbs(hwnd, sample, ["🏠 首页", "🧪 测试", "📄 页头"])
+    ui.set_pageheader_actions(hwnd, sample, ["🔄 刷新", "💾 保存"])
+    ui.set_pageheader_active_action(hwnd, sample, 0)
+    bs = ui.get_pageheader_state(hwnd, sample) or {}
+    add_text(hwnd, behavior, "鼠标：返回、面包屑、操作按钮都有 hover 状态；点击动作按钮会写入最后动作索引。", 690, 52, 760, 24, MUTED)
+    add_text(hwnd, behavior, "键盘：返回入口可响应 Enter/Space；业务代码也可直接调用 EU_TriggerPageHeaderBack。", 690, 84, 760, 24, MUTED)
+    add_text(hwnd, behavior, f"当前读回：active_action {bs.get('active_action', '-')} · action_count {bs.get('action_count', '-')} · active_breadcrumb {bs.get('active_breadcrumb', '-')}", 690, 116, w - 780, 24, TEXT)
+
+    api = add_demo_panel(hwnd, stage, "🔧 API 覆盖清单", 28, 912, w - 56, 148)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreatePageHeader    ✅ 文本：EU_SetPageHeaderText / EU_SetPageHeaderBackText    ✅ 路径：EU_SetPageHeaderBreadcrumbs\n"
+        "✅ 操作：EU_SetPageHeaderActions / EU_GetPageHeaderAction / EU_SetPageHeaderActiveAction    ✅ 面包屑激活：EU_SetPageHeaderBreadcrumbActive\n"
+        "✅ 返回：EU_TriggerPageHeaderBack / EU_ResetPageHeaderResult    ✅ 状态：EU_GetPageHeaderState",
+        28, 48, w - 112, 76, TEXT
+    )
+    add_text(hwnd, api, "PageHeader 适合详情、编辑、设置、审计等页面顶部；中文、emoji、长标题、多级路径和动作按钮组合已覆盖。", 28, 122, w - 112, 24, MUTED)
+    refresh_readout("✅ PageHeader 完整功能演示已加载")
+
+
+def showcase_breadcrumb(hwnd, stage, w, h):
+    add_text(
+        hwnd, stage,
+        "🍞 Breadcrumb 覆盖路径项目、分隔符、当前项、点击触发、回调、单项读取、hover/press 与完整状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    hero = add_demo_panel(hwnd, stage, "🍞 路径导航工作台", 28, 72, w - 56, 334)
+    canvas_w = max(720, w - 870)
+    canvas = add_themed_panel(hwnd, hero, 28, 56, canvas_w, 236, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+    add_text(hwnd, canvas, "📍 当前业务路径", 24, 20, 180, 28, TEXT)
+    breadcrumb = ui.create_breadcrumb(
+        hwnd, canvas,
+        ["🏠 首页", "🧩 组件库", "图标导航", "🍞 Breadcrumb"],
+        "/", 3,
+        24, 60, canvas_w - 48, 38
+    )
+    preview = add_themed_panel(hwnd, canvas, 24, 126, canvas_w - 48, 78, "panel_neutral", "panel_neutral_border", 1.0, 8.0, 6)
+    preview_title = add_text(hwnd, preview, "", 18, 14, canvas_w - 84, 28, TEXT)
+    preview_body = add_text(hwnd, preview, "", 18, 46, canvas_w - 84, 24, MUTED)
+
+    state = {
+        "items": ["🏠 首页", "🧩 组件库", "图标导航", "🍞 Breadcrumb"],
+        "separator": "/",
+        "preset": 0,
+        "callback_count": 0,
+    }
+    readout = add_text(hwnd, hero, "", max(820, w - 560), 62, 500, 132, TEXT)
+    hint = add_text(
+        hwnd, hero,
+        "点击路径项会更新 last_clicked_index；程序也可用 EU_TriggerBreadcrumbClick 模拟选择。末级通常设为当前项，前级用于返回上层页面。",
+        max(820, w - 560), 188, 500, 34, MUTED
+    )
+    ui.set_text_options(hwnd, hint, wrap=True, ellipsis=False)
+
+    def item_label(index):
+        if 0 <= index < len(state["items"]):
+            return state["items"][index]
+        return "无当前项"
+
+    def refresh_readout(message="✅ Breadcrumb 状态已读回"):
+        s = ui.get_breadcrumb_full_state(hwnd, breadcrumb) or {}
+        current = s.get("current_index", -1)
+        first = ui.get_breadcrumb_item(hwnd, breadcrumb, 0) if s.get("item_count", 0) else ""
+        last = ui.get_breadcrumb_item(hwnd, breadcrumb, max(0, s.get("item_count", 1) - 1)) if s.get("item_count", 0) else ""
+        ui.set_element_text(hwnd, preview_title, f"当前层级：{item_label(current)}")
+        ui.set_element_text(hwnd, preview_body, f"首项：{first or '-'} · 末项：{last or '-'} · 分隔符：{state['separator']}")
+        ui.set_element_text(
+            hwnd, readout,
+            f"{message}\n"
+            f"current={s.get('current_index', '-')} · count={s.get('item_count', '-')}\n"
+            f"hover={s.get('hover_index', '-')} · press={s.get('press_index', '-')}\n"
+            f"last_clicked={s.get('last_clicked_index', '-')} · click_count={s.get('click_count', '-')}\n"
+            f"last_action={s.get('last_action', '-')} · 回调次数={state['callback_count']}"
+        )
+
+    @ui.ValueCallback
+    def on_select(_element_id, value, count, action):
+        state["callback_count"] += 1
+        refresh_readout(f"📣 选择回调：索引 {value} · 数量 {count} · 动作 {action}")
+
+    ui.set_breadcrumb_select_callback(hwnd, breadcrumb, keep_callback(on_select))
+
+    def cycle_items(_element_id):
+        presets = [
+            (["🏠 首页", "🧩 组件库", "图标导航", "🍞 Breadcrumb"], "/", 3),
+            (["🏢 控制台", "⚙️ 系统设置", "👤 权限", "角色详情"], ">", 3),
+            (["📊 报表", "运营数据", "2026 年", "五月", "趋势详情"], "›", 4),
+            (["🏠 首页", "📁 很长的业务目录", "🧪 多级路径测试", "📌 当前页面"], "·", 3),
+        ]
+        state["preset"] = (state["preset"] + 1) % len(presets)
+        items, sep, current = presets[state["preset"]]
+        state["items"] = items
+        state["separator"] = sep
+        ui.set_breadcrumb_items(hwnd, breadcrumb, items)
+        ui.set_breadcrumb_separator(hwnd, breadcrumb, sep)
+        ui.set_breadcrumb_current(hwnd, breadcrumb, current)
+        refresh_readout("🔁 已替换路径项目、分隔符和当前项")
+
+    def cycle_separator(_element_id):
+        separators = ["/", ">", "›", "·", "→"]
+        idx = separators.index(state["separator"]) if state["separator"] in separators else 0
+        state["separator"] = separators[(idx + 1) % len(separators)]
+        ui.set_breadcrumb_separator(hwnd, breadcrumb, state["separator"])
+        refresh_readout("✨ 已切换路径分隔符")
+
+    def set_prev_current(_element_id):
+        s = ui.get_breadcrumb_full_state(hwnd, breadcrumb) or {}
+        count = max(1, s.get("item_count", 1))
+        current = max(0, s.get("current_index", 0) - 1) % count
+        ui.set_breadcrumb_current(hwnd, breadcrumb, current)
+        refresh_readout("⬅️ 已切换到上一个当前项")
+
+    def set_next_current(_element_id):
+        s = ui.get_breadcrumb_full_state(hwnd, breadcrumb) or {}
+        count = max(1, s.get("item_count", 1))
+        current = (s.get("current_index", 0) + 1) % count
+        ui.set_breadcrumb_current(hwnd, breadcrumb, current)
+        refresh_readout("➡️ 已切换到下一个当前项")
+
+    def trigger_click(_element_id):
+        s = ui.get_breadcrumb_full_state(hwnd, breadcrumb) or {}
+        count = max(1, s.get("item_count", 1))
+        target = max(0, min(count - 1, s.get("current_index", 0) - 1))
+        ui.trigger_breadcrumb_click(hwnd, breadcrumb, target)
+        refresh_readout(f"🎯 已程序触发第 {target} 项点击")
+
+    def reset_demo(_element_id):
+        state.update({
+            "items": ["🏠 首页", "🧩 组件库", "图标导航", "🍞 Breadcrumb"],
+            "separator": "/",
+            "preset": 0,
+            "callback_count": 0,
+        })
+        ui.set_breadcrumb_items(hwnd, breadcrumb, state["items"])
+        ui.set_breadcrumb_separator(hwnd, breadcrumb, state["separator"])
+        ui.set_breadcrumb_current(hwnd, breadcrumb, 3)
+        refresh_readout("♻️ 已恢复 Breadcrumb 初始状态")
+
+    actions = [
+        ("🔁", "换路径", cycle_items, 1),
+        ("✨", "分隔符", cycle_separator, 6),
+        ("⬅️", "上一项", set_prev_current, 6),
+        ("➡️", "下一项", set_next_current, 1),
+        ("🎯", "触发点击", trigger_click, 3),
+        ("♻️", "重置", reset_demo, 6),
+    ]
+    for i, (emoji, label, handler, variant) in enumerate(actions):
+        btn = ui.create_button(hwnd, hero, emoji, label, max(820, w - 560) + (i % 3) * 124, 250 + (i // 3) * 36, 110, 30, variant=variant)
+        set_click(hwnd, btn, handler)
+
+    variants = add_demo_panel(hwnd, stage, "🧱 分隔符、层级与业务场景", 28, 432, w - 56, 256)
+    scenarios = [
+        ("标准路径", ["🏠 首页", "组件", "导航"], "/", 2, "常见页面定位"),
+        ("箭头路径", ["🏢 控制台", "系统", "权限"], ">", 2, "后台层级导航"),
+        ("轻量符号", ["📊 报表", "五月", "趋势"], "›", 2, "更柔和的路径分隔"),
+        ("长层级", ["🏠 首页", "业务中心", "订单履约", "异常单"], "·", 3, "长中文与 emoji 混排"),
+    ]
+    gap = 18
+    card_w = max(560, (w - 56 - 48 - gap) // 2)
+    for i, (title, items, sep, current, note) in enumerate(scenarios):
+        x = 24 + (i % 2) * (card_w + gap)
+        y = 58 + (i // 2) * 86
+        card = add_themed_panel(hwnd, variants, x, y, card_w, 74, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        bid = ui.create_breadcrumb(hwnd, card, items, sep, current, 16, 18, card_w - 220, 34)
+        bs = ui.get_breadcrumb_full_state(hwnd, bid) or {}
+        add_text(hwnd, card, f"🍞 {title}", card_w - 188, 14, 160, 24, TEXT)
+        add_text(hwnd, card, f"current {bs.get('current_index', '-')} · count {bs.get('item_count', '-')}", card_w - 188, 40, 160, 22, MUTED)
+        add_text(hwnd, card, note, max(20, card_w - 378), 42, 170, 22, MUTED)
+
+    behavior = add_demo_panel(hwnd, stage, "🖱️ 点击、回调与状态矩阵", 28, 716, w - 56, 168)
+    sample = ui.create_breadcrumb(hwnd, behavior, ["🏠 首页", "🧪 测试", "🍞 回调", "📌 当前"], "›", 3, 28, 58, 620, 36)
+    sample_status = add_text(hwnd, behavior, "", 690, 52, w - 780, 74, TEXT)
+
+    @ui.ValueCallback
+    def on_sample_select(_element_id, value, count, action):
+        ui.set_element_text(hwnd, sample_status, f"📣 回调触发：索引 {value} · 数量 {count} · 动作 {action}")
+
+    ui.set_breadcrumb_select_callback(hwnd, sample, keep_callback(on_sample_select))
+    ss = ui.get_breadcrumb_full_state(hwnd, sample) or {}
+    add_text(hwnd, behavior, "点击任意前级路径会产生 last_clicked_index 和 click_count；hover/press 可用于验证命中区域。", 690, 104, w - 780, 24, MUTED)
+    ui.set_element_text(hwnd, sample_status, f"当前读回：current {ss.get('current_index', '-')} · count {ss.get('item_count', '-')} · last_clicked {ss.get('last_clicked_index', '-')}")
+
+    api = add_demo_panel(hwnd, stage, "🔧 API 覆盖清单", 28, 912, w - 56, 148)
+    add_text(
+        hwnd, api,
+        "✅ 创建：EU_CreateBreadcrumb    ✅ 项目：EU_SetBreadcrumbItems / EU_GetBreadcrumbItem / EU_GetBreadcrumbItemCount\n"
+        "✅ 分隔符：EU_SetBreadcrumbSeparator    ✅ 当前项：EU_SetBreadcrumbCurrent / EU_GetBreadcrumbCurrent\n"
+        "✅ 点击：EU_TriggerBreadcrumbClick    ✅ 状态：EU_GetBreadcrumbState / EU_GetBreadcrumbFullState    ✅ 回调：EU_SetBreadcrumbSelectCallback",
+        28, 48, w - 112, 76, TEXT
+    )
+    add_text(hwnd, api, "Breadcrumb 适合详情页、后台层级、报表钻取和文件路径；中文、emoji、长层级、多分隔符与程序触发都已覆盖。", 28, 122, w - 112, 24, MUTED)
+    refresh_readout("✅ Breadcrumb 完整功能演示已加载")
+
+
 def showcase_pagination(hwnd, stage, w, h):
     work = add_demo_panel(hwnd, stage, "🔎 搜索结果与审计分页", 28, 30, w - 56, 250)
     add_text(hwnd, work, "搜索结果：共 50 条，页数较少时直接展示全部页码。", 30, 56, w - 116, 24, MUTED)
@@ -4677,18 +6232,37 @@ def showcase_tabs(hwnd, stage, w, h):
         {"label": "定时任务补偿", "name": "jobs", "content": "⏰ 失败任务补偿、重试队列和执行日志。", "icon": "⏰"},
     ]
 
-    top = add_demo_panel(hwnd, stage, "📑 默认线形与卡片式", 28, 30, w - 56, 170)
-    ui.create_tabs_ex(hwnd, top, common_items, active=1, tab_type=0, tab_position="top",
-                      content_visible=True, x=28, y=62, w=(w - 140) // 2, h=82)
+    top = add_demo_panel(hwnd, stage, "📑 线形表头对齐与卡片式", 28, 30, w - 56, 240)
+    align_items = [
+        {"label": "概览", "name": "overview", "content": "🏠 概览", "icon": "🏠"},
+        {"label": "安全", "name": "security", "content": "🔐 安全", "icon": "🔐"},
+        {"label": "通知", "name": "notice", "content": "🔔 通知", "icon": "🔔"},
+    ]
+    align_rows = [
+        ("左对齐", "left", "0"),
+        ("居中", "center", "1"),
+        ("右对齐", "right", "2"),
+    ]
+    align_w = max(420, min(620, (w - 520) // 2))
+    card_x = 58 + align_w + 260
+    card_w = max(360, w - card_x - 84)
+    for i, (label, align, value) in enumerate(align_rows):
+        tabs_id = ui.create_tabs_ex(
+            hwnd, top, align_items, active=i % 3, tab_type=0, tab_position="top",
+            content_visible=False, x=28, y=54 + i * 48, w=align_w, h=34
+        )
+        ui.set_tabs_header_align(hwnd, tabs_id, align)
+        add_text(hwnd, top, f"EU_SetTabsHeaderAlign = {value} · {label}", 48 + align_w, 60 + i * 48, 260, 24, MUTED)
+
     ui.create_tabs_ex(hwnd, top, [
         {"label": "预览", "name": "preview", "content": "🖥️ 当前窗口预览与状态面板。", "icon": "🖥️"},
         {"label": "代码", "name": "code", "content": "🧩 C++ 与 Python 封装片段。", "icon": "🧩"},
         {"label": "文档", "name": "docs", "content": "📚 组件文档和易语言命令说明。", "icon": "📚"},
         {"label": "设置", "name": "settings", "content": "⚙️ 工具栏、主题和布局设置。", "icon": "⚙️"},
     ], active=0, tab_type=1, tab_position="top", content_visible=True,
-        x=(w - 140) // 2 + 56, y=62, w=(w - 140) // 2, h=82)
+        x=card_x, y=62, w=card_w, h=116)
 
-    border = add_demo_panel(hwnd, stage, "🧾 边框卡片、图标标签与禁用项", 28, 220, w - 56, 205)
+    border = add_demo_panel(hwnd, stage, "🧾 边框卡片、图标标签与禁用项", 28, 300, w - 56, 205)
     ui.create_tabs_ex(hwnd, border, [
         {"label": "我的行程", "name": "trip", "content": "📅 今天 14:00 评审会议；16:30 发布检查。", "icon": "📅"},
         {"label": "消息中心", "name": "message", "content": "💬 3 条待处理消息，2 条来自构建服务。", "icon": "💬"},
@@ -4697,7 +6271,7 @@ def showcase_tabs(hwnd, stage, w, h):
     ], active=0, tab_type=2, tab_position="top", closable=True, content_visible=True,
         x=28, y=64, w=w - 112, h=112)
 
-    positions = add_demo_panel(hwnd, stage, "🧭 桌面设置页四方向标签", 28, 454, w - 56, 300)
+    positions = add_demo_panel(hwnd, stage, "🧭 桌面设置页四方向标签", 28, 534, w - 56, 300)
     settings_items = [
         {"label": "概览", "name": "overview", "content": "🏠 账户、设备和同步状态。", "icon": "🏠"},
         {"label": "安全", "name": "security", "content": "🔐 登录保护、密钥和设备信任。", "icon": "🔐"},
@@ -4709,10 +6283,11 @@ def showcase_tabs(hwnd, stage, w, h):
                       content_visible=True, x=384, y=64, w=330, h=180)
     ui.create_tabs_ex(hwnd, positions, settings_items, active=2, tab_type=1, tab_position="bottom",
                       content_visible=True, x=740, y=64, w=390, h=180)
-    ui.create_tabs_ex(hwnd, positions, settings_items, active=0, tab_type=0, tab_position="top",
-                      content_visible=True, x=1156, y=64, w=max(300, w - 1240), h=180)
+    line_position = ui.create_tabs_ex(hwnd, positions, settings_items, active=0, tab_type=0, tab_position="top",
+                                      content_visible=True, x=1156, y=64, w=max(300, w - 1240), h=180)
+    ui.set_tabs_header_align(hwnd, line_position, "center")
 
-    edit = add_demo_panel(hwnd, stage, "✏️ 可编辑标签与多文档工作区", 28, 784, w - 56, 220)
+    edit = add_demo_panel(hwnd, stage, "✏️ 可编辑标签与多文档工作区", 28, 864, w - 56, 220)
     workspace = ui.create_tabs_ex(hwnd, edit, [
         {"label": "订单看板", "name": "orders", "content": "📦 订单看板：待处理 18，配送中 42。", "icon": "📦"},
         {"label": "客户资料", "name": "customers", "content": "👤 客户资料：最近更新 2026-05-05。", "icon": "👤"},
@@ -6273,6 +7848,16 @@ SPECIAL_SHOWCASES = {
     "Progress": showcase_progress,
     "Avatar": showcase_avatar,
     "Gauge": showcase_gauge,
+    "RingProgress": showcase_ring_progress,
+    "BulletProgress": showcase_bullet_progress,
+    "LineChart": showcase_line_chart,
+    "BarChart": showcase_bar_chart,
+    "DonutChart": showcase_donut_chart,
+    "Anchor": showcase_anchor,
+    "Backtop": showcase_backtop,
+    "Segmented": showcase_segmented,
+    "PageHeader": showcase_pageheader,
+    "Breadcrumb": showcase_breadcrumb,
     "Pagination": showcase_pagination,
     "Steps": showcase_steps,
     "Empty": showcase_empty,
