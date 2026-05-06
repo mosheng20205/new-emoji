@@ -5591,6 +5591,166 @@ def showcase_result(hwnd, stage, w, h):
     refresh_state("✅ Result 完整功能演示已加载。")
 
 
+def showcase_tour(hwnd, stage, w, h):
+    status = add_text(
+        hwnd, stage,
+        "🧭 Tour 漫游引导覆盖步骤切换、打开/关闭、遮罩、目标绑定、遮罩穿透、点击遮罩关闭、键盘导航和状态读回。",
+        36, 28, w - 72, 28, MUTED,
+    )
+    ui.set_text_options(hwnd, status, align=0, valign=0, wrap=True, ellipsis=False)
+
+    preview_w = min(940, w - 520)
+    preview = add_demo_panel(hwnd, stage, "🎯 引导目标场景", 28, 72, preview_w, 560)
+    controls = add_demo_panel(hwnd, stage, "🎛️ 功能控制区", 56 + preview_w, 72, w - preview_w - 84, 560)
+    state_panel = add_demo_panel(hwnd, stage, "📋 Tour 状态读回", 28, 662, w - 56, 310)
+
+    add_text(hwnd, preview, "🧩 发布工作台", 36, 62, 220, 30, TEXT)
+    add_text(hwnd, preview, "用于演示 Tour 绑定真实元素、手动目标区域和遮罩行为。", 36, 94, preview_w - 72, 28, MUTED)
+    target_a = ui.create_button(hwnd, preview, "📁", "选择项目", 58, 156, 150, 44)
+    target_b = ui.create_button(hwnd, preview, "⚙️", "配置参数", 250, 156, 150, 44)
+    target_c = ui.create_button(hwnd, preview, "🚀", "开始发布", 442, 156, 150, 44)
+    ui.create_infobox(
+        hwnd, preview,
+        "💡 引导说明",
+        "卡片会高亮当前目标；遮罩开启时会突出目标区域，关闭遮罩时只保留引导卡片。",
+        56, 236, preview_w - 112, 90,
+    )
+    add_text(hwnd, preview, "⌨️ 聚焦 Tour 后：方向键切换步骤，Enter/Space 下一步，Esc 关闭。", 56, 348, preview_w - 112, 28, MUTED)
+
+    default_steps = [
+        ("📁 第一步：选择项目", "从项目列表中选择需要发布的内容，目标绑定到“选择项目”按钮。"),
+        ("⚙️ 第二步：配置参数", "检查版本号、灰度比例和通知渠道，目标绑定到“配置参数”按钮。"),
+        ("🚀 第三步：开始发布", "确认无误后点击发布，Tour 支持键盘和鼠标切换步骤。"),
+    ]
+    compact_steps = [
+        ("🧭 欢迎使用", "这是简短三步引导，适合首屏新手说明。"),
+        ("🎯 高亮重点", "可以绑定任意元素，也可以传入手动矩形目标。"),
+        ("✅ 完成", "最后一步可以通过关闭按钮、Esc 或遮罩点击结束。"),
+    ]
+    audit_steps = [
+        ("🔍 检查内容", "确认标题、说明、图片和表单项都已经填写完整。"),
+        ("🛡️ 风险确认", "检查危险操作前的确认提示和回退方案。"),
+        ("📣 通知团队", "发布完成后同步到团队频道，保留可追踪记录。"),
+        ("🎉 完成发布", "所有步骤结束后关闭引导并回到工作台。"),
+    ]
+
+    tour_id = ui.create_tour(
+        hwnd, preview,
+        steps=default_steps,
+        active=0,
+        open=True,
+        x=preview_w - 430,
+        y=350,
+        w=380,
+        h=190,
+    )
+    ui.set_tour_target_element(hwnd, tour_id, target_a, padding=10)
+    ui.set_tour_mask_behavior(hwnd, tour_id, pass_through=False, close_on_mask=True)
+
+    target_ids = [target_a, target_b, target_c]
+    action_names = {0: "无", 1: "上一步", 2: "下一步", 3: "关闭", 4: "遮罩关闭"}
+
+    active_text = add_text(hwnd, state_panel, "🧭 Active：等待读回", 34, 68, w - 124, 30, TEXT)
+    options_text = add_text(hwnd, state_panel, "⚙️ Options：等待读回", 34, 112, w - 124, 30, MUTED)
+    full_text = add_text(hwnd, state_panel, "🧾 FullState：等待读回", 34, 156, w - 124, 64, MUTED)
+    tip_text = add_text(hwnd, state_panel, "💬 操作提示：等待操作", 34, 232, w - 124, 36, MUTED)
+    ui.set_text_options(hwnd, full_text, align=0, valign=0, wrap=True, ellipsis=False)
+    ui.set_text_options(hwnd, tip_text, align=0, valign=0, wrap=True, ellipsis=False)
+
+    def refresh_state(prefix="📋 状态已刷新"):
+        active = ui.get_tour_active(hwnd, tour_id)
+        open_value = bool(ui.get_tour_open(hwnd, tour_id))
+        count = ui.get_tour_step_count(hwnd, tour_id)
+        options = ui.get_tour_options(hwnd, tour_id)
+        state = ui.get_tour_full_state(hwnd, tour_id)
+        ui.set_element_text(hwnd, active_text, f"🧭 Active：当前第 {active + 1 if active >= 0 else 0} / {count} 步，打开={open_value}")
+        if options:
+            is_open, mask, tx, ty, tw, th = options
+            ui.set_element_text(hwnd, options_text, f"⚙️ Options：open={is_open}，mask={mask}，target=({tx},{ty},{tw},{th})")
+        if state:
+            ui.set_element_text(
+                hwnd, full_text,
+                "🧾 FullState："
+                f"target_element={state['target_element_id']}，穿透={state['mask_passthrough']}，"
+                f"遮罩关闭={state['close_on_mask']}，last_action={action_names.get(state['last_action'], state['last_action'])}，"
+                f"change_count={state['change_count']}",
+            )
+        ui.set_element_text(hwnd, tip_text, prefix)
+
+    def bind_target(index):
+        ui.set_tour_target_element(hwnd, tour_id, target_ids[index], padding=10)
+        ui.set_tour_active(hwnd, tour_id, index)
+        ui.set_tour_open(hwnd, tour_id, True)
+        refresh_state(f"🎯 已绑定第 {index + 1} 个真实目标元素。")
+
+    def set_steps_and_target(steps, prefix):
+        ui.set_tour_steps(hwnd, tour_id, steps)
+        ui.set_tour_active(hwnd, tour_id, 0)
+        ui.set_tour_target_element(hwnd, tour_id, target_a, padding=10)
+        ui.set_tour_open(hwnd, tour_id, True)
+        refresh_state(prefix)
+
+    def set_manual_target():
+        ui.set_tour_target_element(hwnd, tour_id, 0, padding=0)
+        ui.set_tour_options(hwnd, tour_id, True, True, 56, 236, preview_w - 112, 90)
+        refresh_state("📐 已切换为手动矩形目标，高亮说明卡片区域。")
+
+    def set_mask_options(mask, pass_through, close_on_mask, prefix):
+        options = ui.get_tour_options(hwnd, tour_id)
+        target = options[2:] if options else (0, 0, 0, 0)
+        ui.set_tour_options(hwnd, tour_id, True, mask, target)
+        ui.set_tour_mask_behavior(hwnd, tour_id, pass_through=pass_through, close_on_mask=close_on_mask)
+        refresh_state(prefix)
+
+    def move_active(delta):
+        active = ui.get_tour_active(hwnd, tour_id)
+        ui.set_tour_active(hwnd, tour_id, active + delta)
+        refresh_state("➡️ 已通过程序切换当前步骤。")
+
+    add_text(hwnd, controls, "步骤数据", 28, 64, 96, 26, MUTED)
+    default_btn = ui.create_button(hwnd, controls, "🧭", "默认三步", 28, 100, 132, 36)
+    compact_btn = ui.create_button(hwnd, controls, "✨", "新手三步", 178, 100, 132, 36)
+    audit_btn = ui.create_button(hwnd, controls, "🔍", "审核四步", 328, 100, 132, 36)
+    set_click(hwnd, default_btn, lambda _id: set_steps_and_target(default_steps, "🧭 已恢复默认三步引导。"))
+    set_click(hwnd, compact_btn, lambda _id: set_steps_and_target(compact_steps, "✨ 已切换为新手三步文案。"))
+    set_click(hwnd, audit_btn, lambda _id: set_steps_and_target(audit_steps, "🔍 已切换为审核四步文案。"))
+
+    add_text(hwnd, controls, "目标绑定", 28, 170, 96, 26, MUTED)
+    for index, label in enumerate(["项目", "参数", "发布"]):
+        btn = ui.create_button(hwnd, controls, "🎯", label, 28 + index * 108, 206, 92, 34)
+        set_click(hwnd, btn, lambda _id, i=index: bind_target(i))
+    manual_btn = ui.create_button(hwnd, controls, "📐", "手动目标", 352, 206, 108, 34)
+    set_click(hwnd, manual_btn, lambda _id: set_manual_target())
+
+    add_text(hwnd, controls, "遮罩行为", 28, 272, 96, 26, MUTED)
+    mask_on = ui.create_button(hwnd, controls, "🌗", "遮罩开启", 28, 308, 132, 36)
+    mask_off = ui.create_button(hwnd, controls, "☀️", "无遮罩", 178, 308, 132, 36)
+    pass_btn = ui.create_button(hwnd, controls, "🫥", "穿透遮罩", 328, 308, 132, 36)
+    close_mask = ui.create_button(hwnd, controls, "🖱️", "点遮罩关闭", 28, 356, 132, 36)
+    keep_mask = ui.create_button(hwnd, controls, "🛡️", "遮罩不关闭", 178, 356, 132, 36)
+    set_click(hwnd, mask_on, lambda _id: set_mask_options(True, False, True, "🌗 已开启遮罩，点击遮罩会关闭 Tour。"))
+    set_click(hwnd, mask_off, lambda _id: set_mask_options(False, False, False, "☀️ 已关闭遮罩，只显示引导卡片。"))
+    set_click(hwnd, pass_btn, lambda _id: set_mask_options(True, True, False, "🫥 已开启遮罩穿透，底层目标可继续响应鼠标。"))
+    set_click(hwnd, close_mask, lambda _id: set_mask_options(True, False, True, "🖱️ 点击遮罩将关闭 Tour。"))
+    set_click(hwnd, keep_mask, lambda _id: set_mask_options(True, False, False, "🛡️ 点击遮罩不会关闭 Tour。"))
+
+    add_text(hwnd, controls, "打开与导航", 28, 430, 112, 26, MUTED)
+    open_btn = ui.create_button(hwnd, controls, "👁️", "打开", 28, 466, 86, 34)
+    close_btn = ui.create_button(hwnd, controls, "✖️", "关闭", 126, 466, 86, 34)
+    prev_btn = ui.create_button(hwnd, controls, "⬅️", "上一步", 224, 466, 96, 34)
+    next_btn = ui.create_button(hwnd, controls, "➡️", "下一步", 332, 466, 96, 34)
+    focus_btn = ui.create_button(hwnd, controls, "⌨️", "聚焦键盘", 28, 512, 132, 34)
+    read_btn = ui.create_button(hwnd, controls, "📋", "立即读回", 178, 512, 132, 34)
+    set_click(hwnd, open_btn, lambda _id: (ui.set_tour_open(hwnd, tour_id, True), refresh_state("👁️ Tour 已打开。")))
+    set_click(hwnd, close_btn, lambda _id: (ui.set_tour_open(hwnd, tour_id, False), refresh_state("✖️ Tour 已关闭。")))
+    set_click(hwnd, prev_btn, lambda _id: move_active(-1))
+    set_click(hwnd, next_btn, lambda _id: move_active(1))
+    set_click(hwnd, focus_btn, lambda _id: (ui.dll.EU_SetElementFocus(hwnd, tour_id), ui.set_tour_open(hwnd, tour_id, True), refresh_state("⌨️ Tour 已获得焦点，请按方向键、Enter/Space 或 Esc。")))
+    set_click(hwnd, read_btn, lambda _id: refresh_state("📋 已手动读回 Tour 全部状态。"))
+
+    refresh_state("🧭 Tour 完整功能演示已加载。")
+
+
 def showcase_rate(hwnd, stage, w, h):
     status = add_text(hwnd, stage, "⭐ Rate 评分覆盖默认、分段颜色、文字、表情图标、禁用分数、半星、清空、只读和分数模板。", 36, 28, w - 72, 28, MUTED)
     form = add_demo_panel(hwnd, stage, "📝 评分设置表单", 28, 72, 740, 520)
@@ -8013,6 +8173,7 @@ SPECIAL_SHOWCASES = {
     "Tooltip": showcase_tooltip,
     "Popover": showcase_popover,
     "Popconfirm": showcase_popconfirm,
+    "Tour": showcase_tour,
     "Dropdown": showcase_dropdown,
     "Menu": showcase_menu,
     "InfiniteScroll": showcase_infinite_scroll,
