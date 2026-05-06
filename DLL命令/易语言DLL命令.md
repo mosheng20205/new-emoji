@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：1075。
+当前导出命令数量：1152。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。

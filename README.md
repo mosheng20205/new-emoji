@@ -21,6 +21,8 @@
 - [组件文档导航](docs/components/README.md)
 - [Python 示例说明](docs/examples/python.md)
 - [易语言 DLL 命令](DLL命令/易语言DLL命令.md)
+- [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)
+- [Python DLL 命令](DLL命令/Python%20DLL命令.md)
 - [贡献指南](CONTRIBUTING.md)
 - [更新日志](CHANGELOG.md)
 - [图片预览](#图片预览)
@@ -72,6 +74,138 @@ while user32.GetMessageW(ctypes.byref(msg), None, 0, 0):
 
 > Python 位数必须和 DLL 位数一致：32 位 Python 加载 Win32 DLL，64 位 Python 加载 x64 DLL。
 
+## 最短 C# 示例
+
+```csharp
+using System;
+using System.Runtime.InteropServices;
+using System.Text;
+
+class Program
+{
+    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+    static extern IntPtr EU_CreateWindow(byte[] title, int titleLen, int x, int y, int w, int h, uint titlebarColor);
+
+    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+    static extern int EU_CreateContainer(IntPtr hwnd, int parentId, int x, int y, int w, int h);
+
+    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+    static extern int EU_CreateText(IntPtr hwnd, int parentId, byte[] text, int textLen, int x, int y, int w, int h);
+
+    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+    static extern int EU_CreateButton(IntPtr hwnd, int parentId, byte[] emoji, int emojiLen, byte[] text, int textLen, int x, int y, int w, int h);
+
+    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+    static extern void EU_ShowWindow(IntPtr hwnd, int visible);
+
+    [DllImport("user32.dll")] static extern int GetMessageW(out MSG msg, IntPtr hwnd, uint min, uint max);
+    [DllImport("user32.dll")] static extern bool TranslateMessage(ref MSG msg);
+    [DllImport("user32.dll")] static extern IntPtr DispatchMessageW(ref MSG msg);
+
+    [StructLayout(LayoutKind.Sequential)]
+    struct MSG { public IntPtr hwnd; public uint message; public UIntPtr wParam; public IntPtr lParam; public uint time; public int ptX; public int ptY; }
+
+    static byte[] U8(string text) => Encoding.UTF8.GetBytes(text);
+
+    static void Main()
+    {
+        byte[] title = U8("✨ new_emoji 示例");
+        IntPtr hwnd = EU_CreateWindow(title, title.Length, 240, 120, 820, 560, 0xFF2D7DFF);
+        int root = EU_CreateContainer(hwnd, 0, 0, 0, 780, 500);
+
+        byte[] hello = U8("你好，new_emoji 🚀");
+        EU_CreateText(hwnd, root, hello, hello.Length, 32, 32, 360, 40);
+
+        byte[] emoji = U8("✅");
+        byte[] button = U8("确认操作");
+        EU_CreateButton(hwnd, root, emoji, emoji.Length, button, button.Length, 32, 96, 160, 42);
+
+        EU_ShowWindow(hwnd, 1);
+        while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) > 0)
+        {
+            TranslateMessage(ref msg);
+            DispatchMessageW(ref msg);
+        }
+    }
+}
+```
+
+> C# 进程位数必须和 DLL 位数一致：x86 应用加载 Win32 DLL，x64 应用加载 x64 DLL。完整声明见 [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)。
+
+## 最短易语言示例 / DLL 命令入口说明
+
+易语言 IDE 可能无法可靠保存 emoji 和 Unicode 特殊符号，所以示例不在源码字符串里直接写 emoji；窗口标题、正文和按钮文字都用 UTF-8 字节集 + 长度传给 DLL。完整命令表见 [易语言 DLL 命令](DLL命令/易语言DLL命令.md)。
+
+```text
+.DLL命令 创建窗口, 整数型, "new_emoji.dll", "EU_CreateWindow"
+    .参数 标题字节集指针, 整数型
+    .参数 标题长度, 整数型
+    .参数 X坐标, 整数型
+    .参数 Y坐标, 整数型
+    .参数 宽度, 整数型
+    .参数 高度, 整数型
+    .参数 标题栏颜色, 整数型
+
+.DLL命令 创建容器, 整数型, "new_emoji.dll", "EU_CreateContainer"
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 X坐标, 整数型
+    .参数 Y坐标, 整数型
+    .参数 宽度, 整数型
+    .参数 高度, 整数型
+
+.DLL命令 创建文本, 整数型, "new_emoji.dll", "EU_CreateText"
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 文本字节集指针, 整数型
+    .参数 文本长度, 整数型
+    .参数 X坐标, 整数型
+    .参数 Y坐标, 整数型
+    .参数 宽度, 整数型
+    .参数 高度, 整数型
+
+.DLL命令 创建按钮, 整数型, "new_emoji.dll", "EU_CreateButton"
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 Emoji字节集指针, 整数型
+    .参数 Emoji长度, 整数型
+    .参数 文本字节集指针, 整数型
+    .参数 文本长度, 整数型
+    .参数 X坐标, 整数型
+    .参数 Y坐标, 整数型
+    .参数 宽度, 整数型
+    .参数 高度, 整数型
+
+.DLL命令 显示窗口, , "new_emoji.dll", "EU_ShowWindow"
+    .参数 窗口句柄, 整数型
+    .参数 是否显示, 整数型
+```
+
+```text
+'. 把下面代码放到易语言窗口程序的启动事件中；窗口程序自身会提供消息循环。
+.局部变量 窗口句柄, 整数型
+.局部变量 根容器, 整数型
+.局部变量 标题, 字节集
+.局部变量 正文, 字节集
+.局部变量 按钮Emoji, 字节集
+.局部变量 按钮文字, 字节集
+
+'. 标题 UTF-8 字节集：sparkle emoji + " new_emoji " + 中文 示例
+标题 ＝ { 226, 156, 168, 32, 110, 101, 119, 95, 101, 109, 111, 106, 105, 32, 231, 164, 186, 228, 190, 139 }
+'. 正文 UTF-8 字节集：中文 你好， + "new_emoji " + rocket emoji
+正文 ＝ { 228, 189, 160, 229, 165, 189, 239, 188, 140, 110, 101, 119, 95, 101, 109, 111, 106, 105, 32, 240, 159, 154, 128 }
+'. 按钮 emoji UTF-8 字节集：check mark emoji
+按钮Emoji ＝ { 226, 156, 133 }
+'. 按钮文字 UTF-8 字节集：中文 确认操作
+按钮文字 ＝ { 231, 161, 174, 232, 174, 164, 230, 147, 141, 228, 189, 156 }
+
+窗口句柄 ＝ 创建窗口 (取变量数据地址 (标题), 取字节集长度 (标题), 240, 120, 820, 560, -13795841)
+根容器 ＝ 创建容器 (窗口句柄, 0, 0, 0, 780, 500)
+创建文本 (窗口句柄, 根容器, 取变量数据地址 (正文), 取字节集长度 (正文), 32, 32, 360, 40)
+创建按钮 (窗口句柄, 根容器, 取变量数据地址 (按钮Emoji), 取字节集长度 (按钮Emoji), 取变量数据地址 (按钮文字), 取字节集长度 (按钮文字), 32, 96, 160, 42)
+显示窗口 (窗口句柄, 1)
+```
+
 ## 构建
 
 ```powershell
@@ -83,7 +217,7 @@ while user32.GetMessageW(ctypes.byref(msg), None, 0, 0):
 
 ## 文档维护
 
-当某个组件新增、删除、重命名或修改导出 API 时，必须同步更新该组件文档、组件导航、`docs/api-index.md`、Python ctypes/helper 和易语言 DLL 命令文档，避免开源用户看到过期接口。
+当某个组件新增、删除、重命名或修改导出 API 时，必须同步更新该组件文档、组件导航、`docs/api-index.md`、Python ctypes/helper，以及 `DLL命令/易语言DLL命令.md`、`DLL命令/CSharp DLL命令.md`、`DLL命令/Python DLL命令.md`，避免开源用户看到过期接口。
 
 ## 图片预览
 

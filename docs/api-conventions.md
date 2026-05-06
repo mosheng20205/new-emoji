@@ -53,4 +53,6 @@ Python helper 和 DLL API 中的窗口、控件坐标通常按逻辑尺寸传入
 - `docs/api-index.md`
 - `examples/python/new_emoji_ui.py`
 - `DLL命令/易语言DLL命令.md`
+- `DLL命令/CSharp DLL命令.md`
+- `DLL命令/Python DLL命令.md`
 - 必要时更新独立测试文件
