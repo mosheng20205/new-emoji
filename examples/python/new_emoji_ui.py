@@ -17,9 +17,13 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
-DLL_PATH = os.path.abspath(os.path.join(
-    os.path.dirname(__file__), "..", "..", "bin", "x64", "Release", "new_emoji.dll"
-))
+def resource_path(relative_path):
+    if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+        return os.path.join(sys._MEIPASS, relative_path)
+    return os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", relative_path))
+
+
+DLL_PATH = resource_path(os.path.join("bin", "x64", "Release", "new_emoji.dll"))
 
 # Load DLL
 dll = ctypes.WinDLL(DLL_PATH)
