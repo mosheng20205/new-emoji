@@ -5861,6 +5861,300 @@ def showcase_colorpicker(hwnd, stage, w, h):
 SPECIAL_SHOWCASES["ColorPicker"] = showcase_colorpicker
 
 
+def showcase_mentions(hwnd, stage, w, h):
+    status = add_text(
+        hwnd, stage,
+        "📣 Mentions 覆盖 @ 提及、# 话题、过滤开关、候选展开、键盘选中、插入与状态读回。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    people = [
+        "设计师 🎨", "开发者 🧑‍💻", "测试同学 🧪", "产品经理 📋",
+        "运营伙伴 📣", "客服同学 🎧", "数据分析师 📊", "项目负责人 🚀",
+    ]
+    topics = ["性能优化 🚀", "DPI 适配 🖥️", "emoji 渲染 😀", "无闪烁窗口 ✨", "文档补齐 📚", "易语言接入 🔌"]
+    teams = ["前端小组", "桌面框架", "组件库", "自动化测试", "发布值班", "用户体验"]
+
+    primary = add_demo_panel(hwnd, stage, "💬 提及输入工作台", 28, 72, max(760, w - 596), 330)
+    add_text(hwnd, primary, "人员提及", 28, 62, 112, 26, MUTED)
+    mention_people = ui.create_mentions(hwnd, primary, "@设", people, 144, 56, min(720, w - 780), 42)
+    ui.set_mentions_open(hwnd, mention_people, True)
+    ui.set_mentions_selected(hwnd, mention_people, 0)
+
+    add_text(hwnd, primary, "话题触发", 28, 126, 112, 26, MUTED)
+    mention_topic = ui.create_mentions(hwnd, primary, "#D", topics, 144, 120, min(720, w - 780), 42)
+    ui.set_mentions_options(hwnd, mention_topic, "#", True, False)
+    ui.set_mentions_open(hwnd, mention_topic, True)
+    ui.set_mentions_selected(hwnd, mention_topic, 1)
+
+    add_text(hwnd, primary, "不过滤候选", 28, 190, 112, 26, MUTED)
+    mention_team = ui.create_mentions(hwnd, primary, "@", teams, 144, 184, min(720, w - 780), 42)
+    ui.set_mentions_options(hwnd, mention_team, "@", False, True)
+    ui.set_mentions_open(hwnd, mention_team, True)
+    ui.set_mentions_selected(hwnd, mention_team, 2)
+
+    add_text(
+        hwnd, primary,
+        "可以直接点击候选，也可以聚焦后用 ↑/↓ 切换、Enter 插入、Esc 收起。候选弹层会随窗口边界自动向上或向下展开。",
+        28, 258, max(520, w - 690), 44, MUTED
+    )
+
+    side = add_demo_panel(hwnd, stage, "🧪 功能矩阵", max(820, w - 540), 72, 512, 330)
+    readback = add_text(hwnd, side, "等待操作。", 24, 54, 464, 132, TEXT)
+
+    def mention_state(label, element_id):
+        options = ui.get_mentions_options(hwnd, element_id)
+        trigger = chr(options.get("trigger", 64)) if options and options.get("trigger", 0) else "@"
+        return (
+            f"{label}: 值={ui.get_mentions_value(hwnd, element_id) or '空'} "
+            f"打开={ui.get_mentions_open(hwnd, element_id)} "
+            f"选中={ui.get_mentions_selected(hwnd, element_id)} "
+            f"候选={ui.get_mentions_suggestion_count(hwnd, element_id)} "
+            f"匹配={options.get('matched', 0)} "
+            f"触发={trigger}"
+        )
+
+    def refresh_status(message="📋 已刷新 Mentions 状态。"):
+        lines = [
+            message,
+            mention_state("人员", mention_people),
+            mention_state("话题", mention_topic),
+            mention_state("小组", mention_team),
+        ]
+        ui.set_element_text(hwnd, readback, "\n".join(lines))
+        ui.set_element_text(hwnd, status, message)
+
+    def open_all(_eid):
+        for element_id in (mention_people, mention_topic, mention_team):
+            ui.set_mentions_open(hwnd, element_id, True)
+        refresh_status("📂 已展开全部候选列表。")
+
+    def insert_current(_eid):
+        ui.insert_mentions_selected(hwnd, mention_people)
+        ui.insert_mentions_selected(hwnd, mention_topic)
+        ui.insert_mentions_selected(hwnd, mention_team)
+        refresh_status("✅ 已插入每个输入框当前选中候选。")
+
+    def cycle_selected(_eid):
+        for element_id in (mention_people, mention_topic, mention_team):
+            count = max(1, ui.get_mentions_suggestion_count(hwnd, element_id))
+            ui.set_mentions_selected(hwnd, element_id, (ui.get_mentions_selected(hwnd, element_id) + 1) % count)
+            ui.set_mentions_open(hwnd, element_id, True)
+        refresh_status("⬇️ 已切换到下一条候选。")
+
+    def apply_filter(_eid):
+        ui.set_mentions_value(hwnd, mention_people, "@测")
+        ui.set_mentions_filter(hwnd, mention_people, "测")
+        ui.set_mentions_value(hwnd, mention_topic, "#文")
+        ui.set_mentions_filter(hwnd, mention_topic, "文")
+        ui.set_mentions_value(hwnd, mention_team, "@组")
+        ui.set_mentions_filter(hwnd, mention_team, "组")
+        for element_id in (mention_people, mention_topic, mention_team):
+            ui.set_mentions_open(hwnd, element_id, True)
+        refresh_status("🔎 已设置中文过滤文本并展开匹配项。")
+
+    def swap_suggestions(_eid):
+        ui.set_mentions_suggestions(hwnd, mention_people, ["交互设计师 🧭", "视觉设计师 🎨", "动效设计师 ✨", "无障碍设计师 ♿"])
+        ui.set_mentions_suggestions(hwnd, mention_topic, ["组件验收 ✅", "发布清单 📦", "缺陷复盘 🧯", "体验走查 🔍"])
+        ui.set_mentions_suggestions(hwnd, mention_team, ["核心维护组", "示例完善组", "文档翻译组", "高 DPI 验收组"])
+        for element_id in (mention_people, mention_topic, mention_team):
+            ui.set_mentions_open(hwnd, element_id, True)
+            ui.set_mentions_selected(hwnd, element_id, 0)
+        refresh_status("🔄 已替换候选数据源。")
+
+    def reset_demo(_eid):
+        ui.set_mentions_suggestions(hwnd, mention_people, people)
+        ui.set_mentions_suggestions(hwnd, mention_topic, topics)
+        ui.set_mentions_suggestions(hwnd, mention_team, teams)
+        ui.set_mentions_options(hwnd, mention_people, "@", True, True)
+        ui.set_mentions_options(hwnd, mention_topic, "#", True, False)
+        ui.set_mentions_options(hwnd, mention_team, "@", False, True)
+        ui.set_mentions_value(hwnd, mention_people, "@设")
+        ui.set_mentions_value(hwnd, mention_topic, "#D")
+        ui.set_mentions_value(hwnd, mention_team, "@")
+        ui.set_mentions_open(hwnd, mention_people, True)
+        ui.set_mentions_open(hwnd, mention_topic, True)
+        ui.set_mentions_open(hwnd, mention_team, True)
+        ui.set_mentions_selected(hwnd, mention_people, 0)
+        ui.set_mentions_selected(hwnd, mention_topic, 1)
+        ui.set_mentions_selected(hwnd, mention_team, 2)
+        refresh_status("♻️ 已恢复初始演示状态。")
+
+    actions = [
+        ("📂", "展开候选", open_all),
+        ("✅", "插入选中", insert_current),
+        ("⬇️", "切换选中", cycle_selected),
+        ("🔎", "中文过滤", apply_filter),
+        ("🔄", "替换数据", swap_suggestions),
+        ("♻️", "重置演示", reset_demo),
+    ]
+    for i, (emoji, label, handler) in enumerate(actions):
+        col = i % 2
+        row = i // 2
+        btn = ui.create_button(hwnd, side, emoji, label, 24 + col * 178, 206 + row * 42, 154, 34, variant=1 if i < 3 else 6)
+        set_click(hwnd, btn, handler)
+
+    matrix = add_demo_panel(hwnd, stage, "🎛️ 状态与场景覆盖", 28, 426, w - 56, 294)
+    cards = [
+        ("默认 @", "@产", people, "@", True, True, 0, "输入 @ 后按中文过滤候选"),
+        ("# 话题", "#e", topics, "#", True, False, 2, "可配置触发符，不自动补空格"),
+        ("不过滤", "@任意", teams, "@", False, True, 3, "关闭过滤后始终展示完整候选"),
+        ("收起态", "准备通知 @开发者", people, "@", True, True, 1, "保持值但收起弹层"),
+    ]
+    cell_gap = 14
+    cell_w = max(290, (w - 56 - 36 - cell_gap * 3) // 4)
+    for i, (title, value, items, trigger, filter_enabled, insert_space, selected, tip) in enumerate(cards):
+        px = 18 + i * (cell_w + cell_gap)
+        card = add_themed_panel(hwnd, matrix, px, 58, cell_w, 202, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        add_text(hwnd, card, f"✨ {title}", 14, 10, cell_w - 28, 24, TEXT)
+        mid = ui.create_mentions(hwnd, card, value, items, 14, 44, cell_w - 28, 38)
+        ui.set_mentions_options(hwnd, mid, trigger, filter_enabled, insert_space)
+        ui.set_mentions_selected(hwnd, mid, selected)
+        ui.set_mentions_open(hwnd, mid, title != "收起态")
+        add_text(hwnd, card, tip, 14, 104, cell_w - 28, 48, MUTED)
+        add_text(hwnd, card, f"候选 {ui.get_mentions_suggestion_count(hwnd, mid)} · 选中 {ui.get_mentions_selected(hwnd, mid)}", 14, 162, cell_w - 28, 24, MUTED)
+
+    refresh_status("✅ Mentions 完整功能演示已加载。")
+
+
+SPECIAL_SHOWCASES["Mentions"] = showcase_mentions
+
+
+def showcase_cascader(hwnd, stage, w, h):
+    options = [
+        ("华东 🌊", "上海 🏙️", "浦东新区 ✈️"),
+        ("华东 🌊", "上海 🏙️", "徐汇区 🎨"),
+        ("华东 🌊", "杭州 🌿", "西湖区 🌸"),
+        ("华东 🌊", "南京 🏛️", "玄武区 🦌"),
+        ("华南 🌴", "广东 🥭", "深圳 🚀", "南山区 🧪"),
+        ("华南 🌴", "广东 🥭", "广州 🌺", "天河区 💼"),
+        ("西南 🏔️", "四川 🐼", "成都 🍵", "高新区 💻"),
+        ("华北 🧭", "北京 🏯", "朝阳区 ☀️"),
+    ]
+
+    add_text(
+        hwnd, stage,
+        "🧭 Cascader 覆盖多级路径、展开方向、搜索过滤、懒加载标记、程序化 Set/Get 和键盘收起。",
+        36, 28, w - 72, 28, MUTED
+    )
+
+    left_w = max(820, w - 666)
+    workbench = add_demo_panel(hwnd, stage, "🧭 级联选择工作台", 28, 72, left_w, 420)
+    add_text(hwnd, workbench, "默认选中", 28, 64, 112, 26, MUTED)
+    primary = ui.create_cascader(
+        hwnd, workbench, options,
+        ["华东 🌊", "上海 🏙️", "浦东新区 ✈️"],
+        144, 58, min(640, left_w - 190), 42
+    )
+
+    add_text(hwnd, workbench, "展开预览", 28, 128, 112, 26, MUTED)
+    opened = ui.create_cascader(
+        hwnd, workbench, options,
+        ["华南 🌴", "广东 🥭"],
+        144, 122, min(640, left_w - 190), 42
+    )
+    ui.set_cascader_open(hwnd, opened, True)
+
+    add_text(hwnd, workbench, "搜索过滤", 28, 230, 112, 26, MUTED)
+    searchable = ui.create_cascader(hwnd, workbench, options, [], 144, 224, min(640, left_w - 190), 42)
+    ui.set_cascader_advanced_options(hwnd, searchable, True, False)
+    ui.set_cascader_search(hwnd, searchable, "深圳")
+
+    add_text(hwnd, workbench, "懒加载标记", 28, 294, 112, 26, MUTED)
+    lazy = ui.create_cascader(
+        hwnd, workbench, options,
+        ["华南 🌴", "广东 🥭"],
+        144, 288, min(640, left_w - 190), 42
+    )
+    ui.set_cascader_advanced_options(hwnd, lazy, True, True)
+    ui.set_cascader_value(hwnd, lazy, ["华南 🌴", "广东 🥭"])
+    ui.set_cascader_open(hwnd, lazy, True)
+
+    add_text(
+        hwnd, workbench,
+        "交互提示：点击输入框展开，点击非叶子节点继续进入下一列，点击叶子节点完成选择；聚焦后 Enter/Space 可开关，Esc 可收起。",
+        28, 358, left_w - 56, 44, MUTED
+    )
+
+    control = add_demo_panel(hwnd, stage, "🎛️ 程序化控制", 28, 518, left_w, 252)
+    status = add_text(hwnd, control, "", 28, 62, left_w - 56, 76, TEXT)
+
+    def refresh_status():
+        adv = ui.get_cascader_advanced_options(hwnd, searchable)
+        lines = [
+            f"主选择：打开={ui.get_cascader_open(hwnd, primary)} 叶子路径={ui.get_cascader_option_count(hwnd, primary)} 选中深度={ui.get_cascader_selected_depth(hwnd, primary)}",
+            f"搜索选择：显示列={ui.get_cascader_level_count(hwnd, searchable)} 匹配数={adv['matched']} 可搜索={adv['searchable']}",
+            f"懒加载：lazy={ui.get_cascader_advanced_options(hwnd, lazy)['lazy_mode']} 最近层级={ui.get_cascader_advanced_options(hwnd, lazy)['last_lazy_level']}",
+        ]
+        ui.set_element_text(hwnd, status, "\n".join(lines))
+
+    def choose_pudong(_element_id):
+        ui.set_cascader_value(hwnd, primary, ["华东 🌊", "上海 🏙️", "浦东新区 ✈️"])
+        ui.set_cascader_open(hwnd, primary, False)
+        refresh_status()
+
+    def toggle_open(_element_id):
+        ui.set_cascader_open(hwnd, primary, not bool(ui.get_cascader_open(hwnd, primary)))
+        refresh_status()
+
+    def search_shenzhen(_element_id):
+        ui.set_cascader_search(hwnd, searchable, "深圳")
+        ui.set_cascader_open(hwnd, searchable, True)
+        refresh_status()
+
+    def load_project_paths(_element_id):
+        project_options = [
+            ("组件库 🧩", "表单输入 ✍️", "Cascader 🧭"),
+            ("组件库 🧩", "选择媒体 📅", "TreeSelect 🌲"),
+            ("组件库 🧩", "数据展示 📊", "Table 📋"),
+            ("文档中心 📚", "API 索引 🔌", "EU_CreateCascader"),
+        ]
+        ui.set_cascader_options(hwnd, primary, project_options)
+        ui.set_cascader_value(hwnd, primary, ["组件库 🧩", "表单输入 ✍️", "Cascader 🧭"])
+        refresh_status()
+
+    buttons = [
+        ("📍", "设为浦东", choose_pudong),
+        ("🔽", "打开/收起", toggle_open),
+        ("🔎", "搜索深圳", search_shenzhen),
+        ("🧩", "换项目路径", load_project_paths),
+    ]
+    for i, (emoji, text, fn) in enumerate(buttons):
+        btn = ui.create_button(hwnd, control, emoji, text, 28 + i * 144, 152, 124, 36, variant=1 if i == 0 else 5)
+        set_click(hwnd, btn, fn)
+
+    add_text(
+        hwnd, control,
+        "这些按钮分别调用 SetValue、SetOpen、SetSearch、SetOptions，并立即通过 GetOpen / GetOptionCount / GetSelectedDepth / GetLevelCount / GetAdvancedOptions 读回状态。",
+        28, 206, left_w - 56, 32, MUTED
+    )
+
+    feature = add_demo_panel(hwnd, stage, "✨ 展示重点", 52 + left_w, 72, 300, 360)
+    add_text(hwnd, feature, "分类：表单输入", 18, 54, 264, 26, MUTED)
+    add_text(hwnd, feature, "能力：级联选择", 18, 88, 264, 26, MUTED)
+    add_text(
+        hwnd, feature,
+        "✅ 中文路径与 emoji\n✅ 多列联动选择\n✅ 搜索结果预览\n✅ 懒加载层级提示\n✅ 程序化设置选项\n✅ 状态读回展示",
+        18, 132, 264, 180, TEXT
+    )
+
+    readback = add_demo_panel(hwnd, stage, "📌 常见用法", 52 + left_w, 456, 300, 314)
+    usages = [
+        "🏙️ 省 / 市 / 区选择",
+        "🧩 产品 / 模块 / 页面",
+        "👥 部门 / 小组 / 成员",
+        "📦 仓库 / 货架 / 批次",
+        "📚 文档 / 章节 / 条目",
+    ]
+    add_text(hwnd, readback, "\n".join(usages), 18, 58, 264, 150, TEXT)
+    add_text(hwnd, readback, "路径数据使用 UTF-8，并以“/”连接层级、“|”连接叶子路径；Python 封装可直接传入元组列表。", 18, 220, 260, 58, MUTED)
+
+    refresh_status()
+
+
+SPECIAL_SHOWCASES["Cascader"] = showcase_cascader
+
+
 def demo_button(hwnd, parent, x, y, w, h):
     btn = ui.create_button(hwnd, parent, "🚀", "立即体验", x, y, min(w, 150), 38)
     set_click(hwnd, btn, button_action(hwnd, "按钮回调 🚀", "Button 点击事件正常触发。"))
@@ -6342,7 +6636,7 @@ def build_pages(hwnd, root):
         ("ColorPicker", "🎨", "颜色选择", lambda h, p, x, y, w, hh: ui.create_colorpicker(h, p, "主题色", 0xFF3B82F6, x, y, w, 36), True),
         ("Autocomplete", "🔎", "自动完成", lambda h, p, x, y, w, hh: ui.create_autocomplete(h, p, "北", ["北京", "北海", "北极星"], x, y, w, 38), True),
         ("Mentions", "@", "提及输入", lambda h, p, x, y, w, hh: ui.create_mentions(h, p, "@设计师", ["设计师", "开发者", "测试同学"], x, y, w, 38), True),
-        ("Cascader", "🪜", "级联选择", lambda h, p, x, y, w, hh: ui.create_cascader(h, p, ["华东/上海/浦东", "华南/广东/深圳"], [0, 0, 0], x, y, w, 38), True),
+        ("Cascader", "🧭", "级联选择", lambda h, p, x, y, w, hh: ui.create_cascader(h, p, [("华东", "上海", "浦东"), ("华南", "广东", "深圳")], ["华东", "上海", "浦东"], x, y, w, 38), True),
     ])
 
     category_components["表单输入"].append(("InputGroup", "🔗", "组合输入"))

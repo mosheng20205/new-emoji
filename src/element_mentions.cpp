@@ -90,6 +90,14 @@ void Mentions::set_filter_text(const std::wstring& text) {
     invalidate();
 }
 
+void Mentions::commit_text(const std::wstring& text) {
+    if (text.empty()) return;
+    value += text;
+    update_filter_from_value();
+    open = value.find(trigger_char) != std::wstring::npos && !rendered_indices().empty();
+    invalidate();
+}
+
 void Mentions::insert_selected() {
     auto visible = rendered_indices();
     if (selected_index < 0 || selected_index >= (int)visible.size()) return;
@@ -309,10 +317,7 @@ void Mentions::on_key_down(int vk, int) {
 
 void Mentions::on_char(wchar_t ch) {
     if (ch < 32 || ch == L'\r' || ch == L'\n') return;
-    value.push_back(ch);
-    update_filter_from_value();
-    open = value.find(trigger_char) != std::wstring::npos && !rendered_indices().empty();
-    invalidate();
+    commit_text(std::wstring(1, ch));
 }
 
 void Mentions::on_blur() {

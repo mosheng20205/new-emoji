@@ -32,6 +32,7 @@ public:
     void set_open(bool next_open);
     void set_options(wchar_t trigger, bool filter_enabled, bool insert_space);
     void set_filter_text(const std::wstring& text);
+    void commit_text(const std::wstring& text);
     void insert_selected();
     bool is_open() const;
     int suggestion_count() const;

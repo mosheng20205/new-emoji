@@ -11,6 +11,7 @@
 #include "element_titlebar.h"
 #include "element_editbox.h"
 #include "element_inputtag.h"
+#include "element_mentions.h"
 #include "element_upload.h"
 #include "element_message.h"
 #include "element_messagebox.h"
@@ -490,6 +491,14 @@ void register_window_class() {
                     if (imc) {
                         if (lp & GCS_RESULTSTR) {
                             input_tag->commit_text(get_ime_string(hwnd, imc, GCS_RESULTSTR));
+                        }
+                        ImmReleaseContext(hwnd, imc);
+                    }
+                } else if (auto* mentions = dynamic_cast<Mentions*>(st->element_tree->focused())) {
+                    HIMC imc = ImmGetContext(hwnd);
+                    if (imc) {
+                        if (lp & GCS_RESULTSTR) {
+                            mentions->commit_text(get_ime_string(hwnd, imc, GCS_RESULTSTR));
                         }
                         ImmReleaseContext(hwnd, imc);
                     }
