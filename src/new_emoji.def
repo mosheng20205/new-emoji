@@ -16,6 +16,10 @@ EXPORTS
     EU_CreateIcon
     EU_CreateSpace
     EU_CreateContainer
+    EU_CreateHeader
+    EU_CreateAside
+    EU_CreateMain
+    EU_CreateFooter
     EU_CreateLayout
     EU_CreateBorder
     EU_CreateCheckbox
@@ -77,12 +81,13 @@ EXPORTS
     EU_CreateImage
     EU_CreateCarousel
     EU_CreateUpload
-    EU_CreateScrollbar
+    EU_CreateInfiniteScroll
     EU_CreateBreadcrumb
     EU_CreateTabs
     EU_CreatePagination
     EU_CreateSteps
     EU_CreateAlert
+    EU_CreateAlertEx
     EU_CreateResult
     EU_CreateNotification
     EU_CreateLoading
@@ -136,6 +141,10 @@ EXPORTS
     EU_GetPanelStyle
     EU_SetPanelLayout
     EU_GetPanelLayout
+    EU_SetContainerLayout
+    EU_GetContainerLayout
+    EU_SetContainerRegionTextOptions
+    EU_GetContainerRegionTextOptions
     EU_SetLayoutOptions
     EU_GetLayoutOptions
     EU_SetLayoutChildWeight
@@ -155,6 +164,10 @@ EXPORTS
     EU_GetDividerOptions
     EU_SetDividerSpacing
     EU_GetDividerSpacing
+    EU_SetDividerLineStyle
+    EU_GetDividerLineStyle
+    EU_SetDividerContent
+    EU_GetDividerContent
     EU_SetButtonEmoji
     EU_SetButtonVariant
     EU_GetButtonState
@@ -281,6 +294,10 @@ EXPORTS
     EU_GetSelectOpen
     EU_SetSelectSearch
     EU_SetSelectOptionDisabled
+    EU_SetSelectOptionAlignment
+    EU_GetSelectOptionAlignment
+    EU_SetSelectValueAlignment
+    EU_GetSelectValueAlignment
     EU_GetSelectOptionCount
     EU_GetSelectMatchedCount
     EU_GetSelectOptionDisabled
@@ -299,6 +316,10 @@ EXPORTS
     EU_GetSelectV2Open
     EU_SetSelectV2Search
     EU_SetSelectV2OptionDisabled
+    EU_SetSelectV2OptionAlignment
+    EU_GetSelectV2OptionAlignment
+    EU_SetSelectV2ValueAlignment
+    EU_GetSelectV2ValueAlignment
     EU_GetSelectV2OptionCount
     EU_GetSelectV2MatchedCount
     EU_GetSelectV2OptionDisabled
@@ -332,6 +353,10 @@ EXPORTS
     EU_GetColorPickerOpen
     EU_SetColorPickerPalette
     EU_GetColorPickerPaletteCount
+    EU_SetColorPickerOptions
+    EU_GetColorPickerOptions
+    EU_ClearColorPicker
+    EU_GetColorPickerHasValue
     EU_SetColorPickerChangeCallback
     EU_SetTagType
     EU_SetTagEffect
@@ -345,10 +370,12 @@ EXPORTS
     EU_SetTagCloseCallback
     EU_SetBadgeValue
     EU_SetBadgeMax
+    EU_SetBadgeType
     EU_SetBadgeDot
     EU_SetBadgeOptions
     EU_GetBadgeHidden
     EU_GetBadgeOptions
+    EU_GetBadgeType
     EU_SetBadgeLayoutOptions
     EU_GetBadgeLayoutOptions
     EU_SetProgressPercentage
@@ -360,8 +387,22 @@ EXPORTS
     EU_GetProgressOptions
     EU_SetProgressFormatOptions
     EU_GetProgressFormatOptions
+    EU_SetProgressTextInside
+    EU_GetProgressTextInside
+    EU_SetProgressColors
+    EU_GetProgressColors
+    EU_SetProgressColorStops
+    EU_GetProgressColorStopCount
+    EU_GetProgressColorStop
+    EU_SetProgressCompleteText
+    EU_GetProgressCompleteText
+    EU_SetProgressTextTemplate
+    EU_GetProgressTextTemplate
     EU_SetAvatarShape
     EU_SetAvatarSource
+    EU_SetAvatarFallbackSource
+    EU_SetAvatarIcon
+    EU_SetAvatarErrorText
     EU_SetAvatarFit
     EU_GetAvatarImageStatus
     EU_GetAvatarOptions
@@ -370,6 +411,10 @@ EXPORTS
     EU_SetEmptyActionClicked
     EU_GetEmptyActionClicked
     EU_SetEmptyActionCallback
+    EU_SetEmptyImage
+    EU_SetEmptyImageSize
+    EU_GetEmptyImageStatus
+    EU_GetEmptyImageSize
     EU_SetSkeletonRows
     EU_SetSkeletonAnimated
     EU_SetSkeletonLoading
@@ -379,10 +424,15 @@ EXPORTS
     EU_SetDescriptionsItems
     EU_SetDescriptionsColumns
     EU_SetDescriptionsBordered
+    EU_SetDescriptionsLayout
+    EU_SetDescriptionsItemsEx
     EU_SetDescriptionsOptions
     EU_GetDescriptionsItemCount
     EU_SetDescriptionsAdvancedOptions
+    EU_SetDescriptionsColors
+    EU_SetDescriptionsExtra
     EU_GetDescriptionsOptions
+    EU_GetDescriptionsFullState
     EU_SetTableData
     EU_SetTableStriped
     EU_SetTableBordered
@@ -423,29 +473,51 @@ EXPORTS
     EU_ClearTableVirtualCache
     EU_GetTableCellValue
     EU_GetTableFullState
+    EU_SetCardTitle
     EU_SetCardBody
     EU_SetCardFooter
+    EU_SetCardItems
     EU_SetCardActions
+    EU_GetCardItemCount
     EU_GetCardAction
     EU_ResetCardAction
     EU_SetCardShadow
     EU_SetCardOptions
+    EU_SetCardStyle
+    EU_GetCardStyle
+    EU_SetCardBodyStyle
+    EU_GetCardBodyStyle
     EU_GetCardOptions
     EU_SetCollapseItems
+    EU_SetCollapseItemsEx
     EU_SetCollapseActive
     EU_GetCollapseActive
+    EU_SetCollapseActiveItems
+    EU_GetCollapseActiveItems
     EU_GetCollapseItemCount
     EU_SetCollapseOptions
     EU_SetCollapseAdvancedOptions
     EU_GetCollapseOptions
+    EU_GetCollapseStateJson
     EU_SetTimelineItems
     EU_SetTimelineOptions
     EU_GetTimelineItemCount
     EU_GetTimelineOptions
+    EU_SetTimelineAdvancedOptions
+    EU_GetTimelineAdvancedOptions
     EU_SetStatisticValue
     EU_SetStatisticFormat
     EU_SetStatisticOptions
     EU_GetStatisticOptions
+    EU_SetStatisticNumberOptions
+    EU_SetStatisticAffixOptions
+    EU_SetStatisticDisplayText
+    EU_SetStatisticCountdown
+    EU_SetStatisticCountdownState
+    EU_AddStatisticCountdownTime
+    EU_SetStatisticFinishCallback
+    EU_SetStatisticSuffixClickCallback
+    EU_GetStatisticFullState
     EU_SetKpiCardData
     EU_SetKpiCardOptions
     EU_GetKpiCardOptions
@@ -506,6 +578,17 @@ EXPORTS
     EU_GetCalendarOptions
     EU_SetCalendarSelectionRange
     EU_GetCalendarSelectionRange
+    EU_SetCalendarDisplayRange
+    EU_GetCalendarDisplayRange
+    EU_SetCalendarCellItems
+    EU_GetCalendarCellItems
+    EU_ClearCalendarCellItems
+    EU_SetCalendarVisualOptions
+    EU_GetCalendarVisualOptions
+    EU_SetCalendarStateColors
+    EU_GetCalendarStateColors
+    EU_SetCalendarSelectedMarker
+    EU_SetCalendarChangeCallback
     EU_SetTreeItems
     EU_SetTreeSelected
     EU_GetTreeSelected
@@ -535,6 +618,38 @@ EXPORTS
     EU_SetTreeSelectItemExpanded
     EU_ToggleTreeSelectItemExpanded
     EU_GetTreeSelectItemExpanded
+    EU_SetTreeDataJson
+    EU_GetTreeDataJson
+    EU_SetTreeOptionsJson
+    EU_GetTreeStateJson
+    EU_SetTreeCheckedKeysJson
+    EU_GetTreeCheckedKeysJson
+    EU_SetTreeExpandedKeysJson
+    EU_GetTreeExpandedKeysJson
+    EU_AppendTreeNodeJson
+    EU_UpdateTreeNodeJson
+    EU_RemoveTreeNodeByKey
+    EU_SetTreeNodeEventCallback
+    EU_SetTreeLazyLoadCallback
+    EU_SetTreeDragCallback
+    EU_SetTreeAllowDragCallback
+    EU_SetTreeAllowDropCallback
+    EU_SetTreeSelectDataJson
+    EU_GetTreeSelectDataJson
+    EU_SetTreeSelectOptionsJson
+    EU_GetTreeSelectStateJson
+    EU_SetTreeSelectSelectedKeysJson
+    EU_GetTreeSelectSelectedKeysJson
+    EU_SetTreeSelectExpandedKeysJson
+    EU_GetTreeSelectExpandedKeysJson
+    EU_AppendTreeSelectNodeJson
+    EU_UpdateTreeSelectNodeJson
+    EU_RemoveTreeSelectNodeByKey
+    EU_SetTreeSelectNodeEventCallback
+    EU_SetTreeSelectLazyLoadCallback
+    EU_SetTreeSelectDragCallback
+    EU_SetTreeSelectAllowDragCallback
+    EU_SetTreeSelectAllowDropCallback
     EU_SetTransferItems
     EU_TransferMoveRight
     EU_TransferMoveLeft
@@ -548,6 +663,19 @@ EXPORTS
     EU_SetTransferItemDisabled
     EU_GetTransferItemDisabled
     EU_GetTransferDisabledCount
+    EU_SetTransferDataEx
+    EU_SetTransferOptions
+    EU_GetTransferOptions
+    EU_SetTransferTitles
+    EU_SetTransferButtonTexts
+    EU_SetTransferFormat
+    EU_SetTransferItemTemplate
+    EU_SetTransferFooterTexts
+    EU_SetTransferFilterPlaceholder
+    EU_SetTransferCheckedKeys
+    EU_GetTransferCheckedCount
+    EU_GetTransferValueKeys
+    EU_GetTransferText
     EU_SetAutocompleteSuggestions
     EU_SetAutocompleteValue
     EU_SetAutocompletePlaceholder
@@ -699,6 +827,13 @@ EXPORTS
     EU_SetMenuExpanded
     EU_GetMenuState
     EU_GetMenuActivePath
+    EU_SetMenuColors
+    EU_GetMenuColors
+    EU_SetMenuCollapsed
+    EU_GetMenuCollapsed
+    EU_SetMenuItemMeta
+    EU_GetMenuItemMeta
+    EU_SetMenuSelectCallback
     EU_SetAnchorItems
     EU_SetAnchorActive
     EU_GetAnchorActive
@@ -758,13 +893,23 @@ EXPORTS
     EU_SetImagePreviewEnabled
     EU_SetImagePreviewTransform
     EU_SetImageCacheEnabled
+    EU_SetImageLazy
+    EU_SetImagePlaceholder
+    EU_SetImageErrorContent
+    EU_SetImagePreviewList
+    EU_SetImagePreviewIndex
     EU_GetImageStatus
     EU_GetImagePreviewOpen
     EU_GetImageOptions
     EU_GetImageFullOptions
+    EU_GetImageAdvancedOptions
     EU_SetCarouselItems
     EU_SetCarouselActive
     EU_SetCarouselOptions
+    EU_SetCarouselBehavior
+    EU_GetCarouselBehavior
+    EU_SetCarouselVisual
+    EU_GetCarouselVisual
     EU_SetCarouselAutoplay
     EU_SetCarouselAnimation
     EU_CarouselAdvance
@@ -797,18 +942,15 @@ EXPORTS
     EU_GetUploadFullState
     EU_SetUploadSelectCallback
     EU_SetUploadActionCallback
-    EU_SetScrollbarValue
-    EU_SetScrollbarRange
-    EU_SetScrollbarOptions
-    EU_SetScrollbarWheelStep
-    EU_BindScrollbarContent
-    EU_ScrollbarScroll
-    EU_ScrollbarWheel
-    EU_GetScrollbarValue
-    EU_GetScrollbarMaxValue
-    EU_GetScrollbarOptions
-    EU_GetScrollbarFullState
-    EU_SetScrollbarChangeCallback
+    EU_SetInfiniteScrollItems
+    EU_AppendInfiniteScrollItems
+    EU_ClearInfiniteScrollItems
+    EU_SetInfiniteScrollState
+    EU_SetInfiniteScrollOptions
+    EU_SetInfiniteScrollTexts
+    EU_SetInfiniteScrollScroll
+    EU_GetInfiniteScrollFullState
+    EU_SetInfiniteScrollLoadCallback
     EU_SetBreadcrumbItems
     EU_SetBreadcrumbSeparator
     EU_SetBreadcrumbCurrent
@@ -820,18 +962,28 @@ EXPORTS
     EU_GetBreadcrumbFullState
     EU_SetBreadcrumbSelectCallback
     EU_SetTabsItems
+    EU_SetTabsItemsEx
     EU_SetTabsActive
+    EU_SetTabsActiveName
     EU_SetTabsType
+    EU_SetTabsPosition
+    EU_SetTabsHeaderAlign
     EU_SetTabsOptions
+    EU_SetTabsEditable
+    EU_SetTabsContentVisible
     EU_AddTabsItem
     EU_CloseTabsItem
     EU_SetTabsScroll
     EU_TabsScroll
     EU_GetTabsActive
+    EU_GetTabsHeaderAlign
     EU_GetTabsItemCount
     EU_GetTabsState
     EU_GetTabsItem
+    EU_GetTabsActiveName
+    EU_GetTabsItemContent
     EU_GetTabsFullState
+    EU_GetTabsFullStateEx
     EU_SetTabsChangeCallback
     EU_SetTabsCloseCallback
     EU_SetTabsAddCallback
@@ -839,6 +991,7 @@ EXPORTS
     EU_SetPaginationCurrent
     EU_SetPaginationPageSize
     EU_SetPaginationOptions
+    EU_SetPaginationAdvancedOptions
     EU_SetPaginationPageSizeOptions
     EU_SetPaginationJumpPage
     EU_TriggerPaginationJump
@@ -847,11 +1000,15 @@ EXPORTS
     EU_GetPaginationPageCount
     EU_GetPaginationState
     EU_GetPaginationFullState
+    EU_GetPaginationAdvancedOptions
     EU_SetPaginationChangeCallback
     EU_SetStepsItems
     EU_SetStepsDetailItems
+    EU_SetStepsIconItems
     EU_SetStepsActive
     EU_SetStepsDirection
+    EU_SetStepsOptions
+    EU_GetStepsOptions
     EU_SetStepsStatuses
     EU_TriggerStepsClick
     EU_GetStepsActive
@@ -859,11 +1016,16 @@ EXPORTS
     EU_GetStepsState
     EU_GetStepsItem
     EU_GetStepsFullState
+    EU_GetStepsVisualState
     EU_SetStepsChangeCallback
     EU_SetAlertDescription
     EU_SetAlertType
     EU_SetAlertEffect
     EU_SetAlertClosable
+    EU_SetAlertAdvancedOptions
+    EU_GetAlertAdvancedOptions
+    EU_SetAlertCloseText
+    EU_GetAlertText
     EU_SetAlertClosed
     EU_TriggerAlertClose
     EU_GetAlertClosed
@@ -908,11 +1070,16 @@ EXPORTS
     EU_GetNotificationFullStateEx
     EU_SetNotificationCloseCallback
     EU_SetLoadingActive
+    EU_SetLoadingText
     EU_SetLoadingOptions
+    EU_SetLoadingStyle
     EU_GetLoadingActive
     EU_GetLoadingOptions
     EU_SetLoadingTarget
     EU_GetLoadingText
+    EU_GetLoadingStyle
+    EU_ShowLoading
+    EU_CloseLoading
     EU_GetLoadingFullState
     EU_SetDialogOpen
     EU_SetDialogTitle

@@ -12,8 +12,11 @@ MANIFEST = ROOT / "docs" / "components" / "manifest.json"
 
 CATEGORIES = {
     "基础/布局": [
-        "Panel", "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space",
-        "Container", "Layout", "Border", "Divider",
+        "Panel", "Button", "InfoBox", "Text", "Link", "Icon", "Space",
+        "Container", "Header", "Aside", "Main", "Footer", "Layout", "Border", "Divider",
+    ],
+    "兼容内核": [
+        "EditBox",
     ],
     "表单/选择": [
         "Checkbox", "Radio", "Switch", "Slider", "InputNumber", "Input",
@@ -21,7 +24,7 @@ CATEGORIES = {
     ],
     "数据展示": [
         "Tag", "Badge", "Progress", "Avatar", "Empty", "Skeleton",
-        "Descriptions", "Table", "Card", "Collapse", "Timeline", "Statistic",
+        "Descriptions", "Table", "InfiniteScroll", "Card", "Collapse", "Timeline", "Statistic",
     ],
     "指标/图表": [
         "KpiCard", "Trend", "StatusDot", "Gauge", "RingProgress",
@@ -38,7 +41,7 @@ CATEGORIES = {
         "Affix", "Breadcrumb", "Tabs", "Pagination", "Steps",
     ],
     "媒体/工具": [
-        "Watermark", "Tour", "Image", "Carousel", "Upload", "Scrollbar",
+        "Watermark", "Tour", "Image", "Carousel", "Upload",
     ],
     "反馈/浮层": [
         "Alert", "Result", "Message", "MessageBox", "Notification", "Loading", "Dialog",
@@ -48,9 +51,10 @@ CATEGORIES = {
 
 
 ZH_NAMES = {
-    "Panel": "面板", "Button": "按钮", "EditBox": "编辑框", "InfoBox": "信息框",
+    "Panel": "面板", "Button": "按钮", "EditBox": "兼容编辑内核", "InfoBox": "信息框",
     "Text": "文本", "Link": "链接", "Icon": "图标", "Space": "间距",
-    "Container": "容器", "Layout": "布局", "Border": "边框", "Divider": "分割线",
+    "Container": "容器套件", "Header": "顶栏", "Aside": "侧边栏",
+    "Main": "主要区域", "Footer": "底栏", "Layout": "布局", "Border": "边框", "Divider": "分割线",
     "Checkbox": "复选框", "Radio": "单选框", "Switch": "开关", "Slider": "滑块",
     "InputNumber": "数字输入框", "Input": "输入框", "InputGroup": "组合输入", "InputTag": "标签输入",
     "Select": "选择器", "SelectV2": "虚拟选择器", "Rate": "评分",
@@ -70,7 +74,7 @@ ZH_NAMES = {
     "Backtop": "回到顶部", "Segmented": "分段控制器",
     "PageHeader": "页头", "Affix": "固钉", "Watermark": "水印",
     "Tour": "漫游引导", "Image": "图片", "Carousel": "轮播",
-    "Upload": "上传", "Scrollbar": "滚动条", "Breadcrumb": "面包屑",
+    "Upload": "上传", "InfiniteScroll": "无限滚动", "Breadcrumb": "面包屑",
     "Tabs": "标签页", "Pagination": "分页", "Steps": "步骤条",
     "Alert": "警告提示", "Result": "结果页", "Message": "消息提示",
     "MessageBox": "消息框", "Notification": "通知",
@@ -81,6 +85,7 @@ ZH_NAMES = {
 
 EMOJI = {
     "基础/布局": "🧱",
+    "兼容内核": "🧩",
     "表单/选择": "📝",
     "数据展示": "📊",
     "指标/图表": "📈",
@@ -475,7 +480,7 @@ def api_index(exports: list[str]) -> str:
 
 
 def components_index(components: list[dict[str, str]]) -> str:
-    blocks = ["# 组件文档导航\n\n计划内 81 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。\n"]
+    blocks = [f"# 组件文档导航\n\n计划内 {len(components)} 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。\n"]
     for category, names in CATEGORIES.items():
         blocks.append(f"\n## {EMOJI.get(category, '📦')} {category}\n")
         blocks.append("| 组件 | 中文名 | 创建导出 | 状态 | 文档 |\n|---|---|---|---|---|\n")

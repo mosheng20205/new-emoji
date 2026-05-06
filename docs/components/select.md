@@ -4,7 +4,7 @@
 
 `Select` 是 new_emoji 的 表单/选择 组件。当前状态：**已完成**。
 
-已补弹层、键盘导航、搜索、禁用项、空状态、多选模式、选中项读回、变化回调、Python 封装和独立中文 emoji 验证
+已补弹层、键盘导航、搜索、禁用项、空状态、多选模式、下拉表项对齐、已选值对齐、选中项读回、变化回调、Python 封装和独立中文 emoji 验证
 
 ## 创建
 
@@ -26,6 +26,8 @@
 | `EU_GetSelectOpen` | 当前组件相关导出 |
 | `EU_GetSelectOptionCount` | 当前组件相关导出 |
 | `EU_GetSelectOptionDisabled` | 当前组件相关导出 |
+| `EU_GetSelectOptionAlignment` | 读取下拉表项内容对齐方式，0 左对齐、1 居中、2 右对齐 |
+| `EU_GetSelectValueAlignment` | 读取输入框内已选值对齐方式，0 左对齐、1 居中、2 右对齐 |
 | `EU_GetSelectSelectedAt` | 当前组件相关导出 |
 | `EU_GetSelectSelectedCount` | 当前组件相关导出 |
 | `EU_SetSelectChangeCallback` | 当前组件相关导出 |
@@ -33,6 +35,8 @@
 | `EU_SetSelectMultiple` | 当前组件相关导出 |
 | `EU_SetSelectOpen` | 当前组件相关导出 |
 | `EU_SetSelectOptionDisabled` | 当前组件相关导出 |
+| `EU_SetSelectOptionAlignment` | 设置下拉表项内容对齐方式，0 左对齐、1 居中、2 右对齐 |
+| `EU_SetSelectValueAlignment` | 设置输入框内已选值对齐方式，0 左对齐、1 居中、2 右对齐 |
 | `EU_SetSelectOptions` | 当前组件相关导出 |
 | `EU_SetSelectSearch` | 当前组件相关导出 |
 | `EU_SetSelectSelectedIndices` | 当前组件相关导出 |

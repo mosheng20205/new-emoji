@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：927。
+当前导出命令数量：1075。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -82,7 +82,7 @@
     .参数 宽度, 整数型, , 逻辑尺寸
     .参数 高度, 整数型, , 逻辑尺寸
 
-.DLL命令 创建编辑框, 整数型, "new_emoji.dll", "EU_CreateEditBox", , 对应 C++ 导出命令 EU_CreateEditBox；返回元素ID，失败返回0
+.DLL命令 创建编辑框, 整数型, "new_emoji.dll", "EU_CreateEditBox", , 兼容编辑内核；新表单输入推荐使用“创建输入框”/EU_CreateInput；返回元素ID，失败返回0
     .参数 窗口句柄, 整数型
     .参数 父元素ID, 整数型
     .参数 X坐标, 整数型, , 逻辑坐标
@@ -147,6 +147,46 @@
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
     .参数 高度, 整数型, , 逻辑尺寸
+
+.DLL命令 创建顶栏, 整数型, "new_emoji.dll", "EU_CreateHeader", , 对应 C++ 导出命令 EU_CreateHeader；返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8，可包含 emoji
+    .参数 文本长度, 整数型
+    .参数 X坐标, 整数型, , 逻辑坐标
+    .参数 Y坐标, 整数型, , 逻辑坐标
+    .参数 宽度, 整数型, , 逻辑尺寸，流式布局中可为0
+    .参数 高度, 整数型, , 逻辑尺寸，0 使用默认 60
+
+.DLL命令 创建侧边栏, 整数型, "new_emoji.dll", "EU_CreateAside", , 对应 C++ 导出命令 EU_CreateAside；返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8，可包含 emoji
+    .参数 文本长度, 整数型
+    .参数 X坐标, 整数型, , 逻辑坐标
+    .参数 Y坐标, 整数型, , 逻辑坐标
+    .参数 宽度, 整数型, , 逻辑尺寸，0 使用默认 200
+    .参数 高度, 整数型, , 逻辑尺寸，流式布局中可为0
+
+.DLL命令 创建主要区域, 整数型, "new_emoji.dll", "EU_CreateMain", , 对应 C++ 导出命令 EU_CreateMain；返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8，可包含 emoji
+    .参数 文本长度, 整数型
+    .参数 X坐标, 整数型, , 逻辑坐标
+    .参数 Y坐标, 整数型, , 逻辑坐标
+    .参数 宽度, 整数型, , 逻辑尺寸，流式布局中可为0
+    .参数 高度, 整数型, , 逻辑尺寸，流式布局中可为0
+
+.DLL命令 创建底栏, 整数型, "new_emoji.dll", "EU_CreateFooter", , 对应 C++ 导出命令 EU_CreateFooter；返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8，可包含 emoji
+    .参数 文本长度, 整数型
+    .参数 X坐标, 整数型, , 逻辑坐标
+    .参数 Y坐标, 整数型, , 逻辑坐标
+    .参数 宽度, 整数型, , 逻辑尺寸，流式布局中可为0
+    .参数 高度, 整数型, , 逻辑尺寸，0 使用默认 60
 
 .DLL命令 创建布局, 整数型, "new_emoji.dll", "EU_CreateLayout", , 对应 C++ 导出命令 EU_CreateLayout；返回元素ID，失败返回0
     .参数 窗口句柄, 整数型
@@ -453,7 +493,7 @@
 .DLL命令 创建折叠面板, 整数型, "new_emoji.dll", "EU_CreateCollapse", , 对应 C++ 导出命令 EU_CreateCollapse；返回元素ID，失败返回0
     .参数 窗口句柄, 整数型
     .参数 父元素ID, 整数型
-    .参数 项目字节集指针, 整数型, , UTF-8, separated by | or newline when applicable
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔；旧格式：标题:正文；扩展格式：标题<TAB>正文<TAB>标题图标<TAB>右侧说明<TAB>禁用(0/1)，正文含换行时项目间建议用 |
     .参数 项目长度, 整数型
     .参数 激活索引, 整数型
     .参数 是否手风琴模式, 整数型
@@ -622,8 +662,8 @@
     .参数 父元素ID, 整数型
     .参数 文本字节集指针, 整数型, , UTF-8
     .参数 文本长度, 整数型
-    .参数 方向, 整数型
-    .参数 content_position, 整数型
+    .参数 方向, 整数型, , 0横向 1纵向
+    .参数 文本位置, 整数型, , 0左/上 1居中 2右/下
     .参数 X坐标, 整数型, , 逻辑坐标
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
@@ -767,7 +807,7 @@
     .参数 宽度, 整数型, , 逻辑尺寸
     .参数 高度, 整数型, , 逻辑尺寸
 
-.DLL命令 创建菜单, 整数型, "new_emoji.dll", "EU_CreateMenu", , 对应 C++ 导出命令 EU_CreateMenu；返回元素ID，失败返回0
+.DLL命令 创建菜单, 整数型, "new_emoji.dll", "EU_CreateMenu", , 对应 C++ 导出命令 EU_CreateMenu；创建菜单/NavMenu 导航菜单，返回元素ID，失败返回0
     .参数 窗口句柄, 整数型
     .参数 父元素ID, 整数型
     .参数 项目字节集指针, 整数型, , UTF-8, separated by | or newline when applicable
@@ -869,7 +909,7 @@
     .参数 来源长度, 整数型
     .参数 替代文本字节集指针, 整数型, , UTF-8
     .参数 替代文本长度, 整数型
-    .参数 适配方式, 整数型
+    .参数 适配方式, 整数型, , 0包含contain 1覆盖cover 2拉伸fill 3原尺寸none 4按需缩小scale-down
     .参数 X坐标, 整数型, , 逻辑坐标
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
@@ -901,12 +941,11 @@
     .参数 宽度, 整数型, , 逻辑尺寸
     .参数 高度, 整数型, , 逻辑尺寸
 
-.DLL命令 创建滚动条, 整数型, "new_emoji.dll", "EU_CreateScrollbar", , 对应 C++ 导出命令 EU_CreateScrollbar；返回元素ID，失败返回0
+.DLL命令 创建无限滚动, 整数型, "new_emoji.dll", "EU_CreateInfiniteScroll", , 对应 C++ 导出命令 EU_CreateInfiniteScroll；返回元素ID，失败返回0
     .参数 窗口句柄, 整数型
     .参数 父元素ID, 整数型
-    .参数 数值, 整数型
-    .参数 最大值, 整数型
-    .参数 方向, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8；行用换行或 | 分隔，每行可用 标题\t副标题\t标签
+    .参数 项目长度, 整数型
     .参数 X坐标, 整数型, , 逻辑坐标
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
@@ -969,6 +1008,26 @@
     .参数 警告类型, 整数型
     .参数 效果, 整数型
     .参数 是否可关闭, 整数型
+    .参数 X坐标, 整数型, , 逻辑坐标
+    .参数 Y坐标, 整数型, , 逻辑坐标
+    .参数 宽度, 整数型, , 逻辑尺寸
+    .参数 高度, 整数型, , 逻辑尺寸
+
+.DLL命令 创建高级警告, 整数型, "new_emoji.dll", "EU_CreateAlertEx", , 对应 C++ 导出命令 EU_CreateAlertEx；支持图标、居中、长描述换行和自定义关闭文字
+    .参数 窗口句柄, 整数型
+    .参数 父元素ID, 整数型
+    .参数 标题字节集指针, 整数型, , UTF-8
+    .参数 标题长度, 整数型
+    .参数 描述字节集指针, 整数型, , UTF-8
+    .参数 描述长度, 整数型
+    .参数 警告类型, 整数型, , 0信息 1成功 2警告 3错误
+    .参数 效果, 整数型, , 0浅色 1深色
+    .参数 是否可关闭, 整数型, , 0不可关闭 1可关闭
+    .参数 是否显示图标, 整数型, , 0隐藏 1显示
+    .参数 是否居中, 整数型, , 0左对齐 1居中
+    .参数 描述是否换行, 整数型, , 0不换行 1自动换行
+    .参数 关闭文字字节集指针, 整数型, , UTF-8；为空时显示 X
+    .参数 关闭文字长度, 整数型
     .参数 X坐标, 整数型, , 逻辑坐标
     .参数 Y坐标, 整数型, , 逻辑坐标
     .参数 宽度, 整数型, , 逻辑尺寸
@@ -1342,6 +1401,34 @@
     .参数 是否填充父内容区指针, 整数型, , 输出整数指针
     .参数 子元素是否使用内容区坐标指针, 整数型, , 输出整数指针
 
+.DLL命令 设置容器布局, , "new_emoji.dll", "EU_SetContainerLayout", , 对应 C++ 导出命令 EU_SetContainerLayout；启用 Header/Aside/Main/Footer 流式布局
+    .参数 窗口句柄, 整数型
+    .参数 容器ID, 整数型
+    .参数 是否启用, 整数型, , 0绝对布局 1流式布局
+    .参数 方向, 整数型, , 0自动 1横向 2纵向
+    .参数 间距, 整数型, , 逻辑尺寸
+
+.DLL命令 取容器布局, 整数型, "new_emoji.dll", "EU_GetContainerLayout", , 对应 C++ 导出命令 EU_GetContainerLayout；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 容器ID, 整数型
+    .参数 是否启用指针, 整数型, , 输出整数指针
+    .参数 方向指针, 整数型, , 输出整数指针，0自动 1横向 2纵向
+    .参数 间距指针, 整数型, , 输出整数指针，逻辑尺寸
+    .参数 实际方向指针, 整数型, , 输出整数指针，0未启用 1横向 2纵向
+
+.DLL命令 设置容器区域文本选项, , "new_emoji.dll", "EU_SetContainerRegionTextOptions", , 对应 C++ 导出命令 EU_SetContainerRegionTextOptions
+    .参数 窗口句柄, 整数型
+    .参数 区域元素ID, 整数型
+    .参数 水平对齐, 整数型, , 0起始 1居中 2末尾
+    .参数 垂直对齐, 整数型, , 0起始 1居中 2末尾
+
+.DLL命令 取容器区域文本选项, 整数型, "new_emoji.dll", "EU_GetContainerRegionTextOptions", , 对应 C++ 导出命令 EU_GetContainerRegionTextOptions；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 区域元素ID, 整数型
+    .参数 水平对齐指针, 整数型, , 输出整数指针
+    .参数 垂直对齐指针, 整数型, , 输出整数指针
+    .参数 区域角色指针, 整数型, , 输出整数指针，1顶栏 2侧边栏 3主要区域 4底栏
+
 .DLL命令 设置布局选项, , "new_emoji.dll", "EU_SetLayoutOptions", , 对应 C++ 导出命令 EU_SetLayoutOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -1490,6 +1577,32 @@
     .参数 元素ID, 整数型
     .参数 线条外边距指针, 整数型, , 输出整数指针
     .参数 文本间隙指针, 整数型, , 输出整数指针
+
+.DLL命令 设置分割线线型, , "new_emoji.dll", "EU_SetDividerLineStyle", , 对应 C++ 导出命令 EU_SetDividerLineStyle；0实线 1虚线 2点线 3双线
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 线型, 整数型, , 0实线 1虚线 2点线 3双线
+
+.DLL命令 取分割线线型, 整数型, "new_emoji.dll", "EU_GetDividerLineStyle", , 对应 C++ 导出命令 EU_GetDividerLineStyle；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 线型指针, 整数型, , 输出整数指针；0实线 1虚线 2点线 3双线
+
+.DLL命令 设置分割线内容, , "new_emoji.dll", "EU_SetDividerContent", , 对应 C++ 导出命令 EU_SetDividerContent；设置图标/emoji 和文本内容
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8，可为空，可传 emoji
+    .参数 图标长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8，可为空
+    .参数 文本长度, 整数型
+
+.DLL命令 取分割线内容, 整数型, "new_emoji.dll", "EU_GetDividerContent", , 对应 C++ 导出命令 EU_GetDividerContent；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 图标缓冲区长度, 整数型
+    .参数 文本缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 文本缓冲区长度, 整数型
 
 .DLL命令 设置按钮表情, , "new_emoji.dll", "EU_SetButtonEmoji", , 对应 C++ 导出命令 EU_SetButtonEmoji
     .参数 窗口句柄, 整数型
@@ -2270,6 +2383,24 @@
     .参数 选项索引, 整数型
     .参数 是否禁用, 整数型
 
+.DLL命令 设置选择器表项对齐, , "new_emoji.dll", "EU_SetSelectOptionAlignment", , 对应 C++ 导出命令 EU_SetSelectOptionAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取选择器表项对齐, 整数型, "new_emoji.dll", "EU_GetSelectOptionAlignment", , 对应 C++ 导出命令 EU_GetSelectOptionAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置选择器已选值对齐, , "new_emoji.dll", "EU_SetSelectValueAlignment", , 对应 C++ 导出命令 EU_SetSelectValueAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取选择器已选值对齐, 整数型, "new_emoji.dll", "EU_GetSelectValueAlignment", , 对应 C++ 导出命令 EU_GetSelectValueAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 取选择器选项数量, 整数型, "new_emoji.dll", "EU_GetSelectOptionCount", , 对应 C++ 导出命令 EU_GetSelectOptionCount；返回选项数量
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2356,6 +2487,24 @@
     .参数 元素ID, 整数型
     .参数 选项索引, 整数型
     .参数 是否禁用, 整数型
+
+.DLL命令 设置增强选择器表项对齐, , "new_emoji.dll", "EU_SetSelectV2OptionAlignment", , 对应 C++ 导出命令 EU_SetSelectV2OptionAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取增强选择器表项对齐, 整数型, "new_emoji.dll", "EU_GetSelectV2OptionAlignment", , 对应 C++ 导出命令 EU_GetSelectV2OptionAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置增强选择器已选值对齐, , "new_emoji.dll", "EU_SetSelectV2ValueAlignment", , 对应 C++ 导出命令 EU_SetSelectV2ValueAlignment
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0 左对齐 1 居中 2 右对齐
+
+.DLL命令 取增强选择器已选值对齐, 整数型, "new_emoji.dll", "EU_GetSelectV2ValueAlignment", , 对应 C++ 导出命令 EU_GetSelectV2ValueAlignment；返回 0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 取增强选择器选项数量, 整数型, "new_emoji.dll", "EU_GetSelectV2OptionCount", , 对应 C++ 导出命令 EU_GetSelectV2OptionCount；返回选项数量
     .参数 窗口句柄, 整数型
@@ -2511,7 +2660,7 @@
     .参数 元素ID, 整数型
     .参数 颜色, 整数型, , ARGB 0xAARRGGBB
 
-.DLL命令 取颜色选择器颜色, 整数型, "new_emoji.dll", "EU_GetColorPickerColor", , 对应 C++ 导出命令 EU_GetColorPickerColor；返回整数结果或写入输出参数
+.DLL命令 取颜色选择器颜色, 整数型, "new_emoji.dll", "EU_GetColorPickerColor", , 对应 C++ 导出命令 EU_GetColorPickerColor；空值态返回 0
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
@@ -2530,7 +2679,7 @@
     .参数 颜色文本字节集指针, 整数型, , UTF-8，支持 #RRGGBB 或 #AARRGGBB
     .参数 颜色文本长度, 整数型
 
-.DLL命令 取颜色选择器十六进制文本, 整数型, "new_emoji.dll", "EU_GetColorPickerHex", , 对应 C++ 导出命令 EU_GetColorPickerHex；返回所需 UTF-8 字节数
+.DLL命令 取颜色选择器十六进制文本, 整数型, "new_emoji.dll", "EU_GetColorPickerHex", , 对应 C++ 导出命令 EU_GetColorPickerHex；返回所需 UTF-8 字节数，空值态返回 0
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 输出缓冲区指针, 整数型, , UTF-8 输出缓冲区，可传 0 查询长度
@@ -2555,10 +2704,32 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
+.DLL命令 设置颜色选择器选项, , "new_emoji.dll", "EU_SetColorPickerOptions", , 对应 C++ 导出命令 EU_SetColorPickerOptions；设置透明度开关、尺寸和清空按钮
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示透明度, 整数型, , 0隐藏 1显示；隐藏时不绘制透明度条
+    .参数 尺寸模式, 整数型, , 0默认 1中等 2小型 3超小
+    .参数 是否可清空, 整数型, , 0否 1是；为 1 时有值态主框显示清空按钮
+
+.DLL命令 取颜色选择器选项, 整数型, "new_emoji.dll", "EU_GetColorPickerOptions", , 对应 C++ 导出命令 EU_GetColorPickerOptions；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示透明度指针, 整数型, , 输出整数指针，0隐藏 1显示
+    .参数 尺寸模式指针, 整数型, , 输出整数指针，0默认 1中等 2小型 3超小
+    .参数 是否可清空指针, 整数型, , 输出整数指针，0否 1是
+
+.DLL命令 清空颜色选择器, , "new_emoji.dll", "EU_ClearColorPicker", , 对应 C++ 导出命令 EU_ClearColorPicker；进入空值态，颜色读回为 0，十六进制文本读回为空
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取颜色选择器是否有值, 整数型, "new_emoji.dll", "EU_GetColorPickerHasValue", , 对应 C++ 导出命令 EU_GetColorPickerHasValue；返回 0空值 1有值
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 设置颜色选择器变化回调, , "new_emoji.dll", "EU_SetColorPickerChangeCallback", , 对应 C++ 导出命令 EU_SetColorPickerChangeCallback
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 回调函数, 整数型, , 回调签名：子程序(元素ID, ARGB颜色, 透明度, 预设色数量)
+    .参数 回调函数, 整数型, , 回调签名：子程序(元素ID, ARGB颜色, 透明度, 预设色数量)，空值态颜色与透明度均为 0
 
 .DLL命令 设置标签类型, , "new_emoji.dll", "EU_SetTagType", , 对应 C++ 导出命令 EU_SetTagType
     .参数 窗口句柄, 整数型
@@ -2624,6 +2795,11 @@
     .参数 元素ID, 整数型
     .参数 最大值, 整数型
 
+.DLL命令 设置徽标类型, , "new_emoji.dll", "EU_SetBadgeType", , 对应 C++ 导出命令 EU_SetBadgeType
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 类型, 整数型, , 0默认 1主色 2成功 3警告 4信息
+
 .DLL命令 设置徽标圆点状态, , "new_emoji.dll", "EU_SetBadgeDot", , 对应 C++ 导出命令 EU_SetBadgeDot
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2649,6 +2825,10 @@
     .参数 是否显示零值指针, 整数型, , 输出整数指针
     .参数 X偏移指针, 整数型, , 输出整数指针
     .参数 Y偏移指针, 整数型, , 输出整数指针
+
+.DLL命令 取徽标类型, 整数型, "new_emoji.dll", "EU_GetBadgeType", , 对应 C++ 导出命令 EU_GetBadgeType；返回 0默认 1主色 2成功 3警告 4信息
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 设置徽标布局选项, , "new_emoji.dll", "EU_SetBadgeLayoutOptions", , 对应 C++ 导出命令 EU_SetBadgeLayoutOptions；位置0右上 1左上 2右下 3左下，独立模式仅绘制角标
     .参数 窗口句柄, 整数型
@@ -2688,7 +2868,7 @@
 .DLL命令 设置进度条选项, , "new_emoji.dll", "EU_SetProgressOptions", , 对应 C++ 导出命令 EU_SetProgressOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 进度类型, 整数型, , 0条形 1圆形
+    .参数 进度类型, 整数型, , 0条形 1圆形 2仪表盘
     .参数 线宽, 整数型
     .参数 是否显示文本, 整数型
 
@@ -2699,7 +2879,7 @@
     .参数 线宽指针, 整数型, , 输出整数指针
     .参数 是否显示文本指针, 整数型, , 输出整数指针
 
-.DLL命令 设置进度条格式选项, , "new_emoji.dll", "EU_SetProgressFormatOptions", , 对应 C++ 导出命令 EU_SetProgressFormatOptions；文本格式0百分比 1中文状态 2标签加百分比
+.DLL命令 设置进度条格式选项, , "new_emoji.dll", "EU_SetProgressFormatOptions", , 对应 C++ 导出命令 EU_SetProgressFormatOptions；文本格式0百分比 1中文状态+百分比 2标签+百分比 3满值文本 4模板文本
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 文本格式, 整数型
@@ -2711,23 +2891,105 @@
     .参数 文本格式指针, 整数型, , 输出整数指针
     .参数 是否条纹指针, 整数型, , 输出整数指针
 
+.DLL命令 设置进度条文本内显, , "new_emoji.dll", "EU_SetProgressTextInside", , 对应 C++ 导出命令 EU_SetProgressTextInside；仅条形进度条使用
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否内显, 整数型
+
+.DLL命令 取进度条文本内显, 整数型, "new_emoji.dll", "EU_GetProgressTextInside", , 对应 C++ 导出命令 EU_GetProgressTextInside；返回 1内显 0不内显
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置进度条颜色, , "new_emoji.dll", "EU_SetProgressColors", , 对应 C++ 导出命令 EU_SetProgressColors；颜色为 ARGB，0 表示恢复主题默认
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 填充色, 整数型
+    .参数 轨道色, 整数型
+    .参数 文本色, 整数型
+
+.DLL命令 取进度条颜色, 整数型, "new_emoji.dll", "EU_GetProgressColors", , 对应 C++ 导出命令 EU_GetProgressColors；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 填充色指针, 整数型, , 输出整数指针
+    .参数 轨道色指针, 整数型, , 输出整数指针
+    .参数 文本色指针, 整数型, , 输出整数指针
+
+.DLL命令 设置进度条颜色分段, , "new_emoji.dll", "EU_SetProgressColorStops", , 对应 C++ 导出命令 EU_SetProgressColorStops；UTF-8：颜色<TAB>百分比|颜色<TAB>百分比
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 分段字节集指针, 整数型, , UTF-8
+    .参数 分段长度, 整数型
+
+.DLL命令 取进度条颜色分段数量, 整数型, "new_emoji.dll", "EU_GetProgressColorStopCount", , 对应 C++ 导出命令 EU_GetProgressColorStopCount；返回分段数量
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取进度条颜色分段项, 整数型, "new_emoji.dll", "EU_GetProgressColorStop", , 对应 C++ 导出命令 EU_GetProgressColorStop；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 索引, 整数型
+    .参数 颜色指针, 整数型, , 输出整数指针
+    .参数 百分比指针, 整数型, , 输出整数指针
+
+.DLL命令 设置进度条完成文本, , "new_emoji.dll", "EU_SetProgressCompleteText", , 对应 C++ 导出命令 EU_SetProgressCompleteText；文本格式为 3 时 100% 显示
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 取进度条完成文本, 整数型, "new_emoji.dll", "EU_GetProgressCompleteText", , 对应 C++ 导出命令 EU_GetProgressCompleteText；返回所需 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置进度条文本模板, , "new_emoji.dll", "EU_SetProgressTextTemplate", , 对应 C++ 导出命令 EU_SetProgressTextTemplate；支持 {percentage}、{percent}、{status}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 模板字节集指针, 整数型, , UTF-8
+    .参数 模板长度, 整数型
+
+.DLL命令 取进度条文本模板, 整数型, "new_emoji.dll", "EU_GetProgressTextTemplate", , 对应 C++ 导出命令 EU_GetProgressTextTemplate；返回所需 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 缓冲区大小, 整数型
+
 .DLL命令 设置头像形状, , "new_emoji.dll", "EU_SetAvatarShape", , 对应 C++ 导出命令 EU_SetAvatarShape
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 形状, 整数型
+    .参数 形状, 整数型, , 0圆形 1方形/圆角方形
 
 .DLL命令 设置头像图片源, , "new_emoji.dll", "EU_SetAvatarSource", , 对应 C++ 导出命令 EU_SetAvatarSource
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 图片路径字节集指针, 整数型, , UTF-8
+    .参数 图片路径字节集指针, 整数型, , UTF-8，本地路径或 http/https 图片地址
     .参数 图片路径长度, 整数型
+
+.DLL命令 设置头像备用图片源, , "new_emoji.dll", "EU_SetAvatarFallbackSource", , 对应 C++ 导出命令 EU_SetAvatarFallbackSource
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图片路径字节集指针, 整数型, , UTF-8，主图片失败后使用，本地路径或 http/https 图片地址
+    .参数 图片路径长度, 整数型
+
+.DLL命令 设置头像图标, , "new_emoji.dll", "EU_SetAvatarIcon", , 对应 C++ 导出命令 EU_SetAvatarIcon
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标文本字节集指针, 整数型, , UTF-8，可传 emoji 或图标字符
+    .参数 图标文本长度, 整数型
+
+.DLL命令 设置头像错误文本, , "new_emoji.dll", "EU_SetAvatarErrorText", , 对应 C++ 导出命令 EU_SetAvatarErrorText
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 错误文本字节集指针, 整数型, , UTF-8，图片失败且无备用图时显示
+    .参数 错误文本长度, 整数型
 
 .DLL命令 设置头像适配方式, , "new_emoji.dll", "EU_SetAvatarFit", , 对应 C++ 导出命令 EU_SetAvatarFit
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 适配方式, 整数型, , 0包含 1覆盖 2拉伸
+    .参数 适配方式, 整数型, , 0包含 1覆盖 2拉伸 3原图居中 4按需缩小
 
-.DLL命令 取头像图片状态, 整数型, "new_emoji.dll", "EU_GetAvatarImageStatus", , 对应 C++ 导出命令 EU_GetAvatarImageStatus；返回 0未加载 1成功 2失败
+.DLL命令 取头像图片状态, 整数型, "new_emoji.dll", "EU_GetAvatarImageStatus", , 对应 C++ 导出命令 EU_GetAvatarImageStatus；返回 0空/未加载 1成功 2失败 3加载中
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
@@ -2764,6 +3026,25 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数, 整数型, , 回调签名：子程序(元素ID)
+
+.DLL命令 设置空状态图片, , "new_emoji.dll", "EU_SetEmptyImage", , 对应 C++ 导出命令 EU_SetEmptyImage；支持本地路径、HTTP、HTTPS 图片
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图片字节集指针, 整数型, , UTF-8 图片路径或 URL
+    .参数 图片长度, 整数型
+
+.DLL命令 设置空状态图片尺寸, , "new_emoji.dll", "EU_SetEmptyImageSize", , 对应 C++ 导出命令 EU_SetEmptyImageSize；0为自适应，正数为逻辑尺寸
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图片尺寸, 整数型, , 逻辑尺寸，0为自适应
+
+.DLL命令 取空状态图片状态, 整数型, "new_emoji.dll", "EU_GetEmptyImageStatus", , 对应 C++ 导出命令 EU_GetEmptyImageStatus；返回 0默认图标/无图片 1已加载 2加载失败 3加载中
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 取空状态图片尺寸, 整数型, "new_emoji.dll", "EU_GetEmptyImageSize", , 对应 C++ 导出命令 EU_GetEmptyImageSize；返回逻辑尺寸，0为自适应
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 设置骨架屏行数, , "new_emoji.dll", "EU_SetSkeletonRows", , 对应 C++ 导出命令 EU_SetSkeletonRows
     .参数 窗口句柄, 整数型
@@ -2816,6 +3097,20 @@
     .参数 元素ID, 整数型
     .参数 是否带边框, 整数型
 
+.DLL命令 设置描述列表布局, , "new_emoji.dll", "EU_SetDescriptionsLayout", , 对应 C++ 导出命令 EU_SetDescriptionsLayout；方向0横向 1垂直，尺寸0默认 1中等 2小型 3超小
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 方向, 整数型
+    .参数 尺寸, 整数型
+    .参数 列数, 整数型
+    .参数 是否带边框, 整数型
+
+.DLL命令 设置描述列表高级项目, , "new_emoji.dll", "EU_SetDescriptionsItemsEx", , 对应 C++ 导出命令 EU_SetDescriptionsItemsEx；UTF-8 多行，每行：标签<TAB>内容<TAB>跨列<TAB>标签图标<TAB>内容类型<TAB>标签类型<TAB>内容对齐<TAB>标签背景<TAB>内容背景<TAB>标签文字色<TAB>内容文字色
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8，内容类型0文本 1标签；标签类型0默认 1成功 2信息 3警告 4危险；内容对齐0左 1中 2右；颜色0为主题默认
+    .参数 项目长度, 整数型
+
 .DLL命令 设置描述列表选项, , "new_emoji.dll", "EU_SetDescriptionsOptions", , 对应 C++ 导出命令 EU_SetDescriptionsOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2835,6 +3130,26 @@
     .参数 是否响应式列, 整数型
     .参数 最后一项是否跨列, 整数型
 
+.DLL命令 设置描述列表颜色, , "new_emoji.dll", "EU_SetDescriptionsColors", , 对应 C++ 导出命令 EU_SetDescriptionsColors；颜色为 ARGB，0 表示主题默认
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 边框色, 整数型
+    .参数 标签背景色, 整数型
+    .参数 内容背景色, 整数型
+    .参数 标签文字色, 整数型
+    .参数 内容文字色, 整数型
+    .参数 标题文字色, 整数型
+
+.DLL命令 设置描述列表操作按钮, , "new_emoji.dll", "EU_SetDescriptionsExtra", , 对应 C++ 导出命令 EU_SetDescriptionsExtra；右上角自绘操作按钮，点击触发元素点击回调
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 表情字节集指针, 整数型, , UTF-8
+    .参数 表情长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 是否显示, 整数型
+    .参数 按钮类型, 整数型, , 0默认 1主色 2成功 3警告 4危险 6信息
+
 .DLL命令 取描述列表选项, 整数型, "new_emoji.dll", "EU_GetDescriptionsOptions", , 对应 C++ 导出命令 EU_GetDescriptionsOptions；返回 1成功 0失败
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2845,6 +3160,18 @@
     .参数 内容是否换行指针, 整数型, , 输出整数指针
     .参数 是否响应式列指针, 整数型, , 输出整数指针
     .参数 最后一项是否跨列指针, 整数型, , 输出整数指针
+
+.DLL命令 取描述列表完整状态, 整数型, "new_emoji.dll", "EU_GetDescriptionsFullState", , 对应 C++ 导出命令 EU_GetDescriptionsFullState；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 方向指针, 整数型, , 输出整数指针
+    .参数 尺寸指针, 整数型, , 输出整数指针
+    .参数 列数指针, 整数型, , 输出整数指针
+    .参数 是否带边框指针, 整数型, , 输出整数指针
+    .参数 项目数指针, 整数型, , 输出整数指针
+    .参数 操作点击次数指针, 整数型, , 输出整数指针
+    .参数 是否响应式列指针, 整数型, , 输出整数指针
+    .参数 内容是否换行指针, 整数型, , 输出整数指针
 
 .DLL命令 设置表格数据, , "new_emoji.dll", "EU_SetTableData", , 对应 C++ 导出命令 EU_SetTableData
     .参数 窗口句柄, 整数型
@@ -3107,6 +3434,12 @@
     .参数 缓冲区指针, 整数型
     .参数 缓冲区长度, 整数型
 
+.DLL命令 设置卡片标题, , "new_emoji.dll", "EU_SetCardTitle", , 对应 C++ 导出命令 EU_SetCardTitle
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 标题字节集指针, 整数型, , UTF-8
+    .参数 标题长度, 整数型
+
 .DLL命令 设置卡片正文, , "new_emoji.dll", "EU_SetCardBody", , 对应 C++ 导出命令 EU_SetCardBody
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3119,11 +3452,21 @@
     .参数 页脚字节集指针, 整数型, , UTF-8
     .参数 页脚长度, 整数型
 
+.DLL命令 设置卡片列表项, , "new_emoji.dll", "EU_SetCardItems", , 对应 C++ 导出命令 EU_SetCardItems
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 列表项字节集指针, 整数型, , UTF-8，多个列表项用 |、换行或制表符分隔
+    .参数 列表项长度, 整数型
+
 .DLL命令 设置卡片操作项, , "new_emoji.dll", "EU_SetCardActions", , 对应 C++ 导出命令 EU_SetCardActions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 操作项字节集指针, 整数型, , UTF-8，多个操作用 | 或制表符分隔
     .参数 操作项长度, 整数型
+
+.DLL命令 取卡片列表项数量, 整数型, "new_emoji.dll", "EU_GetCardItemCount", , 对应 C++ 导出命令 EU_GetCardItemCount；返回列表项数量
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
 
 .DLL命令 取卡片操作索引, 整数型, "new_emoji.dll", "EU_GetCardAction", , 对应 C++ 导出命令 EU_GetCardAction；返回最近点击的操作索引，未点击返回 -1
     .参数 窗口句柄, 整数型
@@ -3144,6 +3487,48 @@
     .参数 阴影模式, 整数型, , 0无 1始终 2悬停
     .参数 是否响应悬停, 整数型
 
+.DLL命令 设置卡片样式, , "new_emoji.dll", "EU_SetCardStyle", , 对应 C++ 导出命令 EU_SetCardStyle
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景色, 整数型, , ARGB，0 表示使用主题默认
+    .参数 边框色, 整数型, , ARGB，0 表示使用主题默认
+    .参数 边框宽度, 小数型
+    .参数 圆角半径, 小数型
+    .参数 外层内边距, 整数型, , 逻辑尺寸，同时设置上下左右 padding
+
+.DLL命令 取卡片样式, 整数型, "new_emoji.dll", "EU_GetCardStyle", , 对应 C++ 导出命令 EU_GetCardStyle；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景色指针, 整数型, , 传址接收 ARGB
+    .参数 边框色指针, 整数型, , 传址接收 ARGB
+    .参数 边框宽度指针, 整数型, , 传址接收小数指针
+    .参数 圆角半径指针, 整数型, , 传址接收小数指针
+    .参数 外层内边距指针, 整数型, , 传址接收逻辑尺寸
+
+.DLL命令 设置卡片正文样式, , "new_emoji.dll", "EU_SetCardBodyStyle", , 对应 C++ 导出命令 EU_SetCardBodyStyle
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左内边距, 整数型, , 逻辑尺寸
+    .参数 上内边距, 整数型, , 逻辑尺寸
+    .参数 右内边距, 整数型, , 逻辑尺寸
+    .参数 下内边距, 整数型, , 逻辑尺寸
+    .参数 字号, 小数型
+    .参数 列表项间距, 整数型, , 逻辑尺寸，对应 margin-bottom
+    .参数 列表项上下内边距, 整数型, , 逻辑尺寸，对应 padding: N 0
+    .参数 是否显示分割线, 整数型, , 0否 1是
+
+.DLL命令 取卡片正文样式, 整数型, "new_emoji.dll", "EU_GetCardBodyStyle", , 对应 C++ 导出命令 EU_GetCardBodyStyle；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左内边距指针, 整数型, , 传址接收
+    .参数 上内边距指针, 整数型, , 传址接收
+    .参数 右内边距指针, 整数型, , 传址接收
+    .参数 下内边距指针, 整数型, , 传址接收
+    .参数 字号指针, 整数型, , 传址接收小数指针
+    .参数 列表项间距指针, 整数型, , 传址接收
+    .参数 列表项上下内边距指针, 整数型, , 传址接收
+    .参数 是否显示分割线指针, 整数型, , 传址接收
+
 .DLL命令 取卡片选项, 整数型, "new_emoji.dll", "EU_GetCardOptions", , 对应 C++ 导出命令 EU_GetCardOptions；返回 1成功 0失败
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3154,7 +3539,13 @@
 .DLL命令 设置折叠面板项目, , "new_emoji.dll", "EU_SetCollapseItems", , 对应 C++ 导出命令 EU_SetCollapseItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔，格式：标题:正文
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔；旧格式：标题:正文；扩展格式：标题<TAB>正文<TAB>标题图标<TAB>右侧说明<TAB>禁用(0/1)，正文含换行时项目间建议用 |
+    .参数 项目长度, 整数型
+
+.DLL命令 设置折叠面板扩展项目, , "new_emoji.dll", "EU_SetCollapseItemsEx", , 对应 C++ 导出命令 EU_SetCollapseItemsEx
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8，每项格式：标题<TAB>正文<TAB>标题图标<TAB>右侧说明<TAB>禁用(0/1)，项目间建议用 | 分隔
     .参数 项目长度, 整数型
 
 .DLL命令 设置折叠面板激活项, , "new_emoji.dll", "EU_SetCollapseActive", , 对应 C++ 导出命令 EU_SetCollapseActive
@@ -3165,6 +3556,18 @@
 .DLL命令 取折叠面板激活项, 整数型, "new_emoji.dll", "EU_GetCollapseActive", , 对应 C++ 导出命令 EU_GetCollapseActive；返回整数结果或写入输出参数
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
+
+.DLL命令 设置折叠面板激活项列表, , "new_emoji.dll", "EU_SetCollapseActiveItems", , 对应 C++ 导出命令 EU_SetCollapseActiveItems；非手风琴模式可同时展开多个项目
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 激活索引字节集指针, 整数型, , UTF-8，多个索引用逗号/分号/|/换行分隔
+    .参数 激活索引长度, 整数型
+
+.DLL命令 取折叠面板激活项列表, 整数型, "new_emoji.dll", "EU_GetCollapseActiveItems", , 对应 C++ 导出命令 EU_GetCollapseActiveItems；返回写入 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出，格式如 0,2,3
+    .参数 缓冲区大小, 整数型
 
 .DLL命令 取折叠面板项目数, 整数型, "new_emoji.dll", "EU_GetCollapseItemCount", , 对应 C++ 导出命令 EU_GetCollapseItemCount；返回项目数量
     .参数 窗口句柄, 整数型
@@ -3195,10 +3598,16 @@
     .参数 是否启用展开动画指针, 整数型, , 传址接收
     .参数 禁用项目数量指针, 整数型, , 传址接收
 
+.DLL命令 取折叠面板状态JSON, 整数型, "new_emoji.dll", "EU_GetCollapseStateJson", , 对应 C++ 导出命令 EU_GetCollapseStateJson；返回写入 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出 JSON，包含 activeIndex/activeIndices/disabledIndices/items
+    .参数 缓冲区大小, 整数型
+
 .DLL命令 设置时间线项目, , "new_emoji.dll", "EU_SetTimelineItems", , 对应 C++ 导出命令 EU_SetTimelineItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔，格式：时间<TAB>内容<TAB>类型<TAB>图标
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔；旧格式：时间<TAB>内容<TAB>类型<TAB>图标；完整格式：时间<TAB>内容<TAB>类型<TAB>图标<TAB>颜色<TAB>尺寸<TAB>时间位置<TAB>卡片标题<TAB>卡片正文
     .参数 项目长度, 整数型
 
 .DLL命令 设置时间线选项, , "new_emoji.dll", "EU_SetTimelineOptions", , 对应 C++ 导出命令 EU_SetTimelineOptions
@@ -3206,6 +3615,14 @@
     .参数 元素ID, 整数型
     .参数 位置模式, 整数型, , 0左侧 1右侧 2交替
     .参数 是否显示时间, 整数型
+
+.DLL命令 设置时间线高级选项, , "new_emoji.dll", "EU_SetTimelineAdvancedOptions", , 对应 C++ 导出命令 EU_SetTimelineAdvancedOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 位置模式, 整数型, , 0左侧 1右侧 2交替
+    .参数 是否显示时间, 整数型
+    .参数 是否倒序, 整数型
+    .参数 默认时间位置, 整数型, , 0顶部 1底部
 
 .DLL命令 取时间线项目数, 整数型, "new_emoji.dll", "EU_GetTimelineItemCount", , 对应 C++ 导出命令 EU_GetTimelineItemCount；返回项目数量
     .参数 窗口句柄, 整数型
@@ -3216,6 +3633,14 @@
     .参数 元素ID, 整数型
     .参数 位置模式指针, 整数型, , 传址接收，0左侧 1右侧 2交替
     .参数 是否显示时间指针, 整数型, , 传址接收
+
+.DLL命令 取时间线高级选项, 整数型, "new_emoji.dll", "EU_GetTimelineAdvancedOptions", , 对应 C++ 导出命令 EU_GetTimelineAdvancedOptions；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 位置模式指针, 整数型, , 传址接收，0左侧 1右侧 2交替
+    .参数 是否显示时间指针, 整数型, , 传址接收
+    .参数 是否倒序指针, 整数型, , 传址接收
+    .参数 默认时间位置指针, 整数型, , 传址接收，0顶部 1底部
 
 .DLL命令 设置统计数值值, , "new_emoji.dll", "EU_SetStatisticValue", , 对应 C++ 导出命令 EU_SetStatisticValue
     .参数 窗口句柄, 整数型
@@ -3244,6 +3669,74 @@
     .参数 元素ID, 整数型
     .参数 小数精度指针, 整数型, , 传址接收
     .参数 是否启用数字动画指针, 整数型, , 传址接收
+
+.DLL命令 设置统计数值数字选项, , "new_emoji.dll", "EU_SetStatisticNumberOptions", , 设置 precision、千分位、小数分隔符和数字动画
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 小数精度, 整数型, , -1保留原文本，0-6按数字格式化
+    .参数 是否启用数字动画, 整数型
+    .参数 是否使用千分位, 整数型
+    .参数 千分位分隔符字节集指针, 整数型, , UTF-8，通常为“,”
+    .参数 千分位分隔符长度, 整数型
+    .参数 小数分隔符字节集指针, 整数型, , UTF-8，通常为“.”
+    .参数 小数分隔符长度, 整数型
+
+.DLL命令 设置统计数值前后缀选项, , "new_emoji.dll", "EU_SetStatisticAffixOptions", , 设置前缀、后缀、分段颜色和后缀可点击
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 前缀字节集指针, 整数型, , UTF-8，可包含 emoji
+    .参数 前缀长度, 整数型
+    .参数 后缀字节集指针, 整数型, , UTF-8，可包含 emoji
+    .参数 后缀长度, 整数型
+    .参数 前缀颜色ARGB, 整数型, , 0表示跟随数值颜色
+    .参数 后缀颜色ARGB, 整数型, , 0表示跟随数值颜色
+    .参数 数值颜色ARGB, 整数型, , 0表示跟随主题文字色
+    .参数 后缀是否可点击, 整数型
+
+.DLL命令 设置统计数值自定义文本, , "new_emoji.dll", "EU_SetStatisticDisplayText", , 设置 formatter 风格文本，如“456/2”
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示文本字节集指针, 整数型, , UTF-8
+    .参数 显示文本长度, 整数型
+
+.DLL命令 设置统计数值倒计时, , "new_emoji.dll", "EU_SetStatisticCountdown", , 切换到倒计时模式，目标时间为毫秒级 Unix 时间戳
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 目标时间戳毫秒, 长整数型
+    .参数 格式字节集指针, 整数型, , UTF-8，支持“HH:mm:ss”“DD天HH小时mm分钟”，空文本为默认中文格式
+    .参数 格式长度, 整数型
+
+.DLL命令 设置统计数值倒计时状态, , "new_emoji.dll", "EU_SetStatisticCountdownState", , 暂停或继续倒计时
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否暂停, 整数型
+
+.DLL命令 增加统计数值倒计时时间, , "new_emoji.dll", "EU_AddStatisticCountdownTime", , 正数增加时间，负数减少时间，单位毫秒
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 增加毫秒数, 长整数型
+
+.DLL命令 设置统计数值完成回调, , "new_emoji.dll", "EU_SetStatisticFinishCallback", , 倒计时结束时触发一次；回调签名：子程序(元素ID)
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数, 整数型
+
+.DLL命令 设置统计数值后缀点击回调, , "new_emoji.dll", "EU_SetStatisticSuffixClickCallback", , 后缀区域被点击时触发；回调签名：子程序(元素ID)
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数, 整数型
+
+.DLL命令 取统计数值完整状态, 整数型, "new_emoji.dll", "EU_GetStatisticFullState", , 返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 模式指针, 整数型, , 0普通数值 1自定义文本 2倒计时
+    .参数 小数精度指针, 整数型, , 传址接收
+    .参数 是否启用动画指针, 整数型, , 传址接收
+    .参数 是否使用千分位指针, 整数型, , 传址接收
+    .参数 是否暂停指针, 整数型, , 传址接收
+    .参数 是否结束指针, 整数型, , 传址接收
+    .参数 后缀点击次数指针, 整数型, , 传址接收
+    .参数 剩余毫秒数指针, 长整数型, , 传址接收
 
 .DLL命令 设置关键指标卡片数据, , "new_emoji.dll", "EU_SetKpiCardData", , 对应 C++ 导出命令 EU_SetKpiCardData
     .参数 窗口句柄, 整数型
@@ -3606,6 +4099,85 @@
     .参数 结束日期指针, 整数型, , 输出整数指针，YYYYMMDD
     .参数 是否启用指针, 整数型, , 输出整数指针
 
+.DLL命令 设置日历显示范围, , "new_emoji.dll", "EU_SetCalendarDisplayRange", , 对应 C++ 导出命令 EU_SetCalendarDisplayRange；对应 Element UI 的 range 显示范围
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 起始日期, 整数型, , YYYYMMDD，0表示恢复普通月视图
+    .参数 结束日期, 整数型, , YYYYMMDD，0表示恢复普通月视图
+
+.DLL命令 取日历显示范围, 整数型, "new_emoji.dll", "EU_GetCalendarDisplayRange", , 对应 C++ 导出命令 EU_GetCalendarDisplayRange；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 起始日期指针, 整数型, , 输出整数指针，YYYYMMDD
+    .参数 结束日期指针, 整数型, , 输出整数指针，YYYYMMDD
+
+.DLL命令 设置日历单元格数据, , "new_emoji.dll", "EU_SetCalendarCellItems", , 对应 C++ 导出命令 EU_SetCalendarCellItems；UTF-8 每行一个日期，字段用 Tab 分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 数据字节集指针, 整数型, , UTF-8，date/label/extra/emoji/badge/bg/fg/border 等字段
+    .参数 数据长度, 整数型
+
+.DLL命令 取日历单元格数据, 整数型, "new_emoji.dll", "EU_GetCalendarCellItems", , 对应 C++ 导出命令 EU_GetCalendarCellItems；返回写入字节数或所需长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区，可先传 0 取所需长度
+    .参数 缓冲区长度, 整数型
+
+.DLL命令 清空日历单元格数据, , "new_emoji.dll", "EU_ClearCalendarCellItems", , 对应 C++ 导出命令 EU_ClearCalendarCellItems
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置日历视觉选项, , "new_emoji.dll", "EU_SetCalendarVisualOptions", , 对应 C++ 导出命令 EU_SetCalendarVisualOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示标题栏, 整数型, , 0隐藏 1显示
+    .参数 显示星期栏, 整数型, , 0隐藏 1显示
+    .参数 标签模式, 整数型, , 0日号 1月-日 2年-月-日 3优先自定义label
+    .参数 显示相邻月份日期, 整数型, , 0隐藏 1显示
+    .参数 单元格圆角, 小数型
+
+.DLL命令 取日历视觉选项, 整数型, "new_emoji.dll", "EU_GetCalendarVisualOptions", , 对应 C++ 导出命令 EU_GetCalendarVisualOptions；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 显示标题栏指针, 整数型, , 输出整数指针
+    .参数 显示星期栏指针, 整数型, , 输出整数指针
+    .参数 标签模式指针, 整数型, , 输出整数指针
+    .参数 显示相邻月份日期指针, 整数型, , 输出整数指针
+    .参数 单元格圆角指针, 整数型, , 输出小数指针
+
+.DLL命令 设置日历状态颜色, , "new_emoji.dll", "EU_SetCalendarStateColors", , 对应 C++ 导出命令 EU_SetCalendarStateColors；颜色为 ARGB，0使用主题默认
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 选中背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 选中文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 区间背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 今天边框色, 整数型, , ARGB 0xAARRGGBB
+    .参数 悬停背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 禁用文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 相邻月份文字色, 整数型, , ARGB 0xAARRGGBB
+
+.DLL命令 取日历状态颜色, 整数型, "new_emoji.dll", "EU_GetCalendarStateColors", , 对应 C++ 导出命令 EU_GetCalendarStateColors；返回 1成功 0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 选中背景色指针, 整数型, , 输出 ARGB
+    .参数 选中文字色指针, 整数型, , 输出 ARGB
+    .参数 区间背景色指针, 整数型, , 输出 ARGB
+    .参数 今天边框色指针, 整数型, , 输出 ARGB
+    .参数 悬停背景色指针, 整数型, , 输出 ARGB
+    .参数 禁用文字色指针, 整数型, , 输出 ARGB
+    .参数 相邻月份文字色指针, 整数型, , 输出 ARGB
+
+.DLL命令 设置日历选中标记, , "new_emoji.dll", "EU_SetCalendarSelectedMarker", , 对应 C++ 导出命令 EU_SetCalendarSelectedMarker；例如传入 ✔️
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 标记字节集指针, 整数型, , UTF-8，可传 emoji
+    .参数 标记长度, 整数型
+
+.DLL命令 设置日历变化回调, , "new_emoji.dll", "EU_SetCalendarChangeCallback", , 对应 C++ 导出命令 EU_SetCalendarChangeCallback；回调参数为 元素ID、当前选中YYYYMMDD、区间起始、区间结束
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
 .DLL命令 设置树项目, , "new_emoji.dll", "EU_SetTreeItems", , 对应 C++ 导出命令 EU_SetTreeItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3766,6 +4338,231 @@
     .参数 元素ID, 整数型
     .参数 项目索引, 整数型, , 从0开始
 
+## Tree / TreeSelect JSON 高级接口 🌳
+
+说明：以下接口是 Tree / TreeSelect 推荐公共 API。所有 JSON 文本均使用 UTF-8 字节集指针 + 长度传入；读取接口先传 `缓冲区指针=0`、`缓冲区大小=0` 可取所需长度，再分配字节集缓冲区读取。上方 `设置树项目`、`设置树选择器项目` 等索引/扁平格式接口保留为兼容接口。
+
+节点 JSON 字段：`key`、`label`、`children`、`disabled`、`leaf`、`checked`、`expanded`、`icon`、`tag`、`actions`、`lazy`。字段映射使用 `props`，例如：`{"label":"name","children":"zones","isLeaf":"leaf"}`。
+
+Tree 状态 JSON 返回：`currentKey`、`visibleCount`、`checkedKeys`、`halfCheckedKeys`、`expandedKeys`、`lastLazyIndex`、`lastLazyKey`、`dragEventCount`。
+TreeSelect 状态 JSON 返回：`selectedKeys`、`expandedKeys`、`open`、`multiple`、`clearable`、`searchable`、`searchText`、`matchedCount`、`lastLazyIndex`、`dragEventCount`。
+
+回调事件码：`1=点击/选中`、`2=勾选/选择变化`、`3=展开`、`4=折叠`、`10=懒加载请求`、`20=拖拽完成`。拖拽放置类型：`0=放到目标前`、`1=放入目标内`、`2=放到目标后`。
+
+JSON 示例：
+
+```json
+{
+  "props": {"label": "name", "children": "zones", "isLeaf": "leaf"},
+  "defaultExpandedKeys": ["root"],
+  "defaultCheckedKeys": ["task-tree"],
+  "currentKey": "task-tree",
+  "data": [
+    {
+      "key": "root",
+      "name": "📦 项目资源",
+      "icon": "📦",
+      "tag": "主目录",
+      "zones": [
+        {"key": "task-tree", "name": "🌳 Tree 高级样式", "leaf": true},
+        {"key": "locked", "name": "🔒 禁用节点", "leaf": true, "disabled": true},
+        {"key": "remote", "name": "⏳ 懒加载目录", "lazy": true, "leaf": false}
+      ]
+    }
+  ]
+}
+```
+
+.DLL命令 设置树JSON数据, , "new_emoji.dll", "EU_SetTreeDataJson", , 设置 Tree 嵌套 JSON 数据
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树JSON数据, 整数型, "new_emoji.dll", "EU_GetTreeDataJson", , 返回 UTF-8 JSON 所需长度或实际写入长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树JSON选项, , "new_emoji.dll", "EU_SetTreeOptionsJson", , 设置 showCheckbox/lazy/checkStrictly/accordion/filterText/draggable 等高级选项
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树JSON状态, 整数型, "new_emoji.dll", "EU_GetTreeStateJson", , 返回 Tree 状态 JSON 所需长度或实际写入长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树勾选键JSON, , "new_emoji.dll", "EU_SetTreeCheckedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树勾选键JSON, 整数型, "new_emoji.dll", "EU_GetTreeCheckedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树展开键JSON, , "new_emoji.dll", "EU_SetTreeExpandedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树展开键JSON, 整数型, "new_emoji.dll", "EU_GetTreeExpandedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 追加树节点JSON, , "new_emoji.dll", "EU_AppendTreeNodeJson", , parentKey 为空则追加根节点
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 父节点键字节集指针, 整数型, , UTF-8
+    .参数 父节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 更新树节点JSON, , "new_emoji.dll", "EU_UpdateTreeNodeJson", , 按 key 更新节点文本、图标、标签、状态等
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 删除树节点按键, , "new_emoji.dll", "EU_RemoveTreeNodeByKey", , 删除指定 key 的节点及子树
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+
+.DLL命令 设置树节点事件回调, , "new_emoji.dll", "EU_SetTreeNodeEventCallback", , 回调签名见 C++ TreeNodeEventCallback
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树懒加载回调, , "new_emoji.dll", "EU_SetTreeLazyLoadCallback", , 展开 lazy 节点时触发，调用方再追加子节点 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树拖拽回调, , "new_emoji.dll", "EU_SetTreeDragCallback", , 拖拽完成后触发
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树允许拖拽回调, , "new_emoji.dll", "EU_SetTreeAllowDragCallback", , 返回 0 禁止拖拽，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树允许放置回调, , "new_emoji.dll", "EU_SetTreeAllowDropCallback", , 返回 0 禁止放置，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器JSON数据, , "new_emoji.dll", "EU_SetTreeSelectDataJson", , 设置 TreeSelect 嵌套 JSON 数据
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器JSON数据, 整数型, "new_emoji.dll", "EU_GetTreeSelectDataJson", , 返回 UTF-8 JSON 所需长度或实际写入长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树选择器JSON选项, , "new_emoji.dll", "EU_SetTreeSelectOptionsJson", , 设置 multiple/clearable/searchable/open/searchText/accordion/draggable 等选项
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器JSON状态, 整数型, "new_emoji.dll", "EU_GetTreeSelectStateJson", , 返回 TreeSelect 状态 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树选择器选中键JSON, , "new_emoji.dll", "EU_SetTreeSelectSelectedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器选中键JSON, 整数型, "new_emoji.dll", "EU_GetTreeSelectSelectedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 设置树选择器展开键JSON, , "new_emoji.dll", "EU_SetTreeSelectExpandedKeysJson", , JSON 数组或 {"keys":[...]}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 JSON长度, 整数型
+
+.DLL命令 取树选择器展开键JSON, 整数型, "new_emoji.dll", "EU_GetTreeSelectExpandedKeysJson", , 返回 key 数组 JSON
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 追加树选择器节点JSON, , "new_emoji.dll", "EU_AppendTreeSelectNodeJson", , parentKey 为空则追加根节点
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 父节点键字节集指针, 整数型, , UTF-8
+    .参数 父节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 更新树选择器节点JSON, , "new_emoji.dll", "EU_UpdateTreeSelectNodeJson", , 按 key 更新节点
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+    .参数 节点JSON字节集指针, 整数型, , UTF-8 JSON
+    .参数 节点JSON长度, 整数型
+
+.DLL命令 删除树选择器节点按键, , "new_emoji.dll", "EU_RemoveTreeSelectNodeByKey", , 删除指定 key 的节点及子树
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 节点键字节集指针, 整数型, , UTF-8
+    .参数 节点键长度, 整数型
+
+.DLL命令 设置树选择器节点事件回调, , "new_emoji.dll", "EU_SetTreeSelectNodeEventCallback", , 回调签名见 C++ TreeNodeEventCallback
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器懒加载回调, , "new_emoji.dll", "EU_SetTreeSelectLazyLoadCallback", , 展开 lazy 节点时触发
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器拖拽回调, , "new_emoji.dll", "EU_SetTreeSelectDragCallback", , 拖拽完成后触发
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器允许拖拽回调, , "new_emoji.dll", "EU_SetTreeSelectAllowDragCallback", , 返回 0 禁止拖拽，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置树选择器允许放置回调, , "new_emoji.dll", "EU_SetTreeSelectAllowDropCallback", , 返回 0 禁止放置，非0允许
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
 .DLL命令 设置穿梭框项目, , "new_emoji.dll", "EU_SetTransferItems", , 对应 C++ 导出命令 EU_SetTransferItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3836,6 +4633,104 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 侧边, 整数型, , 0左侧 1右侧
+
+.DLL命令 设置穿梭框扩展数据, , "new_emoji.dll", "EU_SetTransferDataEx", , 结构化项目格式为 key<Tab>label<Tab>value<Tab>desc<Tab>pinyin<Tab>disabled；目标值用 | 或换行分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目数据字节集指针, 整数型, , UTF-8
+    .参数 项目数据长度, 整数型
+    .参数 目标值字节集指针, 整数型, , UTF-8，值用 | 或换行分隔
+    .参数 目标值长度, 整数型
+
+.DLL命令 设置穿梭框选项, , "new_emoji.dll", "EU_SetTransferOptions", , 设置筛选、多选、底部操作区、全选、统计和渲染模式
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否可筛选, 整数型, , 0否 1是
+    .参数 是否多选, 整数型, , 0单选 1多选
+    .参数 是否显示底部, 整数型, , 0否 1是
+    .参数 是否显示全选, 整数型, , 0否 1是
+    .参数 是否显示统计, 整数型, , 0否 1是
+    .参数 渲染模式, 整数型, , 0模板 1键值标签 2标签描述
+
+.DLL命令 取穿梭框选项, 整数型, "new_emoji.dll", "EU_GetTransferOptions", , 成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否可筛选指针, 整数型, , 传址接收
+    .参数 是否多选指针, 整数型, , 传址接收
+    .参数 是否显示底部指针, 整数型, , 传址接收
+    .参数 是否显示全选指针, 整数型, , 传址接收
+    .参数 是否显示统计指针, 整数型, , 传址接收
+    .参数 渲染模式指针, 整数型, , 传址接收
+
+.DLL命令 设置穿梭框标题, , "new_emoji.dll", "EU_SetTransferTitles", , 设置左右面板标题
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左侧标题字节集指针, 整数型, , UTF-8
+    .参数 左侧标题长度, 整数型
+    .参数 右侧标题字节集指针, 整数型, , UTF-8
+    .参数 右侧标题长度, 整数型
+
+.DLL命令 设置穿梭框按钮文字, , "new_emoji.dll", "EU_SetTransferButtonTexts", , 设置“到左边 / 到右边”按钮文字
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 到左边文字字节集指针, 整数型, , UTF-8
+    .参数 到左边文字长度, 整数型
+    .参数 到右边文字字节集指针, 整数型, , UTF-8
+    .参数 到右边文字长度, 整数型
+
+.DLL命令 设置穿梭框统计格式, , "new_emoji.dll", "EU_SetTransferFormat", , 支持 ${checked}、${total}、${matched}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 未勾选格式字节集指针, 整数型, , UTF-8
+    .参数 未勾选格式长度, 整数型
+    .参数 已勾选格式字节集指针, 整数型, , UTF-8
+    .参数 已勾选格式长度, 整数型
+
+.DLL命令 设置穿梭框项目模板, , "new_emoji.dll", "EU_SetTransferItemTemplate", , 支持 {key}、{label}、{value}、{desc}、{pinyin}
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 模板字节集指针, 整数型, , UTF-8
+    .参数 模板长度, 整数型
+
+.DLL命令 设置穿梭框底部文字, , "new_emoji.dll", "EU_SetTransferFooterTexts", , 设置左右底部操作区文字
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左侧底部字节集指针, 整数型, , UTF-8
+    .参数 左侧底部长度, 整数型
+    .参数 右侧底部字节集指针, 整数型, , UTF-8
+    .参数 右侧底部长度, 整数型
+
+.DLL命令 设置穿梭框筛选占位, , "new_emoji.dll", "EU_SetTransferFilterPlaceholder", , 设置筛选输入框占位文案，例如“请输入城市拼音 🔎”
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 占位文字字节集指针, 整数型, , UTF-8
+    .参数 占位文字长度, 整数型
+
+.DLL命令 设置穿梭框勾选键, , "new_emoji.dll", "EU_SetTransferCheckedKeys", , 设置左右默认勾选键，值用 | 或换行分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 左侧键字节集指针, 整数型, , UTF-8
+    .参数 左侧键长度, 整数型
+    .参数 右侧键字节集指针, 整数型, , UTF-8
+    .参数 右侧键长度, 整数型
+
+.DLL命令 取穿梭框勾选数量, 整数型, "new_emoji.dll", "EU_GetTransferCheckedCount", , 返回指定侧边勾选项目数量
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 侧边, 整数型, , 0左侧 1右侧
+
+.DLL命令 取穿梭框目标值, 整数型, "new_emoji.dll", "EU_GetTransferValueKeys", , 返回写入 UTF-8 字节数；右侧目标值用 | 分隔
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 缓冲区长度, 整数型
+
+.DLL命令 取穿梭框文本, 整数型, "new_emoji.dll", "EU_GetTransferText", , 返回写入 UTF-8 字节数；文本类型 0左标题 1右标题 2左移按钮 3右移按钮 4未勾选格式 5已勾选格式 6项目模板 7左底部 8右底部 9筛选占位
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本类型, 整数型
+    .参数 缓冲区指针, 整数型, , UTF-8 接收缓冲区
+    .参数 缓冲区长度, 整数型
 
 .DLL命令 设置自动补全建议项, , "new_emoji.dll", "EU_SetAutocompleteSuggestions", , 对应 C++ 导出命令 EU_SetAutocompleteSuggestions
     .参数 窗口句柄, 整数型
@@ -4140,6 +5035,18 @@
     .参数 元素ID, 整数型
     .参数 分隔符字节集指针, 整数型, , UTF-8
     .参数 分隔符长度, 整数型
+
+.DLL命令 设置日期选择器开始占位符, , "new_emoji.dll", "EU_SetDatePickerStartPlaceholder", , 对应 C++ 导出命令 EU_SetDatePickerStartPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
+.DLL命令 设置日期选择器结束占位符, , "new_emoji.dll", "EU_SetDatePickerEndPlaceholder", , 对应 C++ 导出命令 EU_SetDatePickerEndPlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
 
 .DLL命令 设置日期选择器格式, , "new_emoji.dll", "EU_SetDatePickerFormat", , 对应 C++ 导出命令 EU_SetDatePickerFormat
     .参数 窗口句柄, 整数型
@@ -4686,6 +5593,70 @@
     .参数 缓冲区指针, 整数型, , UTF-8 输出缓冲区
     .参数 缓冲区长度, 整数型
 
+.DLL命令 设置菜单颜色, , "new_emoji.dll", "EU_SetMenuColors", , 对应 C++ 导出命令 EU_SetMenuColors；0 表示使用主题默认色
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 激活文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 悬停背景色, 整数型, , ARGB 0xAARRGGBB
+    .参数 禁用文字色, 整数型, , ARGB 0xAARRGGBB
+    .参数 边框色, 整数型, , ARGB 0xAARRGGBB
+
+.DLL命令 取菜单颜色, 整数型, "new_emoji.dll", "EU_GetMenuColors", , 对应 C++ 导出命令 EU_GetMenuColors；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景色指针, 整数型, , 输出整数指针
+    .参数 文字色指针, 整数型, , 输出整数指针
+    .参数 激活文字色指针, 整数型, , 输出整数指针
+    .参数 悬停背景色指针, 整数型, , 输出整数指针
+    .参数 禁用文字色指针, 整数型, , 输出整数指针
+    .参数 边框色指针, 整数型, , 输出整数指针
+
+.DLL命令 设置菜单收起状态, , "new_emoji.dll", "EU_SetMenuCollapsed", , 对应 C++ 导出命令 EU_SetMenuCollapsed；主要用于垂直侧栏菜单
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否收起, 整数型, , 0展开 1收起
+
+.DLL命令 取菜单收起状态, 整数型, "new_emoji.dll", "EU_GetMenuCollapsed", , 对应 C++ 导出命令 EU_GetMenuCollapsed；返回 0展开 1收起
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
+.DLL命令 设置菜单项元数据, , "new_emoji.dll", "EU_SetMenuItemMeta", , 对应 C++ 导出命令 EU_SetMenuItemMeta；设置图标、分组、链接、目标和命令
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8，用 | 分隔，允许空项
+    .参数 图标长度, 整数型
+    .参数 分组索引数组指针, 整数型, , 整数数组地址，索引从0开始
+    .参数 分组索引数量, 整数型
+    .参数 链接字节集指针, 整数型, , UTF-8，用 | 分隔，允许空项
+    .参数 链接长度, 整数型
+    .参数 目标字节集指针, 整数型, , UTF-8，例如 _blank
+    .参数 目标长度, 整数型
+    .参数 命令字节集指针, 整数型, , UTF-8，用 | 分隔，允许空项
+    .参数 命令长度, 整数型
+
+.DLL命令 取菜单项元数据, 整数型, "new_emoji.dll", "EU_GetMenuItemMeta", , 对应 C++ 导出命令 EU_GetMenuItemMeta；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目索引, 整数型, , 索引从0开始
+    .参数 图标缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 图标缓冲区长度, 整数型
+    .参数 链接缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 链接缓冲区长度, 整数型
+    .参数 目标缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 目标缓冲区长度, 整数型
+    .参数 命令缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 命令缓冲区长度, 整数型
+    .参数 是否分组指针, 整数型, , 输出整数指针
+    .参数 是否禁用指针, 整数型, , 输出整数指针
+    .参数 层级指针, 整数型, , 输出整数指针
+
+.DLL命令 设置菜单选择回调, , "new_emoji.dll", "EU_SetMenuSelectCallback", , 对应 C++ 导出命令 EU_SetMenuSelectCallback；回调参数：元素ID、项目索引、路径UTF-8、路径长度、命令UTF-8、命令长度
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
 .DLL命令 设置锚点项目, , "new_emoji.dll", "EU_SetAnchorItems", , 对应 C++ 导出命令 EU_SetAnchorItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -5051,7 +6022,7 @@
 .DLL命令 设置图片适配方式, , "new_emoji.dll", "EU_SetImageFit", , 对应 C++ 导出命令 EU_SetImageFit
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 适配方式, 整数型
+    .参数 适配方式, 整数型, , 0包含contain 1覆盖cover 2拉伸fill 3原尺寸none 4按需缩小scale-down
 
 .DLL命令 设置图片预览打开状态, , "new_emoji.dll", "EU_SetImagePreview", , 对应 C++ 导出命令 EU_SetImagePreview
     .参数 窗口句柄, 整数型
@@ -5075,7 +6046,44 @@
     .参数 元素ID, 整数型
     .参数 是否启用缓存, 整数型, , 0禁用 1启用
 
-.DLL命令 取图片加载状态, 整数型, "new_emoji.dll", "EU_GetImageStatus", , 对应 C++ 导出命令 EU_GetImageStatus；返回 0占位 1已加载 2失败
+.DLL命令 设置图片懒加载, , "new_emoji.dll", "EU_SetImageLazy", , 对应 C++ 导出命令 EU_SetImageLazy
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否懒加载, 整数型, , 0关闭 1开启
+
+.DLL命令 设置图片占位内容, , "new_emoji.dll", "EU_SetImagePlaceholder", , 对应 C++ 导出命令 EU_SetImagePlaceholder
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8 emoji 或文本
+    .参数 图标长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 前景色, 整数型, , ARGB，0使用主题默认
+    .参数 背景色, 整数型, , ARGB，0使用默认背景
+
+.DLL命令 设置图片失败内容, , "new_emoji.dll", "EU_SetImageErrorContent", , 对应 C++ 导出命令 EU_SetImageErrorContent
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 图标字节集指针, 整数型, , UTF-8 emoji 或文本
+    .参数 图标长度, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 前景色, 整数型, , ARGB，0使用主题默认
+    .参数 背景色, 整数型, , ARGB，0使用默认背景
+
+.DLL命令 设置图片预览列表, , "new_emoji.dll", "EU_SetImagePreviewList", , 对应 C++ 导出命令 EU_SetImagePreviewList
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 来源列表字节集指针, 整数型, , UTF-8，使用 | 或换行分隔
+    .参数 来源列表长度, 整数型
+    .参数 当前索引, 整数型, , 从0开始
+
+.DLL命令 设置图片预览索引, , "new_emoji.dll", "EU_SetImagePreviewIndex", , 对应 C++ 导出命令 EU_SetImagePreviewIndex
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 当前索引, 整数型, , 从0开始
+
+.DLL命令 取图片加载状态, 整数型, "new_emoji.dll", "EU_GetImageStatus", , 对应 C++ 导出命令 EU_GetImageStatus；返回 0占位/空 1已加载 2失败 3加载中 4懒加载等待可见
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
@@ -5089,7 +6097,7 @@
     .参数 适配方式指针, 整数型, , 传址接收
     .参数 预览启用指针, 整数型, , 传址接收
     .参数 预览打开指针, 整数型, , 传址接收
-    .参数 加载状态指针, 整数型, , 传址接收，0占位 1已加载 2失败
+    .参数 加载状态指针, 整数型, , 传址接收，0占位/空 1已加载 2失败 3加载中 4懒加载等待可见
 
 .DLL命令 取图片完整选项, 整数型, "new_emoji.dll", "EU_GetImageFullOptions", , 对应 C++ 导出命令 EU_GetImageFullOptions；成功返回1，失败返回0
     .参数 窗口句柄, 整数型
@@ -5105,6 +6113,20 @@
     .参数 重载次数指针, 整数型, , 传址接收
     .参数 位图宽度指针, 整数型, , 传址接收
     .参数 位图高度指针, 整数型, , 传址接收
+
+.DLL命令 取图片高级选项, 整数型, "new_emoji.dll", "EU_GetImageAdvancedOptions", , 对应 C++ 导出命令 EU_GetImageAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 适配方式指针, 整数型, , 传址接收
+    .参数 懒加载指针, 整数型, , 传址接收
+    .参数 预览启用指针, 整数型, , 传址接收
+    .参数 预览打开指针, 整数型, , 传址接收
+    .参数 预览索引指针, 整数型, , 传址接收
+    .参数 预览数量指针, 整数型, , 传址接收
+    .参数 加载状态指针, 整数型, , 传址接收
+    .参数 缩放百分比指针, 整数型, , 传址接收
+    .参数 横向偏移指针, 整数型, , 传址接收
+    .参数 纵向偏移指针, 整数型, , 传址接收
 
 .DLL命令 设置走马灯项目, , "new_emoji.dll", "EU_SetCarouselItems", , 对应 C++ 导出命令 EU_SetCarouselItems
     .参数 窗口句柄, 整数型
@@ -5124,6 +6146,50 @@
     .参数 指示器位置, 整数型, , 0内部 1外部
     .参数 是否显示箭头, 整数型
     .参数 是否显示指示器, 整数型
+
+.DLL命令 设置走马灯行为, , "new_emoji.dll", "EU_SetCarouselBehavior", , 对应 C++ 导出命令 EU_SetCarouselBehavior
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 触发方式, 整数型, , 0悬停 1点击
+    .参数 箭头模式, 整数型, , 0悬停显示 1始终显示 2隐藏
+    .参数 方向, 整数型, , 0横向 1纵向
+    .参数 显示类型, 整数型, , 0普通 1卡片
+    .参数 悬停暂停, 整数型, , 0关闭 1启用
+
+.DLL命令 取走马灯行为, 整数型, "new_emoji.dll", "EU_GetCarouselBehavior", , 对应 C++ 导出命令 EU_GetCarouselBehavior；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 触发方式指针, 整数型, , 传址接收，0悬停 1点击
+    .参数 箭头模式指针, 整数型, , 传址接收，0悬停显示 1始终显示 2隐藏
+    .参数 方向指针, 整数型, , 传址接收，0横向 1纵向
+    .参数 显示类型指针, 整数型, , 传址接收，0普通 1卡片
+    .参数 悬停暂停指针, 整数型, , 传址接收，0关闭 1启用
+
+.DLL命令 设置走马灯视觉样式, , "new_emoji.dll", "EU_SetCarouselVisual", , 对应 C++ 导出命令 EU_SetCarouselVisual
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本颜色, 整数型, , ARGB颜色，例如 #FF475669
+    .参数 文本透明度, 整数型, , 0-255
+    .参数 文本字号, 整数型, , 逻辑像素
+    .参数 奇数项背景, 整数型, , ARGB颜色
+    .参数 偶数项背景, 整数型, , ARGB颜色
+    .参数 面板背景, 整数型, , ARGB颜色
+    .参数 激活指示器颜色, 整数型, , ARGB颜色
+    .参数 未激活指示器颜色, 整数型, , ARGB颜色
+    .参数 卡片缩放百分比, 整数型, , 侧边卡片缩放比例，建议60-100
+
+.DLL命令 取走马灯视觉样式, 整数型, "new_emoji.dll", "EU_GetCarouselVisual", , 对应 C++ 导出命令 EU_GetCarouselVisual；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本颜色指针, 整数型, , 传址接收
+    .参数 文本透明度指针, 整数型, , 传址接收
+    .参数 文本字号指针, 整数型, , 传址接收
+    .参数 奇数项背景指针, 整数型, , 传址接收
+    .参数 偶数项背景指针, 整数型, , 传址接收
+    .参数 面板背景指针, 整数型, , 传址接收
+    .参数 激活指示器颜色指针, 整数型, , 传址接收
+    .参数 未激活指示器颜色指针, 整数型, , 传址接收
+    .参数 卡片缩放百分比指针, 整数型, , 传址接收
 
 .DLL命令 设置走马灯自动播放, , "new_emoji.dll", "EU_SetCarouselAutoplay", , 对应 C++ 导出命令 EU_SetCarouselAutoplay
     .参数 窗口句柄, 整数型
@@ -5347,85 +6413,74 @@
     .参数 元素ID, 整数型
     .参数 回调函数指针, 整数型
 
-.DLL命令 设置滚动条值, , "new_emoji.dll", "EU_SetScrollbarValue", , 对应 C++ 导出命令 EU_SetScrollbarValue
+.DLL命令 设置无限滚动项目, , "new_emoji.dll", "EU_SetInfiniteScrollItems", , 对应 C++ 导出命令 EU_SetInfiniteScrollItems；重设全部项目并回到顶部
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 数值, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8；行用换行或 | 分隔，每行可用 标题\t副标题\t标签
+    .参数 项目长度, 整数型
 
-.DLL命令 设置滚动条范围, , "new_emoji.dll", "EU_SetScrollbarRange", , 对应 C++ 导出命令 EU_SetScrollbarRange
+.DLL命令 追加无限滚动项目, , "new_emoji.dll", "EU_AppendInfiniteScrollItems", , 对应 C++ 导出命令 EU_AppendInfiniteScrollItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 最大值, 整数型
-    .参数 页大小, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8；行用换行或 | 分隔，每行可用 标题\t副标题\t标签
+    .参数 项目长度, 整数型
 
-.DLL命令 设置滚动条选项, , "new_emoji.dll", "EU_SetScrollbarOptions", , 对应 C++ 导出命令 EU_SetScrollbarOptions
-    .参数 窗口句柄, 整数型
-    .参数 元素ID, 整数型
-    .参数 最大值, 整数型
-    .参数 页大小, 整数型
-    .参数 方向, 整数型, , 0横向 1纵向
-    .参数 是否自动隐藏, 整数型
-
-.DLL命令 设置滚动条步进, , "new_emoji.dll", "EU_SetScrollbarWheelStep", , 对应 C++ 导出命令 EU_SetScrollbarWheelStep
-    .参数 窗口句柄, 整数型
-    .参数 元素ID, 整数型
-    .参数 步进值, 整数型
-
-.DLL命令 绑定滚动条内容, , "new_emoji.dll", "EU_BindScrollbarContent", , 对应 C++ 导出命令 EU_BindScrollbarContent
-    .参数 窗口句柄, 整数型
-    .参数 元素ID, 整数型
-    .参数 目标元素ID, 整数型, , 要随滚动偏移移动的内容元素
-    .参数 内容尺寸, 整数型
-    .参数 视口尺寸, 整数型
-
-.DLL命令 滚动条滚动, , "new_emoji.dll", "EU_ScrollbarScroll", , 对应 C++ 导出命令 EU_ScrollbarScroll
-    .参数 窗口句柄, 整数型
-    .参数 元素ID, 整数型
-    .参数 步数, 整数型, , 正数向后，负数向前
-
-.DLL命令 滚动条滚轮, , "new_emoji.dll", "EU_ScrollbarWheel", , 对应 C++ 导出命令 EU_ScrollbarWheel
-    .参数 窗口句柄, 整数型
-    .参数 元素ID, 整数型
-    .参数 滚轮增量, 整数型, , 通常为 120 或 -120
-
-.DLL命令 取滚动条值, 整数型, "new_emoji.dll", "EU_GetScrollbarValue", , 对应 C++ 导出命令 EU_GetScrollbarValue；返回整数结果或写入输出参数
+.DLL命令 清空无限滚动项目, , "new_emoji.dll", "EU_ClearInfiniteScrollItems", , 对应 C++ 导出命令 EU_ClearInfiniteScrollItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
-.DLL命令 取滚动条最大值, 整数型, "new_emoji.dll", "EU_GetScrollbarMaxValue", , 对应 C++ 导出命令 EU_GetScrollbarMaxValue
+.DLL命令 设置无限滚动状态, , "new_emoji.dll", "EU_SetInfiniteScrollState", , 对应 C++ 导出命令 EU_SetInfiniteScrollState
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
+    .参数 是否加载中, 整数型
+    .参数 是否没有更多, 整数型
+    .参数 是否禁用, 整数型
 
-.DLL命令 取滚动条选项, 整数型, "new_emoji.dll", "EU_GetScrollbarOptions", , 对应 C++ 导出命令 EU_GetScrollbarOptions；成功返回1，失败返回0
+.DLL命令 设置无限滚动选项, , "new_emoji.dll", "EU_SetInfiniteScrollOptions", , 对应 C++ 导出命令 EU_SetInfiniteScrollOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 当前值指针, 整数型, , 传址接收
-    .参数 最大值指针, 整数型, , 传址接收
-    .参数 页大小指针, 整数型, , 传址接收
-    .参数 方向指针, 整数型, , 传址接收，0横向 1纵向
-    .参数 是否自动隐藏指针, 整数型, , 传址接收
-    .参数 步进值指针, 整数型, , 传址接收
+    .参数 项目高度, 整数型, , 逻辑尺寸
+    .参数 项目间距, 整数型, , 逻辑尺寸
+    .参数 触底阈值, 整数型, , 逻辑尺寸
+    .参数 样式模式, 整数型, , 0基础 1卡片 2紧凑 3强调
+    .参数 是否显示指示条, 整数型
+    .参数 是否显示索引, 整数型
 
-.DLL命令 取滚动条完整状态, 整数型, "new_emoji.dll", "EU_GetScrollbarFullState", , 对应 C++ 导出命令 EU_GetScrollbarFullState；成功返回1，失败返回0
+.DLL命令 设置无限滚动文本, , "new_emoji.dll", "EU_SetInfiniteScrollTexts", , 对应 C++ 导出命令 EU_SetInfiniteScrollTexts
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 当前值指针, 整数型, , 传址接收
-    .参数 最大值指针, 整数型, , 传址接收
-    .参数 页大小指针, 整数型, , 传址接收
-    .参数 方向指针, 整数型, , 0横向 1纵向
-    .参数 是否自动隐藏指针, 整数型, , 传址接收
-    .参数 步进值指针, 整数型, , 传址接收
-    .参数 绑定元素ID指针, 整数型, , 传址接收
-    .参数 内容尺寸指针, 整数型, , 传址接收
-    .参数 视口尺寸指针, 整数型, , 传址接收
-    .参数 内容偏移指针, 整数型, , 传址接收
-    .参数 滚轮次数指针, 整数型, , 传址接收
-    .参数 拖动次数指针, 整数型, , 传址接收
+    .参数 加载中文字节集指针, 整数型, , UTF-8
+    .参数 加载中文本长度, 整数型
+    .参数 没有更多字节集指针, 整数型, , UTF-8
+    .参数 没有更多文本长度, 整数型
+    .参数 空状态字节集指针, 整数型, , UTF-8
+    .参数 空状态文本长度, 整数型
+
+.DLL命令 设置无限滚动位置, , "new_emoji.dll", "EU_SetInfiniteScrollScroll", , 对应 C++ 导出命令 EU_SetInfiniteScrollScroll
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 垂直滚动位置, 整数型
+
+.DLL命令 取无限滚动完整状态, 整数型, "new_emoji.dll", "EU_GetInfiniteScrollFullState", , 对应 C++ 导出命令 EU_GetInfiniteScrollFullState；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目数量指针, 整数型, , 传址接收
+    .参数 当前滚动指针, 整数型, , 传址接收
+    .参数 最大滚动指针, 整数型, , 传址接收
+    .参数 内容高度指针, 整数型, , 传址接收
+    .参数 视口高度指针, 整数型, , 传址接收
+    .参数 是否加载中指针, 整数型, , 传址接收
+    .参数 是否没有更多指针, 整数型, , 传址接收
+    .参数 是否禁用指针, 整数型, , 传址接收
+    .参数 加载触发次数指针, 整数型, , 传址接收
     .参数 变化次数指针, 整数型, , 传址接收
-    .参数 最近动作指针, 整数型, , 1设置 2API滚动 3滚轮 4拖动 5轨道 6绑定 7键盘
-    .参数 最近滚轮增量指针, 整数型, , 传址接收
+    .参数 最近动作指针, 整数型, , 1设置 2追加 3清空 4状态 5选项 6设滚动 7滚轮 8拖动 9键盘 10触底 11文本
+    .参数 触底阈值指针, 整数型, , 传址接收
+    .参数 样式模式指针, 整数型, , 传址接收
+    .参数 是否显示指示条指针, 整数型, , 传址接收
+    .参数 是否显示索引指针, 整数型, , 传址接收
 
-.DLL命令 设置滚动条变化回调, , "new_emoji.dll", "EU_SetScrollbarChangeCallback", , 对应 C++ 导出命令 EU_SetScrollbarChangeCallback
+.DLL命令 设置无限滚动加载回调, , "new_emoji.dll", "EU_SetInfiniteScrollLoadCallback", , 对应 C++ 导出命令 EU_SetInfiniteScrollLoadCallback；回调参数为 元素ID、项目数量、当前滚动、最大滚动
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数指针, 整数型
@@ -5492,7 +6547,13 @@
 .DLL命令 设置标签页项目, , "new_emoji.dll", "EU_SetTabsItems", , 对应 C++ 导出命令 EU_SetTabsItems
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 项目字节集指针, 整数型, , UTF-8, separated by | or newline when applicable
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔，完整格式：时间<TAB>内容<TAB>类型<TAB>图标<TAB>颜色<TAB>尺寸<TAB>时间位置<TAB>卡片标题<TAB>卡片正文
+    .参数 项目长度, 整数型
+
+.DLL命令 设置标签页扩展项目, , "new_emoji.dll", "EU_SetTabsItemsEx", , 对应 C++ 导出命令 EU_SetTabsItemsEx；每项格式：标签\t名称\t内容\t图标\t禁用\t可关闭
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目字节集指针, 整数型, , UTF-8，项目用 | 或换行分隔
     .参数 项目长度, 整数型
 
 .DLL命令 设置标签页激活项, , "new_emoji.dll", "EU_SetTabsActive", , 对应 C++ 导出命令 EU_SetTabsActive
@@ -5500,17 +6561,43 @@
     .参数 元素ID, 整数型
     .参数 激活索引, 整数型
 
+.DLL命令 设置标签页激活名称, , "new_emoji.dll", "EU_SetTabsActiveName", , 对应 C++ 导出命令 EU_SetTabsActiveName
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 名称字节集指针, 整数型, , UTF-8
+    .参数 名称长度, 整数型
+
 .DLL命令 设置标签页类型, , "new_emoji.dll", "EU_SetTabsType", , 对应 C++ 导出命令 EU_SetTabsType
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 标签类型, 整数型, , 0线形 1卡片
+    .参数 标签类型, 整数型, , 0线形 1卡片 2边框卡片
+
+.DLL命令 设置标签页位置, , "new_emoji.dll", "EU_SetTabsPosition", , 对应 C++ 导出命令 EU_SetTabsPosition
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 标签位置, 整数型, , 0上 1右 2下 3左
+
+.DLL命令 设置标签页表头对齐, , "new_emoji.dll", "EU_SetTabsHeaderAlign", , 对应 C++ 导出命令 EU_SetTabsHeaderAlign
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 对齐方式, 整数型, , 0左对齐 1居中 2右对齐
 
 .DLL命令 设置标签页完整选项, , "new_emoji.dll", "EU_SetTabsOptions", , 对应 C++ 导出命令 EU_SetTabsOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
-    .参数 标签类型, 整数型, , 0线形 1卡片
+    .参数 标签类型, 整数型, , 0线形 1卡片 2边框卡片
     .参数 可关闭, 整数型, , 0否 1是
     .参数 可新增, 整数型, , 0否 1是
+
+.DLL命令 设置标签页可编辑, , "new_emoji.dll", "EU_SetTabsEditable", , 对应 C++ 导出命令 EU_SetTabsEditable
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否可编辑, 整数型, , 0否 1是；开启后同时具备新增和关闭入口
+
+.DLL命令 设置标签页内容区显示, , "new_emoji.dll", "EU_SetTabsContentVisible", , 对应 C++ 导出命令 EU_SetTabsContentVisible
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否显示内容区, 整数型, , 0否 1是
 
 .DLL命令 新增标签页项目, , "new_emoji.dll", "EU_AddTabsItem", , 对应 C++ 导出命令 EU_AddTabsItem
     .参数 窗口句柄, 整数型
@@ -5537,6 +6624,10 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
 
+.DLL命令 取标签页表头对齐, 整数型, "new_emoji.dll", "EU_GetTabsHeaderAlign", , 对应 C++ 导出命令 EU_GetTabsHeaderAlign；返回0左对齐 1居中 2右对齐
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 取标签页项目数, 整数型, "new_emoji.dll", "EU_GetTabsItemCount", , 对应 C++ 导出命令 EU_GetTabsItemCount
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -5555,12 +6646,25 @@
     .参数 缓冲区指针, 整数型, , 可先传0取长度
     .参数 缓冲区大小, 整数型
 
+.DLL命令 取标签页激活名称, 整数型, "new_emoji.dll", "EU_GetTabsActiveName", , 对应 C++ 导出命令 EU_GetTabsActiveName；返回需要或写入的 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 缓冲区指针, 整数型, , 可先传0取长度
+    .参数 缓冲区大小, 整数型
+
+.DLL命令 取标签页项目内容, 整数型, "new_emoji.dll", "EU_GetTabsItemContent", , 对应 C++ 导出命令 EU_GetTabsItemContent；返回需要或写入的 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目索引, 整数型
+    .参数 缓冲区指针, 整数型, , 可先传0取长度
+    .参数 缓冲区大小, 整数型
+
 .DLL命令 取标签页完整状态, 整数型, "new_emoji.dll", "EU_GetTabsFullState", , 对应 C++ 导出命令 EU_GetTabsFullState；成功返回1，失败返回0
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 激活索引指针, 整数型, , 传址接收
     .参数 项目数量指针, 整数型, , 传址接收
-    .参数 标签类型指针, 整数型, , 0线形 1卡片
+    .参数 标签类型指针, 整数型, , 0线形 1卡片 2边框卡片
     .参数 可关闭指针, 整数型, , 传址接收
     .参数 可新增指针, 整数型, , 传址接收
     .参数 滚动位置指针, 整数型, , 传址接收
@@ -5576,6 +6680,33 @@
     .参数 选择次数指针, 整数型, , 传址接收
     .参数 滚动次数指针, 整数型, , 传址接收
     .参数 最近动作指针, 整数型, , 1设置 2鼠标 3键盘 4关闭 5新增 6滚动
+
+.DLL命令 取标签页扩展完整状态, 整数型, "new_emoji.dll", "EU_GetTabsFullStateEx", , 对应 C++ 导出命令 EU_GetTabsFullStateEx；在完整状态后追加位置、可编辑、内容区、激活项禁用、激活项可关闭
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 激活索引指针, 整数型, , 传址接收
+    .参数 项目数量指针, 整数型, , 传址接收
+    .参数 标签类型指针, 整数型, , 0线形 1卡片 2边框卡片
+    .参数 可关闭指针, 整数型, , 传址接收
+    .参数 可新增指针, 整数型, , 传址接收
+    .参数 滚动位置指针, 整数型, , 传址接收
+    .参数 最大滚动指针, 整数型, , 传址接收
+    .参数 悬停索引指针, 整数型, , 传址接收
+    .参数 按下索引指针, 整数型, , 传址接收
+    .参数 悬停部位指针, 整数型, , 0无 1标签 2关闭 3新增
+    .参数 按下部位指针, 整数型, , 0无 1标签 2关闭 3新增
+    .参数 最近关闭索引指针, 整数型, , 传址接收
+    .参数 最近新增索引指针, 整数型, , 传址接收
+    .参数 关闭次数指针, 整数型, , 传址接收
+    .参数 新增次数指针, 整数型, , 传址接收
+    .参数 选择次数指针, 整数型, , 传址接收
+    .参数 滚动次数指针, 整数型, , 传址接收
+    .参数 最近动作指针, 整数型, , 1设置 2鼠标 3键盘 4关闭 5新增 6滚动
+    .参数 标签位置指针, 整数型, , 0上 1右 2下 3左
+    .参数 是否可编辑指针, 整数型, , 传址接收
+    .参数 是否显示内容区指针, 整数型, , 传址接收
+    .参数 激活项是否禁用指针, 整数型, , 传址接收
+    .参数 激活项是否可关闭指针, 整数型, , 传址接收
 
 .DLL命令 设置标签页选择回调, , "new_emoji.dll", "EU_SetTabsChangeCallback", , 对应 C++ 导出命令 EU_SetTabsChangeCallback
     .参数 窗口句柄, 整数型
@@ -5615,6 +6746,13 @@
     .参数 显示跳转, 整数型, , 0否 1是
     .参数 显示每页数量, 整数型, , 0否 1是
     .参数 可见页码数, 整数型, , 建议奇数，最小5最大11
+
+.DLL命令 设置分页高级样式, , "new_emoji.dll", "EU_SetPaginationAdvancedOptions", , 对应 C++ 导出命令 EU_SetPaginationAdvancedOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景样式, 整数型, , 0否 1是
+    .参数 小尺寸, 整数型, , 0否 1是
+    .参数 单页隐藏, 整数型, , 0否 1是，总页数不大于1时不绘制且不响应
 
 .DLL命令 设置分页每页数量选项, , "new_emoji.dll", "EU_SetPaginationPageSizeOptions", , 对应 C++ 导出命令 EU_SetPaginationPageSizeOptions
     .参数 窗口句柄, 整数型
@@ -5669,6 +6807,13 @@
     .参数 跳转次数指针, 整数型, , 传址接收
     .参数 最近动作指针, 整数型, , 1设置 2鼠标 3键盘 4每页数量 5跳转
 
+.DLL命令 取分页高级样式, 整数型, "new_emoji.dll", "EU_GetPaginationAdvancedOptions", , 对应 C++ 导出命令 EU_GetPaginationAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 背景样式指针, 整数型, , 传址接收
+    .参数 小尺寸指针, 整数型, , 传址接收
+    .参数 单页隐藏指针, 整数型, , 传址接收
+
 .DLL命令 设置分页变化回调, , "new_emoji.dll", "EU_SetPaginationChangeCallback", , 对应 C++ 导出命令 EU_SetPaginationChangeCallback
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -5686,6 +6831,12 @@
     .参数 项目字节集指针, 整数型, , 每项格式：标题<TAB>描述，项目用 | 分隔
     .参数 项目长度, 整数型
 
+.DLL命令 设置步骤条图标项目, , "new_emoji.dll", "EU_SetStepsIconItems", , 对应 C++ 导出命令 EU_SetStepsIconItems
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 项目字节集指针, 整数型, , 每项格式：标题<TAB>描述<TAB>图标，图标可用 emoji 或 el-icon-edit/el-icon-upload/el-icon-picture
+    .参数 项目长度, 整数型
+
 .DLL命令 设置步骤条激活项, , "new_emoji.dll", "EU_SetStepsActive", , 对应 C++ 导出命令 EU_SetStepsActive
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -5695,6 +6846,24 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 方向, 整数型, , 0横向 1纵向
+
+.DLL命令 设置步骤条样式, , "new_emoji.dll", "EU_SetStepsOptions", , 对应 C++ 导出命令 EU_SetStepsOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 固定间距, 整数型, , 0自动等分，大于0表示每步逻辑间距
+    .参数 是否居中, 整数型, , 0否 1是，对应 align-center
+    .参数 是否简洁模式, 整数型, , 0普通 1简洁，对应 simple
+    .参数 完成状态, 整数型, , 默认2，0等待 1进行中 2完成/成功 3失败
+    .参数 进行中状态, 整数型, , 默认1，0等待 1进行中 2完成/成功 3失败
+
+.DLL命令 取步骤条样式, 整数型, "new_emoji.dll", "EU_GetStepsOptions", , 对应 C++ 导出命令 EU_GetStepsOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 固定间距指针, 整数型, , 传址接收
+    .参数 是否居中指针, 整数型, , 传址接收
+    .参数 是否简洁模式指针, 整数型, , 传址接收
+    .参数 完成状态指针, 整数型, , 传址接收
+    .参数 进行中状态指针, 整数型, , 传址接收
 
 .DLL命令 设置步骤条状态列表, , "new_emoji.dll", "EU_SetStepsStatuses", , 对应 C++ 导出命令 EU_SetStepsStatuses
     .参数 窗口句柄, 整数型
@@ -5745,6 +6914,16 @@
     .参数 激活状态指针, 整数型, , 0等待 1进行中 2完成 3失败
     .参数 失败数量指针, 整数型, , 传址接收
 
+.DLL命令 取步骤条视觉状态, 整数型, "new_emoji.dll", "EU_GetStepsVisualState", , 对应 C++ 导出命令 EU_GetStepsVisualState；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 固定间距指针, 整数型, , 传址接收
+    .参数 是否居中指针, 整数型, , 传址接收
+    .参数 是否简洁模式指针, 整数型, , 传址接收
+    .参数 完成状态指针, 整数型, , 传址接收
+    .参数 进行中状态指针, 整数型, , 传址接收
+    .参数 图标项目数指针, 整数型, , 传址接收非空图标数量
+
 .DLL命令 设置步骤条变化回调, , "new_emoji.dll", "EU_SetStepsChangeCallback", , 对应 C++ 导出命令 EU_SetStepsChangeCallback
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -5770,6 +6949,33 @@
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 是否可关闭, 整数型
+
+.DLL命令 设置警告高级选项, , "new_emoji.dll", "EU_SetAlertAdvancedOptions", , 对应 C++ 导出命令 EU_SetAlertAdvancedOptions
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否显示图标, 整数型, , 0隐藏 1显示
+    .参数 是否居中, 整数型, , 0左对齐 1居中
+    .参数 描述是否换行, 整数型, , 0不换行 1自动换行
+
+.DLL命令 取警告高级选项, 整数型, "new_emoji.dll", "EU_GetAlertAdvancedOptions", , 对应 C++ 导出命令 EU_GetAlertAdvancedOptions；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否显示图标指针, 整数型, , 传址接收
+    .参数 是否居中指针, 整数型, , 传址接收
+    .参数 描述是否换行指针, 整数型, , 传址接收
+
+.DLL命令 设置警告关闭文字, , "new_emoji.dll", "EU_SetAlertCloseText", , 对应 C++ 导出命令 EU_SetAlertCloseText
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 关闭文字字节集指针, 整数型, , UTF-8；为空时显示 X
+    .参数 关闭文字长度, 整数型
+
+.DLL命令 取警告文本, 整数型, "new_emoji.dll", "EU_GetAlertText", , 对应 C++ 导出命令 EU_GetAlertText；返回写入所需 UTF-8 字节数
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本类型, 整数型, , 0标题 1描述 2关闭文字
+    .参数 输出缓冲区指针, 整数型, , UTF-8 输出缓冲区
+    .参数 输出缓冲区长度, 整数型
 
 .DLL命令 设置警告关闭状态, , "new_emoji.dll", "EU_SetAlertClosed", , 对应 C++ 导出命令 EU_SetAlertClosed
     .参数 窗口句柄, 整数型
@@ -6091,12 +7297,27 @@
     .参数 元素ID, 整数型
     .参数 是否激活, 整数型
 
+.DLL命令 设置加载文本, , "new_emoji.dll", "EU_SetLoadingText", , 对应 C++ 导出命令 EU_SetLoadingText；运行时修改加载文案
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+
 .DLL命令 设置加载选项, , "new_emoji.dll", "EU_SetLoadingOptions", , 对应 C++ 导出命令 EU_SetLoadingOptions
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 是否激活, 整数型
     .参数 是否全屏遮罩, 整数型
     .参数 进度, 整数型, , -1隐藏进度，0-100显示进度
+
+.DLL命令 设置加载样式, , "new_emoji.dll", "EU_SetLoadingStyle", , 对应 C++ 导出命令 EU_SetLoadingStyle；设置遮罩、图标、文字和锁定输入
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 遮罩颜色, 整数型, , ARGB；0使用主题默认
+    .参数 图标颜色, 整数型, , ARGB；0使用主题强调色
+    .参数 文字颜色, 整数型, , ARGB；0使用主题文字色
+    .参数 图标类型, 整数型, , 0点状旋转 1圆弧旋转 2脉冲圆点
+    .参数 是否锁定输入, 整数型, , 0鼠标穿透 1拦截底层控件
 
 .DLL命令 取加载激活状态, 整数型, "new_emoji.dll", "EU_GetLoadingActive", , 对应 C++ 导出命令 EU_GetLoadingActive
     .参数 窗口句柄, 整数型
@@ -6120,6 +7341,31 @@
     .参数 元素ID, 整数型
     .参数 输出缓冲区指针, 整数型, , UTF-8 output buffer
     .参数 输出缓冲区大小, 整数型, , bytes
+
+.DLL命令 取加载样式, 整数型, "new_emoji.dll", "EU_GetLoadingStyle", , 对应 C++ 导出命令 EU_GetLoadingStyle；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 遮罩颜色指针, 整数型, , 传址接收 ARGB
+    .参数 图标颜色指针, 整数型, , 传址接收 ARGB
+    .参数 文字颜色指针, 整数型, , 传址接收 ARGB
+    .参数 图标类型指针, 整数型, , 传址接收，0点状旋转 1圆弧旋转 2脉冲圆点
+    .参数 是否锁定输入指针, 整数型, , 传址接收
+
+.DLL命令 显示加载, 整数型, "new_emoji.dll", "EU_ShowLoading", , 对应 C++ 导出命令 EU_ShowLoading；服务式创建 Loading，返回元素ID，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 目标元素ID, 整数型, , 0表示窗口主工作区；非0表示覆盖目标元素
+    .参数 文本字节集指针, 整数型, , UTF-8
+    .参数 文本长度, 整数型
+    .参数 是否全屏遮罩, 整数型
+    .参数 是否锁定输入, 整数型
+    .参数 遮罩颜色, 整数型, , ARGB；0使用主题默认
+    .参数 图标颜色, 整数型, , ARGB；0使用主题强调色
+    .参数 文字颜色, 整数型, , ARGB；0使用主题文字色
+    .参数 图标类型, 整数型, , 0点状旋转 1圆弧旋转 2脉冲圆点
+
+.DLL命令 关闭加载, 整数型, "new_emoji.dll", "EU_CloseLoading", , 对应 C++ 导出命令 EU_CloseLoading；成功返回1，失败返回0
+    .参数 窗口句柄, 整数型
+    .参数 加载元素ID, 整数型
 
 .DLL命令 取加载完整状态, 整数型, "new_emoji.dll", "EU_GetLoadingFullState", , 对应 C++ 导出命令 EU_GetLoadingFullState；成功返回1，失败返回0
     .参数 窗口句柄, 整数型

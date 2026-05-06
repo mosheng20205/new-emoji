@@ -54,9 +54,20 @@ typedef void (__stdcall *TableCellCallback)(int table_id, int row, int col, int 
 typedef int  (__stdcall *TableVirtualRowCallback)(int table_id, int row, unsigned char* buffer, int buffer_size);
 typedef void (__stdcall *DropdownCommandCallback)(int element_id, int item_index,
                                                  const unsigned char* command_utf8, int command_len);
+typedef void (__stdcall *MenuSelectCallback)(int element_id, int item_index,
+                                             const unsigned char* path_utf8, int path_len,
+                                             const unsigned char* command_utf8, int command_len);
 typedef void (__stdcall *WindowResizeCallback)(HWND hwnd, int width, int height);
 typedef void (__stdcall *WindowCloseCallback)(HWND hwnd);
 typedef void (__stdcall *WindowDestroyCallback)(HWND hwnd);
 typedef void (__stdcall *MessageBoxResultCallback)(int messagebox_id, int result);
 typedef void (__stdcall *MessageBoxExCallback)(int messagebox_id, int action,
                                                const unsigned char* value_utf8, int value_len);
+typedef void (__stdcall *TreeNodeEventCallback)(int element_id, int event_code, int item_index,
+                                                const unsigned char* payload_utf8, int payload_len);
+typedef int  (__stdcall *TreeNodeAllowDragCallback)(int element_id,
+                                                    const unsigned char* key_utf8, int key_len);
+typedef int  (__stdcall *TreeNodeAllowDropCallback)(int element_id,
+                                                    const unsigned char* drag_key_utf8, int drag_key_len,
+                                                    const unsigned char* drop_key_utf8, int drop_key_len,
+                                                    int drop_type);

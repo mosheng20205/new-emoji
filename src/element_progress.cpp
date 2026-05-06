@@ -23,13 +23,106 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
-static Color progress_color(const Theme* t, int status) {
+static Color progress_status_color(const Theme* t, int status) {
     switch (status) {
     case 1: return 0xFF67C23A;
     case 2: return 0xFFE6A23C;
     case 3: return 0xFFF56C6C;
     default: return t->accent;
     }
+}
+
+static std::wstring progress_status_text(int status) {
+    switch (status) {
+    case 1: return L"\u6210\u529F";
+    case 2: return L"\u8B66\u544A";
+    case 3: return L"\u5F02\u5E38";
+    default: return L"\u8FDB\u884C\u4E2D";
+    }
+}
+
+static void replace_all(std::wstring& text, const std::wstring& needle, const std::wstring& value) {
+    if (needle.empty()) return;
+    size_t pos = 0;
+    while ((pos = text.find(needle, pos)) != std::wstring::npos) {
+        text.replace(pos, needle.size(), value);
+        pos += value.size();
+    }
+}
+
+static Color color_from_stops(const std::vector<std::pair<Color, int>>& stops, int percentage) {
+    if (stops.empty()) return 0;
+    for (const auto& stop : stops) {
+        if (percentage <= stop.second) return stop.first;
+    }
+    return stops.back().first;
+}
+
+static Color progress_fill_color(const Progress& progress, const Theme* t) {
+    Color stop_color = color_from_stops(progress.color_stops, progress.percentage);
+    if (stop_color) return stop_color;
+    if (progress.fill_color) return progress.fill_color;
+    if (progress.style.border_color) return progress.style.border_color;
+    return progress_status_color(t, progress.status);
+}
+
+static std::wstring progress_text(const Progress& progress) {
+    std::wstring pct = std::to_wstring(progress.percentage) + L"%";
+    if (progress.text_format == 1) {
+        return progress_status_text(progress.status) + L" " + pct;
+    }
+    if (progress.text_format == 2 && !progress.text.empty()) {
+        return progress.text + L" " + pct;
+    }
+    if (progress.text_format == 3) {
+        if (progress.percentage >= 100) return progress.complete_text.empty() ? L"\u6EE1" : progress.complete_text;
+        return pct;
+    }
+    if (progress.text_format == 4 && !progress.text_template.empty()) {
+        std::wstring result = progress.text_template;
+        replace_all(result, L"{percentage}", std::to_wstring(progress.percentage));
+        replace_all(result, L"{percent}", pct);
+        replace_all(result, L"{status}", progress_status_text(progress.status));
+        return result;
+    }
+    return pct;
+}
+
+static void draw_arc(RenderContext& ctx, float cx, float cy, float radius, float stroke_width,
+                     Color color, float start_deg, float sweep_deg) {
+    if (radius <= 0.0f || stroke_width <= 0.0f || sweep_deg <= 0.0f) return;
+    if (sweep_deg >= 359.9f) {
+        ctx.rt->DrawEllipse(D2D1::Ellipse(D2D1::Point2F(cx, cy), radius, radius),
+                            ctx.get_brush(color), stroke_width);
+        return;
+    }
+
+    ID2D1PathGeometry* geom = nullptr;
+    if (FAILED(g_d2d_factory->CreatePathGeometry(&geom)) || !geom) return;
+
+    ID2D1GeometrySink* sink = nullptr;
+    if (SUCCEEDED(geom->Open(&sink)) && sink) {
+        const float pi = 3.1415926535f;
+        float start_rad = start_deg * pi / 180.0f;
+        float end_rad = (start_deg + sweep_deg) * pi / 180.0f;
+        D2D1_POINT_2F start = D2D1::Point2F(cx + cosf(start_rad) * radius,
+                                            cy + sinf(start_rad) * radius);
+        D2D1_POINT_2F end = D2D1::Point2F(cx + cosf(end_rad) * radius,
+                                          cy + sinf(end_rad) * radius);
+        sink->BeginFigure(start, D2D1_FIGURE_BEGIN_HOLLOW);
+        D2D1_ARC_SEGMENT arc = {};
+        arc.point = end;
+        arc.size = D2D1::SizeF(radius, radius);
+        arc.rotationAngle = 0.0f;
+        arc.sweepDirection = D2D1_SWEEP_DIRECTION_CLOCKWISE;
+        arc.arcSize = sweep_deg > 180.0f ? D2D1_ARC_SIZE_LARGE : D2D1_ARC_SIZE_SMALL;
+        sink->AddArc(arc);
+        sink->EndFigure(D2D1_FIGURE_END_OPEN);
+        sink->Close();
+        sink->Release();
+        ctx.rt->DrawGeometry(geom, ctx.get_brush(color), stroke_width);
+    }
+    geom->Release();
 }
 
 void Progress::set_percentage(int value) {
@@ -51,9 +144,14 @@ void Progress::set_show_text(bool value) {
     invalidate();
 }
 
+void Progress::set_text_inside(bool value) {
+    text_inside = value;
+    invalidate();
+}
+
 void Progress::set_options(int type_value, int stroke_width_value, bool show_text_value) {
     if (type_value < 0) type_value = 0;
-    if (type_value > 1) type_value = 1;
+    if (type_value > 2) type_value = 2;
     progress_type = type_value;
     if (stroke_width_value < 0) stroke_width_value = 0;
     if (stroke_width_value > 48) stroke_width_value = 48;
@@ -64,26 +162,34 @@ void Progress::set_options(int type_value, int stroke_width_value, bool show_tex
 
 void Progress::set_format_options(int text_format_value, bool striped_value) {
     if (text_format_value < 0) text_format_value = 0;
-    if (text_format_value > 2) text_format_value = 2;
+    if (text_format_value > 4) text_format_value = 4;
     text_format = text_format_value;
     striped = striped_value;
     invalidate();
 }
 
-static std::wstring progress_text(const Progress& progress) {
-    std::wstring pct = std::to_wstring(progress.percentage) + L"%";
-    if (progress.text_format == 1) {
-        switch (progress.status) {
-        case 1: return L"成功 " + pct;
-        case 2: return L"警告 " + pct;
-        case 3: return L"异常 " + pct;
-        default: return L"进行中 " + pct;
-        }
-    }
-    if (progress.text_format == 2 && !progress.text.empty()) {
-        return progress.text + L" " + pct;
-    }
-    return pct;
+void Progress::set_colors(Color fill, Color track, Color text) {
+    fill_color = fill;
+    track_color = track;
+    text_color = text;
+    invalidate();
+}
+
+void Progress::set_color_stops(const std::vector<std::pair<Color, int>>& stops) {
+    color_stops = stops;
+    std::sort(color_stops.begin(), color_stops.end(),
+        [](const auto& a, const auto& b) { return a.second < b.second; });
+    invalidate();
+}
+
+void Progress::set_complete_text(const std::wstring& value) {
+    complete_text = value.empty() ? L"\u6EE1" : value;
+    invalidate();
+}
+
+void Progress::set_text_template(const std::wstring& value) {
+    text_template = value;
+    invalidate();
 }
 
 void Progress::paint(RenderContext& ctx) {
@@ -96,50 +202,22 @@ void Progress::paint(RenderContext& ctx) {
 
     const Theme* t = theme_for_window(owner_hwnd);
     bool dark = is_dark_theme_for_window(owner_hwnd);
-    Color fg = style.fg_color ? style.fg_color : t->text_secondary;
-    Color track = style.bg_color ? style.bg_color : (dark ? 0xFF313244 : 0xFFE4E7ED);
-    Color fill = style.border_color ? style.border_color : progress_color(t, status);
+    Color fg = text_color ? text_color : (style.fg_color ? style.fg_color : t->text_secondary);
+    Color track = track_color ? track_color : (style.bg_color ? style.bg_color : (dark ? 0xFF313244 : 0xFFE4E7ED));
+    Color fill = progress_fill_color(*this, t);
 
-    if (progress_type == 1) {
+    if (progress_type == 1 || progress_type == 2) {
         float size = (float)(std::min)(bounds.w, bounds.h);
         float cx = (float)bounds.w * 0.5f;
         float cy = (float)bounds.h * 0.5f;
         float sw = stroke_width > 0 ? (float)stroke_width : (std::max)(4.0f, size * 0.08f);
         float radius = (std::max)(4.0f, size * 0.5f - sw * 0.5f - 2.0f);
-        D2D1_ELLIPSE ellipse = D2D1::Ellipse(D2D1::Point2F(cx, cy), radius, radius);
-        ctx.rt->DrawEllipse(ellipse, ctx.get_brush(track), sw);
+        float start_deg = progress_type == 2 ? 135.0f : -90.0f;
+        float total_sweep = progress_type == 2 ? 270.0f : 360.0f;
 
-        float sweep = 360.0f * (float)percentage / 100.0f;
-        if (sweep > 0.0f) {
-            ID2D1PathGeometry* geom = nullptr;
-            if (SUCCEEDED(g_d2d_factory->CreatePathGeometry(&geom)) && geom) {
-                ID2D1GeometrySink* sink = nullptr;
-                if (SUCCEEDED(geom->Open(&sink)) && sink) {
-                    float start_deg = -90.0f;
-                    float end_deg = start_deg + sweep;
-                    float pi = 3.1415926535f;
-                    float start_rad = start_deg * pi / 180.0f;
-                    float end_rad = end_deg * pi / 180.0f;
-                    D2D1_POINT_2F start = D2D1::Point2F(cx + cosf(start_rad) * radius,
-                                                        cy + sinf(start_rad) * radius);
-                    D2D1_POINT_2F end = D2D1::Point2F(cx + cosf(end_rad) * radius,
-                                                      cy + sinf(end_rad) * radius);
-                    sink->BeginFigure(start, D2D1_FIGURE_BEGIN_HOLLOW);
-                    D2D1_ARC_SEGMENT arc = {};
-                    arc.point = end;
-                    arc.size = D2D1::SizeF(radius, radius);
-                    arc.rotationAngle = 0.0f;
-                    arc.sweepDirection = D2D1_SWEEP_DIRECTION_CLOCKWISE;
-                    arc.arcSize = sweep > 180.0f ? D2D1_ARC_SIZE_LARGE : D2D1_ARC_SIZE_SMALL;
-                    sink->AddArc(arc);
-                    sink->EndFigure(D2D1_FIGURE_END_OPEN);
-                    sink->Close();
-                    sink->Release();
-                    ctx.rt->DrawGeometry(geom, ctx.get_brush(fill), sw);
-                }
-                geom->Release();
-            }
-        }
+        draw_arc(ctx, cx, cy, radius, sw, track, start_deg, total_sweep);
+        float sweep = total_sweep * (float)percentage / 100.0f;
+        draw_arc(ctx, cx, cy, radius, sw, fill, start_deg, sweep);
 
         if (show_text) {
             std::wstring pct = progress_text(*this);
@@ -156,7 +234,7 @@ void Progress::paint(RenderContext& ctx) {
                   label_w, (float)bounds.h);
     }
 
-    float percent_w = show_text ? 48.0f * style.font_size / 14.0f : 0.0f;
+    float percent_w = (show_text && !text_inside) ? 56.0f * style.font_size / 14.0f : 0.0f;
     float bar_x = (float)style.pad_left + label_w + (label_w > 0.0f ? 10.0f : 0.0f);
     float bar_w = (float)bounds.w - bar_x - (float)style.pad_right - percent_w;
     if (bar_w < 1.0f) bar_w = 1.0f;
@@ -186,8 +264,14 @@ void Progress::paint(RenderContext& ctx) {
 
     if (show_text) {
         std::wstring pct = progress_text(*this);
-        draw_text(ctx, pct, style, fg, bar_x + bar_w + 8.0f, 0.0f,
-                  percent_w - 8.0f, (float)bounds.h);
+        if (text_inside) {
+            Color inside_text = text_color ? text_color : 0xFFFFFFFF;
+            draw_text(ctx, pct, style, inside_text, bar_x, bar_y, bar_w, bar_h,
+                      DWRITE_TEXT_ALIGNMENT_CENTER);
+        } else {
+            draw_text(ctx, pct, style, fg, bar_x + bar_w + 8.0f, 0.0f,
+                      percent_w - 8.0f, (float)bounds.h);
+        }
     }
 
     ctx.rt->SetTransform(saved);

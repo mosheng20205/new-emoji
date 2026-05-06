@@ -4,7 +4,7 @@
 
 `SelectV2` 是 new_emoji 的 表单/选择 组件。当前状态：**已完成**。
 
-已补虚拟列表、搜索、大数据滚动、滚轮派发、键盘选择、滚动索引读回、变化回调、Python 封装和独立中文 emoji 验证
+已补虚拟列表、搜索、大数据滚动、滚轮派发、键盘选择、下拉表项对齐、已选值对齐、滚动索引读回、变化回调、Python 封装和独立中文 emoji 验证
 
 ## 创建
 
@@ -25,12 +25,16 @@
 | `EU_GetSelectV2Open` | 当前组件相关导出 |
 | `EU_GetSelectV2OptionCount` | 当前组件相关导出 |
 | `EU_GetSelectV2OptionDisabled` | 当前组件相关导出 |
+| `EU_GetSelectV2OptionAlignment` | 读取下拉表项内容对齐方式，0 左对齐、1 居中、2 右对齐 |
+| `EU_GetSelectV2ValueAlignment` | 读取输入框内已选值对齐方式，0 左对齐、1 居中、2 右对齐 |
 | `EU_GetSelectV2ScrollIndex` | 当前组件相关导出 |
 | `EU_GetSelectV2VisibleCount` | 当前组件相关导出 |
 | `EU_SetSelectV2ChangeCallback` | 当前组件相关导出 |
 | `EU_SetSelectV2Index` | 当前组件相关导出 |
 | `EU_SetSelectV2Open` | 当前组件相关导出 |
 | `EU_SetSelectV2OptionDisabled` | 当前组件相关导出 |
+| `EU_SetSelectV2OptionAlignment` | 设置下拉表项内容对齐方式，0 左对齐、1 居中、2 右对齐 |
+| `EU_SetSelectV2ValueAlignment` | 设置输入框内已选值对齐方式，0 左对齐、1 居中、2 右对齐 |
 | `EU_SetSelectV2Options` | 当前组件相关导出 |
 | `EU_SetSelectV2ScrollIndex` | 当前组件相关导出 |
 | `EU_SetSelectV2Search` | 当前组件相关导出 |

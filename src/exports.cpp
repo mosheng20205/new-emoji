@@ -2,6 +2,7 @@
 #include "factory.h"
 #include "window_state.h"
 #include <shellscalingapi.h>
+#include <algorithm>
 #include <set>
 
 extern HMODULE g_module;
@@ -73,7 +74,7 @@ extern HMODULE g_module;
 #include "element_image.h"
 #include "element_carousel.h"
 #include "element_upload.h"
-#include "element_scrollbar.h"
+#include "element_infinite_scroll.h"
 #include "element_breadcrumb.h"
 #include "element_tabs.h"
 #include "element_pagination.h"
@@ -95,6 +96,8 @@ extern HMODULE g_module;
 #include <vector>
 #include <cstring>
 #include <cmath>
+#include <cstdlib>
+#include <cwchar>
 
 static int scale_to_px(int v, float scale) {
     return (int)std::lround((float)v * scale);
@@ -384,6 +387,51 @@ static std::vector<std::wstring> split_option_list_keep_empty(const unsigned cha
     return items;
 }
 
+static std::vector<std::wstring> split_tab_fields(const std::wstring& line) {
+    std::vector<std::wstring> fields;
+    std::wstring current;
+    for (wchar_t ch : line) {
+        if (ch == L'\t') {
+            fields.push_back(current);
+            current.clear();
+        } else {
+            current.push_back(ch);
+        }
+    }
+    fields.push_back(current);
+    return fields;
+}
+
+static bool parse_bool_field(const std::wstring& value) {
+    return value == L"1" || value == L"true" || value == L"True" ||
+           value == L"TRUE" || value == L"是" || value == L"真";
+}
+
+static std::vector<TabsItem> parse_tabs_items_ex(const unsigned char* bytes, int len) {
+    std::vector<TabsItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    std::wstring line;
+    auto flush = [&]() {
+        if (line.empty()) return;
+        auto fields = split_tab_fields(line);
+        TabsItem item;
+        if (fields.size() > 0) item.label = fields[0];
+        if (fields.size() > 1) item.name = fields[1];
+        if (fields.size() > 2) item.content = fields[2];
+        if (fields.size() > 3) item.icon = fields[3];
+        if (fields.size() > 4) item.disabled = parse_bool_field(fields[4]);
+        if (fields.size() > 5) item.closable = parse_bool_field(fields[5]);
+        items.push_back(item);
+        line.clear();
+    };
+    for (wchar_t ch : full) {
+        if (ch == L'|' || ch == L'\n' || ch == L'\r') flush();
+        else line.push_back(ch);
+    }
+    flush();
+    return items;
+}
+
 static std::vector<std::wstring> split_wide_list(const std::wstring& full,
                                                  const std::wstring& separators) {
     std::vector<std::wstring> items;
@@ -492,6 +540,53 @@ parse_description_items(const unsigned char* bytes, int len) {
     return items;
 }
 
+static int parse_int_field(const std::wstring& value, int fallback = 0) {
+    if (value.empty()) return fallback;
+    wchar_t* end = nullptr;
+    long parsed = std::wcstol(value.c_str(), &end, 10);
+    return end == value.c_str() ? fallback : (int)parsed;
+}
+
+static Color parse_description_color_field(const std::wstring& value) {
+    if (value.empty() || value == L"0") return 0;
+    std::wstring v = value;
+    if (!v.empty() && v[0] == L'#') v = L"0xFF" + v.substr(1);
+    int base = 10;
+    const wchar_t* start = v.c_str();
+    if (v.size() > 2 && v[0] == L'0' && (v[1] == L'x' || v[1] == L'X')) {
+        base = 16;
+        start += 2;
+    }
+    wchar_t* end = nullptr;
+    unsigned long parsed = std::wcstoul(start, &end, base);
+    if (end == start) return 0;
+    return (Color)parsed;
+}
+
+static std::vector<DescriptionItem>
+parse_description_items_ex(const unsigned char* bytes, int len) {
+    std::vector<DescriptionItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        DescriptionItem item;
+        if (fields.size() >= 1) item.label = fields[0];
+        if (fields.size() >= 2) item.content = fields[1];
+        if (fields.size() >= 3) item.span = (std::max)(1, parse_int_field(fields[2], 1));
+        if (fields.size() >= 4) item.label_icon = fields[3];
+        if (fields.size() >= 5) item.content_type = (std::max)(0, (std::min)(1, parse_int_field(fields[4])));
+        if (fields.size() >= 6) item.tag_type = (std::max)(0, (std::min)(4, parse_int_field(fields[5])));
+        if (fields.size() >= 7) item.content_align = (std::max)(0, (std::min)(2, parse_int_field(fields[6])));
+        if (fields.size() >= 8) item.label_bg = parse_description_color_field(fields[7]);
+        if (fields.size() >= 9) item.content_bg = parse_description_color_field(fields[8]);
+        if (fields.size() >= 10) item.label_fg = parse_description_color_field(fields[9]);
+        if (fields.size() >= 11) item.content_fg = parse_description_color_field(fields[10]);
+        items.push_back(item);
+    }
+    return items;
+}
+
 static std::vector<std::vector<std::wstring>>
 parse_table_rows(const unsigned char* bytes, int len) {
     std::vector<std::vector<std::wstring>> rows;
@@ -506,17 +601,80 @@ parse_table_rows(const unsigned char* bytes, int len) {
 static std::vector<CollapseItem> parse_collapse_items(const unsigned char* bytes, int len) {
     std::vector<CollapseItem> items;
     std::wstring full = utf8_to_wide(bytes, len);
-    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+    std::wstring separators = (full.find(L'\t') != std::wstring::npos &&
+                               full.find(L'|') != std::wstring::npos) ? L"|" : L"|\n\r";
+    for (const auto& entry : split_wide_list(full, separators)) {
         if (entry.empty()) continue;
-        size_t pos = entry.find(L':');
-        if (pos == std::wstring::npos) pos = entry.find(L'=');
-        if (pos == std::wstring::npos) {
-            items.push_back({ entry, L"" });
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        CollapseItem item;
+        if (fields.size() >= 2) {
+            item.title = fields[0];
+            item.body = fields[1];
+            if (fields.size() >= 3) item.icon = fields[2];
+            if (fields.size() >= 4) item.suffix = fields[3];
+            if (fields.size() >= 5) item.disabled = _wtoi(fields[4].c_str()) != 0;
         } else {
-            items.push_back({ entry.substr(0, pos), entry.substr(pos + 1) });
+            size_t pos = entry.find(L':');
+            if (pos == std::wstring::npos) pos = entry.find(L'=');
+            if (pos == std::wstring::npos) {
+                item.title = entry;
+            } else {
+                item.title = entry.substr(0, pos);
+                item.body = entry.substr(pos + 1);
+            }
         }
+        items.push_back(item);
     }
     return items;
+}
+
+static std::wstring trim_wide(const std::wstring& value) {
+    const wchar_t* ws = L" \t\r\n";
+    size_t first = value.find_first_not_of(ws);
+    if (first == std::wstring::npos) return L"";
+    size_t last = value.find_last_not_of(ws);
+    return value.substr(first, last - first + 1);
+}
+
+static int parse_timeline_placement(const std::wstring& value, int fallback) {
+    std::wstring v = trim_wide(value);
+    if (v.empty()) return fallback;
+    if (v == L"top" || v == L"顶部" || v == L"上方") return 0;
+    if (v == L"bottom" || v == L"底部" || v == L"下方") return 1;
+    int parsed = _wtoi(v.c_str());
+    return parsed == 1 ? 1 : 0;
+}
+
+static int parse_timeline_size(const std::wstring& value) {
+    std::wstring v = trim_wide(value);
+    if (v == L"large" || v == L"大" || v == L"大号") return 1;
+    return _wtoi(v.c_str()) > 0 ? 1 : 0;
+}
+
+static Color parse_timeline_color(const std::wstring& value) {
+    std::wstring v = trim_wide(value);
+    if (v.empty()) return 0;
+    int base = 10;
+    if (!v.empty() && v[0] == L'#') {
+        v = v.substr(1);
+        base = 16;
+    } else if (v.size() > 2 && v[0] == L'0' && (v[1] == L'x' || v[1] == L'X')) {
+        v = v.substr(2);
+        base = 16;
+    }
+    wchar_t* end = nullptr;
+    unsigned long parsed = std::wcstoul(v.c_str(), &end, base);
+    if (!end || *end != L'\0') return 0;
+    Color color = (Color)parsed;
+    if (base == 16 && v.size() <= 6) color |= 0xFF000000;
+    if ((color >> 24) == 0) color |= 0xFF000000;
+    return color;
+}
+
+static std::wstring normalize_timeline_icon(const std::wstring& value) {
+    std::wstring icon = trim_wide(value);
+    if (icon == L"el-icon-more") return L"⋯";
+    return icon;
 }
 
 static std::vector<TimelineItem> parse_timeline_items(const unsigned char* bytes, int len) {
@@ -525,19 +683,29 @@ static std::vector<TimelineItem> parse_timeline_items(const unsigned char* bytes
     for (const auto& entry : split_wide_list(full, L"|\n\r")) {
         if (entry.empty()) continue;
         std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
-        if (fields.size() < 2) fields = split_wide_list(entry, L":");
+        bool colon_fallback = false;
+        if (fields.size() < 2) {
+            fields = split_wide_list(entry, L":");
+            colon_fallback = true;
+        }
         TimelineItem item;
         if (!fields.empty()) item.time = fields[0];
         if (fields.size() >= 2) item.content = fields[1];
         if (fields.size() >= 3 && !fields[2].empty()) {
             item.item_type = _wtoi(fields[2].c_str());
         }
-        if (fields.size() >= 4) item.icon = fields[3];
-        if (fields.size() > 4) {
+        if (fields.size() >= 4) item.icon = normalize_timeline_icon(fields[3]);
+        if (colon_fallback && fields.size() > 4) {
             for (size_t i = 4; i < fields.size(); ++i) {
                 item.content += L":";
                 item.content += fields[i];
             }
+        } else {
+            if (fields.size() >= 5) item.color = parse_timeline_color(fields[4]);
+            if (fields.size() >= 6) item.size = parse_timeline_size(fields[5]);
+            if (fields.size() >= 7) item.placement = parse_timeline_placement(fields[6], -1);
+            if (fields.size() >= 8) item.card_title = fields[7];
+            if (fields.size() >= 9) item.card_body = fields[8];
         }
         items.push_back(item);
     }
@@ -600,8 +768,35 @@ static std::vector<TreeViewItem> parse_tree_items(const unsigned char* bytes, in
         if (fields.size() >= 3 && !fields[2].empty()) item.expanded = _wtoi(fields[2].c_str()) != 0;
         if (fields.size() >= 4 && !fields[3].empty()) item.checked = _wtoi(fields[3].c_str()) != 0;
         if (fields.size() >= 5 && !fields[4].empty()) item.lazy = _wtoi(fields[4].c_str()) != 0;
+        if (fields.size() >= 6 && !fields[5].empty()) item.key = fields[5];
+        if (fields.size() >= 7 && !fields[6].empty()) item.disabled = _wtoi(fields[6].c_str()) != 0;
+        if (fields.size() >= 8 && !fields[7].empty()) item.leaf = _wtoi(fields[7].c_str()) != 0;
+        if (fields.size() >= 9) item.icon = fields[8];
+        if (fields.size() >= 10) item.tag = fields[9];
+        if (fields.size() >= 11) item.actions = fields[10];
         if (item.level < 0) item.level = 0;
-        if (item.level > 6) item.level = 6;
+        if (item.level > 12) item.level = 12;
+        items.push_back(item);
+    }
+    return items;
+}
+
+static std::vector<TransferItem> parse_transfer_items_ex(const unsigned char* bytes, int len) {
+    std::vector<TransferItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+        if (entry.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        TransferItem item;
+        item.key = fields.size() >= 1 ? fields[0] : L"";
+        item.label = fields.size() >= 2 ? fields[1] : item.key;
+        item.value = fields.size() >= 3 ? fields[2] : item.key;
+        item.desc = fields.size() >= 4 ? fields[3] : L"";
+        item.pinyin = fields.size() >= 5 ? fields[4] : L"";
+        item.disabled = fields.size() >= 6 && _wtoi(fields[5].c_str()) != 0;
+        if (item.key.empty()) item.key = !item.value.empty() ? item.value : item.label;
+        if (item.label.empty()) item.label = !item.desc.empty() ? item.desc : item.key;
+        if (item.value.empty()) item.value = item.key;
         items.push_back(item);
     }
     return items;
@@ -674,6 +869,36 @@ parse_pair_items(const unsigned char* bytes, int len) {
     return items;
 }
 
+static std::vector<StepsVisualItem> parse_steps_visual_items(const unsigned char* bytes, int len) {
+    std::vector<StepsVisualItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+        if (entry.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        StepsVisualItem item;
+        item.title = fields.empty() ? entry : fields[0];
+        if (fields.size() >= 2) item.description = fields[1];
+        if (fields.size() >= 3) item.icon = fields[2];
+        if (!item.title.empty()) items.push_back(item);
+    }
+    return items;
+}
+
+static std::vector<InfiniteScrollItem> parse_infinite_scroll_items(const unsigned char* bytes, int len) {
+    std::vector<InfiniteScrollItem> items;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& row : split_wide_list(full, L"|\n\r")) {
+        if (row.empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(row, L"\t");
+        InfiniteScrollItem item;
+        item.title = fields.empty() ? row : fields[0];
+        item.subtitle = fields.size() >= 2 ? fields[1] : L"";
+        item.tag = fields.size() >= 3 ? fields[2] : L"";
+        if (!item.title.empty()) items.push_back(item);
+    }
+    return items;
+}
+
 static std::vector<CascaderOption> parse_cascader_options(const unsigned char* bytes, int len) {
     std::vector<CascaderOption> options;
     std::wstring full = utf8_to_wide(bytes, len);
@@ -736,6 +961,64 @@ int __stdcall EU_CreateContainer(HWND hwnd, int parent_id, int x, int y, int w, 
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
+}
+
+static int create_container_region(HWND hwnd, int parent_id,
+                                   const unsigned char* text_bytes, int text_len,
+                                   int x, int y, int w, int h, int role) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = find_parent_or_root(st, parent_id);
+    std::unique_ptr<ContainerRegion> el;
+    if (role == ContainerRegion::HeaderRole) {
+        el = std::make_unique<Header>();
+        if (h <= 0) h = 60;
+    } else if (role == ContainerRegion::AsideRole) {
+        el = std::make_unique<Aside>();
+        if (w <= 0) w = 200;
+    } else if (role == ContainerRegion::FooterRole) {
+        el = std::make_unique<Footer>();
+        if (h <= 0) h = 60;
+    } else {
+        el = std::make_unique<Main>();
+    }
+    el->set_logical_bounds({ x, y, w, h });
+    el->text = utf8_to_wide(text_bytes, text_len);
+    el->set_logical_style(el->style);
+
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CreateHeader(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::HeaderRole);
+}
+
+int __stdcall EU_CreateAside(HWND hwnd, int parent_id,
+                             const unsigned char* text_bytes, int text_len,
+                             int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::AsideRole);
+}
+
+int __stdcall EU_CreateMain(HWND hwnd, int parent_id,
+                            const unsigned char* text_bytes, int text_len,
+                            int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::MainRole);
+}
+
+int __stdcall EU_CreateFooter(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h) {
+    return create_container_region(hwnd, parent_id, text_bytes, text_len,
+                                   x, y, w, h, ContainerRegion::FooterRole);
 }
 
 int __stdcall EU_CreateLayout(HWND hwnd, int parent_id, int orientation, int gap,
@@ -1372,10 +1655,12 @@ int __stdcall EU_CreateBadge(HWND hwnd, int parent_id,
     Element* parent = find_parent_or_root(st, parent_id);
     auto el = std::make_unique<Badge>();
     el->set_logical_bounds({ x, y, w, h });
+    el->mouse_passthrough = true;
     el->text = utf8_to_wide(text_bytes, text_len);
     el->set_value(utf8_to_wide(value_bytes, value_len));
     el->set_max_value(max_value);
     el->set_dot(dot != 0);
+    el->set_type(0);
 
     ElementStyle logical_style = el->style;
     logical_style.bg_color = 0;
@@ -2693,28 +2978,28 @@ int __stdcall EU_CreateUpload(HWND hwnd, int parent_id,
     return raw->id;
 }
 
-int __stdcall EU_CreateScrollbar(HWND hwnd, int parent_id,
-                                 int value, int max_value, int orientation,
-                                 int x, int y, int w, int h) {
+int __stdcall EU_CreateInfiniteScroll(HWND hwnd, int parent_id,
+                                      const unsigned char* items_bytes, int items_len,
+                                      int x, int y, int w, int h) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return 0;
 
     Element* parent = find_parent_or_root(st, parent_id);
-    auto el = std::make_unique<Scrollbar>();
+    auto el = std::make_unique<InfiniteScroll>();
     el->set_logical_bounds({ x, y, w, h });
-    el->set_max_value(max_value);
-    el->set_value(value);
-    el->set_orientation(orientation);
+    el->set_items(parse_infinite_scroll_items(items_bytes, items_len));
 
     ElementStyle logical_style = el->style;
-    logical_style.bg_color = 0;
+    logical_style.bg_color = 0x00000000;
     logical_style.border_color = 0;
+    logical_style.border_width = 1.0f;
+    logical_style.corner_radius = 8.0f;
     logical_style.fg_color = 0;
     logical_style.font_size = 14.0f;
-    logical_style.pad_left = 4;
-    logical_style.pad_top = 4;
-    logical_style.pad_right = 4;
-    logical_style.pad_bottom = 4;
+    logical_style.pad_left = 12;
+    logical_style.pad_top = 12;
+    logical_style.pad_right = 12;
+    logical_style.pad_bottom = 12;
     el->set_logical_style(logical_style);
 
     Element* raw = st->element_tree->add_child(parent, std::move(el));
@@ -2844,11 +3129,13 @@ int __stdcall EU_CreateSteps(HWND hwnd, int parent_id,
     return raw->id;
 }
 
-int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
-                             const unsigned char* title_bytes, int title_len,
-                             const unsigned char* desc_bytes, int desc_len,
-                             int alert_type, int effect, int closable,
-                             int x, int y, int w, int h) {
+static int create_alert_element(HWND hwnd, int parent_id,
+                                const unsigned char* title_bytes, int title_len,
+                                const unsigned char* desc_bytes, int desc_len,
+                                int alert_type, int effect, int closable,
+                                int show_icon, int center, int wrap_description,
+                                const unsigned char* close_text_bytes, int close_text_len,
+                                int x, int y, int w, int h) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return 0;
 
@@ -2860,6 +3147,8 @@ int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
     el->set_type(alert_type);
     el->set_effect(effect);
     el->set_closable(closable != 0);
+    el->set_advanced_options(show_icon != 0, center != 0, wrap_description != 0);
+    el->set_close_text(utf8_to_wide(close_text_bytes, close_text_len));
 
     ElementStyle logical_style = el->style;
     logical_style.bg_color = 0;
@@ -2877,6 +3166,33 @@ int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
     st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return raw->id;
+}
+
+int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
+                             const unsigned char* title_bytes, int title_len,
+                             const unsigned char* desc_bytes, int desc_len,
+                             int alert_type, int effect, int closable,
+                             int x, int y, int w, int h) {
+    return create_alert_element(hwnd, parent_id,
+                                title_bytes, title_len, desc_bytes, desc_len,
+                                alert_type, effect, closable,
+                                1, 0, 0, nullptr, 0,
+                                x, y, w, h);
+}
+
+int __stdcall EU_CreateAlertEx(HWND hwnd, int parent_id,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* desc_bytes, int desc_len,
+                               int alert_type, int effect, int closable,
+                               int show_icon, int center, int wrap_description,
+                               const unsigned char* close_text_bytes, int close_text_len,
+                               int x, int y, int w, int h) {
+    return create_alert_element(hwnd, parent_id,
+                                title_bytes, title_len, desc_bytes, desc_len,
+                                alert_type, effect, closable,
+                                show_icon, center, wrap_description,
+                                close_text_bytes, close_text_len,
+                                x, y, w, h);
 }
 
 int __stdcall EU_CreateResult(HWND hwnd, int parent_id,
@@ -3726,6 +4042,42 @@ int __stdcall EU_GetPanelLayout(HWND hwnd, int element_id, int* fill_parent, int
     return 1;
 }
 
+void __stdcall EU_SetContainerLayout(HWND hwnd, int element_id, int enabled, int direction, int gap) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Container>(hwnd, element_id)) {
+        el->set_flow_options(enabled, direction, gap);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetContainerLayout(HWND hwnd, int element_id, int* enabled, int* direction, int* gap, int* actual_direction) {
+    auto* el = find_typed_element<Container>(hwnd, element_id);
+    if (!el) return 0;
+    if (enabled) *enabled = el->flow_enabled;
+    if (direction) *direction = el->flow_direction;
+    if (gap) *gap = el->get_logical_gap();
+    if (actual_direction) *actual_direction = el->flow_enabled ? el->actual_direction : 0;
+    return 1;
+}
+
+void __stdcall EU_SetContainerRegionTextOptions(HWND hwnd, int element_id, int align, int valign) {
+    if (auto* el = find_typed_element<ContainerRegion>(hwnd, element_id)) {
+        el->set_text_options(align, valign);
+    }
+}
+
+int __stdcall EU_GetContainerRegionTextOptions(HWND hwnd, int element_id, int* align, int* valign, int* role) {
+    auto* el = find_typed_element<ContainerRegion>(hwnd, element_id);
+    if (!el) return 0;
+    if (align) *align = el->horizontal_align;
+    if (valign) *valign = el->vertical_align;
+    if (role) *role = el->region_role;
+    return 1;
+}
+
 void __stdcall EU_SetLayoutOptions(HWND hwnd, int element_id, int orientation, int gap, int stretch, int align, int wrap) {
     WindowState* st = window_state(hwnd);
     if (!st || !st->element_tree) return;
@@ -3913,6 +4265,41 @@ int __stdcall EU_GetDividerSpacing(HWND hwnd, int element_id, int* margin, int* 
     el->get_spacing(out_margin, out_gap);
     if (margin) *margin = out_margin;
     if (gap) *gap = out_gap;
+    return 1;
+}
+
+void __stdcall EU_SetDividerLineStyle(HWND hwnd, int element_id, int line_style) {
+    if (auto* el = find_typed_element<Divider>(hwnd, element_id)) {
+        el->set_line_style(line_style);
+    }
+}
+
+int __stdcall EU_GetDividerLineStyle(HWND hwnd, int element_id, int* line_style) {
+    auto* el = find_typed_element<Divider>(hwnd, element_id);
+    if (!el) return 0;
+    if (line_style) *line_style = el->line_style;
+    return 1;
+}
+
+void __stdcall EU_SetDividerContent(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Divider>(hwnd, element_id)) {
+        el->set_content(utf8_to_wide(icon_bytes, icon_len),
+                        utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+int __stdcall EU_GetDividerContent(HWND hwnd, int element_id,
+                                   unsigned char* icon_buffer, int icon_buffer_size,
+                                   unsigned char* text_buffer, int text_buffer_size) {
+    auto* el = find_typed_element<Divider>(hwnd, element_id);
+    if (!el) return 0;
+    std::wstring icon;
+    std::wstring label;
+    el->get_content(icon, label);
+    copy_wide_as_utf8(icon, icon_buffer, icon_buffer_size);
+    copy_wide_as_utf8(label, text_buffer, text_buffer_size);
     return 1;
 }
 
@@ -4984,6 +5371,28 @@ void __stdcall EU_SetSelectOptionDisabled(HWND hwnd, int element_id, int option_
     }
 }
 
+void __stdcall EU_SetSelectOptionAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<Select>(hwnd, element_id)) {
+        el->set_option_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectOptionAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Select>(hwnd, element_id);
+    return el ? el->option_alignment : 0;
+}
+
+void __stdcall EU_SetSelectValueAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<Select>(hwnd, element_id)) {
+        el->set_value_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectValueAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Select>(hwnd, element_id);
+    return el ? el->value_alignment : 0;
+}
+
 int __stdcall EU_GetSelectOptionCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Select>(hwnd, element_id);
     return el ? el->option_count() : 0;
@@ -5107,6 +5516,28 @@ void __stdcall EU_SetSelectV2OptionDisabled(HWND hwnd, int element_id, int optio
     if (auto* el = find_typed_element<SelectV2>(hwnd, element_id)) {
         el->set_option_disabled(option_index, disabled != 0);
     }
+}
+
+void __stdcall EU_SetSelectV2OptionAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<SelectV2>(hwnd, element_id)) {
+        el->set_option_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectV2OptionAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<SelectV2>(hwnd, element_id);
+    return el ? el->option_alignment : 0;
+}
+
+void __stdcall EU_SetSelectV2ValueAlignment(HWND hwnd, int element_id, int alignment) {
+    if (auto* el = find_typed_element<SelectV2>(hwnd, element_id)) {
+        el->set_value_alignment(alignment);
+    }
+}
+
+int __stdcall EU_GetSelectV2ValueAlignment(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<SelectV2>(hwnd, element_id);
+    return el ? el->value_alignment : 0;
 }
 
 int __stdcall EU_GetSelectV2OptionCount(HWND hwnd, int element_id) {
@@ -5290,7 +5721,7 @@ void __stdcall EU_SetColorPickerColor(HWND hwnd, int element_id, Color color) {
 
 int __stdcall EU_GetColorPickerColor(HWND hwnd, int element_id) {
     auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
-    return el ? (int)el->value : 0;
+    return (el && el->has_value) ? (int)el->value : 0;
 }
 
 void __stdcall EU_SetColorPickerAlpha(HWND hwnd, int element_id, int alpha) {
@@ -5315,6 +5746,7 @@ int __stdcall EU_GetColorPickerHex(HWND hwnd, int element_id,
                                    unsigned char* buffer, int buffer_size) {
     auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
     if (!el) return 0;
+    if (!el->has_value) return 0;
     std::string utf8 = wide_to_utf8(el->get_hex_text());
     int needed = (int)utf8.size();
     if (!buffer || buffer_size <= 0) return needed;
@@ -5353,6 +5785,34 @@ void __stdcall EU_SetColorPickerPalette(HWND hwnd, int element_id, const Color* 
 int __stdcall EU_GetColorPickerPaletteCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
     return el ? el->palette_count() : 0;
+}
+
+void __stdcall EU_SetColorPickerOptions(HWND hwnd, int element_id,
+                                        int show_alpha, int size_mode, int clearable) {
+    if (auto* el = find_typed_element<ColorPicker>(hwnd, element_id)) {
+        el->set_options(show_alpha != 0, size_mode, clearable != 0);
+    }
+}
+
+int __stdcall EU_GetColorPickerOptions(HWND hwnd, int element_id,
+                                       int* show_alpha, int* size_mode, int* clearable) {
+    auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_alpha) *show_alpha = el->show_alpha ? 1 : 0;
+    if (size_mode) *size_mode = el->size_mode;
+    if (clearable) *clearable = el->clearable ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_ClearColorPicker(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<ColorPicker>(hwnd, element_id)) {
+        el->clear_value();
+    }
+}
+
+int __stdcall EU_GetColorPickerHasValue(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<ColorPicker>(hwnd, element_id);
+    return (el && el->has_value) ? 1 : 0;
 }
 
 void __stdcall EU_SetColorPickerChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
@@ -5441,6 +5901,12 @@ void __stdcall EU_SetBadgeMax(HWND hwnd, int element_id, int max_value) {
     }
 }
 
+void __stdcall EU_SetBadgeType(HWND hwnd, int element_id, int badge_type) {
+    if (auto* el = find_typed_element<Badge>(hwnd, element_id)) {
+        el->set_type(badge_type);
+    }
+}
+
 void __stdcall EU_SetBadgeDot(HWND hwnd, int element_id, int dot) {
     if (auto* el = find_typed_element<Badge>(hwnd, element_id)) {
         el->set_dot(dot != 0);
@@ -5471,6 +5937,11 @@ int __stdcall EU_GetBadgeOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+int __stdcall EU_GetBadgeType(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Badge>(hwnd, element_id);
+    return el ? el->get_type() : 0;
+}
+
 void __stdcall EU_SetBadgeLayoutOptions(HWND hwnd, int element_id,
                                         int placement, int standalone) {
     if (auto* el = find_typed_element<Badge>(hwnd, element_id)) {
@@ -5485,6 +5956,25 @@ int __stdcall EU_GetBadgeLayoutOptions(HWND hwnd, int element_id,
     if (placement) *placement = el->placement;
     if (standalone) *standalone = el->standalone ? 1 : 0;
     return 1;
+}
+
+static std::vector<std::pair<Color, int>> parse_progress_color_stops(const unsigned char* bytes, int len) {
+    std::vector<std::pair<Color, int>> stops;
+    std::wstring full = utf8_to_wide(bytes, len);
+    for (const auto& entry : split_wide_list(full, L"|\n\r")) {
+        if (trim_wide(entry).empty()) continue;
+        std::vector<std::wstring> fields = split_wide_list(entry, L"\t");
+        if (fields.size() < 2) fields = split_wide_list(entry, L":,");
+        if (fields.size() < 2) continue;
+        Color color = parse_timeline_color(fields[0]);
+        int percentage = _wtoi(trim_wide(fields[1]).c_str());
+        if (percentage < 0) percentage = 0;
+        if (percentage > 100) percentage = 100;
+        if (color) stops.push_back({ color, percentage });
+    }
+    std::sort(stops.begin(), stops.end(),
+        [](const auto& a, const auto& b) { return a.second < b.second; });
+    return stops;
 }
 
 void __stdcall EU_SetProgressPercentage(HWND hwnd, int element_id, int percentage) {
@@ -5540,12 +6030,85 @@ void __stdcall EU_SetProgressFormatOptions(HWND hwnd, int element_id,
 }
 
 int __stdcall EU_GetProgressFormatOptions(HWND hwnd, int element_id,
-                                          int* text_format, int* striped) {
+                                           int* text_format, int* striped) {
     auto* el = find_typed_element<Progress>(hwnd, element_id);
     if (!el) return 0;
     if (text_format) *text_format = el->text_format;
     if (striped) *striped = el->striped ? 1 : 0;
     return 1;
+}
+
+void __stdcall EU_SetProgressTextInside(HWND hwnd, int element_id, int text_inside) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_text_inside(text_inside != 0);
+    }
+}
+
+int __stdcall EU_GetProgressTextInside(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return (el && el->text_inside) ? 1 : 0;
+}
+
+void __stdcall EU_SetProgressColors(HWND hwnd, int element_id, Color fill, Color track, Color text) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_colors(fill, track, text);
+    }
+}
+
+int __stdcall EU_GetProgressColors(HWND hwnd, int element_id, Color* fill, Color* track, Color* text) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    if (!el) return 0;
+    if (fill) *fill = el->fill_color;
+    if (track) *track = el->track_color;
+    if (text) *text = el->text_color;
+    return 1;
+}
+
+void __stdcall EU_SetProgressColorStops(HWND hwnd, int element_id,
+                                        const unsigned char* stops_bytes, int stops_len) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_color_stops(parse_progress_color_stops(stops_bytes, stops_len));
+    }
+}
+
+int __stdcall EU_GetProgressColorStopCount(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return el ? (int)el->color_stops.size() : 0;
+}
+
+int __stdcall EU_GetProgressColorStop(HWND hwnd, int element_id, int index,
+                                      Color* color, int* percentage) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    if (!el || index < 0 || index >= (int)el->color_stops.size()) return 0;
+    if (color) *color = el->color_stops[index].first;
+    if (percentage) *percentage = el->color_stops[index].second;
+    return 1;
+}
+
+void __stdcall EU_SetProgressCompleteText(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_complete_text(utf8_to_wide(bytes, len));
+    }
+}
+
+int __stdcall EU_GetProgressCompleteText(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->complete_text, buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetProgressTextTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Progress>(hwnd, element_id)) {
+        el->set_text_template(utf8_to_wide(bytes, len));
+    }
+}
+
+int __stdcall EU_GetProgressTextTemplate(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Progress>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->text_template, buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetAvatarShape(HWND hwnd, int element_id, int shape) {
@@ -5561,6 +6124,27 @@ void __stdcall EU_SetAvatarSource(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetAvatarFallbackSource(HWND hwnd, int element_id,
+                                          const unsigned char* src_bytes, int src_len) {
+    if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
+        el->set_fallback_source(utf8_to_wide(src_bytes, src_len));
+    }
+}
+
+void __stdcall EU_SetAvatarIcon(HWND hwnd, int element_id,
+                                const unsigned char* icon_bytes, int icon_len) {
+    if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
+        el->set_icon(utf8_to_wide(icon_bytes, icon_len));
+    }
+}
+
+void __stdcall EU_SetAvatarErrorText(HWND hwnd, int element_id,
+                                     const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
+        el->set_error_text(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
 void __stdcall EU_SetAvatarFit(HWND hwnd, int element_id, int fit) {
     if (auto* el = find_typed_element<Avatar>(hwnd, element_id)) {
         el->set_fit(fit);
@@ -5570,9 +6154,7 @@ void __stdcall EU_SetAvatarFit(HWND hwnd, int element_id, int fit) {
 int __stdcall EU_GetAvatarImageStatus(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Avatar>(hwnd, element_id);
     if (!el) return 0;
-    if (el->image_loaded) return 1;
-    if (el->image_failed) return 2;
-    return 0;
+    return el->image_status;
 }
 
 int __stdcall EU_GetAvatarOptions(HWND hwnd, int element_id, int* shape, int* fit) {
@@ -5614,6 +6196,32 @@ void __stdcall EU_SetEmptyActionCallback(HWND hwnd, int element_id, ElementClick
     if (auto* el = find_typed_element<Empty>(hwnd, element_id)) {
         el->action_cb = cb;
     }
+}
+
+void __stdcall EU_SetEmptyImage(HWND hwnd, int element_id,
+                                const unsigned char* image_bytes, int image_len) {
+    if (auto* el = find_typed_element<Empty>(hwnd, element_id)) {
+        el->set_image(utf8_to_wide(image_bytes, image_len));
+    }
+}
+
+void __stdcall EU_SetEmptyImageSize(HWND hwnd, int element_id, int image_size) {
+    if (auto* el = find_typed_element<Empty>(hwnd, element_id)) {
+        el->set_image_size(image_size);
+        if (WindowState* st = window_state(hwnd)) {
+            el->apply_dpi_scale(st->dpi_scale);
+        }
+    }
+}
+
+int __stdcall EU_GetEmptyImageStatus(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Empty>(hwnd, element_id);
+    return el ? el->image_status : -1;
+}
+
+int __stdcall EU_GetEmptyImageSize(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Empty>(hwnd, element_id);
+    return el ? el->logical_image_size : -1;
 }
 
 void __stdcall EU_SetSkeletonRows(HWND hwnd, int element_id, int rows) {
@@ -5676,6 +6284,20 @@ void __stdcall EU_SetDescriptionsBordered(HWND hwnd, int element_id, int bordere
     }
 }
 
+void __stdcall EU_SetDescriptionsLayout(HWND hwnd, int element_id, int direction,
+                                        int size, int columns, int bordered) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_layout(direction, size, columns, bordered != 0);
+    }
+}
+
+void __stdcall EU_SetDescriptionsItemsEx(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_rich_items(parse_description_items_ex(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetDescriptionsOptions(HWND hwnd, int element_id, int columns,
                                          int bordered, int label_width,
                                          int min_row_height, int wrap_values) {
@@ -5696,6 +6318,25 @@ void __stdcall EU_SetDescriptionsAdvancedOptions(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetDescriptionsColors(HWND hwnd, int element_id,
+                                        Color border, Color label_bg, Color content_bg,
+                                        Color label_fg, Color content_fg, Color title_fg) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_colors(border, label_bg, content_bg, label_fg, content_fg, title_fg);
+    }
+}
+
+void __stdcall EU_SetDescriptionsExtra(HWND hwnd, int element_id,
+                                       const unsigned char* emoji_bytes, int emoji_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       int visible, int variant) {
+    if (auto* el = find_typed_element<Descriptions>(hwnd, element_id)) {
+        el->set_extra(utf8_to_wide(emoji_bytes, emoji_len),
+                      utf8_to_wide(text_bytes, text_len),
+                      visible != 0, variant);
+    }
+}
+
 int __stdcall EU_GetDescriptionsOptions(HWND hwnd, int element_id,
                                         int* columns, int* bordered,
                                         int* label_width, int* min_row_height,
@@ -5710,6 +6351,24 @@ int __stdcall EU_GetDescriptionsOptions(HWND hwnd, int element_id,
     if (wrap_values) *wrap_values = el->wrap_values ? 1 : 0;
     if (responsive) *responsive = el->responsive ? 1 : 0;
     if (last_item_span) *last_item_span = el->last_item_span ? 1 : 0;
+    return 1;
+}
+
+int __stdcall EU_GetDescriptionsFullState(HWND hwnd, int element_id,
+                                          int* direction, int* size,
+                                          int* columns, int* bordered,
+                                          int* item_count, int* extra_click_count,
+                                          int* responsive, int* wrap_values) {
+    auto* el = find_typed_element<Descriptions>(hwnd, element_id);
+    if (!el) return 0;
+    if (direction) *direction = el->direction;
+    if (size) *size = el->size;
+    if (columns) *columns = el->columns;
+    if (bordered) *bordered = el->bordered ? 1 : 0;
+    if (item_count) *item_count = (int)el->rich_items.size();
+    if (extra_click_count) *extra_click_count = el->extra_click_count;
+    if (responsive) *responsive = el->responsive ? 1 : 0;
+    if (wrap_values) *wrap_values = el->wrap_values ? 1 : 0;
     return 1;
 }
 
@@ -5982,6 +6641,13 @@ int __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
     return el ? copy_wide_as_utf8(el->full_state_text(), buffer, buffer_size) : 0;
 }
 
+void __stdcall EU_SetCardTitle(HWND hwnd, int element_id,
+                               const unsigned char* title_bytes, int title_len) {
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        el->set_title(utf8_to_wide(title_bytes, title_len));
+    }
+}
+
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
                               const unsigned char* body_bytes, int body_len) {
     if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
@@ -5996,6 +6662,17 @@ void __stdcall EU_SetCardFooter(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetCardItems(HWND hwnd, int element_id,
+                               const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        std::vector<std::wstring> items;
+        for (const auto& item : split_wide_list(utf8_to_wide(items_bytes, items_len), L"|\t\n\r")) {
+            if (!item.empty()) items.push_back(item);
+        }
+        el->set_items(items);
+    }
+}
+
 void __stdcall EU_SetCardActions(HWND hwnd, int element_id,
                                  const unsigned char* actions_bytes, int actions_len) {
     if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
@@ -6005,6 +6682,11 @@ void __stdcall EU_SetCardActions(HWND hwnd, int element_id,
         }
         el->set_actions(actions);
     }
+}
+
+int __stdcall EU_GetCardItemCount(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Card>(hwnd, element_id);
+    return el ? (int)el->items.size() : 0;
 }
 
 int __stdcall EU_GetCardAction(HWND hwnd, int element_id) {
@@ -6030,6 +6712,84 @@ void __stdcall EU_SetCardOptions(HWND hwnd, int element_id, int shadow, int hove
     }
 }
 
+void __stdcall EU_SetCardStyle(HWND hwnd, int element_id,
+                               Color bg, Color border, float border_width,
+                               float radius, int padding) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        ElementStyle logical = el->has_logical_style ? el->logical_style : el->style;
+        int pad = padding >= 0 ? padding : 0;
+        logical.bg_color = bg;
+        logical.border_color = border;
+        logical.border_width = border_width >= 0.0f ? border_width : 0.0f;
+        logical.corner_radius = radius >= 0.0f ? radius : 0.0f;
+        logical.pad_left = pad;
+        logical.pad_top = pad;
+        logical.pad_right = pad;
+        logical.pad_bottom = pad;
+        el->set_logical_style(logical);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetCardStyle(HWND hwnd, int element_id,
+                              Color* bg, Color* border, float* border_width,
+                              float* radius, int* padding) {
+    auto* el = find_typed_element<Card>(hwnd, element_id);
+    if (!el) return 0;
+    const ElementStyle& s = el->has_logical_style ? el->logical_style : el->style;
+    if (bg) *bg = s.bg_color;
+    if (border) *border = s.border_color;
+    if (border_width) *border_width = s.border_width;
+    if (radius) *radius = s.corner_radius;
+    if (padding) *padding = s.pad_left;
+    return 1;
+}
+
+void __stdcall EU_SetCardBodyStyle(HWND hwnd, int element_id,
+                                   int pad_left, int pad_top, int pad_right, int pad_bottom,
+                                   float font_size, int item_gap, int item_padding_y,
+                                   int divider) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = find_typed_element<Card>(hwnd, element_id)) {
+        CardBodyStyle style;
+        style.pad_left = pad_left >= 0 ? pad_left : 0;
+        style.pad_top = pad_top >= 0 ? pad_top : 0;
+        style.pad_right = pad_right >= 0 ? pad_right : 0;
+        style.pad_bottom = pad_bottom >= 0 ? pad_bottom : 0;
+        style.font_size = font_size > 0.0f ? font_size : 14.0f;
+        style.item_gap = item_gap >= 0 ? item_gap : 0;
+        style.item_padding_y = item_padding_y >= 0 ? item_padding_y : 0;
+        style.divider = divider != 0;
+        el->set_body_style(style);
+        el->apply_dpi_scale(st->dpi_scale);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetCardBodyStyle(HWND hwnd, int element_id,
+                                  int* pad_left, int* pad_top, int* pad_right, int* pad_bottom,
+                                  float* font_size, int* item_gap, int* item_padding_y,
+                                  int* divider) {
+    auto* el = find_typed_element<Card>(hwnd, element_id);
+    if (!el) return 0;
+    const CardBodyStyle& s = el->logical_body_style;
+    if (pad_left) *pad_left = s.pad_left;
+    if (pad_top) *pad_top = s.pad_top;
+    if (pad_right) *pad_right = s.pad_right;
+    if (pad_bottom) *pad_bottom = s.pad_bottom;
+    if (font_size) *font_size = s.font_size;
+    if (item_gap) *item_gap = s.item_gap;
+    if (item_padding_y) *item_padding_y = s.item_padding_y;
+    if (divider) *divider = s.divider ? 1 : 0;
+    return 1;
+}
+
 int __stdcall EU_GetCardOptions(HWND hwnd, int element_id,
                                 int* shadow, int* hoverable, int* action_count) {
     auto* el = find_typed_element<Card>(hwnd, element_id);
@@ -6047,6 +6807,13 @@ void __stdcall EU_SetCollapseItems(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetCollapseItemsEx(HWND hwnd, int element_id,
+                                     const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Collapse>(hwnd, element_id)) {
+        el->set_items(parse_collapse_items(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetCollapseActive(HWND hwnd, int element_id, int active_index) {
     if (auto* el = find_typed_element<Collapse>(hwnd, element_id)) {
         el->set_active_index(active_index);
@@ -6056,6 +6823,19 @@ void __stdcall EU_SetCollapseActive(HWND hwnd, int element_id, int active_index)
 int __stdcall EU_GetCollapseActive(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Collapse>(hwnd, element_id);
     return el ? el->active_index : -1;
+}
+
+void __stdcall EU_SetCollapseActiveItems(HWND hwnd, int element_id,
+                                         const unsigned char* indices_bytes, int indices_len) {
+    if (auto* el = find_typed_element<Collapse>(hwnd, element_id)) {
+        el->set_active_indices(parse_index_set(indices_bytes, indices_len));
+    }
+}
+
+int __stdcall EU_GetCollapseActiveItems(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Collapse>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->active_indices_text(), buffer, buffer_size) : 0;
 }
 
 int __stdcall EU_GetCollapseItemCount(HWND hwnd, int element_id) {
@@ -6092,8 +6872,20 @@ int __stdcall EU_GetCollapseOptions(HWND hwnd, int element_id,
     if (accordion) *accordion = el->accordion ? 1 : 0;
     if (allow_collapse) *allow_collapse = el->allow_collapse ? 1 : 0;
     if (animated) *animated = el->animated ? 1 : 0;
-    if (disabled_count) *disabled_count = (int)el->disabled_indices.size();
+    if (disabled_count) {
+        std::set<int> disabled = el->disabled_indices;
+        for (int i = 0; i < (int)el->items.size(); ++i) {
+            if (el->items[(size_t)i].disabled) disabled.insert(i);
+        }
+        *disabled_count = (int)disabled.size();
+    }
     return 1;
+}
+
+int __stdcall EU_GetCollapseStateJson(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Collapse>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->state_json(), buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetTimelineItems(HWND hwnd, int element_id,
@@ -6120,6 +6912,27 @@ int __stdcall EU_GetTimelineOptions(HWND hwnd, int element_id,
     if (!el) return 0;
     if (position) *position = el->position;
     if (show_time) *show_time = el->show_time ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                             int position, int show_time,
+                                             int reverse, int default_placement) {
+    if (auto* el = find_typed_element<Timeline>(hwnd, element_id)) {
+        el->set_advanced_options(position, show_time != 0,
+                                 reverse != 0, default_placement);
+    }
+}
+
+int __stdcall EU_GetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                            int* position, int* show_time,
+                                            int* reverse, int* default_placement) {
+    auto* el = find_typed_element<Timeline>(hwnd, element_id);
+    if (!el) return 0;
+    if (position) *position = el->position;
+    if (show_time) *show_time = el->show_time ? 1 : 0;
+    if (reverse) *reverse = el->reverse ? 1 : 0;
+    if (default_placement) *default_placement = el->default_placement;
     return 1;
 }
 
@@ -6154,6 +6967,90 @@ int __stdcall EU_GetStatisticOptions(HWND hwnd, int element_id,
     if (!el) return 0;
     if (precision) *precision = el->precision;
     if (animated) *animated = el->animated ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetStatisticNumberOptions(HWND hwnd, int element_id,
+                                            int precision, int animated, int use_group_separator,
+                                            const unsigned char* group_separator_bytes, int group_separator_len,
+                                            const unsigned char* decimal_separator_bytes, int decimal_separator_len) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        std::wstring group = utf8_to_wide(group_separator_bytes, group_separator_len);
+        std::wstring decimal = utf8_to_wide(decimal_separator_bytes, decimal_separator_len);
+        wchar_t group_ch = group.empty() ? L',' : group[0];
+        wchar_t decimal_ch = decimal.empty() ? L'.' : decimal[0];
+        el->set_number_options(precision, animated != 0, use_group_separator != 0,
+                               group_ch, decimal_ch);
+    }
+}
+
+void __stdcall EU_SetStatisticAffixOptions(HWND hwnd, int element_id,
+                                           const unsigned char* prefix_bytes, int prefix_len,
+                                           const unsigned char* suffix_bytes, int suffix_len,
+                                           Color prefix_color, Color suffix_color, Color value_color,
+                                           int suffix_clickable) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_affix_options(utf8_to_wide(prefix_bytes, prefix_len),
+                              utf8_to_wide(suffix_bytes, suffix_len),
+                              prefix_color, suffix_color, value_color,
+                              suffix_clickable != 0);
+    }
+}
+
+void __stdcall EU_SetStatisticDisplayText(HWND hwnd, int element_id,
+                                          const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_display_text(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+void __stdcall EU_SetStatisticCountdown(HWND hwnd, int element_id,
+                                        long long target_unix_ms,
+                                        const unsigned char* format_bytes, int format_len) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_countdown(target_unix_ms, utf8_to_wide(format_bytes, format_len));
+    }
+}
+
+void __stdcall EU_SetStatisticCountdownState(HWND hwnd, int element_id, int paused) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->set_countdown_paused(paused != 0);
+    }
+}
+
+void __stdcall EU_AddStatisticCountdownTime(HWND hwnd, int element_id, long long delta_ms) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->add_countdown_time(delta_ms);
+    }
+}
+
+void __stdcall EU_SetStatisticFinishCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->finish_cb = cb;
+    }
+}
+
+void __stdcall EU_SetStatisticSuffixClickCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
+    if (auto* el = find_typed_element<Statistic>(hwnd, element_id)) {
+        el->suffix_click_cb = cb;
+    }
+}
+
+int __stdcall EU_GetStatisticFullState(HWND hwnd, int element_id,
+                                       int* mode, int* precision, int* animated,
+                                       int* use_group_separator, int* countdown_paused,
+                                       int* countdown_finished, int* suffix_click_count,
+                                       long long* remaining_ms) {
+    auto* el = find_typed_element<Statistic>(hwnd, element_id);
+    if (!el) return 0;
+    if (mode) *mode = el->mode;
+    if (precision) *precision = el->precision;
+    if (animated) *animated = el->animated ? 1 : 0;
+    if (use_group_separator) *use_group_separator = el->group_separator ? 1 : 0;
+    if (countdown_paused) *countdown_paused = el->countdown_paused ? 1 : 0;
+    if (countdown_finished) *countdown_finished = el->countdown_finished ? 1 : 0;
+    if (suffix_click_count) *suffix_click_count = el->suffix_click_count;
+    if (remaining_ms) *remaining_ms = el->remaining_ms();
     return 1;
 }
 
@@ -6602,6 +7499,125 @@ int __stdcall EU_GetCalendarSelectionRange(HWND hwnd, int element_id,
     return 1;
 }
 
+void __stdcall EU_SetCalendarDisplayRange(HWND hwnd, int element_id,
+                                          int start_yyyymmdd, int end_yyyymmdd) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_display_range(start_yyyymmdd, end_yyyymmdd);
+    }
+}
+
+int __stdcall EU_GetCalendarDisplayRange(HWND hwnd, int element_id,
+                                         int* start_yyyymmdd, int* end_yyyymmdd) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    int start = 0;
+    int end = 0;
+    el->get_display_range(start, end);
+    if (start_yyyymmdd) *start_yyyymmdd = start;
+    if (end_yyyymmdd) *end_yyyymmdd = end;
+    return 1;
+}
+
+void __stdcall EU_SetCalendarCellItems(HWND hwnd, int element_id,
+                                       const unsigned char* spec_bytes, int spec_len) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_cell_items(utf8_to_wide(spec_bytes, spec_len));
+    }
+}
+
+int __stdcall EU_GetCalendarCellItems(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->cell_items_spec, buffer, buffer_size);
+}
+
+void __stdcall EU_ClearCalendarCellItems(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->clear_cell_items();
+    }
+}
+
+void __stdcall EU_SetCalendarVisualOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_week_header,
+                                           int label_mode, int show_adjacent_days,
+                                           float cell_radius) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_visual_options(show_header != 0, show_week_header != 0,
+                               label_mode, show_adjacent_days != 0,
+                               cell_radius);
+    }
+}
+
+int __stdcall EU_GetCalendarVisualOptions(HWND hwnd, int element_id,
+                                          int* show_header, int* show_week_header,
+                                          int* label_mode, int* show_adjacent_days,
+                                          float* cell_radius) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    int header = 0;
+    int week = 0;
+    int mode = 0;
+    int adjacent = 0;
+    float radius = 0.0f;
+    el->get_visual_options(header, week, mode, adjacent, radius);
+    if (show_header) *show_header = header;
+    if (show_week_header) *show_week_header = week;
+    if (label_mode) *label_mode = mode;
+    if (show_adjacent_days) *show_adjacent_days = adjacent;
+    if (cell_radius) *cell_radius = radius;
+    return 1;
+}
+
+void __stdcall EU_SetCalendarStateColors(HWND hwnd, int element_id,
+                                         Color selected_bg, Color selected_fg,
+                                         Color range_bg, Color today_border,
+                                         Color hover_bg, Color disabled_fg,
+                                         Color adjacent_fg) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_state_colors(selected_bg, selected_fg, range_bg, today_border,
+                             hover_bg, disabled_fg, adjacent_fg);
+    }
+}
+
+int __stdcall EU_GetCalendarStateColors(HWND hwnd, int element_id,
+                                        Color* selected_bg, Color* selected_fg,
+                                        Color* range_bg, Color* today_border,
+                                        Color* hover_bg, Color* disabled_fg,
+                                        Color* adjacent_fg) {
+    auto* el = find_typed_element<Calendar>(hwnd, element_id);
+    if (!el) return 0;
+    Color sb = 0;
+    Color sf = 0;
+    Color rb = 0;
+    Color tb = 0;
+    Color hb = 0;
+    Color df = 0;
+    Color af = 0;
+    el->get_state_colors(sb, sf, rb, tb, hb, df, af);
+    if (selected_bg) *selected_bg = sb;
+    if (selected_fg) *selected_fg = sf;
+    if (range_bg) *range_bg = rb;
+    if (today_border) *today_border = tb;
+    if (hover_bg) *hover_bg = hb;
+    if (disabled_fg) *disabled_fg = df;
+    if (adjacent_fg) *adjacent_fg = af;
+    return 1;
+}
+
+void __stdcall EU_SetCalendarSelectedMarker(HWND hwnd, int element_id,
+                                            const unsigned char* marker_bytes, int marker_len) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->set_selected_marker(utf8_to_wide(marker_bytes, marker_len));
+    }
+}
+
+void __stdcall EU_SetCalendarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<Calendar>(hwnd, element_id)) {
+        el->change_cb = cb;
+    }
+}
+
 void __stdcall EU_SetTreeItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len) {
     if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
@@ -6793,6 +7809,200 @@ int __stdcall EU_GetTreeSelectItemExpanded(HWND hwnd, int element_id, int item_i
     return (el && el->get_item_expanded(item_index)) ? 1 : 0;
 }
 
+void __stdcall EU_SetTreeDataJson(HWND hwnd, int element_id,
+                                  const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_data_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeDataJson(HWND hwnd, int element_id,
+                                 unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->data_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeOptionsJson(HWND hwnd, int element_id,
+                                     const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_options_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeStateJson(HWND hwnd, int element_id,
+                                  unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->state_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                         const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_checked_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->checked_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                          const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->set_expanded_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeView>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->expanded_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_AppendTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* parent_key_bytes, int parent_key_len,
+                                     const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->append_node_json(utf8_to_wide(parent_key_bytes, parent_key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_UpdateTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* key_bytes, int key_len,
+                                     const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->update_node_json(utf8_to_wide(key_bytes, key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_RemoveTreeNodeByKey(HWND hwnd, int element_id,
+                                      const unsigned char* key_bytes, int key_len) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) {
+        el->remove_node_by_key(utf8_to_wide(key_bytes, key_len));
+    }
+}
+
+void __stdcall EU_SetTreeNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->event_cb = cb;
+}
+
+void __stdcall EU_SetTreeLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->lazy_cb = cb;
+}
+
+void __stdcall EU_SetTreeDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->allow_drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb) {
+    if (auto* el = find_typed_element<TreeView>(hwnd, element_id)) el->allow_drop_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectDataJson(HWND hwnd, int element_id,
+                                        const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_data_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeSelectDataJson(HWND hwnd, int element_id,
+                                       unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->data_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeSelectOptionsJson(HWND hwnd, int element_id,
+                                           const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_options_json(utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+int __stdcall EU_GetTreeSelectStateJson(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->state_json(), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_selected_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                               unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->selected_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->set_expanded_keys(parse_tree_key_array_json(utf8_to_wide(json_bytes, json_len)));
+    }
+}
+
+int __stdcall EU_GetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                               unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<TreeSelect>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(serialize_tree_key_array_json(el->expanded_keys()), buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_AppendTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* parent_key_bytes, int parent_key_len,
+                                           const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->append_node_json(utf8_to_wide(parent_key_bytes, parent_key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_UpdateTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* key_bytes, int key_len,
+                                           const unsigned char* json_bytes, int json_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->update_node_json(utf8_to_wide(key_bytes, key_len),
+                             utf8_to_wide(json_bytes, json_len));
+    }
+}
+
+void __stdcall EU_RemoveTreeSelectNodeByKey(HWND hwnd, int element_id,
+                                            const unsigned char* key_bytes, int key_len) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) {
+        el->remove_node_by_key(utf8_to_wide(key_bytes, key_len));
+    }
+}
+
+void __stdcall EU_SetTreeSelectNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->event_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->lazy_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->allow_drag_cb = cb;
+}
+
+void __stdcall EU_SetTreeSelectAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb) {
+    if (auto* el = find_typed_element<TreeSelect>(hwnd, element_id)) el->allow_drop_cb = cb;
+}
+
 void __stdcall EU_SetTransferItems(HWND hwnd, int element_id,
                                    const unsigned char* left_bytes, int left_len,
                                    const unsigned char* right_bytes, int right_len) {
@@ -6873,6 +8083,111 @@ int __stdcall EU_GetTransferItemDisabled(HWND hwnd, int element_id,
 int __stdcall EU_GetTransferDisabledCount(HWND hwnd, int element_id, int side) {
     auto* el = find_typed_element<Transfer>(hwnd, element_id);
     return el ? el->disabled_count(side) : 0;
+}
+
+void __stdcall EU_SetTransferDataEx(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len,
+                                    const unsigned char* target_bytes, int target_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_data_ex(parse_transfer_items_ex(items_bytes, items_len),
+                        split_option_list(target_bytes, target_len));
+    }
+}
+
+void __stdcall EU_SetTransferOptions(HWND hwnd, int element_id,
+                                     int filterable, int multiple, int show_footer,
+                                     int show_select_all, int show_count, int render_mode) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_options(filterable != 0, multiple != 0, show_footer != 0,
+                        show_select_all != 0, show_count != 0, render_mode);
+    }
+}
+
+int __stdcall EU_GetTransferOptions(HWND hwnd, int element_id,
+                                    int* filterable, int* multiple, int* show_footer,
+                                    int* show_select_all, int* show_count, int* render_mode) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    if (!el) return 0;
+    if (filterable) *filterable = el->filterable ? 1 : 0;
+    if (multiple) *multiple = el->multiple ? 1 : 0;
+    if (show_footer) *show_footer = el->show_footer ? 1 : 0;
+    if (show_select_all) *show_select_all = el->show_select_all ? 1 : 0;
+    if (show_count) *show_count = el->show_count ? 1 : 0;
+    if (render_mode) *render_mode = el->render_mode;
+    return 1;
+}
+
+void __stdcall EU_SetTransferTitles(HWND hwnd, int element_id,
+                                    const unsigned char* left_bytes, int left_len,
+                                    const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_titles(utf8_to_wide(left_bytes, left_len), utf8_to_wide(right_bytes, right_len));
+    }
+}
+
+void __stdcall EU_SetTransferButtonTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_button_texts(utf8_to_wide(left_bytes, left_len), utf8_to_wide(right_bytes, right_len));
+    }
+}
+
+void __stdcall EU_SetTransferFormat(HWND hwnd, int element_id,
+                                    const unsigned char* no_checked_bytes, int no_checked_len,
+                                    const unsigned char* has_checked_bytes, int has_checked_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_format(utf8_to_wide(no_checked_bytes, no_checked_len),
+                       utf8_to_wide(has_checked_bytes, has_checked_len));
+    }
+}
+
+void __stdcall EU_SetTransferItemTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* template_bytes, int template_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_item_template(utf8_to_wide(template_bytes, template_len));
+    }
+}
+
+void __stdcall EU_SetTransferFooterTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_footer_texts(utf8_to_wide(left_bytes, left_len), utf8_to_wide(right_bytes, right_len));
+    }
+}
+
+void __stdcall EU_SetTransferFilterPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_filter_placeholder(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+void __stdcall EU_SetTransferCheckedKeys(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len) {
+    if (auto* el = find_typed_element<Transfer>(hwnd, element_id)) {
+        el->set_checked_keys(split_option_list(left_bytes, left_len),
+                             split_option_list(right_bytes, right_len));
+    }
+}
+
+int __stdcall EU_GetTransferCheckedCount(HWND hwnd, int element_id, int side) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    return el ? el->checked_count(side) : 0;
+}
+
+int __stdcall EU_GetTransferValueKeys(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->value_keys_text(), buffer, buffer_size) : 0;
+}
+
+int __stdcall EU_GetTransferText(HWND hwnd, int element_id, int text_type,
+                                 unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Transfer>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->text_value(text_type), buffer, buffer_size) : 0;
 }
 
 void __stdcall EU_SetAutocompleteSuggestions(HWND hwnd, int element_id,
@@ -8013,6 +9328,83 @@ int __stdcall EU_GetMenuActivePath(HWND hwnd, int element_id,
     return needed;
 }
 
+void __stdcall EU_SetMenuColors(HWND hwnd, int element_id,
+                                Color bg, Color text_color, Color active_text_color,
+                                Color hover_bg, Color disabled_text_color, Color border) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        el->set_colors(bg, text_color, active_text_color, hover_bg, disabled_text_color, border);
+    }
+}
+
+int __stdcall EU_GetMenuColors(HWND hwnd, int element_id,
+                               Color* bg, Color* text_color, Color* active_text_color,
+                               Color* hover_bg, Color* disabled_text_color, Color* border) {
+    auto* el = find_typed_element<Menu>(hwnd, element_id);
+    if (!el) return 0;
+    if (bg) *bg = el->menu_bg_color;
+    if (text_color) *text_color = el->menu_text_color;
+    if (active_text_color) *active_text_color = el->menu_active_text_color;
+    if (hover_bg) *hover_bg = el->menu_hover_bg_color;
+    if (disabled_text_color) *disabled_text_color = el->menu_disabled_text_color;
+    if (border) *border = el->menu_border_color;
+    return 1;
+}
+
+void __stdcall EU_SetMenuCollapsed(HWND hwnd, int element_id, int collapsed) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        el->set_collapsed(collapsed != 0);
+    }
+}
+
+int __stdcall EU_GetMenuCollapsed(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Menu>(hwnd, element_id);
+    return (el && el->collapsed) ? 1 : 0;
+}
+
+void __stdcall EU_SetMenuItemMeta(HWND hwnd, int element_id,
+                                  const unsigned char* icons_bytes, int icons_len,
+                                  const int* group_indices, int group_count,
+                                  const unsigned char* hrefs_bytes, int hrefs_len,
+                                  const unsigned char* targets_bytes, int targets_len,
+                                  const unsigned char* commands_bytes, int commands_len) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        std::vector<int> groups;
+        if (group_indices && group_count > 0) {
+            groups.assign(group_indices, group_indices + group_count);
+        }
+        el->set_item_meta(split_option_list_keep_empty(icons_bytes, icons_len),
+                          groups,
+                          split_option_list_keep_empty(hrefs_bytes, hrefs_len),
+                          split_option_list_keep_empty(targets_bytes, targets_len),
+                          split_option_list_keep_empty(commands_bytes, commands_len));
+    }
+}
+
+int __stdcall EU_GetMenuItemMeta(HWND hwnd, int element_id, int item_index,
+                                 unsigned char* icon_buffer, int icon_buffer_size,
+                                 unsigned char* href_buffer, int href_buffer_size,
+                                 unsigned char* target_buffer, int target_buffer_size,
+                                 unsigned char* command_buffer, int command_buffer_size,
+                                 int* is_group, int* disabled, int* level) {
+    auto* el = find_typed_element<Menu>(hwnd, element_id);
+    if (!el || item_index < 0 || item_index >= el->item_count()) return 0;
+    copy_wide_as_utf8(el->item_icon(item_index), icon_buffer, icon_buffer_size);
+    copy_wide_as_utf8(el->item_href(item_index), href_buffer, href_buffer_size);
+    copy_wide_as_utf8(el->item_target(item_index), target_buffer, target_buffer_size);
+    copy_wide_as_utf8(el->item_command(item_index), command_buffer, command_buffer_size);
+    if (is_group) *is_group = el->is_group(item_index) ? 1 : 0;
+    if (disabled) *disabled = (item_index < (int)el->disabled_items.size() &&
+                               (el->disabled_items[item_index] || el->is_group(item_index))) ? 1 : 0;
+    if (level) *level = (item_index < (int)el->item_levels.size()) ? el->item_levels[item_index] : 0;
+    return 1;
+}
+
+void __stdcall EU_SetMenuSelectCallback(HWND hwnd, int element_id, MenuSelectCallback cb) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) {
+        el->select_cb = cb;
+    }
+}
+
 void __stdcall EU_SetAnchorItems(HWND hwnd, int element_id,
                                  const unsigned char* items_bytes, int items_len) {
     if (auto* el = find_typed_element<Anchor>(hwnd, element_id)) {
@@ -8508,6 +9900,48 @@ void __stdcall EU_SetImageCacheEnabled(HWND hwnd, int element_id, int enabled) {
     }
 }
 
+void __stdcall EU_SetImageLazy(HWND hwnd, int element_id, int lazy) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_lazy(lazy != 0);
+    }
+}
+
+void __stdcall EU_SetImagePlaceholder(HWND hwnd, int element_id,
+                                      const unsigned char* icon_bytes, int icon_len,
+                                      const unsigned char* text_bytes, int text_len,
+                                      Color fg, Color bg) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_placeholder(utf8_to_wide(icon_bytes, icon_len),
+                            utf8_to_wide(text_bytes, text_len),
+                            fg, bg);
+    }
+}
+
+void __stdcall EU_SetImageErrorContent(HWND hwnd, int element_id,
+                                       const unsigned char* icon_bytes, int icon_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       Color fg, Color bg) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_error_content(utf8_to_wide(icon_bytes, icon_len),
+                              utf8_to_wide(text_bytes, text_len),
+                              fg, bg);
+    }
+}
+
+void __stdcall EU_SetImagePreviewList(HWND hwnd, int element_id,
+                                      const unsigned char* sources_bytes, int sources_len,
+                                      int selected_index) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_preview_list(split_option_list(sources_bytes, sources_len), selected_index);
+    }
+}
+
+void __stdcall EU_SetImagePreviewIndex(HWND hwnd, int element_id, int index) {
+    if (auto* el = find_typed_element<Image>(hwnd, element_id)) {
+        el->set_preview_index(index);
+    }
+}
+
 int __stdcall EU_GetImageStatus(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Image>(hwnd, element_id);
     return el ? el->load_status : -1;
@@ -8550,6 +9984,26 @@ int __stdcall EU_GetImageFullOptions(HWND hwnd, int element_id,
     return 1;
 }
 
+int __stdcall EU_GetImageAdvancedOptions(HWND hwnd, int element_id,
+                                         int* fit, int* lazy, int* preview_enabled,
+                                         int* preview_open, int* preview_index,
+                                         int* preview_count, int* status,
+                                         int* scale_percent, int* offset_x, int* offset_y) {
+    auto* el = find_typed_element<Image>(hwnd, element_id);
+    if (!el) return 0;
+    if (fit) *fit = el->fit;
+    if (lazy) *lazy = el->lazy ? 1 : 0;
+    if (preview_enabled) *preview_enabled = el->preview_enabled ? 1 : 0;
+    if (preview_open) *preview_open = el->is_preview_open() ? 1 : 0;
+    if (preview_index) *preview_index = el->preview_index;
+    if (preview_count) *preview_count = el->preview_count();
+    if (status) *status = el->load_status;
+    if (scale_percent) *scale_percent = el->preview_scale_percent;
+    if (offset_x) *offset_x = el->preview_offset_x;
+    if (offset_y) *offset_y = el->preview_offset_y;
+    return 1;
+}
+
 void __stdcall EU_SetCarouselItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len) {
     if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
@@ -8569,6 +10023,60 @@ void __stdcall EU_SetCarouselOptions(HWND hwnd, int element_id,
     if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
         el->set_options(loop, indicator_position, show_arrows, show_indicators);
     }
+}
+
+void __stdcall EU_SetCarouselBehavior(HWND hwnd, int element_id,
+                                      int trigger_mode, int arrow_mode,
+                                      int direction, int carousel_type,
+                                      int pause_on_hover) {
+    if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
+        el->set_behavior(trigger_mode, arrow_mode, direction, carousel_type, pause_on_hover);
+    }
+}
+
+int __stdcall EU_GetCarouselBehavior(HWND hwnd, int element_id,
+                                     int* trigger_mode, int* arrow_mode,
+                                     int* direction, int* carousel_type,
+                                     int* pause_on_hover) {
+    auto* el = find_typed_element<Carousel>(hwnd, element_id);
+    if (!el) return 0;
+    if (trigger_mode) *trigger_mode = el->trigger_mode;
+    if (arrow_mode) *arrow_mode = el->arrow_mode;
+    if (direction) *direction = el->direction;
+    if (carousel_type) *carousel_type = el->carousel_type;
+    if (pause_on_hover) *pause_on_hover = el->pause_on_hover ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetCarouselVisual(HWND hwnd, int element_id,
+                                    Color text_color, int text_alpha, int text_font_size,
+                                    Color odd_bg, Color even_bg, Color panel_bg,
+                                    Color active_indicator, Color inactive_indicator,
+                                    int card_scale_percent) {
+    if (auto* el = find_typed_element<Carousel>(hwnd, element_id)) {
+        el->set_visual(text_color, text_alpha, text_font_size,
+                       odd_bg, even_bg, panel_bg,
+                       active_indicator, inactive_indicator, card_scale_percent);
+    }
+}
+
+int __stdcall EU_GetCarouselVisual(HWND hwnd, int element_id,
+                                   Color* text_color, int* text_alpha, int* text_font_size,
+                                   Color* odd_bg, Color* even_bg, Color* panel_bg,
+                                   Color* active_indicator, Color* inactive_indicator,
+                                   int* card_scale_percent) {
+    auto* el = find_typed_element<Carousel>(hwnd, element_id);
+    if (!el) return 0;
+    if (text_color) *text_color = el->text_color;
+    if (text_alpha) *text_alpha = el->text_alpha;
+    if (text_font_size) *text_font_size = el->text_font_size;
+    if (odd_bg) *odd_bg = el->odd_bg;
+    if (even_bg) *even_bg = el->even_bg;
+    if (panel_bg) *panel_bg = el->panel_bg;
+    if (active_indicator) *active_indicator = el->active_indicator;
+    if (inactive_indicator) *inactive_indicator = el->inactive_indicator;
+    if (card_scale_percent) *card_scale_percent = el->card_scale_percent;
+    return 1;
 }
 
 void __stdcall EU_SetCarouselAutoplay(HWND hwnd, int element_id, int enabled, int interval_ms) {
@@ -8856,109 +10364,92 @@ void __stdcall EU_SetUploadActionCallback(HWND hwnd, int element_id, ElementValu
     }
 }
 
-void __stdcall EU_SetScrollbarValue(HWND hwnd, int element_id, int value) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_value(value);
+void __stdcall EU_SetInfiniteScrollItems(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_items(parse_infinite_scroll_items(items_bytes, items_len));
     }
 }
 
-void __stdcall EU_SetScrollbarRange(HWND hwnd, int element_id, int max_value, int page_size) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_range(max_value, page_size);
+void __stdcall EU_AppendInfiniteScrollItems(HWND hwnd, int element_id,
+                                            const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->append_items(parse_infinite_scroll_items(items_bytes, items_len));
     }
 }
 
-void __stdcall EU_SetScrollbarOptions(HWND hwnd, int element_id,
-                                      int max_value, int page_size, int orientation, int auto_hide) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_options(max_value, page_size, orientation, auto_hide);
+void __stdcall EU_ClearInfiniteScrollItems(HWND hwnd, int element_id) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->clear_items();
     }
 }
 
-void __stdcall EU_SetScrollbarWheelStep(HWND hwnd, int element_id, int step) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->set_wheel_step(step);
+void __stdcall EU_SetInfiniteScrollState(HWND hwnd, int element_id,
+                                         int loading, int no_more, int disabled) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_state(loading != 0, no_more != 0, disabled != 0);
     }
 }
 
-void __stdcall EU_BindScrollbarContent(HWND hwnd, int element_id, int target_element_id,
-                                       int content_size, int viewport_size) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
+void __stdcall EU_SetInfiniteScrollOptions(HWND hwnd, int element_id,
+                                           int item_height, int gap, int threshold,
+                                           int style_mode, int show_scrollbar, int show_index) {
     WindowState* st = window_state(hwnd);
-    if (!el || !st || !st->element_tree) return;
-    Element* target = st->element_tree->find_by_id(target_element_id);
-    if (!target) return;
-    Rect base = target->has_logical_bounds ? target->logical_bounds : target->bounds;
-    el->bind_content(target_element_id, base, content_size, viewport_size);
-}
-
-void __stdcall EU_ScrollbarScroll(HWND hwnd, int element_id, int delta) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->scroll_delta(delta);
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_options(item_height, gap, threshold, style_mode,
+                        show_scrollbar != 0, show_index != 0,
+                        st ? st->dpi_scale : 1.0f);
     }
 }
 
-void __stdcall EU_ScrollbarWheel(HWND hwnd, int element_id, int wheel_delta) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->wheel_delta(wheel_delta);
+void __stdcall EU_SetInfiniteScrollTexts(HWND hwnd, int element_id,
+                                         const unsigned char* loading_bytes, int loading_len,
+                                         const unsigned char* no_more_bytes, int no_more_len,
+                                         const unsigned char* empty_bytes, int empty_len) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_texts(utf8_to_wide(loading_bytes, loading_len),
+                      utf8_to_wide(no_more_bytes, no_more_len),
+                      utf8_to_wide(empty_bytes, empty_len));
     }
 }
 
-int __stdcall EU_GetScrollbarValue(HWND hwnd, int element_id) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
-    return el ? el->value : 0;
+void __stdcall EU_SetInfiniteScrollScroll(HWND hwnd, int element_id, int scroll_y) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->set_scroll(scroll_y);
+    }
 }
 
-int __stdcall EU_GetScrollbarMaxValue(HWND hwnd, int element_id) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
-    return el ? el->max_value : 0;
-}
-
-int __stdcall EU_GetScrollbarOptions(HWND hwnd, int element_id,
-                                     int* value, int* max_value, int* page_size,
-                                     int* orientation, int* auto_hide, int* wheel_step) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
+int __stdcall EU_GetInfiniteScrollFullState(HWND hwnd, int element_id,
+                                            int* item_count, int* scroll_y, int* max_scroll,
+                                            int* content_height, int* viewport_height,
+                                            int* loading, int* no_more, int* disabled,
+                                            int* load_count, int* change_count,
+                                            int* last_action, int* threshold,
+                                            int* style_mode, int* show_scrollbar,
+                                            int* show_index) {
+    auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id);
     if (!el) return 0;
-    if (value) *value = el->value;
-    if (max_value) *max_value = el->max_value;
-    if (page_size) *page_size = el->page_size;
-    if (orientation) *orientation = el->orientation;
-    if (auto_hide) *auto_hide = el->auto_hide ? 1 : 0;
-    if (wheel_step) *wheel_step = el->wheel_step;
-    return 1;
-}
-
-int __stdcall EU_GetScrollbarFullState(HWND hwnd, int element_id,
-                                       int* value, int* max_value, int* page_size,
-                                       int* orientation, int* auto_hide, int* wheel_step,
-                                       int* bound_element_id, int* content_size,
-                                       int* viewport_size, int* content_offset,
-                                       int* wheel_event_count, int* drag_event_count,
-                                       int* change_count, int* last_action,
-                                       int* last_wheel_delta) {
-    auto* el = find_typed_element<Scrollbar>(hwnd, element_id);
-    if (!el) return 0;
-    if (value) *value = el->value;
-    if (max_value) *max_value = el->max_value;
-    if (page_size) *page_size = el->page_size;
-    if (orientation) *orientation = el->orientation;
-    if (auto_hide) *auto_hide = el->auto_hide ? 1 : 0;
-    if (wheel_step) *wheel_step = el->wheel_step;
-    if (bound_element_id) *bound_element_id = el->bound_element_id;
-    if (content_size) *content_size = el->content_size;
-    if (viewport_size) *viewport_size = el->viewport_size;
-    if (content_offset) *content_offset = el->content_offset;
-    if (wheel_event_count) *wheel_event_count = el->wheel_event_count;
-    if (drag_event_count) *drag_event_count = el->drag_event_count;
+    if (item_count) *item_count = (int)el->items.size();
+    if (scroll_y) *scroll_y = el->scroll_y;
+    if (max_scroll) *max_scroll = el->max_scroll();
+    if (content_height) *content_height = el->content_height();
+    if (viewport_height) *viewport_height = el->viewport_height();
+    if (loading) *loading = el->loading ? 1 : 0;
+    if (no_more) *no_more = el->no_more ? 1 : 0;
+    if (disabled) *disabled = el->disabled ? 1 : 0;
+    if (load_count) *load_count = el->load_count;
     if (change_count) *change_count = el->change_count;
     if (last_action) *last_action = el->last_action;
-    if (last_wheel_delta) *last_wheel_delta = el->last_wheel_delta;
+    if (threshold) *threshold = el->threshold;
+    if (style_mode) *style_mode = el->style_mode;
+    if (show_scrollbar) *show_scrollbar = el->show_scrollbar ? 1 : 0;
+    if (show_index) *show_index = el->show_index ? 1 : 0;
     return 1;
 }
 
-void __stdcall EU_SetScrollbarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
-    if (auto* el = find_typed_element<Scrollbar>(hwnd, element_id)) {
-        el->change_cb = cb;
+void __stdcall EU_SetInfiniteScrollLoadCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<InfiniteScroll>(hwnd, element_id)) {
+        el->load_cb = cb;
     }
 }
 
@@ -9044,9 +10535,23 @@ void __stdcall EU_SetTabsItems(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetTabsItemsEx(HWND hwnd, int element_id,
+                                 const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_items_ex(parse_tabs_items_ex(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetTabsActive(HWND hwnd, int element_id, int active_index) {
     if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
         el->set_active_index(active_index);
+    }
+}
+
+void __stdcall EU_SetTabsActiveName(HWND hwnd, int element_id,
+                                    const unsigned char* name_bytes, int name_len) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_active_name(utf8_to_wide(name_bytes, name_len));
     }
 }
 
@@ -9056,10 +10561,34 @@ void __stdcall EU_SetTabsType(HWND hwnd, int element_id, int tab_type) {
     }
 }
 
+void __stdcall EU_SetTabsPosition(HWND hwnd, int element_id, int tab_position) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_tab_position(tab_position);
+    }
+}
+
+void __stdcall EU_SetTabsHeaderAlign(HWND hwnd, int element_id, int align) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_header_align(align);
+    }
+}
+
 void __stdcall EU_SetTabsOptions(HWND hwnd, int element_id,
                                  int tab_type, int closable, int addable) {
     if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
         el->set_options(tab_type, closable != 0, addable != 0);
+    }
+}
+
+void __stdcall EU_SetTabsEditable(HWND hwnd, int element_id, int editable) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_editable(editable != 0);
+    }
+}
+
+void __stdcall EU_SetTabsContentVisible(HWND hwnd, int element_id, int visible) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_content_visible(visible != 0);
     }
 }
 
@@ -9093,6 +10622,11 @@ int __stdcall EU_GetTabsActive(HWND hwnd, int element_id) {
     return el ? el->active_index : -1;
 }
 
+int __stdcall EU_GetTabsHeaderAlign(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    return el ? el->header_align : 0;
+}
+
 int __stdcall EU_GetTabsItemCount(HWND hwnd, int element_id) {
     auto* el = find_typed_element<Tabs>(hwnd, element_id);
     return el ? (int)el->items.size() : 0;
@@ -9113,6 +10647,20 @@ int __stdcall EU_GetTabsItem(HWND hwnd, int element_id, int item_index,
     auto* el = find_typed_element<Tabs>(hwnd, element_id);
     if (!el || item_index < 0 || item_index >= (int)el->items.size()) return 0;
     return copy_wide_as_utf8(el->items[item_index], buffer, buffer_size);
+}
+
+int __stdcall EU_GetTabsActiveName(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->active_name(), buffer, buffer_size);
+}
+
+int __stdcall EU_GetTabsItemContent(HWND hwnd, int element_id, int item_index,
+                                    unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el) return 0;
+    return copy_wide_as_utf8(el->item_content(item_index), buffer, buffer_size);
 }
 
 int __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
@@ -9145,6 +10693,34 @@ int __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
     if (select_count) *select_count = el->select_count;
     if (scroll_count) *scroll_count = el->scroll_count;
     if (last_action) *last_action = el->last_action;
+    return 1;
+}
+
+int __stdcall EU_GetTabsFullStateEx(HWND hwnd, int element_id,
+                                    int* active_index, int* item_count, int* tab_type,
+                                    int* closable, int* addable,
+                                    int* scroll_offset, int* max_scroll_offset,
+                                    int* hover_index, int* press_index,
+                                    int* hover_part, int* press_part,
+                                    int* last_closed_index, int* last_added_index,
+                                    int* close_count, int* add_count,
+                                    int* select_count, int* scroll_count,
+                                    int* last_action, int* tab_position,
+                                    int* editable, int* content_visible,
+                                    int* active_disabled, int* active_closable) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el) return 0;
+    EU_GetTabsFullState(hwnd, element_id, active_index, item_count, tab_type,
+                        closable, addable, scroll_offset, max_scroll_offset,
+                        hover_index, press_index, hover_part, press_part,
+                        last_closed_index, last_added_index, close_count, add_count,
+                        select_count, scroll_count, last_action);
+    if (tab_position) *tab_position = el->tab_position;
+    if (editable) *editable = el->editable ? 1 : 0;
+    if (content_visible) *content_visible = el->content_visible ? 1 : 0;
+    bool has_active = el->active_index >= 0 && el->active_index < (int)el->tab_items.size();
+    if (active_disabled) *active_disabled = has_active && el->tab_items[el->active_index].disabled ? 1 : 0;
+    if (active_closable) *active_closable = has_active && el->tab_items[el->active_index].closable ? 1 : 0;
     return 1;
 }
 
@@ -9192,6 +10768,14 @@ void __stdcall EU_SetPaginationOptions(HWND hwnd, int element_id,
                                        int visible_page_count) {
     if (auto* el = find_typed_element<Pagination>(hwnd, element_id)) {
         el->set_options(show_jumper, show_size_changer, visible_page_count);
+    }
+}
+
+void __stdcall EU_SetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                               int background, int small_style,
+                                               int hide_on_single_page) {
+    if (auto* el = find_typed_element<Pagination>(hwnd, element_id)) {
+        el->set_advanced_options(background, small_style, hide_on_single_page);
     }
 }
 
@@ -9273,6 +10857,17 @@ int __stdcall EU_GetPaginationFullState(HWND hwnd, int element_id,
     return 1;
 }
 
+int __stdcall EU_GetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                              int* background, int* small_style,
+                                              int* hide_on_single_page) {
+    auto* el = find_typed_element<Pagination>(hwnd, element_id);
+    if (!el) return 0;
+    if (background) *background = el->background ? 1 : 0;
+    if (small_style) *small_style = el->small_style ? 1 : 0;
+    if (hide_on_single_page) *hide_on_single_page = el->hide_on_single_page ? 1 : 0;
+    return 1;
+}
+
 void __stdcall EU_SetPaginationChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
     if (auto* el = find_typed_element<Pagination>(hwnd, element_id)) {
         el->change_cb = cb;
@@ -9293,6 +10888,13 @@ void __stdcall EU_SetStepsDetailItems(HWND hwnd, int element_id,
     }
 }
 
+void __stdcall EU_SetStepsIconItems(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len) {
+    if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
+        el->set_icon_items(parse_steps_visual_items(items_bytes, items_len));
+    }
+}
+
 void __stdcall EU_SetStepsActive(HWND hwnd, int element_id, int active_index) {
     if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
         el->set_active_index(active_index);
@@ -9303,6 +10905,28 @@ void __stdcall EU_SetStepsDirection(HWND hwnd, int element_id, int direction) {
     if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
         el->set_direction(direction);
     }
+}
+
+void __stdcall EU_SetStepsOptions(HWND hwnd, int element_id, int space,
+                                  int align_center, int simple,
+                                  int finish_status, int process_status) {
+    if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
+        el->set_options(space, align_center != 0, simple != 0,
+                        finish_status, process_status);
+    }
+}
+
+int __stdcall EU_GetStepsOptions(HWND hwnd, int element_id, int* space,
+                                 int* align_center, int* simple,
+                                 int* finish_status, int* process_status) {
+    auto* el = find_typed_element<Steps>(hwnd, element_id);
+    if (!el) return 0;
+    if (space) *space = el->space;
+    if (align_center) *align_center = el->align_center ? 1 : 0;
+    if (simple) *simple = el->simple ? 1 : 0;
+    if (finish_status) *finish_status = el->finish_status;
+    if (process_status) *process_status = el->process_status;
+    return 1;
 }
 
 void __stdcall EU_SetStepsStatuses(HWND hwnd, int element_id, const int* statuses, int count) {
@@ -9375,6 +10999,25 @@ int __stdcall EU_GetStepsFullState(HWND hwnd, int element_id,
     return 1;
 }
 
+int __stdcall EU_GetStepsVisualState(HWND hwnd, int element_id,
+                                     int* space, int* align_center, int* simple,
+                                     int* finish_status, int* process_status,
+                                     int* icon_count) {
+    auto* el = find_typed_element<Steps>(hwnd, element_id);
+    if (!el) return 0;
+    if (space) *space = el->space;
+    if (align_center) *align_center = el->align_center ? 1 : 0;
+    if (simple) *simple = el->simple ? 1 : 0;
+    if (finish_status) *finish_status = el->finish_status;
+    if (process_status) *process_status = el->process_status;
+    int count = 0;
+    for (const auto& icon : el->icons) {
+        if (!icon.empty()) ++count;
+    }
+    if (icon_count) *icon_count = count;
+    return 1;
+}
+
 void __stdcall EU_SetStepsChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
     if (auto* el = find_typed_element<Steps>(hwnd, element_id)) {
         el->change_cb = cb;
@@ -9404,6 +11047,41 @@ void __stdcall EU_SetAlertClosable(HWND hwnd, int element_id, int closable) {
     if (auto* el = find_typed_element<Alert>(hwnd, element_id)) {
         el->set_closable(closable != 0);
     }
+}
+
+void __stdcall EU_SetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                          int show_icon, int center, int wrap_description) {
+    if (auto* el = find_typed_element<Alert>(hwnd, element_id)) {
+        el->set_advanced_options(show_icon != 0, center != 0, wrap_description != 0);
+    }
+}
+
+int __stdcall EU_GetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                         int* show_icon, int* center,
+                                         int* wrap_description) {
+    auto* el = find_typed_element<Alert>(hwnd, element_id);
+    if (!el) return 0;
+    if (show_icon) *show_icon = el->show_icon ? 1 : 0;
+    if (center) *center = el->center ? 1 : 0;
+    if (wrap_description) *wrap_description = el->wrap_description ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetAlertCloseText(HWND hwnd, int element_id,
+                                    const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Alert>(hwnd, element_id)) {
+        el->set_close_text(utf8_to_wide(text_bytes, text_len));
+    }
+}
+
+int __stdcall EU_GetAlertText(HWND hwnd, int element_id, int text_type,
+                              unsigned char* out_bytes, int out_len) {
+    auto* el = find_typed_element<Alert>(hwnd, element_id);
+    if (!el) return 0;
+    const std::wstring* value = &el->text;
+    if (text_type == 1) value = &el->description;
+    else if (text_type == 2) value = &el->close_text;
+    return copy_wide_as_utf8(*value, out_bytes, out_len);
 }
 
 void __stdcall EU_SetAlertClosed(HWND hwnd, int element_id, int closed) {
@@ -9804,10 +11482,32 @@ void __stdcall EU_SetLoadingActive(HWND hwnd, int element_id, int active) {
     }
 }
 
+void __stdcall EU_SetLoadingText(HWND hwnd, int element_id,
+                                 const unsigned char* text_bytes, int text_len) {
+    if (auto* el = find_typed_element<Loading>(hwnd, element_id)) {
+        el->text = utf8_to_wide(text_bytes, text_len);
+        el->invalidate();
+    }
+}
+
 void __stdcall EU_SetLoadingOptions(HWND hwnd, int element_id,
                                     int active, int fullscreen, int progress) {
     if (auto* el = find_typed_element<Loading>(hwnd, element_id)) {
         el->set_options(active != 0, fullscreen != 0, progress);
+        if (fullscreen != 0 && !el->lock_input) {
+            el->set_style(el->overlay_color, el->spinner_color, el->text_color,
+                          el->spinner_type, true);
+        }
+        relayout_and_invalidate(hwnd);
+    }
+}
+
+void __stdcall EU_SetLoadingStyle(HWND hwnd, int element_id,
+                                  Color background, Color spinner_color,
+                                  Color text_color, int spinner_type,
+                                  int lock_input) {
+    if (auto* el = find_typed_element<Loading>(hwnd, element_id)) {
+        el->set_style(background, spinner_color, text_color, spinner_type, lock_input != 0);
     }
 }
 
@@ -9823,6 +11523,20 @@ int __stdcall EU_GetLoadingOptions(HWND hwnd, int element_id,
     if (active) *active = el->active ? 1 : 0;
     if (fullscreen) *fullscreen = el->fullscreen ? 1 : 0;
     if (progress) *progress = el->progress;
+    return 1;
+}
+
+int __stdcall EU_GetLoadingStyle(HWND hwnd, int element_id,
+                                 Color* background, Color* spinner_color,
+                                 Color* text_color, int* spinner_type,
+                                 int* lock_input) {
+    auto* el = find_typed_element<Loading>(hwnd, element_id);
+    if (!el) return 0;
+    if (background) *background = el->overlay_color;
+    if (spinner_color) *spinner_color = el->spinner_color;
+    if (text_color) *text_color = el->text_color;
+    if (spinner_type) *spinner_type = el->spinner_type;
+    if (lock_input) *lock_input = el->lock_input ? 1 : 0;
     return 1;
 }
 
@@ -9850,6 +11564,68 @@ int __stdcall EU_GetLoadingText(HWND hwnd, int element_id, unsigned char* buffer
     auto* el = find_typed_element<Loading>(hwnd, element_id);
     if (!el) return 0;
     return copy_wide_as_utf8(el->text, buffer, buffer_size);
+}
+
+int __stdcall EU_ShowLoading(HWND hwnd, int target_element_id,
+                             const unsigned char* text_bytes, int text_len,
+                             int fullscreen, int lock_input,
+                             Color background, Color spinner_color,
+                             Color text_color, int spinner_type) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+
+    Element* parent = st->element_tree->root();
+    Rect r = {0, 0, 260, 150};
+    if (target_element_id > 0) {
+        Element* target = st->element_tree->find_by_id(target_element_id);
+        if (target) {
+            parent = target->parent ? target->parent : st->element_tree->root();
+            r = target->has_logical_bounds ? target->logical_bounds : target->bounds;
+        }
+    }
+    if (fullscreen != 0) parent = st->element_tree->root();
+
+    auto el = std::make_unique<Loading>();
+    el->set_logical_bounds(r);
+    el->text = utf8_to_wide(text_bytes, text_len);
+    el->fullscreen = fullscreen != 0;
+    el->service_owned = true;
+    el->set_target(target_element_id, 0);
+    el->set_style(background, spinner_color, text_color, spinner_type,
+                  lock_input != 0 || fullscreen != 0);
+    el->set_active(true);
+
+    ElementStyle logical_style = el->style;
+    logical_style.bg_color = 0;
+    logical_style.border_color = 0;
+    logical_style.fg_color = 0;
+    logical_style.font_size = 14.0f;
+    logical_style.pad_left = 12;
+    logical_style.pad_top = 12;
+    logical_style.pad_right = 12;
+    logical_style.pad_bottom = 12;
+    el->set_logical_style(logical_style);
+
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CloseLoading(HWND hwnd, int loading_id) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    auto* el = find_typed_element<Loading>(hwnd, loading_id);
+    if (!el) return 0;
+    el->set_active(false);
+    if (el->service_owned && el->parent) {
+        st->element_tree->remove_child(el);
+        InvalidateRect(hwnd, nullptr, FALSE);
+        return 1;
+    }
+    el->visible = false;
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return 1;
 }
 
 int __stdcall EU_GetLoadingFullState(HWND hwnd, int element_id,

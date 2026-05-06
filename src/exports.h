@@ -37,6 +37,18 @@ int __stdcall EU_CreateIcon(HWND hwnd, int parent_id,
                             int x, int y, int w, int h);
 int __stdcall EU_CreateSpace(HWND hwnd, int parent_id, int x, int y, int w, int h);
 int __stdcall EU_CreateContainer(HWND hwnd, int parent_id, int x, int y, int w, int h);
+int __stdcall EU_CreateHeader(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h);
+int __stdcall EU_CreateAside(HWND hwnd, int parent_id,
+                             const unsigned char* text_bytes, int text_len,
+                             int x, int y, int w, int h);
+int __stdcall EU_CreateMain(HWND hwnd, int parent_id,
+                            const unsigned char* text_bytes, int text_len,
+                            int x, int y, int w, int h);
+int __stdcall EU_CreateFooter(HWND hwnd, int parent_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int x, int y, int w, int h);
 int __stdcall EU_CreateLayout(HWND hwnd, int parent_id, int orientation, int gap,
                               int x, int y, int w, int h);
 int __stdcall EU_CreateBorder(HWND hwnd, int parent_id, int x, int y, int w, int h);
@@ -291,9 +303,9 @@ int __stdcall EU_CreateUpload(HWND hwnd, int parent_id,
                               const unsigned char* tip_bytes, int tip_len,
                               const unsigned char* files_bytes, int files_len,
                               int x, int y, int w, int h);
-int __stdcall EU_CreateScrollbar(HWND hwnd, int parent_id,
-                                 int value, int max_value, int orientation,
-                                 int x, int y, int w, int h);
+int __stdcall EU_CreateInfiniteScroll(HWND hwnd, int parent_id,
+                                      const unsigned char* items_bytes, int items_len,
+                                      int x, int y, int w, int h);
 int __stdcall EU_CreateBreadcrumb(HWND hwnd, int parent_id,
                                   const unsigned char* items_bytes, int items_len,
                                   const unsigned char* separator_bytes, int separator_len,
@@ -313,6 +325,13 @@ int __stdcall EU_CreateAlert(HWND hwnd, int parent_id,
                              const unsigned char* desc_bytes, int desc_len,
                              int alert_type, int effect, int closable,
                              int x, int y, int w, int h);
+int __stdcall EU_CreateAlertEx(HWND hwnd, int parent_id,
+                               const unsigned char* title_bytes, int title_len,
+                               const unsigned char* desc_bytes, int desc_len,
+                               int alert_type, int effect, int closable,
+                               int show_icon, int center, int wrap_description,
+                               const unsigned char* close_text_bytes, int close_text_len,
+                               int x, int y, int w, int h);
 int __stdcall EU_CreateResult(HWND hwnd, int parent_id,
                               const unsigned char* title_bytes, int title_len,
                               const unsigned char* subtitle_bytes, int subtitle_len,
@@ -430,6 +449,10 @@ void __stdcall EU_SetPanelStyle(HWND hwnd, int element_id, Color bg, Color borde
 int  __stdcall EU_GetPanelStyle(HWND hwnd, int element_id, Color* bg, Color* border, float* border_width, float* radius, int* padding);
 void __stdcall EU_SetPanelLayout(HWND hwnd, int element_id, int fill_parent, int content_layout);
 int  __stdcall EU_GetPanelLayout(HWND hwnd, int element_id, int* fill_parent, int* content_layout);
+void __stdcall EU_SetContainerLayout(HWND hwnd, int element_id, int enabled, int direction, int gap);
+int  __stdcall EU_GetContainerLayout(HWND hwnd, int element_id, int* enabled, int* direction, int* gap, int* actual_direction);
+void __stdcall EU_SetContainerRegionTextOptions(HWND hwnd, int element_id, int align, int valign);
+int  __stdcall EU_GetContainerRegionTextOptions(HWND hwnd, int element_id, int* align, int* valign, int* role);
 void __stdcall EU_SetLayoutOptions(HWND hwnd, int element_id, int orientation, int gap, int stretch, int align, int wrap);
 int  __stdcall EU_GetLayoutOptions(HWND hwnd, int element_id, int* orientation, int* gap, int* stretch, int* align, int* wrap);
 void __stdcall EU_SetLayoutChildWeight(HWND hwnd, int layout_id, int child_id, int weight);
@@ -458,6 +481,14 @@ int  __stdcall EU_GetDividerOptions(HWND hwnd, int element_id,
                                     float* width, int* dashed);
 void __stdcall EU_SetDividerSpacing(HWND hwnd, int element_id, int margin, int gap);
 int  __stdcall EU_GetDividerSpacing(HWND hwnd, int element_id, int* margin, int* gap);
+void __stdcall EU_SetDividerLineStyle(HWND hwnd, int element_id, int line_style);
+int  __stdcall EU_GetDividerLineStyle(HWND hwnd, int element_id, int* line_style);
+void __stdcall EU_SetDividerContent(HWND hwnd, int element_id,
+                                    const unsigned char* icon_bytes, int icon_len,
+                                    const unsigned char* text_bytes, int text_len);
+int  __stdcall EU_GetDividerContent(HWND hwnd, int element_id,
+                                    unsigned char* icon_buffer, int icon_buffer_size,
+                                    unsigned char* text_buffer, int text_buffer_size);
 void __stdcall EU_SetButtonEmoji(HWND hwnd, int element_id, const unsigned char* bytes, int len);
 void __stdcall EU_SetButtonVariant(HWND hwnd, int element_id, int variant);
 int  __stdcall EU_GetButtonState(HWND hwnd, int element_id, int* pressed, int* focused, int* variant);
@@ -657,6 +688,10 @@ int  __stdcall EU_GetSelectOpen(HWND hwnd, int element_id);
 void __stdcall EU_SetSelectSearch(HWND hwnd, int element_id,
                                   const unsigned char* search_bytes, int search_len);
 void __stdcall EU_SetSelectOptionDisabled(HWND hwnd, int element_id, int option_index, int disabled);
+void __stdcall EU_SetSelectOptionAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectOptionAlignment(HWND hwnd, int element_id);
+void __stdcall EU_SetSelectValueAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectValueAlignment(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectOptionCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectMatchedCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectOptionDisabled(HWND hwnd, int element_id, int option_index);
@@ -678,6 +713,10 @@ int  __stdcall EU_GetSelectV2Open(HWND hwnd, int element_id);
 void __stdcall EU_SetSelectV2Search(HWND hwnd, int element_id,
                                     const unsigned char* search_bytes, int search_len);
 void __stdcall EU_SetSelectV2OptionDisabled(HWND hwnd, int element_id, int option_index, int disabled);
+void __stdcall EU_SetSelectV2OptionAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectV2OptionAlignment(HWND hwnd, int element_id);
+void __stdcall EU_SetSelectV2ValueAlignment(HWND hwnd, int element_id, int alignment);
+int  __stdcall EU_GetSelectV2ValueAlignment(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectV2OptionCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectV2MatchedCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetSelectV2OptionDisabled(HWND hwnd, int element_id, int option_index);
@@ -733,6 +772,12 @@ int  __stdcall EU_GetColorPickerOpen(HWND hwnd, int element_id);
 void __stdcall EU_SetColorPickerPalette(HWND hwnd, int element_id,
                                         const Color* colors, int count);
 int  __stdcall EU_GetColorPickerPaletteCount(HWND hwnd, int element_id);
+void __stdcall EU_SetColorPickerOptions(HWND hwnd, int element_id,
+                                        int show_alpha, int size_mode, int clearable);
+int  __stdcall EU_GetColorPickerOptions(HWND hwnd, int element_id,
+                                        int* show_alpha, int* size_mode, int* clearable);
+void __stdcall EU_ClearColorPicker(HWND hwnd, int element_id);
+int  __stdcall EU_GetColorPickerHasValue(HWND hwnd, int element_id);
 void __stdcall EU_SetColorPickerChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTagType(HWND hwnd, int element_id, int tag_type);
 void __stdcall EU_SetTagEffect(HWND hwnd, int element_id, int effect);
@@ -749,12 +794,14 @@ void __stdcall EU_SetTagCloseCallback(HWND hwnd, int element_id, ElementClickCal
 void __stdcall EU_SetBadgeValue(HWND hwnd, int element_id,
                                 const unsigned char* value_bytes, int value_len);
 void __stdcall EU_SetBadgeMax(HWND hwnd, int element_id, int max_value);
+void __stdcall EU_SetBadgeType(HWND hwnd, int element_id, int badge_type);
 void __stdcall EU_SetBadgeDot(HWND hwnd, int element_id, int dot);
 void __stdcall EU_SetBadgeOptions(HWND hwnd, int element_id,
                                   int dot, int show_zero, int offset_x, int offset_y);
 int  __stdcall EU_GetBadgeHidden(HWND hwnd, int element_id);
 int  __stdcall EU_GetBadgeOptions(HWND hwnd, int element_id,
                                   int* max_value, int* dot, int* show_zero, int* offset_x, int* offset_y);
+int  __stdcall EU_GetBadgeType(HWND hwnd, int element_id);
 void __stdcall EU_SetBadgeLayoutOptions(HWND hwnd, int element_id,
                                         int placement, int standalone);
 int  __stdcall EU_GetBadgeLayoutOptions(HWND hwnd, int element_id,
@@ -772,9 +819,32 @@ void __stdcall EU_SetProgressFormatOptions(HWND hwnd, int element_id,
                                            int text_format, int striped);
 int  __stdcall EU_GetProgressFormatOptions(HWND hwnd, int element_id,
                                            int* text_format, int* striped);
+void __stdcall EU_SetProgressTextInside(HWND hwnd, int element_id, int text_inside);
+int  __stdcall EU_GetProgressTextInside(HWND hwnd, int element_id);
+void __stdcall EU_SetProgressColors(HWND hwnd, int element_id, Color fill, Color track, Color text);
+int  __stdcall EU_GetProgressColors(HWND hwnd, int element_id, Color* fill, Color* track, Color* text);
+void __stdcall EU_SetProgressColorStops(HWND hwnd, int element_id,
+                                        const unsigned char* stops_bytes, int stops_len);
+int  __stdcall EU_GetProgressColorStopCount(HWND hwnd, int element_id);
+int  __stdcall EU_GetProgressColorStop(HWND hwnd, int element_id, int index,
+                                       Color* color, int* percentage);
+void __stdcall EU_SetProgressCompleteText(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len);
+int  __stdcall EU_GetProgressCompleteText(HWND hwnd, int element_id,
+                                          unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetProgressTextTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* bytes, int len);
+int  __stdcall EU_GetProgressTextTemplate(HWND hwnd, int element_id,
+                                          unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetAvatarShape(HWND hwnd, int element_id, int shape);
 void __stdcall EU_SetAvatarSource(HWND hwnd, int element_id,
                                   const unsigned char* src_bytes, int src_len);
+void __stdcall EU_SetAvatarFallbackSource(HWND hwnd, int element_id,
+                                          const unsigned char* src_bytes, int src_len);
+void __stdcall EU_SetAvatarIcon(HWND hwnd, int element_id,
+                                const unsigned char* icon_bytes, int icon_len);
+void __stdcall EU_SetAvatarErrorText(HWND hwnd, int element_id,
+                                     const unsigned char* text_bytes, int text_len);
 void __stdcall EU_SetAvatarFit(HWND hwnd, int element_id, int fit);
 int  __stdcall EU_GetAvatarImageStatus(HWND hwnd, int element_id);
 int  __stdcall EU_GetAvatarOptions(HWND hwnd, int element_id, int* shape, int* fit);
@@ -786,6 +856,11 @@ void __stdcall EU_SetEmptyOptions(HWND hwnd, int element_id,
 void __stdcall EU_SetEmptyActionClicked(HWND hwnd, int element_id, int clicked);
 int  __stdcall EU_GetEmptyActionClicked(HWND hwnd, int element_id);
 void __stdcall EU_SetEmptyActionCallback(HWND hwnd, int element_id, ElementClickCallback cb);
+void __stdcall EU_SetEmptyImage(HWND hwnd, int element_id,
+                                const unsigned char* image_bytes, int image_len);
+void __stdcall EU_SetEmptyImageSize(HWND hwnd, int element_id, int image_size);
+int  __stdcall EU_GetEmptyImageStatus(HWND hwnd, int element_id);
+int  __stdcall EU_GetEmptyImageSize(HWND hwnd, int element_id);
 void __stdcall EU_SetSkeletonRows(HWND hwnd, int element_id, int rows);
 void __stdcall EU_SetSkeletonAnimated(HWND hwnd, int element_id, int animated);
 void __stdcall EU_SetSkeletonLoading(HWND hwnd, int element_id, int loading);
@@ -798,17 +873,33 @@ void __stdcall EU_SetDescriptionsItems(HWND hwnd, int element_id,
                                        const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetDescriptionsColumns(HWND hwnd, int element_id, int columns);
 void __stdcall EU_SetDescriptionsBordered(HWND hwnd, int element_id, int bordered);
+void __stdcall EU_SetDescriptionsLayout(HWND hwnd, int element_id, int direction,
+                                        int size, int columns, int bordered);
+void __stdcall EU_SetDescriptionsItemsEx(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetDescriptionsOptions(HWND hwnd, int element_id, int columns,
                                          int bordered, int label_width,
                                          int min_row_height, int wrap_values);
 int  __stdcall EU_GetDescriptionsItemCount(HWND hwnd, int element_id);
 void __stdcall EU_SetDescriptionsAdvancedOptions(HWND hwnd, int element_id,
                                                  int responsive, int last_item_span);
+void __stdcall EU_SetDescriptionsColors(HWND hwnd, int element_id,
+                                        Color border, Color label_bg, Color content_bg,
+                                        Color label_fg, Color content_fg, Color title_fg);
+void __stdcall EU_SetDescriptionsExtra(HWND hwnd, int element_id,
+                                       const unsigned char* emoji_bytes, int emoji_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       int visible, int variant);
 int  __stdcall EU_GetDescriptionsOptions(HWND hwnd, int element_id,
                                          int* columns, int* bordered,
                                          int* label_width, int* min_row_height,
                                          int* wrap_values, int* responsive,
                                          int* last_item_span);
+int  __stdcall EU_GetDescriptionsFullState(HWND hwnd, int element_id,
+                                           int* direction, int* size,
+                                           int* columns, int* bordered,
+                                           int* item_count, int* extra_click_count,
+                                           int* responsive, int* wrap_values);
 void __stdcall EU_SetTableData(HWND hwnd, int element_id,
                                const unsigned char* columns_bytes, int columns_len,
                                const unsigned char* rows_bytes, int rows_len);
@@ -882,22 +973,47 @@ int  __stdcall EU_GetTableCellValue(HWND hwnd, int element_id, int row, int col,
                                     unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetTableFullState(HWND hwnd, int element_id,
                                     unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetCardTitle(HWND hwnd, int element_id,
+                               const unsigned char* title_bytes, int title_len);
 void __stdcall EU_SetCardBody(HWND hwnd, int element_id,
                               const unsigned char* body_bytes, int body_len);
 void __stdcall EU_SetCardFooter(HWND hwnd, int element_id,
                                 const unsigned char* footer_bytes, int footer_len);
+void __stdcall EU_SetCardItems(HWND hwnd, int element_id,
+                               const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetCardActions(HWND hwnd, int element_id,
                                  const unsigned char* actions_bytes, int actions_len);
+int  __stdcall EU_GetCardItemCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetCardAction(HWND hwnd, int element_id);
 void __stdcall EU_ResetCardAction(HWND hwnd, int element_id);
 void __stdcall EU_SetCardShadow(HWND hwnd, int element_id, int shadow);
 void __stdcall EU_SetCardOptions(HWND hwnd, int element_id, int shadow, int hoverable);
+void __stdcall EU_SetCardStyle(HWND hwnd, int element_id,
+                               Color bg, Color border, float border_width,
+                               float radius, int padding);
+int  __stdcall EU_GetCardStyle(HWND hwnd, int element_id,
+                               Color* bg, Color* border, float* border_width,
+                               float* radius, int* padding);
+void __stdcall EU_SetCardBodyStyle(HWND hwnd, int element_id,
+                                   int pad_left, int pad_top, int pad_right, int pad_bottom,
+                                   float font_size, int item_gap, int item_padding_y,
+                                   int divider);
+int  __stdcall EU_GetCardBodyStyle(HWND hwnd, int element_id,
+                                   int* pad_left, int* pad_top, int* pad_right, int* pad_bottom,
+                                   float* font_size, int* item_gap, int* item_padding_y,
+                                   int* divider);
 int  __stdcall EU_GetCardOptions(HWND hwnd, int element_id,
                                  int* shadow, int* hoverable, int* action_count);
 void __stdcall EU_SetCollapseItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetCollapseItemsEx(HWND hwnd, int element_id,
+                                     const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetCollapseActive(HWND hwnd, int element_id, int active_index);
 int  __stdcall EU_GetCollapseActive(HWND hwnd, int element_id);
+void __stdcall EU_SetCollapseActiveItems(HWND hwnd, int element_id,
+                                         const unsigned char* indices_bytes, int indices_len);
+int  __stdcall EU_GetCollapseActiveItems(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetCollapseItemCount(HWND hwnd, int element_id);
 void __stdcall EU_SetCollapseOptions(HWND hwnd, int element_id, int accordion,
                                      int allow_collapse,
@@ -910,14 +1026,22 @@ void __stdcall EU_SetCollapseAdvancedOptions(HWND hwnd, int element_id, int acco
 int  __stdcall EU_GetCollapseOptions(HWND hwnd, int element_id,
                                      int* accordion, int* allow_collapse,
                                      int* animated, int* disabled_count);
+int  __stdcall EU_GetCollapseStateJson(HWND hwnd, int element_id,
+                                       unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetTimelineItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetTimelineOptions(HWND hwnd, int element_id, int position, int show_time);
 int  __stdcall EU_GetTimelineItemCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetTimelineOptions(HWND hwnd, int element_id,
                                      int* position, int* show_time);
+void __stdcall EU_SetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                             int position, int show_time,
+                                             int reverse, int default_placement);
+int  __stdcall EU_GetTimelineAdvancedOptions(HWND hwnd, int element_id,
+                                             int* position, int* show_time,
+                                             int* reverse, int* default_placement);
 void __stdcall EU_SetStatisticValue(HWND hwnd, int element_id,
-                                    const unsigned char* value_bytes, int value_len);
+                                     const unsigned char* value_bytes, int value_len);
 void __stdcall EU_SetStatisticFormat(HWND hwnd, int element_id,
                                      const unsigned char* title_bytes, int title_len,
                                      const unsigned char* prefix_bytes, int prefix_len,
@@ -926,6 +1050,29 @@ void __stdcall EU_SetStatisticOptions(HWND hwnd, int element_id,
                                       int precision, int animated);
 int  __stdcall EU_GetStatisticOptions(HWND hwnd, int element_id,
                                       int* precision, int* animated);
+void __stdcall EU_SetStatisticNumberOptions(HWND hwnd, int element_id,
+                                            int precision, int animated, int use_group_separator,
+                                            const unsigned char* group_separator_bytes, int group_separator_len,
+                                            const unsigned char* decimal_separator_bytes, int decimal_separator_len);
+void __stdcall EU_SetStatisticAffixOptions(HWND hwnd, int element_id,
+                                           const unsigned char* prefix_bytes, int prefix_len,
+                                           const unsigned char* suffix_bytes, int suffix_len,
+                                           Color prefix_color, Color suffix_color, Color value_color,
+                                           int suffix_clickable);
+void __stdcall EU_SetStatisticDisplayText(HWND hwnd, int element_id,
+                                          const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetStatisticCountdown(HWND hwnd, int element_id,
+                                        long long target_unix_ms,
+                                        const unsigned char* format_bytes, int format_len);
+void __stdcall EU_SetStatisticCountdownState(HWND hwnd, int element_id, int paused);
+void __stdcall EU_AddStatisticCountdownTime(HWND hwnd, int element_id, long long delta_ms);
+void __stdcall EU_SetStatisticFinishCallback(HWND hwnd, int element_id, ElementClickCallback cb);
+void __stdcall EU_SetStatisticSuffixClickCallback(HWND hwnd, int element_id, ElementClickCallback cb);
+int  __stdcall EU_GetStatisticFullState(HWND hwnd, int element_id,
+                                       int* mode, int* precision, int* animated,
+                                       int* use_group_separator, int* countdown_paused,
+                                       int* countdown_finished, int* suffix_click_count,
+                                       long long* remaining_ms);
 void __stdcall EU_SetKpiCardData(HWND hwnd, int element_id,
                                  const unsigned char* value_bytes, int value_len,
                                  const unsigned char* subtitle_bytes, int subtitle_len,
@@ -1030,11 +1177,37 @@ int  __stdcall EU_GetCalendarValue(HWND hwnd, int element_id);
 int  __stdcall EU_GetCalendarRange(HWND hwnd, int element_id, int* min_yyyymmdd, int* max_yyyymmdd);
 int  __stdcall EU_GetCalendarOptions(HWND hwnd, int element_id, int* today_yyyymmdd, int* show_today);
 void __stdcall EU_SetCalendarSelectionRange(HWND hwnd, int element_id,
-                                            int start_yyyymmdd, int end_yyyymmdd,
-                                            int enabled);
+                                             int start_yyyymmdd, int end_yyyymmdd,
+                                             int enabled);
 int  __stdcall EU_GetCalendarSelectionRange(HWND hwnd, int element_id,
-                                            int* start_yyyymmdd, int* end_yyyymmdd,
-                                            int* enabled);
+                                             int* start_yyyymmdd, int* end_yyyymmdd,
+                                             int* enabled);
+void __stdcall EU_SetCalendarDisplayRange(HWND hwnd, int element_id, int start_yyyymmdd, int end_yyyymmdd);
+int  __stdcall EU_GetCalendarDisplayRange(HWND hwnd, int element_id, int* start_yyyymmdd, int* end_yyyymmdd);
+void __stdcall EU_SetCalendarCellItems(HWND hwnd, int element_id, const unsigned char* spec_bytes, int spec_len);
+int  __stdcall EU_GetCalendarCellItems(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+void __stdcall EU_ClearCalendarCellItems(HWND hwnd, int element_id);
+void __stdcall EU_SetCalendarVisualOptions(HWND hwnd, int element_id,
+                                           int show_header, int show_week_header,
+                                           int label_mode, int show_adjacent_days,
+                                           float cell_radius);
+int  __stdcall EU_GetCalendarVisualOptions(HWND hwnd, int element_id,
+                                           int* show_header, int* show_week_header,
+                                           int* label_mode, int* show_adjacent_days,
+                                           float* cell_radius);
+void __stdcall EU_SetCalendarStateColors(HWND hwnd, int element_id,
+                                          Color selected_bg, Color selected_fg,
+                                          Color range_bg, Color today_border,
+                                          Color hover_bg, Color disabled_fg,
+                                          Color adjacent_fg);
+int  __stdcall EU_GetCalendarStateColors(HWND hwnd, int element_id,
+                                          Color* selected_bg, Color* selected_fg,
+                                          Color* range_bg, Color* today_border,
+                                          Color* hover_bg, Color* disabled_fg,
+                                          Color* adjacent_fg);
+void __stdcall EU_SetCalendarSelectedMarker(HWND hwnd, int element_id,
+                                            const unsigned char* marker_bytes, int marker_len);
+void __stdcall EU_SetCalendarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTreeItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetTreeSelected(HWND hwnd, int element_id, int selected_index);
@@ -1075,6 +1248,64 @@ int  __stdcall EU_GetTreeSelectSelectedItem(HWND hwnd, int element_id, int posit
 void __stdcall EU_SetTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index, int expanded);
 void __stdcall EU_ToggleTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index);
 int  __stdcall EU_GetTreeSelectItemExpanded(HWND hwnd, int element_id, int item_index);
+void __stdcall EU_SetTreeDataJson(HWND hwnd, int element_id,
+                                  const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeDataJson(HWND hwnd, int element_id,
+                                  unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeOptionsJson(HWND hwnd, int element_id,
+                                     const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeStateJson(HWND hwnd, int element_id,
+                                   unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                         const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeCheckedKeysJson(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                          const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeExpandedKeysJson(HWND hwnd, int element_id,
+                                          unsigned char* buffer, int buffer_size);
+void __stdcall EU_AppendTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* parent_key_bytes, int parent_key_len,
+                                     const unsigned char* json_bytes, int json_len);
+void __stdcall EU_UpdateTreeNodeJson(HWND hwnd, int element_id,
+                                     const unsigned char* key_bytes, int key_len,
+                                     const unsigned char* json_bytes, int json_len);
+void __stdcall EU_RemoveTreeNodeByKey(HWND hwnd, int element_id,
+                                      const unsigned char* key_bytes, int key_len);
+void __stdcall EU_SetTreeNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb);
+void __stdcall EU_SetTreeAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb);
+void __stdcall EU_SetTreeSelectDataJson(HWND hwnd, int element_id,
+                                        const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectDataJson(HWND hwnd, int element_id,
+                                        unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeSelectOptionsJson(HWND hwnd, int element_id,
+                                           const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectStateJson(HWND hwnd, int element_id,
+                                         unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectSelectedKeysJson(HWND hwnd, int element_id,
+                                                unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                                const unsigned char* json_bytes, int json_len);
+int  __stdcall EU_GetTreeSelectExpandedKeysJson(HWND hwnd, int element_id,
+                                                unsigned char* buffer, int buffer_size);
+void __stdcall EU_AppendTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* parent_key_bytes, int parent_key_len,
+                                           const unsigned char* json_bytes, int json_len);
+void __stdcall EU_UpdateTreeSelectNodeJson(HWND hwnd, int element_id,
+                                           const unsigned char* key_bytes, int key_len,
+                                           const unsigned char* json_bytes, int json_len);
+void __stdcall EU_RemoveTreeSelectNodeByKey(HWND hwnd, int element_id,
+                                            const unsigned char* key_bytes, int key_len);
+void __stdcall EU_SetTreeSelectNodeEventCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeSelectLazyLoadCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeSelectDragCallback(HWND hwnd, int element_id, TreeNodeEventCallback cb);
+void __stdcall EU_SetTreeSelectAllowDragCallback(HWND hwnd, int element_id, TreeNodeAllowDragCallback cb);
+void __stdcall EU_SetTreeSelectAllowDropCallback(HWND hwnd, int element_id, TreeNodeAllowDropCallback cb);
 void __stdcall EU_SetTransferItems(HWND hwnd, int element_id,
                                    const unsigned char* left_bytes, int left_len,
                                    const unsigned char* right_bytes, int right_len);
@@ -1092,8 +1323,41 @@ int  __stdcall EU_GetTransferMatchedCount(HWND hwnd, int element_id, int side);
 void __stdcall EU_SetTransferItemDisabled(HWND hwnd, int element_id,
                                           int side, int item_index, int disabled);
 int  __stdcall EU_GetTransferItemDisabled(HWND hwnd, int element_id,
-                                         int side, int item_index);
+                                          int side, int item_index);
 int  __stdcall EU_GetTransferDisabledCount(HWND hwnd, int element_id, int side);
+void __stdcall EU_SetTransferDataEx(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len,
+                                    const unsigned char* target_bytes, int target_len);
+void __stdcall EU_SetTransferOptions(HWND hwnd, int element_id,
+                                     int filterable, int multiple, int show_footer,
+                                     int show_select_all, int show_count, int render_mode);
+int  __stdcall EU_GetTransferOptions(HWND hwnd, int element_id,
+                                     int* filterable, int* multiple, int* show_footer,
+                                     int* show_select_all, int* show_count, int* render_mode);
+void __stdcall EU_SetTransferTitles(HWND hwnd, int element_id,
+                                    const unsigned char* left_bytes, int left_len,
+                                    const unsigned char* right_bytes, int right_len);
+void __stdcall EU_SetTransferButtonTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len);
+void __stdcall EU_SetTransferFormat(HWND hwnd, int element_id,
+                                    const unsigned char* no_checked_bytes, int no_checked_len,
+                                    const unsigned char* has_checked_bytes, int has_checked_len);
+void __stdcall EU_SetTransferItemTemplate(HWND hwnd, int element_id,
+                                          const unsigned char* template_bytes, int template_len);
+void __stdcall EU_SetTransferFooterTexts(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len);
+void __stdcall EU_SetTransferFilterPlaceholder(HWND hwnd, int element_id,
+                                               const unsigned char* text_bytes, int text_len);
+void __stdcall EU_SetTransferCheckedKeys(HWND hwnd, int element_id,
+                                         const unsigned char* left_bytes, int left_len,
+                                         const unsigned char* right_bytes, int right_len);
+int  __stdcall EU_GetTransferCheckedCount(HWND hwnd, int element_id, int side);
+int  __stdcall EU_GetTransferValueKeys(HWND hwnd, int element_id,
+                                      unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTransferText(HWND hwnd, int element_id, int text_type,
+                                 unsigned char* buffer, int buffer_size);
 void __stdcall EU_SetAutocompleteSuggestions(HWND hwnd, int element_id,
                                              const unsigned char* suggestions_bytes, int suggestions_len);
 void __stdcall EU_SetAutocompleteValue(HWND hwnd, int element_id,
@@ -1344,6 +1608,27 @@ int  __stdcall EU_GetMenuState(HWND hwnd, int element_id,
                                int* hover_index);
 int  __stdcall EU_GetMenuActivePath(HWND hwnd, int element_id,
                                     unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetMenuColors(HWND hwnd, int element_id,
+                                Color bg, Color text_color, Color active_text_color,
+                                Color hover_bg, Color disabled_text_color, Color border);
+int  __stdcall EU_GetMenuColors(HWND hwnd, int element_id,
+                                Color* bg, Color* text_color, Color* active_text_color,
+                                Color* hover_bg, Color* disabled_text_color, Color* border);
+void __stdcall EU_SetMenuCollapsed(HWND hwnd, int element_id, int collapsed);
+int  __stdcall EU_GetMenuCollapsed(HWND hwnd, int element_id);
+void __stdcall EU_SetMenuItemMeta(HWND hwnd, int element_id,
+                                  const unsigned char* icons_bytes, int icons_len,
+                                  const int* group_indices, int group_count,
+                                  const unsigned char* hrefs_bytes, int hrefs_len,
+                                  const unsigned char* targets_bytes, int targets_len,
+                                  const unsigned char* commands_bytes, int commands_len);
+int  __stdcall EU_GetMenuItemMeta(HWND hwnd, int element_id, int item_index,
+                                  unsigned char* icon_buffer, int icon_buffer_size,
+                                  unsigned char* href_buffer, int href_buffer_size,
+                                  unsigned char* target_buffer, int target_buffer_size,
+                                  unsigned char* command_buffer, int command_buffer_size,
+                                  int* is_group, int* disabled, int* level);
+void __stdcall EU_SetMenuSelectCallback(HWND hwnd, int element_id, MenuSelectCallback cb);
 void __stdcall EU_SetAnchorItems(HWND hwnd, int element_id,
                                  const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetAnchorActive(HWND hwnd, int element_id, int active_index);
@@ -1458,6 +1743,19 @@ void __stdcall EU_SetImagePreviewEnabled(HWND hwnd, int element_id, int enabled)
 void __stdcall EU_SetImagePreviewTransform(HWND hwnd, int element_id,
                                            int scale_percent, int offset_x, int offset_y);
 void __stdcall EU_SetImageCacheEnabled(HWND hwnd, int element_id, int enabled);
+void __stdcall EU_SetImageLazy(HWND hwnd, int element_id, int lazy);
+void __stdcall EU_SetImagePlaceholder(HWND hwnd, int element_id,
+                                      const unsigned char* icon_bytes, int icon_len,
+                                      const unsigned char* text_bytes, int text_len,
+                                      Color fg, Color bg);
+void __stdcall EU_SetImageErrorContent(HWND hwnd, int element_id,
+                                       const unsigned char* icon_bytes, int icon_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       Color fg, Color bg);
+void __stdcall EU_SetImagePreviewList(HWND hwnd, int element_id,
+                                      const unsigned char* sources_bytes, int sources_len,
+                                      int selected_index);
+void __stdcall EU_SetImagePreviewIndex(HWND hwnd, int element_id, int index);
 int  __stdcall EU_GetImageStatus(HWND hwnd, int element_id);
 int  __stdcall EU_GetImagePreviewOpen(HWND hwnd, int element_id);
 int  __stdcall EU_GetImageOptions(HWND hwnd, int element_id,
@@ -1467,12 +1765,35 @@ int  __stdcall EU_GetImageFullOptions(HWND hwnd, int element_id,
                                       int* scale_percent, int* offset_x, int* offset_y,
                                       int* cache_enabled, int* reload_count,
                                       int* bitmap_width, int* bitmap_height);
+int  __stdcall EU_GetImageAdvancedOptions(HWND hwnd, int element_id,
+                                          int* fit, int* lazy, int* preview_enabled,
+                                          int* preview_open, int* preview_index,
+                                          int* preview_count, int* status,
+                                          int* scale_percent, int* offset_x, int* offset_y);
 void __stdcall EU_SetCarouselItems(HWND hwnd, int element_id,
                                    const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetCarouselActive(HWND hwnd, int element_id, int active_index);
 void __stdcall EU_SetCarouselOptions(HWND hwnd, int element_id,
                                      int loop, int indicator_position,
                                      int show_arrows, int show_indicators);
+void __stdcall EU_SetCarouselBehavior(HWND hwnd, int element_id,
+                                      int trigger_mode, int arrow_mode,
+                                      int direction, int carousel_type,
+                                      int pause_on_hover);
+int  __stdcall EU_GetCarouselBehavior(HWND hwnd, int element_id,
+                                      int* trigger_mode, int* arrow_mode,
+                                      int* direction, int* carousel_type,
+                                      int* pause_on_hover);
+void __stdcall EU_SetCarouselVisual(HWND hwnd, int element_id,
+                                    Color text_color, int text_alpha, int text_font_size,
+                                    Color odd_bg, Color even_bg, Color panel_bg,
+                                    Color active_indicator, Color inactive_indicator,
+                                    int card_scale_percent);
+int  __stdcall EU_GetCarouselVisual(HWND hwnd, int element_id,
+                                    Color* text_color, int* text_alpha, int* text_font_size,
+                                    Color* odd_bg, Color* even_bg, Color* panel_bg,
+                                    Color* active_indicator, Color* inactive_indicator,
+                                    int* card_scale_percent);
 void __stdcall EU_SetCarouselAutoplay(HWND hwnd, int element_id, int enabled, int interval_ms);
 void __stdcall EU_SetCarouselAnimation(HWND hwnd, int element_id, int transition_ms);
 void __stdcall EU_CarouselAdvance(HWND hwnd, int element_id, int delta);
@@ -1543,29 +1864,30 @@ int  __stdcall EU_GetUploadFullState(HWND hwnd, int element_id,
                                      int* auto_upload);
 void __stdcall EU_SetUploadSelectCallback(HWND hwnd, int element_id, ElementTextCallback cb);
 void __stdcall EU_SetUploadActionCallback(HWND hwnd, int element_id, ElementValueCallback cb);
-void __stdcall EU_SetScrollbarValue(HWND hwnd, int element_id, int value);
-void __stdcall EU_SetScrollbarRange(HWND hwnd, int element_id, int max_value, int page_size);
-void __stdcall EU_SetScrollbarOptions(HWND hwnd, int element_id,
-                                      int max_value, int page_size, int orientation, int auto_hide);
-void __stdcall EU_SetScrollbarWheelStep(HWND hwnd, int element_id, int step);
-void __stdcall EU_BindScrollbarContent(HWND hwnd, int element_id, int target_element_id,
-                                       int content_size, int viewport_size);
-void __stdcall EU_ScrollbarScroll(HWND hwnd, int element_id, int delta);
-void __stdcall EU_ScrollbarWheel(HWND hwnd, int element_id, int wheel_delta);
-int  __stdcall EU_GetScrollbarValue(HWND hwnd, int element_id);
-int  __stdcall EU_GetScrollbarMaxValue(HWND hwnd, int element_id);
-int  __stdcall EU_GetScrollbarOptions(HWND hwnd, int element_id,
-                                      int* value, int* max_value, int* page_size,
-                                      int* orientation, int* auto_hide, int* wheel_step);
-int  __stdcall EU_GetScrollbarFullState(HWND hwnd, int element_id,
-                                        int* value, int* max_value, int* page_size,
-                                        int* orientation, int* auto_hide, int* wheel_step,
-                                        int* bound_element_id, int* content_size,
-                                        int* viewport_size, int* content_offset,
-                                        int* wheel_event_count, int* drag_event_count,
-                                        int* change_count, int* last_action,
-                                        int* last_wheel_delta);
-void __stdcall EU_SetScrollbarChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+void __stdcall EU_SetInfiniteScrollItems(HWND hwnd, int element_id,
+                                         const unsigned char* items_bytes, int items_len);
+void __stdcall EU_AppendInfiniteScrollItems(HWND hwnd, int element_id,
+                                            const unsigned char* items_bytes, int items_len);
+void __stdcall EU_ClearInfiniteScrollItems(HWND hwnd, int element_id);
+void __stdcall EU_SetInfiniteScrollState(HWND hwnd, int element_id,
+                                         int loading, int no_more, int disabled);
+void __stdcall EU_SetInfiniteScrollOptions(HWND hwnd, int element_id,
+                                           int item_height, int gap, int threshold,
+                                           int style_mode, int show_scrollbar, int show_index);
+void __stdcall EU_SetInfiniteScrollTexts(HWND hwnd, int element_id,
+                                         const unsigned char* loading_bytes, int loading_len,
+                                         const unsigned char* no_more_bytes, int no_more_len,
+                                         const unsigned char* empty_bytes, int empty_len);
+void __stdcall EU_SetInfiniteScrollScroll(HWND hwnd, int element_id, int scroll_y);
+int  __stdcall EU_GetInfiniteScrollFullState(HWND hwnd, int element_id,
+                                             int* item_count, int* scroll_y, int* max_scroll,
+                                             int* content_height, int* viewport_height,
+                                             int* loading, int* no_more, int* disabled,
+                                             int* load_count, int* change_count,
+                                             int* last_action, int* threshold,
+                                             int* style_mode, int* show_scrollbar,
+                                             int* show_index);
+void __stdcall EU_SetInfiniteScrollLoadCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetBreadcrumbItems(HWND hwnd, int element_id,
                                      const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetBreadcrumbSeparator(HWND hwnd, int element_id,
@@ -1586,21 +1908,34 @@ int  __stdcall EU_GetBreadcrumbFullState(HWND hwnd, int element_id,
 void __stdcall EU_SetBreadcrumbSelectCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTabsItems(HWND hwnd, int element_id,
                                const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetTabsItemsEx(HWND hwnd, int element_id,
+                                 const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetTabsActive(HWND hwnd, int element_id, int active_index);
+void __stdcall EU_SetTabsActiveName(HWND hwnd, int element_id,
+                                    const unsigned char* name_bytes, int name_len);
 void __stdcall EU_SetTabsType(HWND hwnd, int element_id, int tab_type);
+void __stdcall EU_SetTabsPosition(HWND hwnd, int element_id, int tab_position);
+void __stdcall EU_SetTabsHeaderAlign(HWND hwnd, int element_id, int align);
 void __stdcall EU_SetTabsOptions(HWND hwnd, int element_id,
                                  int tab_type, int closable, int addable);
+void __stdcall EU_SetTabsEditable(HWND hwnd, int element_id, int editable);
+void __stdcall EU_SetTabsContentVisible(HWND hwnd, int element_id, int visible);
 void __stdcall EU_AddTabsItem(HWND hwnd, int element_id,
                               const unsigned char* text_bytes, int text_len);
 void __stdcall EU_CloseTabsItem(HWND hwnd, int element_id, int item_index);
 void __stdcall EU_SetTabsScroll(HWND hwnd, int element_id, int offset);
 void __stdcall EU_TabsScroll(HWND hwnd, int element_id, int delta);
 int  __stdcall EU_GetTabsActive(HWND hwnd, int element_id);
+int  __stdcall EU_GetTabsHeaderAlign(HWND hwnd, int element_id);
 int  __stdcall EU_GetTabsItemCount(HWND hwnd, int element_id);
 int  __stdcall EU_GetTabsState(HWND hwnd, int element_id,
                                int* active_index, int* item_count, int* tab_type);
 int  __stdcall EU_GetTabsItem(HWND hwnd, int element_id, int item_index,
                               unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTabsActiveName(HWND hwnd, int element_id,
+                                    unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetTabsItemContent(HWND hwnd, int element_id, int item_index,
+                                     unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
                                    int* active_index, int* item_count, int* tab_type,
                                    int* closable, int* addable,
@@ -1611,6 +1946,18 @@ int  __stdcall EU_GetTabsFullState(HWND hwnd, int element_id,
                                    int* close_count, int* add_count,
                                    int* select_count, int* scroll_count,
                                    int* last_action);
+int  __stdcall EU_GetTabsFullStateEx(HWND hwnd, int element_id,
+                                     int* active_index, int* item_count, int* tab_type,
+                                     int* closable, int* addable,
+                                     int* scroll_offset, int* max_scroll_offset,
+                                     int* hover_index, int* press_index,
+                                     int* hover_part, int* press_part,
+                                     int* last_closed_index, int* last_added_index,
+                                     int* close_count, int* add_count,
+                                     int* select_count, int* scroll_count,
+                                     int* last_action, int* tab_position,
+                                     int* editable, int* content_visible,
+                                     int* active_disabled, int* active_closable);
 void __stdcall EU_SetTabsChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTabsCloseCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetTabsAddCallback(HWND hwnd, int element_id, ElementValueCallback cb);
@@ -1621,6 +1968,9 @@ void __stdcall EU_SetPaginationPageSize(HWND hwnd, int element_id, int page_size
 void __stdcall EU_SetPaginationOptions(HWND hwnd, int element_id,
                                        int show_jumper, int show_size_changer,
                                        int visible_page_count);
+void __stdcall EU_SetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                               int background, int small_style,
+                                               int hide_on_single_page);
 void __stdcall EU_SetPaginationPageSizeOptions(HWND hwnd, int element_id,
                                                const int* sizes, int count);
 void __stdcall EU_SetPaginationJumpPage(HWND hwnd, int element_id, int jump_page);
@@ -1639,13 +1989,24 @@ int  __stdcall EU_GetPaginationFullState(HWND hwnd, int element_id,
                                          int* hover_part, int* press_part,
                                          int* change_count, int* size_change_count,
                                          int* jump_count, int* last_action);
+int  __stdcall EU_GetPaginationAdvancedOptions(HWND hwnd, int element_id,
+                                               int* background, int* small_style,
+                                               int* hide_on_single_page);
 void __stdcall EU_SetPaginationChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetStepsItems(HWND hwnd, int element_id,
                                 const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetStepsDetailItems(HWND hwnd, int element_id,
                                       const unsigned char* items_bytes, int items_len);
+void __stdcall EU_SetStepsIconItems(HWND hwnd, int element_id,
+                                    const unsigned char* items_bytes, int items_len);
 void __stdcall EU_SetStepsActive(HWND hwnd, int element_id, int active_index);
 void __stdcall EU_SetStepsDirection(HWND hwnd, int element_id, int direction);
+void __stdcall EU_SetStepsOptions(HWND hwnd, int element_id, int space,
+                                  int align_center, int simple,
+                                  int finish_status, int process_status);
+int  __stdcall EU_GetStepsOptions(HWND hwnd, int element_id, int* space,
+                                  int* align_center, int* simple,
+                                  int* finish_status, int* process_status);
 void __stdcall EU_SetStepsStatuses(HWND hwnd, int element_id, const int* statuses, int count);
 void __stdcall EU_TriggerStepsClick(HWND hwnd, int element_id, int item_index);
 int  __stdcall EU_GetStepsActive(HWND hwnd, int element_id);
@@ -1656,16 +2017,29 @@ int  __stdcall EU_GetStepsItem(HWND hwnd, int element_id, int item_index, int te
                                unsigned char* buffer, int buffer_size);
 int  __stdcall EU_GetStepsFullState(HWND hwnd, int element_id,
                                     int* active_index, int* item_count, int* direction,
-                                    int* hover_index, int* press_index,
-                                    int* last_clicked_index, int* click_count,
-                                    int* change_count, int* last_action,
-                                    int* active_status, int* failed_count);
+                                   int* hover_index, int* press_index,
+                                   int* last_clicked_index, int* click_count,
+                                   int* change_count, int* last_action,
+                                   int* active_status, int* failed_count);
+int  __stdcall EU_GetStepsVisualState(HWND hwnd, int element_id,
+                                      int* space, int* align_center, int* simple,
+                                      int* finish_status, int* process_status,
+                                      int* icon_count);
 void __stdcall EU_SetStepsChangeCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 void __stdcall EU_SetAlertDescription(HWND hwnd, int element_id,
                                       const unsigned char* desc_bytes, int desc_len);
 void __stdcall EU_SetAlertType(HWND hwnd, int element_id, int alert_type);
 void __stdcall EU_SetAlertEffect(HWND hwnd, int element_id, int effect);
 void __stdcall EU_SetAlertClosable(HWND hwnd, int element_id, int closable);
+void __stdcall EU_SetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                          int show_icon, int center, int wrap_description);
+int  __stdcall EU_GetAlertAdvancedOptions(HWND hwnd, int element_id,
+                                          int* show_icon, int* center,
+                                          int* wrap_description);
+void __stdcall EU_SetAlertCloseText(HWND hwnd, int element_id,
+                                    const unsigned char* text_bytes, int text_len);
+int  __stdcall EU_GetAlertText(HWND hwnd, int element_id, int text_type,
+                               unsigned char* out_bytes, int out_len);
 void __stdcall EU_SetAlertClosed(HWND hwnd, int element_id, int closed);
 void __stdcall EU_TriggerAlertClose(HWND hwnd, int element_id);
 int  __stdcall EU_GetAlertClosed(HWND hwnd, int element_id);
@@ -1767,13 +2141,29 @@ int  __stdcall EU_GetMessageBoxFullState(HWND hwnd, int element_id,
                                          int* confirm_loading, int* input_error_visible,
                                          int* last_action, int* timer_elapsed_ms);
 void __stdcall EU_SetLoadingActive(HWND hwnd, int element_id, int active);
+void __stdcall EU_SetLoadingText(HWND hwnd, int element_id,
+                                 const unsigned char* text_bytes, int text_len);
 void __stdcall EU_SetLoadingOptions(HWND hwnd, int element_id,
                                     int active, int fullscreen, int progress);
+void __stdcall EU_SetLoadingStyle(HWND hwnd, int element_id,
+                                  Color background, Color spinner_color,
+                                  Color text_color, int spinner_type,
+                                  int lock_input);
 int  __stdcall EU_GetLoadingActive(HWND hwnd, int element_id);
 int  __stdcall EU_GetLoadingOptions(HWND hwnd, int element_id,
                                     int* active, int* fullscreen, int* progress);
 void __stdcall EU_SetLoadingTarget(HWND hwnd, int element_id, int target_element_id, int padding);
 int  __stdcall EU_GetLoadingText(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+int  __stdcall EU_GetLoadingStyle(HWND hwnd, int element_id,
+                                  Color* background, Color* spinner_color,
+                                  Color* text_color, int* spinner_type,
+                                  int* lock_input);
+int  __stdcall EU_ShowLoading(HWND hwnd, int target_element_id,
+                              const unsigned char* text_bytes, int text_len,
+                              int fullscreen, int lock_input,
+                              Color background, Color spinner_color,
+                              Color text_color, int spinner_type);
+int  __stdcall EU_CloseLoading(HWND hwnd, int loading_id);
 int  __stdcall EU_GetLoadingFullState(HWND hwnd, int element_id,
                                       int* active, int* fullscreen, int* progress,
                                       int* target_element_id, int* target_padding,

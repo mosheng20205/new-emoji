@@ -15,6 +15,8 @@ public:
     void paint(RenderContext& ctx) override;
     void on_mouse_down(int x, int y, MouseButton btn) override;
     void on_mouse_up(int x, int y, MouseButton btn) override;
+    void on_mouse_move(int x, int y) override;
+    void on_mouse_leave() override;
     void on_key_down(int vk, int mods) override;
     void on_char(wchar_t ch) override;
     void on_focus() override;
@@ -27,10 +29,12 @@ public:
     bool add_tag(const std::wstring& value);
     bool remove_tag(int index);
     bool remove_last_tag();
+    void commit_text(const std::wstring& value);
     int tag_count() const { return (int)tags.size(); }
 
 private:
     int m_press_close = -1;
+    int m_hover_close = -1;
     int m_cursor_pos = 0;
 
     int tag_width(const std::wstring& tag) const;

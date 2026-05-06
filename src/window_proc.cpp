@@ -10,6 +10,8 @@
 #include "element_button.h"
 #include "element_titlebar.h"
 #include "element_editbox.h"
+#include "element_inputtag.h"
+#include "element_mentions.h"
 #include "element_upload.h"
 #include "element_message.h"
 #include "element_messagebox.h"
@@ -18,6 +20,7 @@
 #include "element_loading.h"
 #include "element_drawer.h"
 #include "element_tooltip.h"
+#include "element_statistic.h"
 #include "theme.h"
 #include "dpi_context.h"
 #include "utf8_helpers.h"
@@ -30,6 +33,7 @@ std::map<HWND, WindowState*> g_windows;
 static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
 extern std::map<UINT_PTR, Button*> g_button_timer_map;
+extern std::map<UINT_PTR, Statistic*> g_statistic_timer_map;
 extern std::map<UINT_PTR, Carousel*> g_carousel_timer_map;
 extern std::map<UINT_PTR, Message*> g_message_timer_map;
 extern std::map<UINT_PTR, MessageBoxElement*> g_messagebox_timer_map;
@@ -414,6 +418,10 @@ void register_window_class() {
                 if (it->second) it->second->tick(33);
                 return 0;
             }
+            if (auto it = g_statistic_timer_map.find((UINT_PTR)wp); it != g_statistic_timer_map.end()) {
+                if (it->second) it->second->tick(200);
+                return 0;
+            }
             if (auto it = g_drawer_timer_map.find((UINT_PTR)wp); it != g_drawer_timer_map.end()) {
                 if (it->second) it->second->tick(33);
                 return 0;
@@ -475,6 +483,22 @@ void register_window_class() {
                         }
                         if (lp & GCS_COMPSTR) {
                             edit->set_composition_text(get_ime_string(hwnd, imc, GCS_COMPSTR));
+                        }
+                        ImmReleaseContext(hwnd, imc);
+                    }
+                } else if (auto* input_tag = dynamic_cast<InputTag*>(st->element_tree->focused())) {
+                    HIMC imc = ImmGetContext(hwnd);
+                    if (imc) {
+                        if (lp & GCS_RESULTSTR) {
+                            input_tag->commit_text(get_ime_string(hwnd, imc, GCS_RESULTSTR));
+                        }
+                        ImmReleaseContext(hwnd, imc);
+                    }
+                } else if (auto* mentions = dynamic_cast<Mentions*>(st->element_tree->focused())) {
+                    HIMC imc = ImmGetContext(hwnd);
+                    if (imc) {
+                        if (lp & GCS_RESULTSTR) {
+                            mentions->commit_text(get_ime_string(hwnd, imc, GCS_RESULTSTR));
                         }
                         ImmReleaseContext(hwnd, imc);
                     }

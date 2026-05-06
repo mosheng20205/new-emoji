@@ -59,6 +59,8 @@ def on_click(element_id):
         ui.set_select_open(g_hwnd, g_select_id, True)
         ui.set_select_search(g_hwnd, g_select_id, "🍊")
         ui.set_select_option_disabled(g_hwnd, g_select_id, 1, True)
+        ui.set_select_option_alignment(g_hwnd, g_select_id, 2)
+        ui.set_select_value_alignment(g_hwnd, g_select_id, 2)
         before = ui.get_select_index(g_hwnd, g_select_id)
         ui.set_select_index(g_hwnd, g_select_id, 1)
         after_disabled_try = ui.get_select_index(g_hwnd, g_select_id)
@@ -66,24 +68,43 @@ def on_click(element_id):
 
         ui.set_select_multiple(g_hwnd, g_multi_id, True)
         ui.set_select_option_disabled(g_hwnd, g_multi_id, 3, True)
+        ui.set_select_option_alignment(g_hwnd, g_multi_id, 1)
+        ui.set_select_value_alignment(g_hwnd, g_multi_id, 1)
         ui.set_select_selected_indices(g_hwnd, g_multi_id, [0, 2, 3, 4])
         selected = ui.get_select_selected_indices(g_hwnd, g_multi_id)
+        single_align = ui.get_select_option_alignment(g_hwnd, g_select_id)
+        multi_align = ui.get_select_option_alignment(g_hwnd, g_multi_id)
+        single_value_align = ui.get_select_value_alignment(g_hwnd, g_select_id)
+        multi_value_align = ui.get_select_value_alignment(g_hwnd, g_multi_id)
+        if single_align != 2 or multi_align != 1 or single_value_align != 2 or multi_value_align != 1:
+            raise RuntimeError(
+                f"Select 对齐读回异常：option=({single_align},{multi_align}), value=({single_value_align},{multi_value_align})"
+            )
         print(
             "[应用] 禁用选择前后:",
             before,
             after_disabled_try,
             "多选读回:",
             selected,
+            "对齐:",
+            single_align,
+            multi_align,
+            single_value_align,
+            multi_value_align,
         )
-        update_status(f"✅ 单选匹配 {ui.get_select_matched_count(g_hwnd, g_select_id)} 项，多选读回 {selected}")
+        update_status(f"✅ 单选匹配 {ui.get_select_matched_count(g_hwnd, g_select_id)} 项，多选读回 {selected}，表项对齐已读回。")
         print_state("[应用状态]")
     elif element_id == g_reset_id:
         ui.set_select_search(g_hwnd, g_select_id, "")
         ui.set_select_open(g_hwnd, g_select_id, False)
         ui.set_select_option_disabled(g_hwnd, g_select_id, 1, False)
+        ui.set_select_option_alignment(g_hwnd, g_select_id, 0)
+        ui.set_select_value_alignment(g_hwnd, g_select_id, 0)
         ui.set_select_index(g_hwnd, g_select_id, 0)
         ui.set_select_multiple(g_hwnd, g_multi_id, False)
         ui.set_select_option_disabled(g_hwnd, g_multi_id, 3, False)
+        ui.set_select_option_alignment(g_hwnd, g_multi_id, 0)
+        ui.set_select_value_alignment(g_hwnd, g_multi_id, 0)
         ui.set_select_index(g_hwnd, g_multi_id, 1)
         update_status("↩ 已恢复单选与多选默认状态。")
         print_state("[恢复状态]")
@@ -107,7 +128,7 @@ def main():
     intro_id = ui.create_text(
         hwnd,
         content_id,
-        "验证单选弹层、搜索、禁用项、空状态、多选读写、选中数量读取和变化回调；窗口首屏预留足够逻辑边距。",
+        "验证单选弹层、搜索、禁用项、表项/已选值对齐、空状态、多选读写、选中数量读取和变化回调；窗口首屏预留足够逻辑边距。",
         28,
         68,
         820,

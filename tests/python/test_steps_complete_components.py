@@ -8,6 +8,9 @@ import test_new_emoji as ui
 g_hwnd = None
 g_steps_id = 0
 g_vertical_id = 0
+g_simple_id = 0
+g_icon_id = 0
+g_center_id = 0
 g_next_id = 0
 g_fail_id = 0
 g_events = []
@@ -54,23 +57,23 @@ def pump_messages(user32, msg, duration):
 
 
 def main():
-    global g_hwnd, g_steps_id, g_vertical_id, g_next_id, g_fail_id
+    global g_hwnd, g_steps_id, g_vertical_id, g_simple_id, g_icon_id, g_center_id, g_next_id, g_fail_id
 
-    hwnd = ui.create_window("🪜 步骤条完整组件验证", 220, 80, 980, 660)
+    hwnd = ui.create_window("🪜 步骤条完整组件验证", 180, 60, 1180, 760)
     if not hwnd:
         print("错误：窗口创建失败")
         return
 
     g_hwnd = hwnd
     ui.dll.EU_SetWindowCloseCallback(hwnd, on_close)
-    content_id = ui.create_container(hwnd, 0, 0, 0, 940, 600)
+    content_id = ui.create_container(hwnd, 0, 0, 0, 1140, 700)
 
     ui.create_text(hwnd, content_id, "🪜 Steps 步骤条完整封装", 28, 24, 560, 38)
     intro_id = ui.create_text(
         hwnd,
         content_id,
         "验证完成/进行中/等待/失败状态、横向/纵向方向、点击和键盘切换、程序触发、文本读回和完整状态读回。",
-        28, 72, 860, 54,
+        28, 72, 1040, 54,
     )
     ui.set_text_options(hwnd, intro_id, align=0, valign=0, wrap=True, ellipsis=False)
 
@@ -81,7 +84,7 @@ def main():
         1,
         46,
         150,
-        760,
+        820,
         112,
     )
     ui.set_steps_detail_items(
@@ -102,7 +105,7 @@ def main():
         content_id,
         ["📥 收集", "🧭 分派", "✅ 完成"],
         1,
-        650,
+        780,
         300,
         220,
         210,
@@ -115,8 +118,72 @@ def main():
     ui.set_steps_direction(hwnd, g_vertical_id, 1)
     ui.set_steps_statuses(hwnd, g_vertical_id, [2, 1, 0])
 
-    g_next_id = ui.create_button(hwnd, content_id, "➡️", "触发下一步", 46, 340, 150, 42)
-    g_fail_id = ui.create_button(hwnd, content_id, "⚠️", "设置失败态", 220, 340, 150, 42)
+    g_icon_id = ui.create_steps(
+        hwnd,
+        content_id,
+        ["编辑", "上传", "图片"],
+        1,
+        46,
+        292,
+        580,
+        92,
+        space=180,
+    )
+    ui.set_steps_icon_items(
+        hwnd,
+        g_icon_id,
+        [
+            ("编辑资料", "使用 Element 图标名", "el-icon-edit"),
+            ("上传素材", "映射为 Unicode 图标", "el-icon-upload"),
+            ("图片确认", "支持 emoji 图标", "el-icon-picture"),
+        ],
+    )
+    ui.set_steps_options(hwnd, g_icon_id, space=180, align_center=False, simple=False)
+    ui.set_steps_statuses(hwnd, g_icon_id, [2, 1, 0])
+
+    g_center_id = ui.create_steps(
+        hwnd,
+        content_id,
+        ["步骤1", "步骤2", "步骤3", "步骤4"],
+        2,
+        46,
+        412,
+        660,
+        102,
+        align_center=True,
+    )
+    ui.set_steps_detail_items(
+        hwnd,
+        g_center_id,
+        [
+            ("步骤1", "这是一段很长很长的描述文字"),
+            ("步骤2", "这是一段很长很长的描述文字"),
+            ("步骤3", "这是一段很长很长的描述文字"),
+            ("步骤4", "这是一段很长很长的描述文字"),
+        ],
+    )
+
+    g_simple_id = ui.create_steps(
+        hwnd,
+        content_id,
+        ["填写", "审核", "发布"],
+        1,
+        46,
+        548,
+        660,
+        58,
+        simple=True,
+        finish_status=2,
+    )
+    ui.set_steps_icon_items(
+        hwnd,
+        g_simple_id,
+        [("填写", "", "📝"), ("审核", "", "🔍"), ("发布", "", "🚀")],
+    )
+    ui.set_steps_statuses(hwnd, g_simple_id, [2, 1, 0])
+
+    g_next_id = ui.create_button(hwnd, content_id, "➡️", "触发下一步", 46, 632, 150, 42)
+    g_fail_id = ui.create_button(hwnd, content_id, "⚠️", "设置失败态", 220, 632, 150, 42)
     ui.dll.EU_SetElementClickCallback(hwnd, g_next_id, on_click)
     ui.dll.EU_SetElementClickCallback(hwnd, g_fail_id, on_click)
 
@@ -156,6 +223,16 @@ def main():
     vertical = ui.get_steps_full_state(hwnd, g_vertical_id)
     if vertical["direction"] != 1 or vertical["item_count"] != 3:
         raise RuntimeError("步骤条纵向状态读回失败")
+
+    icon_visual = ui.get_steps_visual_state(hwnd, g_icon_id)
+    if not icon_visual or icon_visual["space"] != 180 or icon_visual["icon_count"] != 3:
+        raise RuntimeError("步骤条图标/固定间距状态读回失败")
+    center_options = ui.get_steps_options(hwnd, g_center_id)
+    if not center_options or not center_options["align_center"]:
+        raise RuntimeError("步骤条居中选项读回失败")
+    simple_visual = ui.get_steps_visual_state(hwnd, g_simple_id)
+    if not simple_visual or not simple_visual["simple"] or simple_visual["finish_status"] != 2:
+        raise RuntimeError("步骤条简洁模式状态读回失败")
 
     ui.dll.EU_ShowWindow(hwnd, 1)
     print("步骤条完整组件示例已显示。关闭窗口或等待 60 秒结束。")

@@ -221,6 +221,10 @@ void Button::paint(RenderContext& ctx) {
         }
     }
 
+    for (auto& ch : children) {
+        if (ch->visible) ch->paint(ctx);
+    }
+
     ctx.rt->SetTransform(saved);
 }
 

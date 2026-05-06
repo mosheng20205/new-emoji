@@ -40,6 +40,12 @@ static void sv2_draw_text(RenderContext& ctx, const std::wstring& text,
     layout->Release();
 }
 
+static DWRITE_TEXT_ALIGNMENT sv2_text_alignment_from_int(int alignment) {
+    if (alignment == 1) return DWRITE_TEXT_ALIGNMENT_CENTER;
+    if (alignment == 2) return DWRITE_TEXT_ALIGNMENT_TRAILING;
+    return DWRITE_TEXT_ALIGNMENT_LEADING;
+}
+
 int SelectV2::option_height() const {
     int h = sv2_round_px(style.font_size * 1.8f);
     return h < 26 ? 26 : h;
@@ -125,6 +131,22 @@ void SelectV2::set_option_disabled(int index, bool disabled) {
     if (disabled) disabled_indices.insert(index);
     else disabled_indices.erase(index);
     if (selected_index == index && disabled) select_relative(1);
+    invalidate();
+}
+
+void SelectV2::set_option_alignment(int alignment) {
+    if (alignment < 0) alignment = 0;
+    if (alignment > 2) alignment = 2;
+    if (option_alignment == alignment) return;
+    option_alignment = alignment;
+    invalidate();
+}
+
+void SelectV2::set_value_alignment(int alignment) {
+    if (alignment < 0) alignment = 0;
+    if (alignment > 2) alignment = 2;
+    if (value_alignment == alignment) return;
+    value_alignment = alignment;
     invalidate();
 }
 
@@ -295,7 +317,8 @@ void SelectV2::paint(RenderContext& ctx) {
     float arrow_w = 24.0f;
     std::wstring value_text = !search_text.empty() && open ? search_text : selected_text();
     sv2_draw_text(ctx, value_text, style, fg, value_x, 0.0f,
-                  (float)bounds.w - value_x - style.pad_right - arrow_w, (float)bounds.h);
+                  (float)bounds.w - value_x - style.pad_right - arrow_w, (float)bounds.h,
+                  sv2_text_alignment_from_int(value_alignment));
     sv2_draw_text(ctx, open ? L"\u25b2" : L"\u25bc", style, t->text_secondary,
                   (float)bounds.w - style.pad_right - arrow_w, 0.0f,
                   arrow_w, (float)bounds.h, DWRITE_TEXT_ALIGNMENT_CENTER);
@@ -343,7 +366,8 @@ void SelectV2::paint_overlay(RenderContext& ctx) {
         Color item_color = is_option_disabled(i) ? t->text_secondary : (i == selected_index ? t->accent : fg);
         sv2_draw_text(ctx, options[i], style, item_color,
                       (float)style.pad_left, y,
-                      (float)bounds.w - style.pad_left - style.pad_right - 10.0f, (float)item_h);
+                      (float)bounds.w - style.pad_left - style.pad_right - 10.0f, (float)item_h,
+                      sv2_text_alignment_from_int(option_alignment));
     }
 
     if ((int)visible.size() > visible_count) {

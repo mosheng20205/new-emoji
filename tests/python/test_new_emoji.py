@@ -7,6 +7,7 @@ from ctypes import wintypes
 import sys
 import os
 import time
+import json
 
 if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -35,6 +36,17 @@ TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.
                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+MenuSelectCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+TreeNodeEventCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+TreeNodeAllowDragCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
+TreeNodeAllowDropCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                               ctypes.c_int)
 
 EXTENDED_PLACEMENTS = {
     "top-start": 0, "top": 1, "top-end": 2,
@@ -49,6 +61,11 @@ TRIGGER_MODES = {
     "focus": 2,
     "manual": 3,
 }
+
+CAROUSEL_TRIGGER_MODES = {"hover": 0, "click": 1}
+CAROUSEL_ARROW_MODES = {"hover": 0, "always": 1, "never": 2}
+CAROUSEL_DIRECTIONS = {"horizontal": 0, "vertical": 1}
+CAROUSEL_TYPES = {"normal": 0, "card": 1}
 
 # 鈹€鈹€ Export signatures 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
@@ -104,6 +121,18 @@ dll.EU_CreateSpace.restype = ctypes.c_int
 dll.EU_CreateContainer.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateContainer.restype = ctypes.c_int
+
+_container_region_args = [wintypes.HWND, ctypes.c_int,
+                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                          ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateHeader.argtypes = _container_region_args
+dll.EU_CreateHeader.restype = ctypes.c_int
+dll.EU_CreateAside.argtypes = _container_region_args
+dll.EU_CreateAside.restype = ctypes.c_int
+dll.EU_CreateMain.argtypes = _container_region_args
+dll.EU_CreateMain.restype = ctypes.c_int
+dll.EU_CreateFooter.argtypes = _container_region_args
+dll.EU_CreateFooter.restype = ctypes.c_int
 
 dll.EU_CreateLayout.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -563,10 +592,10 @@ dll.EU_CreateUpload.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateUpload.restype = ctypes.c_int
 
-dll.EU_CreateScrollbar.argtypes = [wintypes.HWND, ctypes.c_int,
-                                   ctypes.c_int, ctypes.c_int, ctypes.c_int,
-                                   ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_CreateScrollbar.restype = ctypes.c_int
+dll.EU_CreateInfiniteScroll.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateInfiniteScroll.restype = ctypes.c_int
 
 dll.EU_CreateBreadcrumb.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -598,6 +627,14 @@ dll.EU_CreateAlert.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateAlert.restype = ctypes.c_int
+dll.EU_CreateAlertEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateAlertEx.restype = ctypes.c_int
 
 dll.EU_CreateResult.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -712,8 +749,15 @@ dll.EU_ShowPromptBox.restype = ctypes.c_int
 dll.EU_SetElementColor.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32]
 dll.EU_SetElementText.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetElementText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetElementText.restype = ctypes.c_int
 dll.EU_SetElementBounds.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetElementBounds.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetElementBounds.restype = ctypes.c_int
 dll.EU_GetElementVisible.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetElementVisible.restype = ctypes.c_int
 dll.EU_GetElementEnabled.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -759,6 +803,18 @@ dll.EU_SetPanelLayout.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, cty
 dll.EU_GetPanelLayout.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetPanelLayout.restype = ctypes.c_int
+dll.EU_SetContainerLayout.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetContainerLayout.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetContainerLayout.restype = ctypes.c_int
+dll.EU_SetContainerRegionTextOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.c_int, ctypes.c_int]
+dll.EU_GetContainerRegionTextOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                                 ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetContainerRegionTextOptions.restype = ctypes.c_int
 dll.EU_SetLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_GetLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -806,6 +862,17 @@ dll.EU_SetDividerSpacing.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, 
 dll.EU_GetDividerSpacing.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDividerSpacing.restype = ctypes.c_int
+dll.EU_SetDividerLineStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetDividerLineStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDividerLineStyle.restype = ctypes.c_int
+dll.EU_SetDividerContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDividerContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetDividerContent.restype = ctypes.c_int
 dll.EU_SetButtonEmoji.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetButtonVariant.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1066,6 +1133,12 @@ dll.EU_GetSelectOpen.restype = ctypes.c_int
 dll.EU_SetSelectSearch.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetSelectOptionDisabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetSelectOptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectOptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectOptionAlignment.restype = ctypes.c_int
+dll.EU_SetSelectValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectValueAlignment.restype = ctypes.c_int
 dll.EU_GetSelectOptionCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetSelectOptionCount.restype = ctypes.c_int
 dll.EU_GetSelectMatchedCount.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -1096,6 +1169,12 @@ dll.EU_GetSelectV2Open.restype = ctypes.c_int
 dll.EU_SetSelectV2Search.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetSelectV2OptionDisabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetSelectV2OptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectV2OptionAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectV2OptionAlignment.restype = ctypes.c_int
+dll.EU_SetSelectV2ValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetSelectV2ValueAlignment.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetSelectV2ValueAlignment.restype = ctypes.c_int
 dll.EU_GetSelectV2OptionCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetSelectV2OptionCount.restype = ctypes.c_int
 dll.EU_GetSelectV2MatchedCount.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -1172,6 +1251,16 @@ dll.EU_SetColorPickerPalette.argtypes = [wintypes.HWND, ctypes.c_int,
                                          ctypes.POINTER(ctypes.c_uint32), ctypes.c_int]
 dll.EU_GetColorPickerPaletteCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetColorPickerPaletteCount.restype = ctypes.c_int
+dll.EU_SetColorPickerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetColorPickerOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetColorPickerOptions.restype = ctypes.c_int
+dll.EU_ClearColorPicker.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetColorPickerHasValue.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetColorPickerHasValue.restype = ctypes.c_int
 dll.EU_SetColorPickerChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTagType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTagEffect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1192,6 +1281,7 @@ dll.EU_SetTagCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallbac
 dll.EU_SetBadgeValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetBadgeMax.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetBadgeType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetBadgeDot.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetBadgeOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -1202,6 +1292,8 @@ dll.EU_GetBadgeOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                    ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetBadgeOptions.restype = ctypes.c_int
+dll.EU_GetBadgeType.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetBadgeType.restype = ctypes.c_int
 dll.EU_SetBadgeLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_GetBadgeLayoutOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
@@ -1223,9 +1315,41 @@ dll.EU_SetProgressFormatOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.
 dll.EU_GetProgressFormatOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetProgressFormatOptions.restype = ctypes.c_int
+dll.EU_SetProgressTextInside.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetProgressTextInside.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetProgressTextInside.restype = ctypes.c_int
+dll.EU_SetProgressColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetProgressColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                     ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetProgressColors.restype = ctypes.c_int
+dll.EU_SetProgressColorStops.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressColorStopCount.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetProgressColorStopCount.restype = ctypes.c_int
+dll.EU_GetProgressColorStop.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetProgressColorStop.restype = ctypes.c_int
+dll.EU_SetProgressCompleteText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressCompleteText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressCompleteText.restype = ctypes.c_int
+dll.EU_SetProgressTextTemplate.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressTextTemplate.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetProgressTextTemplate.restype = ctypes.c_int
 dll.EU_SetAvatarShape.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAvatarSource.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAvatarFallbackSource.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAvatarIcon.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetAvatarErrorText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAvatarFit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetAvatarImageStatus.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetAvatarImageStatus.restype = ctypes.c_int
@@ -1241,6 +1365,13 @@ dll.EU_SetEmptyActionClicked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_i
 dll.EU_GetEmptyActionClicked.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetEmptyActionClicked.restype = ctypes.c_int
 dll.EU_SetEmptyActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
+dll.EU_SetEmptyImage.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetEmptyImageSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetEmptyImageStatus.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetEmptyImageStatus.restype = ctypes.c_int
+dll.EU_GetEmptyImageSize.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetEmptyImageSize.restype = ctypes.c_int
 dll.EU_SetSkeletonRows.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSkeletonAnimated.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetSkeletonLoading.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1256,18 +1387,35 @@ dll.EU_SetDescriptionsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDescriptionsColumns.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetDescriptionsBordered.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDescriptionsLayout.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDescriptionsItemsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetDescriptionsOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.c_int, ctypes.c_int,
                                           ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDescriptionsItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDescriptionsItemCount.restype = ctypes.c_int
 dll.EU_SetDescriptionsAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetDescriptionsColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                         ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetDescriptionsExtra.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int]
 dll.EU_GetDescriptionsOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                           ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetDescriptionsOptions.restype = ctypes.c_int
+dll.EU_GetDescriptionsFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetDescriptionsFullState.restype = ctypes.c_int
 dll.EU_SetTableData.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -1345,26 +1493,56 @@ dll.EU_GetTableCellValue.restype = ctypes.c_int
 dll.EU_GetTableFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetTableFullState.restype = ctypes.c_int
+dll.EU_SetCardTitle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardBody.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardFooter.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCardItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCardActions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCardItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetCardItemCount.restype = ctypes.c_int
 dll.EU_GetCardAction.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCardAction.restype = ctypes.c_int
 dll.EU_ResetCardAction.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_SetCardShadow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetCardOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetCardStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.c_uint32, ctypes.c_uint32, ctypes.c_float,
+                                ctypes.c_float, ctypes.c_int]
+dll.EU_GetCardStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_float),
+                                ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCardStyle.restype = ctypes.c_int
+dll.EU_SetCardBodyStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_float, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetCardBodyStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_float), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCardBodyStyle.restype = ctypes.c_int
 dll.EU_GetCardOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                   ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetCardOptions.restype = ctypes.c_int
 dll.EU_SetCollapseItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCollapseItemsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCollapseActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetCollapseActive.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCollapseActive.restype = ctypes.c_int
+dll.EU_SetCollapseActiveItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCollapseActiveItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCollapseActiveItems.restype = ctypes.c_int
 dll.EU_GetCollapseItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetCollapseItemCount.restype = ctypes.c_int
 dll.EU_SetCollapseOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1377,6 +1555,9 @@ dll.EU_GetCollapseOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetCollapseOptions.restype = ctypes.c_int
+dll.EU_GetCollapseStateJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCollapseStateJson.restype = ctypes.c_int
 dll.EU_SetTimelineItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTimelineOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -1385,6 +1566,13 @@ dll.EU_GetTimelineItemCount.restype = ctypes.c_int
 dll.EU_GetTimelineOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTimelineOptions.restype = ctypes.c_int
+dll.EU_SetTimelineAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.c_int, ctypes.c_int,
+                                              ctypes.c_int, ctypes.c_int]
+dll.EU_GetTimelineAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                              ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTimelineAdvancedOptions.restype = ctypes.c_int
 dll.EU_SetStatisticValue.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetStatisticFormat.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1395,6 +1583,29 @@ dll.EU_SetStatisticOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int
 dll.EU_GetStatisticOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetStatisticOptions.restype = ctypes.c_int
+dll.EU_SetStatisticNumberOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStatisticAffixOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                            ctypes.c_int]
+dll.EU_SetStatisticDisplayText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStatisticCountdown.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_longlong,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStatisticCountdownState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_AddStatisticCountdownTime.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_longlong]
+dll.EU_SetStatisticFinishCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
+dll.EU_SetStatisticSuffixClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, ClickCallback]
+dll.EU_GetStatisticFullState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_longlong)]
+dll.EU_GetStatisticFullState.restype = ctypes.c_int
 dll.EU_SetKpiCardData.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
@@ -1546,6 +1757,45 @@ dll.EU_GetCalendarSelectionRange.argtypes = [wintypes.HWND, ctypes.c_int,
                                              ctypes.POINTER(ctypes.c_int),
                                              ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetCalendarSelectionRange.restype = ctypes.c_int
+dll.EU_SetCalendarDisplayRange.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.c_int, ctypes.c_int]
+dll.EU_GetCalendarDisplayRange.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetCalendarDisplayRange.restype = ctypes.c_int
+dll.EU_SetCalendarCellItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCalendarCellItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetCalendarCellItems.restype = ctypes.c_int
+dll.EU_ClearCalendarCellItems.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetCalendarVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_float]
+dll.EU_GetCalendarVisualOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_int),
+                                            ctypes.POINTER(ctypes.c_float)]
+dll.EU_GetCalendarVisualOptions.restype = ctypes.c_int
+dll.EU_SetCalendarStateColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.c_uint32, ctypes.c_uint32,
+                                          ctypes.c_uint32, ctypes.c_uint32,
+                                          ctypes.c_uint32, ctypes.c_uint32,
+                                          ctypes.c_uint32]
+dll.EU_GetCalendarStateColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32),
+                                          ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetCalendarStateColors.restype = ctypes.c_int
+dll.EU_SetCalendarSelectedMarker.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetCalendarChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTreeItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTreeSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -1605,6 +1855,72 @@ dll.EU_SetTreeSelectItemExpanded.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_ToggleTreeSelectItemExpanded.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTreeSelectItemExpanded.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTreeSelectItemExpanded.restype = ctypes.c_int
+dll.EU_SetTreeDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeDataJson.restype = ctypes.c_int
+dll.EU_SetTreeOptionsJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeStateJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeStateJson.restype = ctypes.c_int
+dll.EU_SetTreeCheckedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeCheckedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeCheckedKeysJson.restype = ctypes.c_int
+dll.EU_SetTreeExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeExpandedKeysJson.restype = ctypes.c_int
+dll.EU_AppendTreeNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_UpdateTreeNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_RemoveTreeNodeByKey.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTreeNodeEventCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeLazyLoadCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeAllowDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDragCallback]
+dll.EU_SetTreeAllowDropCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDropCallback]
+dll.EU_SetTreeSelectDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectDataJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectDataJson.restype = ctypes.c_int
+dll.EU_SetTreeSelectOptionsJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectStateJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectStateJson.restype = ctypes.c_int
+dll.EU_SetTreeSelectSelectedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectSelectedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectSelectedKeysJson.restype = ctypes.c_int
+dll.EU_SetTreeSelectExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectExpandedKeysJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTreeSelectExpandedKeysJson.restype = ctypes.c_int
+dll.EU_AppendTreeSelectNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_UpdateTreeSelectNodeJson.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                            ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_RemoveTreeSelectNodeByKey.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTreeSelectNodeEventCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeSelectLazyLoadCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeSelectDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeEventCallback]
+dll.EU_SetTreeSelectAllowDragCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDragCallback]
+dll.EU_SetTreeSelectAllowDropCallback.argtypes = [wintypes.HWND, ctypes.c_int, TreeNodeAllowDropCallback]
 dll.EU_SetTransferItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -1630,6 +1946,44 @@ dll.EU_GetTransferItemDisabled.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_GetTransferItemDisabled.restype = ctypes.c_int
 dll.EU_GetTransferDisabledCount.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTransferDisabledCount.restype = ctypes.c_int
+dll.EU_SetTransferDataEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTransferOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTransferOptions.restype = ctypes.c_int
+dll.EU_SetTransferTitles.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferButtonTexts.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferFormat.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferItemTemplate.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferFooterTexts.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferFilterPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTransferCheckedKeys.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTransferCheckedCount.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTransferCheckedCount.restype = ctypes.c_int
+dll.EU_GetTransferValueKeys.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTransferValueKeys.restype = ctypes.c_int
+dll.EU_GetTransferText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTransferText.restype = ctypes.c_int
 dll.EU_SetAutocompleteSuggestions.argtypes = [wintypes.HWND, ctypes.c_int,
                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAutocompleteValue.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -1909,6 +2263,32 @@ dll.EU_GetMenuState.restype = ctypes.c_int
 dll.EU_GetMenuActivePath.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetMenuActivePath.restype = ctypes.c_int
+dll.EU_SetMenuColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                 ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetMenuColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                 ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetMenuColors.restype = ctypes.c_int
+dll.EU_SetMenuCollapsed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetMenuCollapsed.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetMenuCollapsed.restype = ctypes.c_int
+dll.EU_SetMenuItemMeta.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_int), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetMenuItemMeta.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                   ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetMenuItemMeta.restype = ctypes.c_int
+dll.EU_SetMenuSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, MenuSelectCallback]
 dll.EU_SetAnchorItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAnchorActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2052,6 +2432,19 @@ dll.EU_SetImagePreviewEnabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_
 dll.EU_SetImagePreviewTransform.argtypes = [wintypes.HWND, ctypes.c_int,
                                             ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetImageCacheEnabled.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetImageLazy.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetImagePlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetImageErrorContent.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetImagePreviewList.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                       ctypes.c_int]
+dll.EU_SetImagePreviewIndex.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetImageStatus.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetImageStatus.restype = ctypes.c_int
 dll.EU_GetImagePreviewOpen.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -2068,11 +2461,41 @@ dll.EU_GetImageFullOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                        ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetImageFullOptions.restype = ctypes.c_int
+dll.EU_GetImageAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetImageAdvancedOptions.restype = ctypes.c_int
 dll.EU_SetCarouselItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetCarouselActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetCarouselOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetCarouselBehavior.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int]
+dll.EU_GetCarouselBehavior.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetCarouselBehavior.restype = ctypes.c_int
+dll.EU_SetCarouselVisual.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.c_uint32, ctypes.c_int, ctypes.c_int,
+    ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+    ctypes.c_uint32, ctypes.c_uint32, ctypes.c_int,
+]
+dll.EU_GetCarouselVisual.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+    ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetCarouselVisual.restype = ctypes.c_int
 dll.EU_SetCarouselAutoplay.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.c_int, ctypes.c_int]
 dll.EU_SetCarouselAnimation.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2172,25 +2595,24 @@ dll.EU_GetUploadFullState.argtypes = [
 dll.EU_GetUploadFullState.restype = ctypes.c_int
 dll.EU_SetUploadSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, TextCallback]
 dll.EU_SetUploadActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
-dll.EU_SetScrollbarValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_SetScrollbarRange.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_SetScrollbarOptions.argtypes = [wintypes.HWND, ctypes.c_int,
-                                       ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_SetScrollbarWheelStep.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_BindScrollbarContent.argtypes = [wintypes.HWND, ctypes.c_int,
-                                        ctypes.c_int, ctypes.c_int, ctypes.c_int]
-dll.EU_ScrollbarScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_ScrollbarWheel.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
-dll.EU_GetScrollbarValue.argtypes = [wintypes.HWND, ctypes.c_int]
-dll.EU_GetScrollbarValue.restype = ctypes.c_int
-dll.EU_GetScrollbarMaxValue.argtypes = [wintypes.HWND, ctypes.c_int]
-dll.EU_GetScrollbarMaxValue.restype = ctypes.c_int
-dll.EU_GetScrollbarOptions.argtypes = [wintypes.HWND, ctypes.c_int,
-                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
-                                       ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
-dll.EU_GetScrollbarOptions.restype = ctypes.c_int
-dll.EU_GetScrollbarFullState.argtypes = [
+dll.EU_SetInfiniteScrollItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_AppendInfiniteScrollItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_ClearInfiniteScrollItems.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetInfiniteScrollState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                          ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetInfiniteScrollOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                            ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetInfiniteScrollTexts.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+]
+dll.EU_SetInfiniteScrollScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInfiniteScrollFullState.argtypes = [
     wintypes.HWND, ctypes.c_int,
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
@@ -2201,8 +2623,8 @@ dll.EU_GetScrollbarFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
     ctypes.POINTER(ctypes.c_int),
 ]
-dll.EU_GetScrollbarFullState.restype = ctypes.c_int
-dll.EU_SetScrollbarChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_GetInfiniteScrollFullState.restype = ctypes.c_int
+dll.EU_SetInfiniteScrollLoadCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetBreadcrumbItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetBreadcrumbSeparator.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2230,9 +2652,17 @@ dll.EU_GetBreadcrumbFullState.restype = ctypes.c_int
 dll.EU_SetBreadcrumbSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTabsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTabsItemsEx.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTabsActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsActiveName.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTabsType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsPosition.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsHeaderAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTabsOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsEditable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsContentVisible.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_AddTabsItem.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_CloseTabsItem.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2240,6 +2670,8 @@ dll.EU_SetTabsScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_TabsScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetTabsActive.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetTabsActive.restype = ctypes.c_int
+dll.EU_GetTabsHeaderAlign.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTabsHeaderAlign.restype = ctypes.c_int
 dll.EU_GetTabsItemCount.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetTabsItemCount.restype = ctypes.c_int
 dll.EU_GetTabsState.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2249,6 +2681,12 @@ dll.EU_GetTabsState.restype = ctypes.c_int
 dll.EU_GetTabsItem.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetTabsItem.restype = ctypes.c_int
+dll.EU_GetTabsActiveName.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTabsActiveName.restype = ctypes.c_int
+dll.EU_GetTabsItemContent.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetTabsItemContent.restype = ctypes.c_int
 dll.EU_GetTabsFullState.argtypes = [
     wintypes.HWND, ctypes.c_int,
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
@@ -2262,6 +2700,12 @@ dll.EU_GetTabsFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
 ]
 dll.EU_GetTabsFullState.restype = ctypes.c_int
+dll.EU_GetTabsFullStateEx.argtypes = dll.EU_GetTabsFullState.argtypes + [
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetTabsFullStateEx.restype = ctypes.c_int
 dll.EU_SetTabsChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTabsCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetTabsAddCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
@@ -2271,6 +2715,8 @@ dll.EU_SetPaginationCurrent.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_in
 dll.EU_SetPaginationPageSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPaginationOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPaginationAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPaginationPageSizeOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                                 ctypes.POINTER(ctypes.c_int), ctypes.c_int]
 dll.EU_SetPaginationJumpPage.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2295,13 +2741,30 @@ dll.EU_GetPaginationFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
 ]
 dll.EU_GetPaginationFullState.restype = ctypes.c_int
+dll.EU_GetPaginationAdvancedOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetPaginationAdvancedOptions.restype = ctypes.c_int
 dll.EU_SetPaginationChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetStepsItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetStepsDetailItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetStepsIconItems.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetStepsActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetStepsDirection.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetStepsOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int]
+dll.EU_GetStepsOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetStepsOptions.restype = ctypes.c_int
 dll.EU_SetStepsStatuses.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_int), ctypes.c_int]
 dll.EU_TriggerStepsClick.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -2326,12 +2789,32 @@ dll.EU_GetStepsFullState.argtypes = [
     ctypes.POINTER(ctypes.c_int),
 ]
 dll.EU_GetStepsFullState.restype = ctypes.c_int
+dll.EU_GetStepsVisualState.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetStepsVisualState.restype = ctypes.c_int
 dll.EU_SetStepsChangeCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetAlertDescription.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAlertType.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAlertEffect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetAlertClosable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetAlertAdvancedOptions.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetAlertAdvancedOptions.argtypes = [
+    wintypes.HWND, ctypes.c_int,
+    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+    ctypes.POINTER(ctypes.c_int),
+]
+dll.EU_GetAlertAdvancedOptions.restype = ctypes.c_int
+dll.EU_SetAlertCloseText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAlertText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetAlertText.restype = ctypes.c_int
 dll.EU_SetAlertClosed.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_TriggerAlertClose.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetAlertClosed.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -2457,8 +2940,13 @@ dll.EU_GetNotificationFullStateEx.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_GetNotificationFullStateEx.restype = ctypes.c_int
 dll.EU_SetNotificationCloseCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetLoadingActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetLoadingText.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetLoadingOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetLoadingStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                   ctypes.c_int, ctypes.c_int]
 dll.EU_GetLoadingActive.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetLoadingActive.restype = ctypes.c_int
 dll.EU_GetLoadingOptions.argtypes = [wintypes.HWND, ctypes.c_int,
@@ -2469,6 +2957,19 @@ dll.EU_SetLoadingTarget.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, c
 dll.EU_GetLoadingText.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetLoadingText.restype = ctypes.c_int
+dll.EU_GetLoadingStyle.argtypes = [wintypes.HWND, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_uint32),
+                                   ctypes.POINTER(ctypes.c_uint32), ctypes.POINTER(ctypes.c_int),
+                                   ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetLoadingStyle.restype = ctypes.c_int
+dll.EU_ShowLoading.argtypes = [wintypes.HWND, ctypes.c_int,
+                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                               ctypes.c_int, ctypes.c_int,
+                               ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                               ctypes.c_int]
+dll.EU_ShowLoading.restype = ctypes.c_int
+dll.EU_CloseLoading.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_CloseLoading.restype = ctypes.c_int
 dll.EU_GetLoadingFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
@@ -2717,6 +3218,50 @@ def bytes_arg(data: bytes):
         return None
     return (ctypes.c_ubyte * len(data))(*data)
 
+def json_bytes(value) -> bytes:
+    if value is None:
+        value = {}
+    if isinstance(value, bytes):
+        return value
+    if isinstance(value, bytearray):
+        return bytes(value)
+    if isinstance(value, str):
+        return make_utf8(value)
+    return json.dumps(value, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
+
+def read_json_result(fn, hwnd, element_id):
+    needed = fn(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return {}
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    copied = fn(hwnd, element_id, buf, needed + 1)
+    text = bytes(buf[:min(copied, needed)]).decode("utf-8", errors="replace")
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+def tree_callback_payload(payload_ptr, payload_len):
+    if not payload_ptr or payload_len <= 0:
+        return {}
+    text = bytes(payload_ptr[:payload_len]).decode("utf-8", errors="replace")
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        return text
+
+_tree_callback_refs = {}
+
+def _callback_key(hwnd, element_id, name):
+    return (int(hwnd) if hwnd else 0, int(element_id), name)
+
+def _wrap_callback(factory, callback):
+    if callback is None:
+        return None
+    if isinstance(callback, ctypes._CFuncPtr):
+        return callback
+    return factory(callback)
+
 def _extended_placement_value(placement, default="bottom"):
     if isinstance(placement, str):
         return EXTENDED_PLACEMENTS.get(placement, EXTENDED_PLACEMENTS[default])
@@ -2734,6 +3279,27 @@ def _trigger_mode_value(trigger_mode, default="click"):
     except (TypeError, ValueError):
         value = TRIGGER_MODES[default]
     return max(0, min(3, value))
+
+def _carousel_enum_value(value, mapping, default):
+    if isinstance(value, str):
+        return mapping.get(value, mapping[default])
+    try:
+        raw = int(value)
+    except (TypeError, ValueError):
+        raw = mapping[default]
+    return max(0, min(max(mapping.values()), raw))
+
+def _carousel_trigger_value(value):
+    return _carousel_enum_value(value, CAROUSEL_TRIGGER_MODES, "click")
+
+def _carousel_arrow_value(value):
+    return _carousel_enum_value(value, CAROUSEL_ARROW_MODES, "always")
+
+def _carousel_direction_value(value):
+    return _carousel_enum_value(value, CAROUSEL_DIRECTIONS, "horizontal")
+
+def _carousel_type_value(value):
+    return _carousel_enum_value(value, CAROUSEL_TYPES, "normal")
 
 def _autocomplete_suggestions_data(suggestions):
     if suggestions is None:
@@ -3027,6 +3593,22 @@ def get_space_size(hwnd, element_id):
 def create_container(hwnd, parent_id, x=0, y=0, w=800, h=600):
     return dll.EU_CreateContainer(hwnd, parent_id, x, y, w, h)
 
+def _create_container_region(fn, hwnd, parent_id, text="", x=0, y=0, w=0, h=0):
+    data = make_utf8(text)
+    return fn(hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h)
+
+def create_header(hwnd, parent_id, text="顶栏", x=0, y=0, w=0, h=60):
+    return _create_container_region(dll.EU_CreateHeader, hwnd, parent_id, text, x, y, w, h)
+
+def create_aside(hwnd, parent_id, text="侧边栏", x=0, y=0, w=200, h=0):
+    return _create_container_region(dll.EU_CreateAside, hwnd, parent_id, text, x, y, w, h)
+
+def create_main(hwnd, parent_id, text="主要区域", x=0, y=0, w=0, h=0):
+    return _create_container_region(dll.EU_CreateMain, hwnd, parent_id, text, x, y, w, h)
+
+def create_footer(hwnd, parent_id, text="底栏", x=0, y=0, w=0, h=60):
+    return _create_container_region(dll.EU_CreateFooter, hwnd, parent_id, text, x, y, w, h)
+
 def create_layout(hwnd, parent_id, orientation=0, gap=8, x=0, y=0, w=300, h=40):
     return dll.EU_CreateLayout(hwnd, parent_id, orientation, gap, x, y, w, h)
 
@@ -3072,6 +3654,47 @@ def get_panel_layout(hwnd, element_id):
     if not ok:
         return None
     return bool(fill_parent.value), bool(content_layout.value)
+
+def set_container_layout(hwnd, element_id, enabled=True, direction=0, gap=0):
+    dll.EU_SetContainerLayout(hwnd, element_id, 1 if enabled else 0, direction, gap)
+
+def get_container_layout(hwnd, element_id):
+    enabled = ctypes.c_int()
+    direction = ctypes.c_int()
+    gap = ctypes.c_int()
+    actual = ctypes.c_int()
+    ok = dll.EU_GetContainerLayout(
+        hwnd, element_id,
+        ctypes.byref(enabled), ctypes.byref(direction),
+        ctypes.byref(gap), ctypes.byref(actual),
+    )
+    if not ok:
+        return None
+    return {
+        "enabled": bool(enabled.value),
+        "direction": direction.value,
+        "gap": gap.value,
+        "actual_direction": actual.value,
+    }
+
+def set_container_region_text_options(hwnd, element_id, align=1, valign=1):
+    dll.EU_SetContainerRegionTextOptions(hwnd, element_id, align, valign)
+
+def get_container_region_text_options(hwnd, element_id):
+    align = ctypes.c_int()
+    valign = ctypes.c_int()
+    role = ctypes.c_int()
+    ok = dll.EU_GetContainerRegionTextOptions(
+        hwnd, element_id,
+        ctypes.byref(align), ctypes.byref(valign), ctypes.byref(role),
+    )
+    if not ok:
+        return None
+    return {
+        "align": align.value,
+        "valign": valign.value,
+        "role": role.value,
+    }
 
 def set_button_emoji(hwnd, element_id, emoji=""):
     data = make_utf8(emoji)
@@ -3216,6 +3839,34 @@ def get_divider_spacing(hwnd, element_id):
     gap = ctypes.c_int()
     ok = dll.EU_GetDividerSpacing(hwnd, element_id, ctypes.byref(margin), ctypes.byref(gap))
     return (margin.value, gap.value) if ok else None
+
+def set_divider_line_style(hwnd, element_id, line_style=0):
+    dll.EU_SetDividerLineStyle(hwnd, element_id, line_style)
+
+def get_divider_line_style(hwnd, element_id):
+    line_style = ctypes.c_int()
+    ok = dll.EU_GetDividerLineStyle(hwnd, element_id, ctypes.byref(line_style))
+    return line_style.value if ok else None
+
+def set_divider_content(hwnd, element_id, icon="", text=""):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetDividerContent(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+    )
+
+def get_divider_content(hwnd, element_id, buffer_size=512):
+    icon = (ctypes.c_ubyte * buffer_size)()
+    text = (ctypes.c_ubyte * buffer_size)()
+    ok = dll.EU_GetDividerContent(hwnd, element_id, icon, buffer_size, text, buffer_size)
+    if not ok:
+        return None
+    def decode(buf):
+        raw = bytes(buf).split(b"\0", 1)[0]
+        return raw.decode("utf-8", errors="replace")
+    return decode(icon), decode(text)
 
 def create_checkbox(hwnd, parent_id, text="复选框", checked=False, x=0, y=0, w=220, h=30,
                     border=False, size=0):
@@ -3606,6 +4257,30 @@ def get_slider_range_mode(hwnd, element_id):
 def set_element_text(hwnd, element_id, text=""):
     data = make_utf8(text)
     dll.EU_SetElementText(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_element_text(hwnd, element_id):
+    needed = dll.EU_GetElementText(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    written = dll.EU_GetElementText(hwnd, element_id, buf, needed + 1)
+    if written < 0:
+        return ""
+    size = min(written, needed)
+    return bytes(buf[:size]).decode("utf-8", errors="replace")
+
+def get_element_bounds(hwnd, element_id):
+    x = ctypes.c_int()
+    y = ctypes.c_int()
+    w = ctypes.c_int()
+    h = ctypes.c_int()
+    ok = dll.EU_GetElementBounds(
+        hwnd, element_id,
+        ctypes.byref(x), ctypes.byref(y), ctypes.byref(w), ctypes.byref(h),
+    )
+    if not ok:
+        return None
+    return x.value, y.value, w.value, h.value
 
 def create_input_number(hwnd, parent_id, text="InputNumber", value=10,
                         min_value=0, max_value=100, step=1,
@@ -4047,6 +4722,18 @@ def set_select_search(hwnd, element_id, query=""):
 def set_select_option_disabled(hwnd, element_id, option_index=0, disabled=True):
     dll.EU_SetSelectOptionDisabled(hwnd, element_id, option_index, 1 if disabled else 0)
 
+def set_select_option_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectOptionAlignment(hwnd, element_id, alignment)
+
+def get_select_option_alignment(hwnd, element_id):
+    return dll.EU_GetSelectOptionAlignment(hwnd, element_id)
+
+def set_select_value_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectValueAlignment(hwnd, element_id, alignment)
+
+def get_select_value_alignment(hwnd, element_id):
+    return dll.EU_GetSelectValueAlignment(hwnd, element_id)
+
 def get_select_option_count(hwnd, element_id):
     return dll.EU_GetSelectOptionCount(hwnd, element_id)
 
@@ -4121,6 +4808,18 @@ def set_select_v2_search(hwnd, element_id, query=""):
 
 def set_select_v2_option_disabled(hwnd, element_id, option_index=0, disabled=True):
     dll.EU_SetSelectV2OptionDisabled(hwnd, element_id, option_index, 1 if disabled else 0)
+
+def set_select_v2_option_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectV2OptionAlignment(hwnd, element_id, alignment)
+
+def get_select_v2_option_alignment(hwnd, element_id):
+    return dll.EU_GetSelectV2OptionAlignment(hwnd, element_id)
+
+def set_select_v2_value_alignment(hwnd, element_id, alignment=0):
+    dll.EU_SetSelectV2ValueAlignment(hwnd, element_id, alignment)
+
+def get_select_v2_value_alignment(hwnd, element_id):
+    return dll.EU_GetSelectV2ValueAlignment(hwnd, element_id)
 
 def get_select_v2_option_count(hwnd, element_id):
     return dll.EU_GetSelectV2OptionCount(hwnd, element_id)
@@ -4298,14 +4997,24 @@ def get_rate_display_options(hwnd, element_id):
         return None
     return bool(show_text.value), bool(show_score.value), text_color.value, template.value.decode("utf-8")
 
-def create_colorpicker(hwnd, parent_id, text="Color", color=0xFF1E66F5,
+def create_colorpicker(hwnd, parent_id, text="颜色", color=0xFF1E66F5,
                        x=0, y=0, w=220, h=36, alpha=None, open_panel=None,
-                       palette=None):
+                       palette=None, show_alpha=False, size=0, clearable=True):
     data = make_utf8(text)
+    initial_color = 0xFF1E66F5 if color is None else color
     element_id = dll.EU_CreateColorPicker(
         hwnd, parent_id, bytes_arg(data), len(data),
-        color, x, y, w, h
+        initial_color, x, y, w, h
     )
+    if element_id:
+        dll.EU_SetColorPickerOptions(
+            hwnd, element_id,
+            1 if show_alpha else 0,
+            int(size),
+            1 if clearable else 0,
+        )
+    if element_id and color is None:
+        dll.EU_ClearColorPicker(hwnd, element_id)
     if element_id and palette:
         arr = (ctypes.c_uint32 * len(palette))(*palette)
         dll.EU_SetColorPickerPalette(hwnd, element_id, arr, len(palette))
@@ -4353,6 +5062,36 @@ def set_colorpicker_palette(hwnd, element_id, palette=None):
 
 def get_colorpicker_palette_count(hwnd, element_id):
     return dll.EU_GetColorPickerPaletteCount(hwnd, element_id)
+
+def set_colorpicker_options(hwnd, element_id, show_alpha=False, size=0, clearable=True):
+    dll.EU_SetColorPickerOptions(
+        hwnd, element_id,
+        1 if show_alpha else 0,
+        int(size),
+        1 if clearable else 0,
+    )
+
+def get_colorpicker_options(hwnd, element_id):
+    show_alpha = ctypes.c_int()
+    size = ctypes.c_int()
+    clearable = ctypes.c_int()
+    ok = dll.EU_GetColorPickerOptions(
+        hwnd, element_id,
+        ctypes.byref(show_alpha), ctypes.byref(size), ctypes.byref(clearable)
+    )
+    if not ok:
+        return None
+    return {
+        "show_alpha": bool(show_alpha.value),
+        "size": size.value,
+        "clearable": bool(clearable.value),
+    }
+
+def clear_colorpicker(hwnd, element_id):
+    dll.EU_ClearColorPicker(hwnd, element_id)
+
+def get_colorpicker_has_value(hwnd, element_id):
+    return bool(dll.EU_GetColorPickerHasValue(hwnd, element_id))
 
 def set_colorpicker_change_callback(hwnd, element_id, callback):
     dll.EU_SetColorPickerChangeCallback(hwnd, element_id, callback)
@@ -4418,7 +5157,7 @@ def set_tag_close_callback(hwnd, element_id, callback):
 
 def create_badge(hwnd, parent_id, text="Badge", value="12", max_value=99, dot=False,
                  x=0, y=0, w=180, h=34, show_zero=None, offset_x=0, offset_y=0,
-                 placement=None, standalone=None):
+                 placement=None, standalone=None, badge_type=None):
     text_data = make_utf8(text)
     value_data = make_utf8(value)
     element_id = dll.EU_CreateBadge(
@@ -4431,6 +5170,8 @@ def create_badge(hwnd, parent_id, text="Badge", value="12", max_value=99, dot=Fa
         dll.EU_SetBadgeOptions(hwnd, element_id, int(bool(dot)),
                                1 if show_zero is None else int(bool(show_zero)),
                                offset_x, offset_y)
+    if element_id and badge_type is not None:
+        dll.EU_SetBadgeType(hwnd, element_id, badge_type)
     if element_id and (placement is not None or standalone is not None):
         dll.EU_SetBadgeLayoutOptions(
             hwnd, element_id,
@@ -4445,6 +5186,9 @@ def set_badge_value(hwnd, element_id, value="12"):
 
 def set_badge_max(hwnd, element_id, max_value=99):
     dll.EU_SetBadgeMax(hwnd, element_id, max_value)
+
+def set_badge_type(hwnd, element_id, badge_type=0):
+    dll.EU_SetBadgeType(hwnd, element_id, badge_type)
 
 def set_badge_dot(hwnd, element_id, dot=True):
     dll.EU_SetBadgeDot(hwnd, element_id, 1 if dot else 0)
@@ -4472,6 +5216,9 @@ def get_badge_options(hwnd, element_id):
         return None
     return max_value.value, bool(dot.value), bool(show_zero.value), offset_x.value, offset_y.value
 
+def get_badge_type(hwnd, element_id):
+    return dll.EU_GetBadgeType(hwnd, element_id)
+
 def set_badge_layout_options(hwnd, element_id, placement=0, standalone=False):
     dll.EU_SetBadgeLayoutOptions(hwnd, element_id, placement, 1 if standalone else 0)
 
@@ -4483,10 +5230,21 @@ def get_badge_layout_options(hwnd, element_id):
         return None
     return placement.value, bool(standalone.value)
 
+def _progress_color_stops_text(color_stops):
+    if isinstance(color_stops, str):
+        return color_stops
+    rows = []
+    for color, percentage in (color_stops or []):
+        rows.append(f"0x{int(color) & 0xFFFFFFFF:08X}\t{int(percentage)}")
+    return "|".join(rows)
+
+
 def create_progress(hwnd, parent_id, text="Progress", percentage=70, status=0,
                     x=0, y=0, w=320, h=34,
                     progress_type=None, stroke_width=None, show_text=None,
-                    text_format=None, striped=None):
+                    text_format=None, striped=None,
+                    text_inside=None, fill_color=None, track_color=None, text_color=None,
+                    color_stops=None, complete_text=None, text_template=None):
     data = make_utf8(text)
     element_id = dll.EU_CreateProgress(
         hwnd, parent_id, bytes_arg(data), len(data),
@@ -4503,6 +5261,24 @@ def create_progress(hwnd, parent_id, text="Progress", percentage=70, status=0,
             0 if text_format is None else text_format,
             0 if striped is None else int(bool(striped))
         )
+    if element_id and text_inside is not None:
+        dll.EU_SetProgressTextInside(hwnd, element_id, 1 if text_inside else 0)
+    if element_id and (fill_color is not None or track_color is not None or text_color is not None):
+        dll.EU_SetProgressColors(
+            hwnd, element_id,
+            0 if fill_color is None else int(fill_color),
+            0 if track_color is None else int(track_color),
+            0 if text_color is None else int(text_color)
+        )
+    if element_id and color_stops is not None:
+        data = make_utf8(_progress_color_stops_text(color_stops))
+        dll.EU_SetProgressColorStops(hwnd, element_id, bytes_arg(data), len(data))
+    if element_id and complete_text is not None:
+        data = make_utf8(complete_text)
+        dll.EU_SetProgressCompleteText(hwnd, element_id, bytes_arg(data), len(data))
+    if element_id and text_template is not None:
+        data = make_utf8(text_template)
+        dll.EU_SetProgressTextTemplate(hwnd, element_id, bytes_arg(data), len(data))
     return element_id
 
 def set_progress_percentage(hwnd, element_id, percentage=0):
@@ -4548,8 +5324,60 @@ def get_progress_format_options(hwnd, element_id):
         return None
     return text_format.value, bool(striped.value)
 
+def set_progress_text_inside(hwnd, element_id, text_inside=True):
+    dll.EU_SetProgressTextInside(hwnd, element_id, 1 if text_inside else 0)
+
+def get_progress_text_inside(hwnd, element_id):
+    return bool(dll.EU_GetProgressTextInside(hwnd, element_id))
+
+def set_progress_colors(hwnd, element_id, fill=0, track=0, text=0):
+    dll.EU_SetProgressColors(hwnd, element_id, int(fill), int(track), int(text))
+
+def get_progress_colors(hwnd, element_id):
+    fill = ctypes.c_uint32()
+    track = ctypes.c_uint32()
+    text = ctypes.c_uint32()
+    ok = dll.EU_GetProgressColors(hwnd, element_id, ctypes.byref(fill), ctypes.byref(track), ctypes.byref(text))
+    return (fill.value, track.value, text.value) if ok else None
+
+def set_progress_color_stops(hwnd, element_id, color_stops):
+    data = make_utf8(_progress_color_stops_text(color_stops))
+    dll.EU_SetProgressColorStops(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_progress_color_stop_count(hwnd, element_id):
+    return dll.EU_GetProgressColorStopCount(hwnd, element_id)
+
+def get_progress_color_stop(hwnd, element_id, index):
+    color = ctypes.c_uint32()
+    percentage = ctypes.c_int()
+    ok = dll.EU_GetProgressColorStop(hwnd, element_id, index, ctypes.byref(color), ctypes.byref(percentage))
+    return (color.value, percentage.value) if ok else None
+
+def set_progress_complete_text(hwnd, element_id, text="满"):
+    data = make_utf8(text)
+    dll.EU_SetProgressCompleteText(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_progress_complete_text(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    needed = dll.EU_GetProgressCompleteText(hwnd, element_id, buf, buffer_size)
+    if needed <= 0:
+        return ""
+    return bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
+
+def set_progress_text_template(hwnd, element_id, text="{percent}"):
+    data = make_utf8(text)
+    dll.EU_SetProgressTextTemplate(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_progress_text_template(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    needed = dll.EU_GetProgressTextTemplate(hwnd, element_id, buf, buffer_size)
+    if needed <= 0:
+        return ""
+    return bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
+
 def create_avatar(hwnd, parent_id, text="A", shape=0,
-                  x=0, y=0, w=44, h=44, source="", fit=None):
+                  x=0, y=0, w=44, h=44, source="", fit=None,
+                  fallback_source="", icon="", error_text=""):
     data = make_utf8(text)
     element_id = dll.EU_CreateAvatar(
         hwnd, parent_id, bytes_arg(data), len(data),
@@ -4558,8 +5386,17 @@ def create_avatar(hwnd, parent_id, text="A", shape=0,
     if element_id and source:
         src_data = make_utf8(source)
         dll.EU_SetAvatarSource(hwnd, element_id, bytes_arg(src_data), len(src_data))
+    if element_id and fallback_source:
+        fallback_data = make_utf8(fallback_source)
+        dll.EU_SetAvatarFallbackSource(hwnd, element_id, bytes_arg(fallback_data), len(fallback_data))
+    if element_id and icon:
+        icon_data = make_utf8(icon)
+        dll.EU_SetAvatarIcon(hwnd, element_id, bytes_arg(icon_data), len(icon_data))
+    if element_id and error_text:
+        error_data = make_utf8(error_text)
+        dll.EU_SetAvatarErrorText(hwnd, element_id, bytes_arg(error_data), len(error_data))
     if element_id and fit is not None:
-        dll.EU_SetAvatarFit(hwnd, element_id, fit)
+        dll.EU_SetAvatarFit(hwnd, element_id, _image_fit_value(fit))
     return element_id
 
 def set_avatar_shape(hwnd, element_id, shape=0):
@@ -4569,8 +5406,20 @@ def set_avatar_source(hwnd, element_id, source=""):
     data = make_utf8(source)
     dll.EU_SetAvatarSource(hwnd, element_id, bytes_arg(data), len(data))
 
+def set_avatar_fallback_source(hwnd, element_id, source=""):
+    data = make_utf8(source)
+    dll.EU_SetAvatarFallbackSource(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_avatar_icon(hwnd, element_id, icon=""):
+    data = make_utf8(icon)
+    dll.EU_SetAvatarIcon(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_avatar_error_text(hwnd, element_id, text=""):
+    data = make_utf8(text)
+    dll.EU_SetAvatarErrorText(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_avatar_fit(hwnd, element_id, fit=0):
-    dll.EU_SetAvatarFit(hwnd, element_id, fit)
+    dll.EU_SetAvatarFit(hwnd, element_id, _image_fit_value(fit))
 
 def get_avatar_image_status(hwnd, element_id):
     return dll.EU_GetAvatarImageStatus(hwnd, element_id)
@@ -4584,7 +5433,8 @@ def get_avatar_options(hwnd, element_id):
     return shape.value, fit.value
 
 def create_empty(hwnd, parent_id, title="暂无数据 📭", description="",
-                 x=0, y=0, w=220, h=100, icon=None, action=None):
+                 x=0, y=0, w=220, h=100, icon=None, action=None,
+                 image="", image_size=0):
     title_data = make_utf8(title)
     desc_data = make_utf8(description)
     element_id = dll.EU_CreateEmpty(
@@ -4599,6 +5449,11 @@ def create_empty(hwnd, parent_id, title="暂无数据 📭", description="",
         dll.EU_SetEmptyOptions(hwnd, element_id,
                                bytes_arg(icon_data), len(icon_data),
                                bytes_arg(action_data), len(action_data))
+    if element_id and image:
+        image_data = make_utf8(image)
+        dll.EU_SetEmptyImage(hwnd, element_id, bytes_arg(image_data), len(image_data))
+    if element_id and image_size:
+        dll.EU_SetEmptyImageSize(hwnd, element_id, int(image_size))
     return element_id
 
 def set_empty_description(hwnd, element_id, description=""):
@@ -4613,6 +5468,19 @@ def set_empty_options(hwnd, element_id, icon="📭", action=""):
         bytes_arg(icon_data), len(icon_data),
         bytes_arg(action_data), len(action_data)
     )
+
+def set_empty_image(hwnd, element_id, image=""):
+    data = make_utf8(image)
+    dll.EU_SetEmptyImage(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_empty_image_size(hwnd, element_id, image_size=0):
+    dll.EU_SetEmptyImageSize(hwnd, element_id, int(image_size))
+
+def get_empty_image_status(hwnd, element_id):
+    return dll.EU_GetEmptyImageStatus(hwnd, element_id)
+
+def get_empty_image_size(hwnd, element_id):
+    return dll.EU_GetEmptyImageSize(hwnd, element_id)
 
 def set_empty_action_clicked(hwnd, element_id, clicked=False):
     dll.EU_SetEmptyActionClicked(hwnd, element_id, 1 if clicked else 0)
@@ -4666,6 +5534,25 @@ def get_skeleton_options(hwnd, element_id):
         return None
     return rows.value, bool(animated.value), bool(loading.value), bool(show_avatar.value)
 
+def _description_item_to_row(item):
+    if isinstance(item, dict):
+        fields = [
+            item.get("label", ""),
+            item.get("content", item.get("value", "")),
+            item.get("span", 1),
+            item.get("label_icon", item.get("icon", "")),
+            item.get("content_type", 0),
+            item.get("tag_type", 0),
+            item.get("content_align", item.get("align", 0)),
+            item.get("label_bg", 0),
+            item.get("content_bg", 0),
+            item.get("label_fg", 0),
+            item.get("content_fg", 0),
+        ]
+    else:
+        fields = [item[0], item[1], 1, "", 0, 0, 0, 0, 0, 0, 0]
+    return "\t".join(str(v) for v in fields)
+
 def create_descriptions(hwnd, parent_id, title="📋 描述列表", items=None,
                         columns=2, bordered=True, x=0, y=0, w=420, h=110,
                         label_width=None, min_row_height=None, wrap_values=None,
@@ -4673,7 +5560,13 @@ def create_descriptions(hwnd, parent_id, title="📋 描述列表", items=None,
     if items is None:
         items = [("名称", "Emoji UI"), ("状态", "✅ 就绪")]
     title_data = make_utf8(title)
-    items_data = make_utf8("|".join(f"{k}:{v}" for k, v in items))
+    legacy_rows = []
+    for item in items:
+        if isinstance(item, dict):
+            legacy_rows.append(f"{item.get('label', '')}:{item.get('content', item.get('value', ''))}")
+        else:
+            legacy_rows.append(f"{item[0]}:{item[1]}")
+    items_data = make_utf8("|".join(legacy_rows))
     element_id = dll.EU_CreateDescriptions(
         hwnd, parent_id,
         bytes_arg(title_data), len(title_data),
@@ -4693,6 +5586,8 @@ def create_descriptions(hwnd, parent_id, title="📋 描述列表", items=None,
             1 if responsive is None else int(bool(responsive)),
             0 if last_item_span is None else int(bool(last_item_span)),
         )
+    if element_id and any(isinstance(item, dict) for item in items):
+        set_descriptions_items_ex(hwnd, element_id, items)
     return element_id
 
 def set_descriptions_options(hwnd, element_id, columns=2, bordered=True,
@@ -4707,6 +5602,31 @@ def set_descriptions_advanced_options(hwnd, element_id, responsive=True, last_it
         hwnd, element_id, 1 if responsive else 0, 1 if last_item_span else 0
     )
 
+def set_descriptions_layout(hwnd, element_id, direction=0, size=0, columns=2, bordered=True):
+    dll.EU_SetDescriptionsLayout(
+        hwnd, element_id, direction, size, columns, 1 if bordered else 0
+    )
+
+def set_descriptions_items_ex(hwnd, element_id, items):
+    data = make_utf8("\n".join(_description_item_to_row(item) for item in items))
+    dll.EU_SetDescriptionsItemsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_descriptions_colors(hwnd, element_id, border=0, label_bg=0, content_bg=0,
+                            label_fg=0, content_fg=0, title_fg=0):
+    dll.EU_SetDescriptionsColors(
+        hwnd, element_id, border, label_bg, content_bg, label_fg, content_fg, title_fg
+    )
+
+def set_descriptions_extra(hwnd, element_id, emoji="⚙️", text="操作", visible=True, variant=1):
+    emoji_data = make_utf8(emoji)
+    text_data = make_utf8(text)
+    dll.EU_SetDescriptionsExtra(
+        hwnd, element_id,
+        bytes_arg(emoji_data), len(emoji_data),
+        bytes_arg(text_data), len(text_data),
+        1 if visible else 0, variant
+    )
+
 def get_descriptions_options(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(7)]
     ok = dll.EU_GetDescriptionsOptions(hwnd, element_id, *[ctypes.byref(v) for v in values])
@@ -4716,6 +5636,22 @@ def get_descriptions_options(hwnd, element_id):
         values[0].value, bool(values[1].value), values[2].value, values[3].value,
         bool(values[4].value), bool(values[5].value), bool(values[6].value)
     )
+
+def get_descriptions_full_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(8)]
+    ok = dll.EU_GetDescriptionsFullState(hwnd, element_id, *[ctypes.byref(v) for v in values])
+    if not ok:
+        return None
+    return {
+        "direction": values[0].value,
+        "size": values[1].value,
+        "columns": values[2].value,
+        "bordered": bool(values[3].value),
+        "item_count": values[4].value,
+        "extra_click_count": values[5].value,
+        "responsive": bool(values[6].value),
+        "wrap_values": bool(values[7].value),
+    }
 
 def create_table(hwnd, parent_id, columns=None, rows=None,
                  striped=True, bordered=True, x=0, y=0, w=420, h=120,
@@ -5111,29 +6047,97 @@ def create_card(hwnd, parent_id, title="🧩 卡片", body="", shadow=1,
         shadow, x, y, w, h
     )
 
+def create_image_card(hwnd, parent_id, image_src="", title="🍔 图片卡片",
+                      subtitle="", button_text="操作按钮", shadow=1,
+                      x=0, y=0, w=280, h=240):
+    card_id = create_card(hwnd, parent_id, "", "", shadow, x, y, w, h)
+    set_card_body_style(hwnd, card_id, 0, 0, 0, 0, 14.0, 0, 0, False)
+    image_h = max(80, min(h - 76, int(w * 0.56)))
+    create_image(hwnd, card_id, image_src, title, "cover", 0, 0, w, image_h)
+    create_text(hwnd, card_id, title, 14, image_h + 12, w - 28, 26)
+    if subtitle:
+        create_text(hwnd, card_id, subtitle, 14, image_h + 44, max(40, w - 122), 24)
+    if button_text:
+        create_button(hwnd, card_id, "", button_text, max(14, w - 98), image_h + 40, 84, 28, variant=5)
+    return card_id
+
+def _collapse_bool(value):
+    if isinstance(value, str):
+        return value.strip().lower() not in ("", "0", "false", "no", "否")
+    return bool(value)
+
+def _collapse_item_row(item):
+    if isinstance(item, dict):
+        fields = [
+            item.get("title", item.get("label", "")),
+            item.get("body", item.get("content", "")),
+            item.get("icon", ""),
+            item.get("suffix", item.get("right", item.get("extra", ""))),
+            1 if _collapse_bool(item.get("disabled", False)) else 0,
+        ]
+        return "\t".join(str(v) for v in fields)
+    if isinstance(item, (list, tuple)):
+        fields = list(item[:5])
+        while len(fields) < 5:
+            fields.append("")
+        fields[4] = 1 if _collapse_bool(fields[4]) else 0
+        return "\t".join(str(v) for v in fields)
+    return str(item)
+
+def _collapse_indices_text(indices):
+    if indices is None:
+        return ""
+    if isinstance(indices, int):
+        return str(indices)
+    return ",".join(str(int(i)) for i in indices)
+
 def create_collapse(hwnd, parent_id, items=None, active=0, accordion=True,
                     x=0, y=0, w=360, h=180):
     if items is None:
         items = [("🎯 一致性", "保持界面风格一致。"),
                  ("💡 反馈", "提供清晰的状态变化。")]
-    items_data = make_utf8("|".join(f"{title}:{body}" for title, body in items))
-    return dll.EU_CreateCollapse(
+    items_data = make_utf8("|".join(_collapse_item_row(item) for item in items))
+    active_index = active[0] if isinstance(active, (list, tuple, set)) and active else active
+    element_id = dll.EU_CreateCollapse(
         hwnd, parent_id,
         bytes_arg(items_data), len(items_data),
-        active, 1 if accordion else 0, x, y, w, h
+        int(active_index) if active_index is not None else -1, 1 if accordion else 0, x, y, w, h
     )
+    if element_id and isinstance(active, (list, tuple, set)):
+        set_collapse_active_items(hwnd, element_id, active)
+    return element_id
+
+def _timeline_placement_value(value):
+    if isinstance(value, str):
+        return 1 if value.lower() in ("bottom", "下方", "底部") else 0
+    return int(value or 0)
+
+def _timeline_item_row(item):
+    if isinstance(item, dict):
+        timestamp = item.get("timestamp", item.get("time", ""))
+        content = item.get("content", "")
+        item_type = item.get("type", item.get("item_type", 0))
+        icon = item.get("icon", "")
+        color = item.get("color", "")
+        size = item.get("size", 0)
+        placement = item.get("placement", "")
+        card_title = item.get("card_title", item.get("title", ""))
+        card_body = item.get("card_body", item.get("body", ""))
+        fields = [timestamp, content, item_type, icon, color, size, placement, card_title, card_body]
+    elif isinstance(item, (list, tuple)):
+        fields = list(item[:9])
+        while len(fields) < 3:
+            fields.append("")
+        while len(fields) < 9:
+            fields.append("")
+    else:
+        fields = ["", str(item), 0, "", "", 0, "", "", ""]
+    return "\t".join(str(field) for field in fields)
 
 def create_timeline(hwnd, parent_id, items=None, x=0, y=0, w=360, h=220):
     if items is None:
         items = [("09:00", "🚀 启动", 0, "🚀"), ("10:30", "✅ 复核", 1, "✅")]
-    item_rows = []
-    for item in items:
-        if len(item) >= 4:
-            item_rows.append(f"{item[0]}\t{item[1]}\t{item[2]}\t{item[3]}")
-        elif len(item) >= 3:
-            item_rows.append(f"{item[0]}\t{item[1]}\t{item[2]}")
-        else:
-            item_rows.append(f"{item[0]}\t{item[1]}\t0")
+    item_rows = [_timeline_item_row(item) for item in items]
     items_data = make_utf8("|".join(item_rows))
     return dll.EU_CreateTimeline(
         hwnd, parent_id, bytes_arg(items_data), len(items_data),
@@ -5555,6 +6559,40 @@ def create_tree_select(hwnd, parent_id, items=None, selected=0,
         selected, x, y, w, h
     )
 
+def _transfer_item_rows(items, props=None):
+    props = props or {}
+    rows = []
+    if items is None:
+        items = []
+
+    def value_from(item, name, default=""):
+        source = props.get(name, name)
+        if isinstance(item, dict):
+            return item.get(source, item.get(name, default))
+        if isinstance(item, (list, tuple)):
+            index = {"key": 0, "label": 1, "value": 2, "desc": 3, "pinyin": 4, "disabled": 5}.get(name, 0)
+            return item[index] if len(item) > index else default
+        if name in ("key", "label", "value"):
+            return item
+        return default
+
+    for i, item in enumerate(items):
+        key = str(value_from(item, "key", i))
+        label = str(value_from(item, "label", key))
+        value = str(value_from(item, "value", key))
+        desc = str(value_from(item, "desc", ""))
+        pinyin = str(value_from(item, "pinyin", ""))
+        disabled = value_from(item, "disabled", False)
+        rows.append(
+            f"{key}\t{label}\t{value}\t{desc}\t{pinyin}\t{1 if disabled else 0}"
+        )
+    return rows
+
+def _transfer_key_text(keys):
+    if keys is None:
+        keys = []
+    return "|".join(str(key) for key in keys)
+
 def create_transfer(hwnd, parent_id, left_items=None, right_items=None,
                     x=0, y=0, w=560, h=170):
     if left_items is None:
@@ -5569,6 +6607,28 @@ def create_transfer(hwnd, parent_id, left_items=None, right_items=None,
         bytes_arg(right_data), len(right_data),
         x, y, w, h
     )
+
+def create_transfer_ex(hwnd, parent_id, items=None, target_keys=None, props=None,
+                       filterable=False, multiple=True, show_footer=False,
+                       show_select_all=True, show_count=True, render_mode=0,
+                       titles=("源列表", "目标列表"),
+                         button_texts=("到左边", "到右边"),
+                         fmt=("${total}", "${checked}/${total}"),
+                         item_template="{label}",
+                         footer_texts=("左侧操作", "右侧操作"),
+                         filter_placeholder="请输入关键词 🔎",
+                         x=0, y=0, w=720, h=260):
+    element_id = create_transfer(hwnd, parent_id, [], [], x, y, w, h)
+    set_transfer_data_ex(hwnd, element_id, items or [], target_keys or [], props=props)
+    set_transfer_options(hwnd, element_id, filterable, multiple, show_footer,
+                         show_select_all, show_count, render_mode)
+    set_transfer_titles(hwnd, element_id, titles[0], titles[1])
+    set_transfer_button_texts(hwnd, element_id, button_texts[0], button_texts[1])
+    set_transfer_format(hwnd, element_id, fmt[0], fmt[1])
+    set_transfer_item_template(hwnd, element_id, item_template)
+    set_transfer_footer_texts(hwnd, element_id, footer_texts[0], footer_texts[1])
+    set_transfer_filter_placeholder(hwnd, element_id, filter_placeholder)
+    return element_id
 
 def set_tree_items(hwnd, element_id, items=None):
     if items is None:
@@ -5740,6 +6800,207 @@ def toggle_tree_select_item_expanded(hwnd, element_id, item_index=0):
 def get_tree_select_item_expanded(hwnd, element_id, item_index=0):
     return dll.EU_GetTreeSelectItemExpanded(hwnd, element_id, item_index)
 
+def _tree_data_payload(data=None, options=None):
+    if data is None:
+        payload = {"data": []}
+    elif isinstance(data, dict):
+        payload = dict(data)
+    elif isinstance(data, (list, tuple)):
+        payload = {"data": list(data)}
+    else:
+        return data
+    if options:
+        payload.update(options)
+    return payload
+
+def _tree_node_payload(node):
+    if isinstance(node, dict) and not any(k in node for k in ("data", "nodes")):
+        return {"data": [node]}
+    if isinstance(node, (list, tuple)):
+        return {"data": list(node)}
+    return node
+
+def _tree_keys_payload(keys):
+    if keys is None:
+        return []
+    if isinstance(keys, str):
+        text = keys.strip()
+        if text.startswith("[") or text.startswith("{"):
+            return keys
+        return [keys]
+    if isinstance(keys, (list, tuple, set)):
+        return list(keys)
+    return [keys]
+
+def create_tree_json(hwnd, parent_id, data=None, options=None, checked_keys=None,
+                     expanded_keys=None, x=0, y=0, w=320, h=260):
+    element_id = create_tree(hwnd, parent_id, [], 0, x, y, w, h)
+    set_tree_data_json(hwnd, element_id, _tree_data_payload(data, options))
+    if options:
+        set_tree_options_json(hwnd, element_id, options)
+    if checked_keys is not None:
+        set_tree_checked_keys_json(hwnd, element_id, checked_keys)
+    if expanded_keys is not None:
+        set_tree_expanded_keys_json(hwnd, element_id, expanded_keys)
+    return element_id
+
+def set_tree_data_json(hwnd, element_id, data):
+    raw = json_bytes(_tree_data_payload(data))
+    dll.EU_SetTreeDataJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_data_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeDataJson, hwnd, element_id)
+
+def set_tree_options_json(hwnd, element_id, options):
+    raw = json_bytes(options or {})
+    dll.EU_SetTreeOptionsJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_state_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeStateJson, hwnd, element_id)
+
+def set_tree_checked_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeCheckedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_checked_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeCheckedKeysJson, hwnd, element_id)
+
+def set_tree_expanded_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeExpandedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_expanded_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeExpandedKeysJson, hwnd, element_id)
+
+def append_tree_node_json(hwnd, element_id, parent_key, node):
+    key = make_utf8("" if parent_key is None else str(parent_key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_AppendTreeNodeJson(hwnd, element_id, bytes_arg(key), len(key), bytes_arg(raw), len(raw))
+
+def update_tree_node_json(hwnd, element_id, key, node):
+    key_data = make_utf8(str(key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_UpdateTreeNodeJson(hwnd, element_id, bytes_arg(key_data), len(key_data), bytes_arg(raw), len(raw))
+
+def remove_tree_node_by_key(hwnd, element_id, key):
+    key_data = make_utf8(str(key))
+    dll.EU_RemoveTreeNodeByKey(hwnd, element_id, bytes_arg(key_data), len(key_data))
+
+def _set_tree_callback(fn, factory, hwnd, element_id, name, callback):
+    key = _callback_key(hwnd, element_id, name)
+    if callback is None:
+        _tree_callback_refs.pop(key, None)
+        fn(hwnd, element_id, factory(0))
+        return None
+    wrapped = _wrap_callback(factory, callback)
+    _tree_callback_refs[key] = wrapped
+    fn(hwnd, element_id, wrapped)
+    return wrapped
+
+def set_tree_node_event_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeNodeEventCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "tree_event", callback)
+
+def set_tree_lazy_load_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeLazyLoadCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "tree_lazy", callback)
+
+def set_tree_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeDragCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "tree_drag", callback)
+
+def set_tree_allow_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeAllowDragCallback, TreeNodeAllowDragCallback,
+                              hwnd, element_id, "tree_allow_drag", callback)
+
+def set_tree_allow_drop_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeAllowDropCallback, TreeNodeAllowDropCallback,
+                              hwnd, element_id, "tree_allow_drop", callback)
+
+def create_tree_select_json(hwnd, parent_id, data=None, options=None, selected_keys=None,
+                            expanded_keys=None, x=0, y=0, w=320, h=38):
+    element_id = create_tree_select(hwnd, parent_id, [], 0, x, y, w, h)
+    set_tree_select_data_json(hwnd, element_id, _tree_data_payload(data, options))
+    if options:
+        set_tree_select_options_json(hwnd, element_id, options)
+    if selected_keys is not None:
+        set_tree_select_selected_keys_json(hwnd, element_id, selected_keys)
+    if expanded_keys is not None:
+        set_tree_select_expanded_keys_json(hwnd, element_id, expanded_keys)
+    return element_id
+
+def set_tree_select_data_json(hwnd, element_id, data):
+    raw = json_bytes(_tree_data_payload(data))
+    dll.EU_SetTreeSelectDataJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_data_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectDataJson, hwnd, element_id)
+
+def set_tree_select_options_json(hwnd, element_id, options):
+    raw = json_bytes(options or {})
+    dll.EU_SetTreeSelectOptionsJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_state_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectStateJson, hwnd, element_id)
+
+def set_tree_select_state_json(hwnd, element_id, state):
+    if isinstance(state, dict):
+        if "selectedKeys" in state:
+            set_tree_select_selected_keys_json(hwnd, element_id, state["selectedKeys"])
+        if "expandedKeys" in state:
+            set_tree_select_expanded_keys_json(hwnd, element_id, state["expandedKeys"])
+        if "searchText" in state:
+            set_tree_select_search(hwnd, element_id, state["searchText"])
+    set_tree_select_options_json(hwnd, element_id, state)
+
+def set_tree_select_selected_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeSelectSelectedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_selected_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectSelectedKeysJson, hwnd, element_id)
+
+def set_tree_select_expanded_keys_json(hwnd, element_id, keys):
+    raw = json_bytes(_tree_keys_payload(keys))
+    dll.EU_SetTreeSelectExpandedKeysJson(hwnd, element_id, bytes_arg(raw), len(raw))
+
+def get_tree_select_expanded_keys_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetTreeSelectExpandedKeysJson, hwnd, element_id)
+
+def append_tree_select_node_json(hwnd, element_id, parent_key, node):
+    key = make_utf8("" if parent_key is None else str(parent_key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_AppendTreeSelectNodeJson(hwnd, element_id, bytes_arg(key), len(key), bytes_arg(raw), len(raw))
+
+def update_tree_select_node_json(hwnd, element_id, key, node):
+    key_data = make_utf8(str(key))
+    raw = json_bytes(_tree_node_payload(node))
+    dll.EU_UpdateTreeSelectNodeJson(hwnd, element_id, bytes_arg(key_data), len(key_data), bytes_arg(raw), len(raw))
+
+def remove_tree_select_node_by_key(hwnd, element_id, key):
+    key_data = make_utf8(str(key))
+    dll.EU_RemoveTreeSelectNodeByKey(hwnd, element_id, bytes_arg(key_data), len(key_data))
+
+def set_tree_select_node_event_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectNodeEventCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "treeselect_event", callback)
+
+def set_tree_select_lazy_load_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectLazyLoadCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "treeselect_lazy", callback)
+
+def set_tree_select_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectDragCallback, TreeNodeEventCallback,
+                              hwnd, element_id, "treeselect_drag", callback)
+
+def set_tree_select_allow_drag_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectAllowDragCallback, TreeNodeAllowDragCallback,
+                              hwnd, element_id, "treeselect_allow_drag", callback)
+
+def set_tree_select_allow_drop_callback(hwnd, element_id, callback):
+    return _set_tree_callback(dll.EU_SetTreeSelectAllowDropCallback, TreeNodeAllowDropCallback,
+                              hwnd, element_id, "treeselect_allow_drop", callback)
+
 def set_transfer_items(hwnd, element_id, left_items=None, right_items=None):
     if left_items is None:
         left_items = ["列表一", "列表二", "列表三"]
@@ -5794,6 +7055,113 @@ def get_transfer_item_disabled(hwnd, element_id, side=0, item_index=0):
 
 def get_transfer_disabled_count(hwnd, element_id, side=0):
     return dll.EU_GetTransferDisabledCount(hwnd, element_id, side)
+
+def set_transfer_data_ex(hwnd, element_id, items=None, target_keys=None, props=None):
+    item_data = make_utf8("|".join(_transfer_item_rows(items or [], props=props)))
+    target_data = make_utf8(_transfer_key_text(target_keys or []))
+    dll.EU_SetTransferDataEx(
+        hwnd, element_id,
+        bytes_arg(item_data), len(item_data),
+        bytes_arg(target_data), len(target_data),
+    )
+
+def set_transfer_options(hwnd, element_id, filterable=False, multiple=True,
+                         show_footer=False, show_select_all=True,
+                         show_count=True, render_mode=0):
+    dll.EU_SetTransferOptions(
+        hwnd, element_id,
+        1 if filterable else 0,
+        1 if multiple else 0,
+        1 if show_footer else 0,
+        1 if show_select_all else 0,
+        1 if show_count else 0,
+        int(render_mode),
+    )
+
+def get_transfer_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetTransferOptions(hwnd, element_id, *(ctypes.byref(v) for v in values))
+    if not ok:
+        return None
+    return {
+        "filterable": bool(values[0].value),
+        "multiple": bool(values[1].value),
+        "show_footer": bool(values[2].value),
+        "show_select_all": bool(values[3].value),
+        "show_count": bool(values[4].value),
+        "render_mode": values[5].value,
+    }
+
+def set_transfer_titles(hwnd, element_id, left_title="源列表", right_title="目标列表"):
+    left_data = make_utf8(left_title)
+    right_data = make_utf8(right_title)
+    dll.EU_SetTransferTitles(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def set_transfer_button_texts(hwnd, element_id, left_text="到左边", right_text="到右边"):
+    left_data = make_utf8(left_text)
+    right_data = make_utf8(right_text)
+    dll.EU_SetTransferButtonTexts(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def set_transfer_format(hwnd, element_id, no_checked="${total}", has_checked="${checked}/${total}"):
+    no_data = make_utf8(no_checked)
+    has_data = make_utf8(has_checked)
+    dll.EU_SetTransferFormat(
+        hwnd, element_id,
+        bytes_arg(no_data), len(no_data),
+        bytes_arg(has_data), len(has_data),
+    )
+
+def set_transfer_item_template(hwnd, element_id, template="{label}"):
+    data = make_utf8(template)
+    dll.EU_SetTransferItemTemplate(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_transfer_footer_texts(hwnd, element_id, left_text="左侧操作", right_text="右侧操作"):
+    left_data = make_utf8(left_text)
+    right_data = make_utf8(right_text)
+    dll.EU_SetTransferFooterTexts(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def set_transfer_filter_placeholder(hwnd, element_id, text="请输入关键词 🔎"):
+    data = make_utf8(text)
+    dll.EU_SetTransferFilterPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_transfer_checked_keys(hwnd, element_id, left_keys=None, right_keys=None):
+    left_data = make_utf8(_transfer_key_text(left_keys or []))
+    right_data = make_utf8(_transfer_key_text(right_keys or []))
+    dll.EU_SetTransferCheckedKeys(
+        hwnd, element_id,
+        bytes_arg(left_data), len(left_data),
+        bytes_arg(right_data), len(right_data),
+    )
+
+def get_transfer_checked_count(hwnd, element_id, side=0):
+    return dll.EU_GetTransferCheckedCount(hwnd, element_id, side)
+
+def _read_utf8(fn, *args, buffer_size=2048):
+    needed = fn(*args, None, 0)
+    size = max(buffer_size, needed + 1)
+    buf = (ctypes.c_ubyte * size)()
+    written = fn(*args, buf, size)
+    if written <= 0:
+        return ""
+    return bytes(buf[:min(written, size - 1)]).decode("utf-8", errors="replace")
+
+def get_transfer_value_keys(hwnd, element_id, buffer_size=2048):
+    return _read_utf8(dll.EU_GetTransferValueKeys, hwnd, element_id, buffer_size=buffer_size)
+
+def get_transfer_text(hwnd, element_id, text_type=0, buffer_size=2048):
+    return _read_utf8(dll.EU_GetTransferText, hwnd, element_id, text_type, buffer_size=buffer_size)
 
 def create_autocomplete(hwnd, parent_id, value="", suggestions=None,
                         x=0, y=0, w=260, h=36):
@@ -6175,6 +7543,121 @@ def get_calendar_selection_range(hwnd, element_id):
         ctypes.byref(start_value), ctypes.byref(end_value), ctypes.byref(enabled)
     )
     return (start_value.value, end_value.value, bool(enabled.value)) if ok else None
+
+def set_calendar_display_range(hwnd, element_id, start_value=0, end_value=0):
+    dll.EU_SetCalendarDisplayRange(hwnd, element_id, start_value, end_value)
+
+def get_calendar_display_range(hwnd, element_id):
+    start_value = ctypes.c_int()
+    end_value = ctypes.c_int()
+    ok = dll.EU_GetCalendarDisplayRange(
+        hwnd, element_id,
+        ctypes.byref(start_value), ctypes.byref(end_value)
+    )
+    return (start_value.value, end_value.value) if ok else None
+
+def _calendar_cell_value(value):
+    text = "" if value is None else str(value)
+    return text.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n")
+
+def _calendar_cell_line(item):
+    if isinstance(item, str):
+        return item
+    pairs = []
+    for key in (
+        "date", "label", "extra", "emoji", "badge", "bg", "fg", "border",
+        "badge_bg", "badge_fg", "font_flags", "disabled"
+    ):
+        if key in item and item[key] is not None:
+            pairs.append(f"{key}={_calendar_cell_value(item[key])}")
+    return "\t".join(pairs)
+
+def calendar_cell_items_spec(items):
+    if isinstance(items, str):
+        return items
+    return "\n".join(_calendar_cell_line(item) for item in (items or []))
+
+def set_calendar_cell_items(hwnd, element_id, items):
+    spec = calendar_cell_items_spec(items)
+    data = make_utf8(spec)
+    dll.EU_SetCalendarCellItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_calendar_cell_items(hwnd, element_id):
+    needed = dll.EU_GetCalendarCellItems(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    copied = dll.EU_GetCalendarCellItems(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:min(copied, needed)]).decode("utf-8", errors="replace")
+
+def clear_calendar_cell_items(hwnd, element_id):
+    dll.EU_ClearCalendarCellItems(hwnd, element_id)
+
+def set_calendar_visual_options(hwnd, element_id, show_header=True, show_week_header=True,
+                                label_mode=0, show_adjacent_days=True, cell_radius=8.0):
+    dll.EU_SetCalendarVisualOptions(
+        hwnd, element_id,
+        1 if show_header else 0,
+        1 if show_week_header else 0,
+        label_mode,
+        1 if show_adjacent_days else 0,
+        float(cell_radius),
+    )
+
+def get_calendar_visual_options(hwnd, element_id):
+    show_header = ctypes.c_int()
+    show_week_header = ctypes.c_int()
+    label_mode = ctypes.c_int()
+    show_adjacent_days = ctypes.c_int()
+    cell_radius = ctypes.c_float()
+    ok = dll.EU_GetCalendarVisualOptions(
+        hwnd, element_id,
+        ctypes.byref(show_header), ctypes.byref(show_week_header),
+        ctypes.byref(label_mode), ctypes.byref(show_adjacent_days),
+        ctypes.byref(cell_radius),
+    )
+    if not ok:
+        return None
+    return (
+        bool(show_header.value),
+        bool(show_week_header.value),
+        label_mode.value,
+        bool(show_adjacent_days.value),
+        cell_radius.value,
+    )
+
+def set_calendar_state_colors(hwnd, element_id, selected_bg=0, selected_fg=0, range_bg=0,
+                              today_border=0, hover_bg=0, disabled_fg=0, adjacent_fg=0):
+    dll.EU_SetCalendarStateColors(
+        hwnd, element_id,
+        selected_bg, selected_fg, range_bg, today_border,
+        hover_bg, disabled_fg, adjacent_fg,
+    )
+
+def get_calendar_state_colors(hwnd, element_id):
+    values = [ctypes.c_uint32() for _ in range(7)]
+    ok = dll.EU_GetCalendarStateColors(
+        hwnd, element_id,
+        *(ctypes.byref(value) for value in values)
+    )
+    return tuple(value.value for value in values) if ok else None
+
+def set_calendar_selected_marker(hwnd, element_id, marker=""):
+    data = make_utf8(marker or "")
+    dll.EU_SetCalendarSelectedMarker(hwnd, element_id, bytes_arg(data), len(data))
+
+_calendar_change_callback_refs = {}
+
+def set_calendar_change_callback(hwnd, element_id, callback):
+    key = _callback_key(hwnd, element_id, "calendar_change")
+    if callback is None:
+        _calendar_change_callback_refs.pop(key, None)
+        dll.EU_SetCalendarChangeCallback(hwnd, element_id, ValueCallback(0))
+        return None
+    wrapped = _wrap_callback(ValueCallback, callback)
+    _calendar_change_callback_refs[key] = wrapped
+    dll.EU_SetCalendarChangeCallback(hwnd, element_id, wrapped)
+    return wrapped
 
 def set_datepicker_date(hwnd, element_id, year=2026, month=5, selected_day=2):
     dll.EU_SetDatePickerDate(hwnd, element_id, year, month, selected_day)
@@ -6611,6 +8094,89 @@ def get_menu_active_path(hwnd, element_id):
     dll.EU_GetMenuActivePath(hwnd, element_id, buf, needed + 1)
     return bytes(buf[:needed]).decode("utf-8", errors="replace")
 
+def set_menu_colors(hwnd, element_id, bg=0, text_color=0, active_text_color=0,
+                    hover_bg=0, disabled_text_color=0, border=0):
+    dll.EU_SetMenuColors(
+        hwnd, element_id,
+        bg, text_color, active_text_color, hover_bg, disabled_text_color, border
+    )
+
+def get_menu_colors(hwnd, element_id):
+    bg = ctypes.c_uint32()
+    text_color = ctypes.c_uint32()
+    active_text_color = ctypes.c_uint32()
+    hover_bg = ctypes.c_uint32()
+    disabled_text_color = ctypes.c_uint32()
+    border = ctypes.c_uint32()
+    ok = dll.EU_GetMenuColors(
+        hwnd, element_id,
+        ctypes.byref(bg), ctypes.byref(text_color), ctypes.byref(active_text_color),
+        ctypes.byref(hover_bg), ctypes.byref(disabled_text_color), ctypes.byref(border)
+    )
+    return (bg.value, text_color.value, active_text_color.value,
+            hover_bg.value, disabled_text_color.value, border.value) if ok else None
+
+def set_menu_collapsed(hwnd, element_id, collapsed=True):
+    dll.EU_SetMenuCollapsed(hwnd, element_id, 1 if collapsed else 0)
+
+def get_menu_collapsed(hwnd, element_id):
+    return bool(dll.EU_GetMenuCollapsed(hwnd, element_id))
+
+def set_menu_item_meta(hwnd, element_id, icons=None, group_indices=None,
+                       hrefs=None, targets=None, commands=None):
+    icons = icons or []
+    group_indices = group_indices or []
+    hrefs = hrefs or []
+    targets = targets or []
+    commands = commands or []
+    icons_data = make_utf8("|".join(icons))
+    hrefs_data = make_utf8("|".join(hrefs))
+    targets_data = make_utf8("|".join(targets))
+    commands_data = make_utf8("|".join(commands))
+    arr_type = ctypes.c_int * len(group_indices)
+    arr = arr_type(*group_indices) if group_indices else None
+    dll.EU_SetMenuItemMeta(
+        hwnd, element_id,
+        bytes_arg(icons_data), len(icons_data),
+        arr, len(group_indices),
+        bytes_arg(hrefs_data), len(hrefs_data),
+        bytes_arg(targets_data), len(targets_data),
+        bytes_arg(commands_data), len(commands_data),
+    )
+
+def get_menu_item_meta(hwnd, element_id, item_index):
+    icon_buf = (ctypes.c_ubyte * 256)()
+    href_buf = (ctypes.c_ubyte * 512)()
+    target_buf = (ctypes.c_ubyte * 128)()
+    command_buf = (ctypes.c_ubyte * 256)()
+    is_group = ctypes.c_int()
+    disabled = ctypes.c_int()
+    level = ctypes.c_int()
+    ok = dll.EU_GetMenuItemMeta(
+        hwnd, element_id, item_index,
+        icon_buf, len(icon_buf),
+        href_buf, len(href_buf),
+        target_buf, len(target_buf),
+        command_buf, len(command_buf),
+        ctypes.byref(is_group), ctypes.byref(disabled), ctypes.byref(level),
+    )
+    if not ok:
+        return None
+    def read_buf(buf):
+        return bytes(buf).split(b"\0", 1)[0].decode("utf-8", errors="replace")
+    return {
+        "icon": read_buf(icon_buf),
+        "href": read_buf(href_buf),
+        "target": read_buf(target_buf),
+        "command": read_buf(command_buf),
+        "group": bool(is_group.value),
+        "disabled": bool(disabled.value),
+        "level": level.value,
+    }
+
+def set_menu_select_callback(hwnd, element_id, callback):
+    dll.EU_SetMenuSelectCallback(hwnd, element_id, callback)
+
 def create_anchor(hwnd, parent_id, items=None, active=0,
                   x=0, y=0, w=220, h=180):
     if items is None:
@@ -7038,9 +8604,26 @@ def set_table_options(hwnd, element_id, striped=True, bordered=True,
         row_height, header_height, 1 if selectable else 0
     )
 
+def set_card_title(hwnd, element_id, title=""):
+    data = make_utf8(title)
+    dll.EU_SetCardTitle(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_card_body(hwnd, element_id, body=""):
+    data = make_utf8(body)
+    dll.EU_SetCardBody(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_card_footer(hwnd, element_id, footer=""):
     data = make_utf8(footer)
     dll.EU_SetCardFooter(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_card_items(hwnd, element_id, items=None):
+    if items is None:
+        items = []
+    data = make_utf8("|".join(str(item) for item in items))
+    dll.EU_SetCardItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_card_item_count(hwnd, element_id):
+    return dll.EU_GetCardItemCount(hwnd, element_id)
 
 def set_card_actions(hwnd, element_id, actions=None):
     if actions is None:
@@ -7057,6 +8640,66 @@ def reset_card_action(hwnd, element_id):
 def set_card_options(hwnd, element_id, shadow=1, hoverable=True):
     dll.EU_SetCardOptions(hwnd, element_id, shadow, 1 if hoverable else 0)
 
+def set_card_style(hwnd, element_id, bg=0, border=0, border_width=1.0,
+                   radius=4.0, padding=18):
+    dll.EU_SetCardStyle(
+        hwnd, element_id, bg, border,
+        ctypes.c_float(border_width), ctypes.c_float(radius), padding
+    )
+
+def get_card_style(hwnd, element_id):
+    bg = ctypes.c_uint32()
+    border = ctypes.c_uint32()
+    border_width = ctypes.c_float()
+    radius = ctypes.c_float()
+    padding = ctypes.c_int()
+    ok = dll.EU_GetCardStyle(
+        hwnd, element_id,
+        ctypes.byref(bg), ctypes.byref(border),
+        ctypes.byref(border_width), ctypes.byref(radius),
+        ctypes.byref(padding)
+    )
+    return (bg.value, border.value, border_width.value, radius.value, padding.value) if ok else None
+
+def set_card_body_style(hwnd, element_id, pad_left=18, pad_top=14, pad_right=18,
+                        pad_bottom=14, font_size=14.0, item_gap=0,
+                        item_padding_y=0, divider=False):
+    dll.EU_SetCardBodyStyle(
+        hwnd, element_id,
+        pad_left, pad_top, pad_right, pad_bottom,
+        ctypes.c_float(font_size), item_gap, item_padding_y,
+        1 if divider else 0
+    )
+
+def get_card_body_style(hwnd, element_id):
+    pad_left = ctypes.c_int()
+    pad_top = ctypes.c_int()
+    pad_right = ctypes.c_int()
+    pad_bottom = ctypes.c_int()
+    font_size = ctypes.c_float()
+    item_gap = ctypes.c_int()
+    item_padding_y = ctypes.c_int()
+    divider = ctypes.c_int()
+    ok = dll.EU_GetCardBodyStyle(
+        hwnd, element_id,
+        ctypes.byref(pad_left), ctypes.byref(pad_top),
+        ctypes.byref(pad_right), ctypes.byref(pad_bottom),
+        ctypes.byref(font_size), ctypes.byref(item_gap),
+        ctypes.byref(item_padding_y), ctypes.byref(divider)
+    )
+    if not ok:
+        return None
+    return {
+        "pad_left": pad_left.value,
+        "pad_top": pad_top.value,
+        "pad_right": pad_right.value,
+        "pad_bottom": pad_bottom.value,
+        "font_size": font_size.value,
+        "item_gap": item_gap.value,
+        "item_padding_y": item_padding_y.value,
+        "divider": bool(divider.value),
+    }
+
 def get_card_options(hwnd, element_id):
     shadow = ctypes.c_int()
     hoverable = ctypes.c_int()
@@ -7069,6 +8712,22 @@ def get_card_options(hwnd, element_id):
 
 def get_collapse_item_count(hwnd, element_id):
     return dll.EU_GetCollapseItemCount(hwnd, element_id)
+
+def set_collapse_items_ex(hwnd, element_id, items):
+    data = make_utf8("|".join(_collapse_item_row(item) for item in (items or [])))
+    dll.EU_SetCollapseItemsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_collapse_active_items(hwnd, element_id, indices):
+    data = make_utf8(_collapse_indices_text(indices))
+    dll.EU_SetCollapseActiveItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_collapse_active_items(hwnd, element_id, buffer_size=256):
+    buf = (ctypes.c_ubyte * buffer_size)()
+    needed = dll.EU_GetCollapseActiveItems(hwnd, element_id, buf, buffer_size)
+    raw = bytes(buf[:min(needed, buffer_size - 1)]).decode("utf-8", errors="replace")
+    if not raw:
+        return []
+    return [int(item) for item in raw.replace("|", ",").replace(";", ",").split(",") if item.strip()]
 
 def set_collapse_options(hwnd, element_id, accordion=True, allow_collapse=True,
                          disabled_indices=None, animated=True):
@@ -7098,8 +8757,18 @@ def get_collapse_options(hwnd, element_id):
         disabled_count.value,
     ) if ok else None
 
+def get_collapse_state_json(hwnd, element_id):
+    return read_json_result(dll.EU_GetCollapseStateJson, hwnd, element_id)
+
 def set_timeline_options(hwnd, element_id, position=0, show_time=True):
     dll.EU_SetTimelineOptions(hwnd, element_id, position, 1 if show_time else 0)
+
+def set_timeline_advanced_options(hwnd, element_id, position=0, show_time=True,
+                                  reverse=False, default_placement="top"):
+    dll.EU_SetTimelineAdvancedOptions(
+        hwnd, element_id, int(position), 1 if show_time else 0,
+        1 if reverse else 0, _timeline_placement_value(default_placement)
+    )
 
 def get_timeline_item_count(hwnd, element_id):
     return dll.EU_GetTimelineItemCount(hwnd, element_id)
@@ -7109,6 +8778,23 @@ def get_timeline_options(hwnd, element_id):
     show_time = ctypes.c_int()
     ok = dll.EU_GetTimelineOptions(hwnd, element_id, ctypes.byref(position), ctypes.byref(show_time))
     return (position.value, bool(show_time.value)) if ok else None
+
+def get_timeline_advanced_options(hwnd, element_id):
+    position = ctypes.c_int()
+    show_time = ctypes.c_int()
+    reverse = ctypes.c_int()
+    default_placement = ctypes.c_int()
+    ok = dll.EU_GetTimelineAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(position), ctypes.byref(show_time),
+        ctypes.byref(reverse), ctypes.byref(default_placement)
+    )
+    return {
+        "position": position.value,
+        "show_time": bool(show_time.value),
+        "reverse": bool(reverse.value),
+        "default_placement": "bottom" if default_placement.value == 1 else "top",
+    } if ok else None
 
 def set_statistic_format(hwnd, element_id, title="📊 统计数值", prefix="", suffix=""):
     title_data = make_utf8(title)
@@ -7129,6 +8815,79 @@ def get_statistic_options(hwnd, element_id):
     animated = ctypes.c_int()
     ok = dll.EU_GetStatisticOptions(hwnd, element_id, ctypes.byref(precision), ctypes.byref(animated))
     return (precision.value, bool(animated.value)) if ok else None
+
+def set_statistic_number_options(hwnd, element_id, precision=-1, animated=True,
+                                 group_separator=False, group_separator_text=",",
+                                 decimal_separator="."):
+    group_data = make_utf8(group_separator_text)
+    decimal_data = make_utf8(decimal_separator)
+    dll.EU_SetStatisticNumberOptions(
+        hwnd, element_id,
+        precision, 1 if animated else 0, 1 if group_separator else 0,
+        bytes_arg(group_data), len(group_data),
+        bytes_arg(decimal_data), len(decimal_data),
+    )
+
+def set_statistic_affix_options(hwnd, element_id, prefix="", suffix="",
+                                prefix_color=0, suffix_color=0, value_color=0,
+                                suffix_clickable=False):
+    prefix_data = make_utf8(prefix)
+    suffix_data = make_utf8(suffix)
+    dll.EU_SetStatisticAffixOptions(
+        hwnd, element_id,
+        bytes_arg(prefix_data), len(prefix_data),
+        bytes_arg(suffix_data), len(suffix_data),
+        prefix_color, suffix_color, value_color,
+        1 if suffix_clickable else 0,
+    )
+
+def set_statistic_display_text(hwnd, element_id, text):
+    data = make_utf8(text)
+    dll.EU_SetStatisticDisplayText(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_statistic_countdown(hwnd, element_id, target_unix_ms, format_text=""):
+    data = make_utf8(format_text)
+    dll.EU_SetStatisticCountdown(hwnd, element_id, int(target_unix_ms), bytes_arg(data), len(data))
+
+def set_statistic_countdown_state(hwnd, element_id, paused):
+    dll.EU_SetStatisticCountdownState(hwnd, element_id, 1 if paused else 0)
+
+def add_statistic_countdown_time(hwnd, element_id, delta_ms):
+    dll.EU_AddStatisticCountdownTime(hwnd, element_id, int(delta_ms))
+
+def set_statistic_finish_callback(hwnd, element_id, callback):
+    dll.EU_SetStatisticFinishCallback(hwnd, element_id, callback)
+
+def set_statistic_suffix_click_callback(hwnd, element_id, callback):
+    dll.EU_SetStatisticSuffixClickCallback(hwnd, element_id, callback)
+
+def get_statistic_full_state(hwnd, element_id):
+    mode = ctypes.c_int()
+    precision = ctypes.c_int()
+    animated = ctypes.c_int()
+    group = ctypes.c_int()
+    paused = ctypes.c_int()
+    finished = ctypes.c_int()
+    suffix_clicks = ctypes.c_int()
+    remaining = ctypes.c_longlong()
+    ok = dll.EU_GetStatisticFullState(
+        hwnd, element_id,
+        ctypes.byref(mode), ctypes.byref(precision), ctypes.byref(animated),
+        ctypes.byref(group), ctypes.byref(paused), ctypes.byref(finished),
+        ctypes.byref(suffix_clicks), ctypes.byref(remaining),
+    )
+    if not ok:
+        return None
+    return {
+        "mode": mode.value,
+        "precision": precision.value,
+        "animated": bool(animated.value),
+        "group_separator": bool(group.value),
+        "countdown_paused": bool(paused.value),
+        "countdown_finished": bool(finished.value),
+        "suffix_click_count": suffix_clicks.value,
+        "remaining_ms": remaining.value,
+    }
 
 def set_tour_steps(hwnd, element_id, steps):
     rows = []
@@ -7215,6 +8974,20 @@ def get_tour_full_state(hwnd, element_id):
         "change_count": change_count.value,
     } if ok else None
 
+IMAGE_FIT_VALUES = {
+    "contain": 0,
+    "cover": 1,
+    "fill": 2,
+    "none": 3,
+    "scale-down": 4,
+    "scale_down": 4,
+}
+
+def _image_fit_value(fit):
+    if isinstance(fit, str):
+        return IMAGE_FIT_VALUES.get(fit.strip().lower(), 0)
+    return int(fit)
+
 def create_image(hwnd, parent_id, src="", alt="图片", fit=0,
                  x=0, y=0, w=220, h=180):
     src_data = make_utf8(src)
@@ -7223,7 +8996,7 @@ def create_image(hwnd, parent_id, src="", alt="图片", fit=0,
         hwnd, parent_id,
         bytes_arg(src_data), len(src_data),
         bytes_arg(alt_data), len(alt_data),
-        fit, x, y, w, h
+        _image_fit_value(fit), x, y, w, h
     )
 
 def create_carousel(hwnd, parent_id, items=None, active=0, indicator_position=0,
@@ -7252,10 +9025,31 @@ def create_upload(hwnd, parent_id, title="📤 点击或拖拽文件到此处上
         x, y, w, h
     )
 
-def create_scrollbar(hwnd, parent_id, value=0, max_value=100, orientation=1,
-                     x=0, y=0, w=18, h=160):
-    return dll.EU_CreateScrollbar(
-        hwnd, parent_id, value, max_value, orientation, x, y, w, h
+def _infinite_scroll_items_data(items):
+    rows = []
+    for item in items or []:
+        if isinstance(item, dict):
+            title = str(item.get("title", item.get("text", "")))
+            subtitle = str(item.get("subtitle", item.get("desc", "")))
+            tag = str(item.get("tag", ""))
+            rows.append("\t".join([title, subtitle, tag]).rstrip("\t"))
+        elif isinstance(item, (list, tuple)):
+            rows.append("\t".join(str(v) for v in item[:3]))
+        else:
+            rows.append(str(item))
+    return make_utf8("\n".join(rows))
+
+def create_infinite_scroll(hwnd, parent_id, items=None,
+                           x=0, y=0, w=360, h=260):
+    if items is None:
+        items = [
+            ("📌 待办事项", "打开窗口后可直接滚动加载更多", "进行中"),
+            ("🧾 审批记录", "列表项支持标题、副标题和标签", "已同步"),
+            ("📦 发货提醒", "接近底部会触发加载回调", "今日"),
+        ]
+    data = _infinite_scroll_items_data(items)
+    return dll.EU_CreateInfiniteScroll(
+        hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h
     )
 
 def set_image_source(hwnd, element_id, src="", alt="图片"):
@@ -7266,6 +9060,9 @@ def set_image_source(hwnd, element_id, src="", alt="图片"):
         bytes_arg(src_data), len(src_data),
         bytes_arg(alt_data), len(alt_data)
     )
+
+def set_image_fit(hwnd, element_id, fit):
+    dll.EU_SetImageFit(hwnd, element_id, _image_fit_value(fit))
 
 def set_image_preview(hwnd, element_id, open=True):
     dll.EU_SetImagePreview(hwnd, element_id, 1 if open else 0)
@@ -7278,6 +9075,44 @@ def set_image_preview_transform(hwnd, element_id, scale_percent=100, offset_x=0,
 
 def set_image_cache_enabled(hwnd, element_id, enabled=True):
     dll.EU_SetImageCacheEnabled(hwnd, element_id, 1 if enabled else 0)
+
+def set_image_lazy(hwnd, element_id, lazy=True):
+    dll.EU_SetImageLazy(hwnd, element_id, 1 if lazy else 0)
+
+def set_image_placeholder(hwnd, element_id, icon="🖼️", text="图片加载中",
+                          fg=0, bg=0):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetImagePlaceholder(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+        fg, bg
+    )
+
+def set_image_error_content(hwnd, element_id, icon="⚠️", text="图片加载失败",
+                            fg=0, bg=0):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetImageErrorContent(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+        fg, bg
+    )
+
+def set_image_preview_list(hwnd, element_id, sources=None, selected_index=0):
+    if sources is None:
+        sources = []
+    data = make_utf8("|".join(str(item) for item in sources))
+    dll.EU_SetImagePreviewList(
+        hwnd, element_id,
+        bytes_arg(data), len(data),
+        selected_index
+    )
+
+def set_image_preview_index(hwnd, element_id, index=0):
+    dll.EU_SetImagePreviewIndex(hwnd, element_id, index)
 
 def get_image_preview_open(hwnd, element_id):
     return dll.EU_GetImagePreviewOpen(hwnd, element_id)
@@ -7328,6 +9163,37 @@ def get_image_full_options(hwnd, element_id):
         "bitmap_height": bitmap_height.value,
     } if ok else None
 
+def get_image_advanced_options(hwnd, element_id):
+    fit = ctypes.c_int()
+    lazy = ctypes.c_int()
+    preview_enabled = ctypes.c_int()
+    preview_open = ctypes.c_int()
+    preview_index = ctypes.c_int()
+    preview_count = ctypes.c_int()
+    status = ctypes.c_int()
+    scale_percent = ctypes.c_int()
+    offset_x = ctypes.c_int()
+    offset_y = ctypes.c_int()
+    ok = dll.EU_GetImageAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(fit), ctypes.byref(lazy), ctypes.byref(preview_enabled),
+        ctypes.byref(preview_open), ctypes.byref(preview_index), ctypes.byref(preview_count),
+        ctypes.byref(status), ctypes.byref(scale_percent),
+        ctypes.byref(offset_x), ctypes.byref(offset_y),
+    )
+    return {
+        "fit": fit.value,
+        "lazy": bool(lazy.value),
+        "preview_enabled": bool(preview_enabled.value),
+        "preview_open": bool(preview_open.value),
+        "preview_index": preview_index.value,
+        "preview_count": preview_count.value,
+        "status": status.value,
+        "scale_percent": scale_percent.value,
+        "offset_x": offset_x.value,
+        "offset_y": offset_y.value,
+    } if ok else None
+
 def set_carousel_items(hwnd, element_id, items):
     data = make_utf8("|".join(items))
     dll.EU_SetCarouselItems(hwnd, element_id, bytes_arg(data), len(data))
@@ -7344,6 +9210,84 @@ def set_carousel_options(hwnd, element_id, loop=True, indicator_position=0,
         1 if show_arrows else 0,
         1 if show_indicators else 0,
     )
+
+def set_carousel_behavior(hwnd, element_id, trigger_mode="click", arrow_mode="always",
+                          direction="horizontal", carousel_type="normal",
+                          pause_on_hover=False):
+    dll.EU_SetCarouselBehavior(
+        hwnd, element_id,
+        _carousel_trigger_value(trigger_mode),
+        _carousel_arrow_value(arrow_mode),
+        _carousel_direction_value(direction),
+        _carousel_type_value(carousel_type),
+        1 if pause_on_hover else 0,
+    )
+
+def get_carousel_behavior(hwnd, element_id):
+    trigger_mode = ctypes.c_int()
+    arrow_mode = ctypes.c_int()
+    direction = ctypes.c_int()
+    carousel_type = ctypes.c_int()
+    pause_on_hover = ctypes.c_int()
+    ok = dll.EU_GetCarouselBehavior(
+        hwnd, element_id,
+        ctypes.byref(trigger_mode), ctypes.byref(arrow_mode),
+        ctypes.byref(direction), ctypes.byref(carousel_type),
+        ctypes.byref(pause_on_hover),
+    )
+    return {
+        "trigger_mode": trigger_mode.value,
+        "arrow_mode": arrow_mode.value,
+        "direction": direction.value,
+        "carousel_type": carousel_type.value,
+        "pause_on_hover": bool(pause_on_hover.value),
+    } if ok else None
+
+def set_carousel_visual(hwnd, element_id, text_color=0, text_alpha=255, text_font_size=0,
+                        odd_bg=0, even_bg=0, panel_bg=0,
+                        active_indicator=0, inactive_indicator=0,
+                        card_scale_percent=82):
+    dll.EU_SetCarouselVisual(
+        hwnd, element_id,
+        int(text_color) & 0xFFFFFFFF,
+        int(text_alpha),
+        int(text_font_size),
+        int(odd_bg) & 0xFFFFFFFF,
+        int(even_bg) & 0xFFFFFFFF,
+        int(panel_bg) & 0xFFFFFFFF,
+        int(active_indicator) & 0xFFFFFFFF,
+        int(inactive_indicator) & 0xFFFFFFFF,
+        int(card_scale_percent),
+    )
+
+def get_carousel_visual(hwnd, element_id):
+    text_color = ctypes.c_uint32()
+    text_alpha = ctypes.c_int()
+    text_font_size = ctypes.c_int()
+    odd_bg = ctypes.c_uint32()
+    even_bg = ctypes.c_uint32()
+    panel_bg = ctypes.c_uint32()
+    active_indicator = ctypes.c_uint32()
+    inactive_indicator = ctypes.c_uint32()
+    card_scale_percent = ctypes.c_int()
+    ok = dll.EU_GetCarouselVisual(
+        hwnd, element_id,
+        ctypes.byref(text_color), ctypes.byref(text_alpha), ctypes.byref(text_font_size),
+        ctypes.byref(odd_bg), ctypes.byref(even_bg), ctypes.byref(panel_bg),
+        ctypes.byref(active_indicator), ctypes.byref(inactive_indicator),
+        ctypes.byref(card_scale_percent),
+    )
+    return {
+        "text_color": text_color.value,
+        "text_alpha": text_alpha.value,
+        "text_font_size": text_font_size.value,
+        "odd_bg": odd_bg.value,
+        "even_bg": even_bg.value,
+        "panel_bg": panel_bg.value,
+        "active_indicator": active_indicator.value,
+        "inactive_indicator": inactive_indicator.value,
+        "card_scale_percent": card_scale_percent.value,
+    } if ok else None
 
 def set_carousel_autoplay(hwnd, element_id, enabled=True, interval_ms=3000):
     dll.EU_SetCarouselAutoplay(hwnd, element_id, 1 if enabled else 0, interval_ms)
@@ -7578,55 +9522,72 @@ def set_upload_select_callback(hwnd, element_id, callback):
 def set_upload_action_callback(hwnd, element_id, callback):
     dll.EU_SetUploadActionCallback(hwnd, element_id, callback)
 
-def set_scrollbar_wheel_step(hwnd, element_id, step=20):
-    dll.EU_SetScrollbarWheelStep(hwnd, element_id, step)
+def set_infinite_scroll_items(hwnd, element_id, items):
+    data = _infinite_scroll_items_data(items)
+    dll.EU_SetInfiniteScrollItems(hwnd, element_id, bytes_arg(data), len(data))
 
-def bind_scrollbar_content(hwnd, element_id, target_element_id, content_size, viewport_size):
-    dll.EU_BindScrollbarContent(hwnd, element_id, target_element_id, content_size, viewport_size)
+def append_infinite_scroll_items(hwnd, element_id, items):
+    data = _infinite_scroll_items_data(items)
+    dll.EU_AppendInfiniteScrollItems(hwnd, element_id, bytes_arg(data), len(data))
 
-def scrollbar_scroll(hwnd, element_id, delta=1):
-    dll.EU_ScrollbarScroll(hwnd, element_id, delta)
+def clear_infinite_scroll_items(hwnd, element_id):
+    dll.EU_ClearInfiniteScrollItems(hwnd, element_id)
 
-def scrollbar_wheel(hwnd, element_id, wheel_delta):
-    dll.EU_ScrollbarWheel(hwnd, element_id, wheel_delta)
-
-def get_scrollbar_options(hwnd, element_id):
-    value = ctypes.c_int()
-    max_value = ctypes.c_int()
-    page_size = ctypes.c_int()
-    orientation = ctypes.c_int()
-    auto_hide = ctypes.c_int()
-    wheel_step = ctypes.c_int()
-    ok = dll.EU_GetScrollbarOptions(
+def set_infinite_scroll_state(hwnd, element_id, loading=False, no_more=False, disabled=False):
+    dll.EU_SetInfiniteScrollState(
         hwnd, element_id,
-        ctypes.byref(value), ctypes.byref(max_value), ctypes.byref(page_size),
-        ctypes.byref(orientation), ctypes.byref(auto_hide), ctypes.byref(wheel_step),
+        1 if loading else 0,
+        1 if no_more else 0,
+        1 if disabled else 0,
     )
-    return (
-        value.value, max_value.value, page_size.value,
-        orientation.value, bool(auto_hide.value), wheel_step.value,
-    ) if ok else None
 
-def get_scrollbar_full_state(hwnd, element_id):
+def set_infinite_scroll_options(hwnd, element_id, item_height=54, gap=8, threshold=60,
+                                style_mode=0, show_scrollbar=True, show_index=False):
+    dll.EU_SetInfiniteScrollOptions(
+        hwnd, element_id, item_height, gap, threshold, style_mode,
+        1 if show_scrollbar else 0, 1 if show_index else 0,
+    )
+
+def set_infinite_scroll_texts(hwnd, element_id,
+                              loading_text="加载中...",
+                              no_more_text="没有更多了",
+                              empty_text="暂无数据"):
+    loading_data = make_utf8(loading_text)
+    no_more_data = make_utf8(no_more_text)
+    empty_data = make_utf8(empty_text)
+    dll.EU_SetInfiniteScrollTexts(
+        hwnd, element_id,
+        bytes_arg(loading_data), len(loading_data),
+        bytes_arg(no_more_data), len(no_more_data),
+        bytes_arg(empty_data), len(empty_data),
+    )
+
+def set_infinite_scroll_scroll(hwnd, element_id, scroll_y=0):
+    dll.EU_SetInfiniteScrollScroll(hwnd, element_id, scroll_y)
+
+def get_infinite_scroll_full_state(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(15)]
-    ok = dll.EU_GetScrollbarFullState(
+    ok = dll.EU_GetInfiniteScrollFullState(
         hwnd, element_id,
         *(ctypes.byref(v) for v in values)
     )
     if not ok:
         return None
     keys = [
-        "value", "max_value", "page_size", "orientation", "auto_hide",
-        "wheel_step", "bound_element_id", "content_size", "viewport_size",
-        "content_offset", "wheel_event_count", "drag_event_count",
-        "change_count", "last_action", "last_wheel_delta",
+        "item_count", "scroll_y", "max_scroll", "content_height", "viewport_height",
+        "loading", "no_more", "disabled", "load_count", "change_count",
+        "last_action", "threshold", "style_mode", "show_scrollbar", "show_index",
     ]
     result = {key: value.value for key, value in zip(keys, values)}
-    result["auto_hide"] = bool(result["auto_hide"])
+    result["loading"] = bool(result["loading"])
+    result["no_more"] = bool(result["no_more"])
+    result["disabled"] = bool(result["disabled"])
+    result["show_scrollbar"] = bool(result["show_scrollbar"])
+    result["show_index"] = bool(result["show_index"])
     return result
 
-def set_scrollbar_change_callback(hwnd, element_id, callback):
-    dll.EU_SetScrollbarChangeCallback(hwnd, element_id, callback)
+def set_infinite_scroll_load_callback(hwnd, element_id, callback):
+    dll.EU_SetInfiniteScrollLoadCallback(hwnd, element_id, callback)
 
 def create_breadcrumb(hwnd, parent_id, items=None, separator="/", current=-1,
                       x=0, y=0, w=420, h=32):
@@ -7651,6 +9612,39 @@ def create_tabs(hwnd, parent_id, items=None, active=0, tab_type=0,
         active, tab_type, x, y, w, h
     )
 
+def _tabs_item_to_line(item):
+    if isinstance(item, dict):
+        label = item.get("label", "")
+        name = item.get("name", "")
+        content = item.get("content", "")
+        icon = item.get("icon", "")
+        disabled = "1" if item.get("disabled", False) else "0"
+        closable = "1" if item.get("closable", True) else "0"
+        return "\t".join([label, name, content, icon, disabled, closable])
+    values = list(item)
+    while len(values) < 6:
+        values.append("")
+    values[4] = "1" if bool(values[4]) else "0"
+    values[5] = "1" if (values[5] == "" or bool(values[5])) else "0"
+    return "\t".join(str(v) for v in values[:6])
+
+def create_tabs_ex(hwnd, parent_id, items=None, active=0, tab_type=0, tab_position=0,
+                   closable=False, addable=False, editable=False, content_visible=True,
+                   x=0, y=0, w=520, h=220):
+    if items is None:
+        items = [
+            {"label": "用户管理", "name": "users", "content": "👥 用户管理内容", "icon": "👥"},
+            {"label": "配置管理", "name": "config", "content": "⚙️ 配置管理内容", "icon": "⚙️"},
+        ]
+    labels = [item.get("label", "") if isinstance(item, dict) else str(item[0]) for item in items]
+    element_id = create_tabs(hwnd, parent_id, labels, active, tab_type, x, y, w, h)
+    set_tabs_items_ex(hwnd, element_id, items)
+    set_tabs_position(hwnd, element_id, tab_position)
+    set_tabs_options(hwnd, element_id, tab_type, closable, addable)
+    set_tabs_editable(hwnd, element_id, editable)
+    set_tabs_content_visible(hwnd, element_id, content_visible)
+    return element_id
+
 def create_pagination(hwnd, parent_id, total=120, page_size=10, current=1,
                       x=0, y=0, w=420, h=40):
     return dll.EU_CreatePagination(
@@ -7658,14 +9652,27 @@ def create_pagination(hwnd, parent_id, total=120, page_size=10, current=1,
     )
 
 def create_steps(hwnd, parent_id, items=None, active=1,
-                 x=0, y=0, w=420, h=80):
+                 x=0, y=0, w=420, h=80,
+                 space=None, align_center=False, simple=False,
+                 finish_status=2, process_status=1):
     if items is None:
         items = ["开始", "处理", "完成"]
     items_data = make_utf8("|".join(items))
-    return dll.EU_CreateSteps(
+    element_id = dll.EU_CreateSteps(
         hwnd, parent_id, bytes_arg(items_data), len(items_data),
         active, x, y, w, h
     )
+    if element_id and (space is not None or align_center or simple or
+                       finish_status != 2 or process_status != 1):
+        set_steps_options(
+            hwnd, element_id,
+            0 if space is None else int(space),
+            align_center=align_center,
+            simple=simple,
+            finish_status=finish_status,
+            process_status=process_status,
+        )
+    return element_id
 
 def set_breadcrumb_items(hwnd, element_id, items):
     data = make_utf8("|".join(items))
@@ -7719,14 +9726,38 @@ def set_tabs_items(hwnd, element_id, items):
     data = make_utf8("|".join(items))
     dll.EU_SetTabsItems(hwnd, element_id, bytes_arg(data), len(data))
 
+def set_tabs_items_ex(hwnd, element_id, items):
+    data = make_utf8("|".join(_tabs_item_to_line(item) for item in items))
+    dll.EU_SetTabsItemsEx(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_tabs_type(hwnd, element_id, tab_type):
     dll.EU_SetTabsType(hwnd, element_id, tab_type)
+
+def set_tabs_position(hwnd, element_id, tab_position):
+    if isinstance(tab_position, str):
+        tab_position = {"top": 0, "right": 1, "bottom": 2, "left": 3}.get(tab_position, 0)
+    dll.EU_SetTabsPosition(hwnd, element_id, tab_position)
+
+def set_tabs_header_align(hwnd, element_id, align=0):
+    if isinstance(align, str):
+        align = {"left": 0, "center": 1, "right": 2, "左": 0, "中": 1, "右": 2}.get(align, 0)
+    dll.EU_SetTabsHeaderAlign(hwnd, element_id, align)
 
 def set_tabs_active(hwnd, element_id, active):
     dll.EU_SetTabsActive(hwnd, element_id, active)
 
+def set_tabs_active_name(hwnd, element_id, name):
+    data = make_utf8(name)
+    dll.EU_SetTabsActiveName(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_tabs_options(hwnd, element_id, tab_type=0, closable=False, addable=False):
     dll.EU_SetTabsOptions(hwnd, element_id, tab_type, int(bool(closable)), int(bool(addable)))
+
+def set_tabs_editable(hwnd, element_id, editable=True):
+    dll.EU_SetTabsEditable(hwnd, element_id, int(bool(editable)))
+
+def set_tabs_content_visible(hwnd, element_id, visible=True):
+    dll.EU_SetTabsContentVisible(hwnd, element_id, int(bool(visible)))
 
 def add_tabs_item(hwnd, element_id, text):
     data = make_utf8(text)
@@ -7751,12 +9782,31 @@ def get_tabs_state(hwnd, element_id):
     )
     return (active.value, count.value, tab_type.value) if ok else None
 
+def get_tabs_header_align(hwnd, element_id):
+    return dll.EU_GetTabsHeaderAlign(hwnd, element_id)
+
 def get_tabs_item(hwnd, element_id, index):
     needed = dll.EU_GetTabsItem(hwnd, element_id, index, None, 0)
     if needed <= 0:
         return ""
     buf = (ctypes.c_ubyte * (needed + 1))()
     dll.EU_GetTabsItem(hwnd, element_id, index, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_tabs_active_name(hwnd, element_id):
+    needed = dll.EU_GetTabsActiveName(hwnd, element_id, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetTabsActiveName(hwnd, element_id, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_tabs_item_content(hwnd, element_id, index):
+    needed = dll.EU_GetTabsItemContent(hwnd, element_id, index, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetTabsItemContent(hwnd, element_id, index, buf, needed + 1)
     return bytes(buf[:needed]).decode("utf-8", errors="replace")
 
 def get_tabs_full_state(hwnd, element_id):
@@ -7772,6 +9822,23 @@ def get_tabs_full_state(hwnd, element_id):
         "scroll_offset", "max_scroll_offset", "hover_index", "press_index",
         "hover_part", "press_part", "last_closed_index", "last_added_index",
         "close_count", "add_count", "select_count", "scroll_count", "last_action",
+    ]
+    return {key: value.value for key, value in zip(keys, values)}
+
+def get_tabs_full_state_ex(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(23)]
+    ok = dll.EU_GetTabsFullStateEx(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = [
+        "active_index", "item_count", "tab_type", "closable", "addable",
+        "scroll_offset", "max_scroll_offset", "hover_index", "press_index",
+        "hover_part", "press_part", "last_closed_index", "last_added_index",
+        "close_count", "add_count", "select_count", "scroll_count", "last_action",
+        "tab_position", "editable", "content_visible", "active_disabled", "active_closable",
     ]
     return {key: value.value for key, value in zip(keys, values)}
 
@@ -7797,6 +9864,12 @@ def set_pagination_options(hwnd, element_id, show_jumper=True, show_size_changer
     dll.EU_SetPaginationOptions(
         hwnd, element_id,
         int(bool(show_jumper)), int(bool(show_size_changer)), int(visible_page_count),
+    )
+
+def set_pagination_advanced_options(hwnd, element_id, background=False, small=False, hide_on_single_page=False):
+    dll.EU_SetPaginationAdvancedOptions(
+        hwnd, element_id,
+        int(bool(background)), int(bool(small)), int(bool(hide_on_single_page)),
     )
 
 def set_pagination_page_size_options(hwnd, element_id, sizes):
@@ -7841,6 +9914,22 @@ def get_pagination_full_state(hwnd, element_id):
     ]
     return {key: value.value for key, value in zip(keys, values)}
 
+def get_pagination_advanced_options(hwnd, element_id):
+    background = ctypes.c_int()
+    small = ctypes.c_int()
+    hide_on_single_page = ctypes.c_int()
+    ok = dll.EU_GetPaginationAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(background), ctypes.byref(small), ctypes.byref(hide_on_single_page),
+    )
+    if not ok:
+        return None
+    return {
+        "background": bool(background.value),
+        "small": bool(small.value),
+        "hide_on_single_page": bool(hide_on_single_page.value),
+    }
+
 def set_pagination_change_callback(hwnd, element_id, callback):
     dll.EU_SetPaginationChangeCallback(hwnd, element_id, callback)
 
@@ -7853,11 +9942,49 @@ def set_steps_detail_items(hwnd, element_id, items):
     data = make_utf8("|".join(rows))
     dll.EU_SetStepsDetailItems(hwnd, element_id, bytes_arg(data), len(data))
 
+def set_steps_icon_items(hwnd, element_id, items):
+    rows = []
+    for item in items:
+        if isinstance(item, dict):
+            title = str(item.get("title", ""))
+            desc = str(item.get("description", item.get("desc", "")))
+            icon = str(item.get("icon", ""))
+        else:
+            title = str(item[0]) if len(item) > 0 else ""
+            desc = str(item[1]) if len(item) > 1 else ""
+            icon = str(item[2]) if len(item) > 2 else ""
+        rows.append(f"{title}\t{desc}\t{icon}")
+    data = make_utf8("|".join(rows))
+    dll.EU_SetStepsIconItems(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_steps_direction(hwnd, element_id, direction):
     dll.EU_SetStepsDirection(hwnd, element_id, direction)
 
 def set_steps_active(hwnd, element_id, active):
     dll.EU_SetStepsActive(hwnd, element_id, active)
+
+def set_steps_options(hwnd, element_id, space=0, align_center=False, simple=False,
+                      finish_status=2, process_status=1):
+    dll.EU_SetStepsOptions(
+        hwnd, element_id, int(space),
+        1 if align_center else 0,
+        1 if simple else 0,
+        int(finish_status), int(process_status),
+    )
+
+def get_steps_options(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(5)]
+    ok = dll.EU_GetStepsOptions(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = ["space", "align_center", "simple", "finish_status", "process_status"]
+    data = {key: value.value for key, value in zip(keys, values)}
+    data["align_center"] = bool(data["align_center"])
+    data["simple"] = bool(data["simple"])
+    return data
 
 def set_steps_statuses(hwnd, element_id, statuses):
     values = [int(v) for v in statuses]
@@ -7900,6 +10027,20 @@ def get_steps_full_state(hwnd, element_id):
     ]
     return {key: value.value for key, value in zip(keys, values)}
 
+def get_steps_visual_state(hwnd, element_id):
+    values = [ctypes.c_int() for _ in range(6)]
+    ok = dll.EU_GetStepsVisualState(
+        hwnd, element_id,
+        *(ctypes.byref(v) for v in values)
+    )
+    if not ok:
+        return None
+    keys = ["space", "align_center", "simple", "finish_status", "process_status", "icon_count"]
+    data = {key: value.value for key, value in zip(keys, values)}
+    data["align_center"] = bool(data["align_center"])
+    data["simple"] = bool(data["simple"])
+    return data
+
 def set_steps_change_callback(hwnd, element_id, callback):
     dll.EU_SetStepsChangeCallback(hwnd, element_id, callback)
 
@@ -7912,6 +10053,22 @@ def create_alert(hwnd, parent_id, title="提示", description="", alert_type=0,
         bytes_arg(title_data), len(title_data),
         bytes_arg(desc_data), len(desc_data),
         alert_type, effect, 1 if closable else 0, x, y, w, h
+    )
+
+def create_alert_ex(hwnd, parent_id, title="提示", description="", alert_type=0,
+                    effect=0, closable=True, show_icon=True, center=False,
+                    wrap_description=False, close_text="", x=0, y=0, w=420, h=52):
+    title_data = make_utf8(title)
+    desc_data = make_utf8(description)
+    close_data = make_utf8(close_text)
+    return dll.EU_CreateAlertEx(
+        hwnd, parent_id,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(desc_data), len(desc_data),
+        alert_type, effect, 1 if closable else 0,
+        1 if show_icon else 0, 1 if center else 0, 1 if wrap_description else 0,
+        bytes_arg(close_data), len(close_data),
+        x, y, w, h
     )
 
 def get_alert_options(hwnd, element_id):
@@ -7938,6 +10095,36 @@ def set_alert_effect(hwnd, element_id, effect):
 
 def set_alert_closable(hwnd, element_id, closable):
     dll.EU_SetAlertClosable(hwnd, element_id, int(bool(closable)))
+
+def set_alert_advanced_options(hwnd, element_id, show_icon=True, center=False, wrap_description=False):
+    dll.EU_SetAlertAdvancedOptions(
+        hwnd, element_id,
+        1 if show_icon else 0,
+        1 if center else 0,
+        1 if wrap_description else 0,
+    )
+
+def get_alert_advanced_options(hwnd, element_id):
+    show_icon = ctypes.c_int()
+    center = ctypes.c_int()
+    wrap_description = ctypes.c_int()
+    ok = dll.EU_GetAlertAdvancedOptions(
+        hwnd, element_id,
+        ctypes.byref(show_icon), ctypes.byref(center), ctypes.byref(wrap_description),
+    )
+    return (bool(show_icon.value), bool(center.value), bool(wrap_description.value)) if ok else None
+
+def set_alert_close_text(hwnd, element_id, close_text):
+    data = make_utf8(close_text)
+    dll.EU_SetAlertCloseText(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_alert_text(hwnd, element_id, text_type=0):
+    needed = dll.EU_GetAlertText(hwnd, element_id, text_type, None, 0)
+    if needed <= 0:
+        return ""
+    buf = (ctypes.c_ubyte * (needed + 1))()
+    dll.EU_GetAlertText(hwnd, element_id, text_type, buf, needed + 1)
+    return bytes(buf[:needed]).decode("utf-8", errors="replace")
 
 def set_alert_closed(hwnd, element_id, closed):
     dll.EU_SetAlertClosed(hwnd, element_id, int(bool(closed)))
@@ -8226,8 +10413,39 @@ def create_loading(hwnd, parent_id, text="加载中", active=True,
         1 if active else 0, x, y, w, h
     )
 
+def _loading_spinner_type(spinner):
+    if isinstance(spinner, str):
+        key = spinner.strip().lower()
+        return {
+            "dots": 0,
+            "dot": 0,
+            "default": 0,
+            "el-icon-loading": 1,
+            "arc": 1,
+            "circle": 1,
+            "pulse": 2,
+            "pulse-dots": 2,
+        }.get(key, 0)
+    try:
+        value = int(spinner)
+    except Exception:
+        return 0
+    return max(0, min(2, value))
+
+def set_loading_text(hwnd, element_id, text="加载中"):
+    data = make_utf8(text)
+    dll.EU_SetLoadingText(hwnd, element_id, bytes_arg(data), len(data))
+
 def set_loading_options(hwnd, element_id, active=True, fullscreen=False, progress=-1):
     dll.EU_SetLoadingOptions(hwnd, element_id, 1 if active else 0, 1 if fullscreen else 0, progress)
+
+def set_loading_style(hwnd, element_id, background=0, spinner_color=0, text_color=0,
+                      spinner="dots", lock_input=False):
+    dll.EU_SetLoadingStyle(
+        hwnd, element_id,
+        background, spinner_color, text_color,
+        _loading_spinner_type(spinner), 1 if lock_input else 0,
+    )
 
 def get_loading_options(hwnd, element_id):
     active = ctypes.c_int()
@@ -8249,6 +10467,43 @@ def get_loading_text(hwnd, element_id):
     buf = (ctypes.c_ubyte * (needed + 1))()
     dll.EU_GetLoadingText(hwnd, element_id, buf, needed + 1)
     return bytes(buf[:needed]).decode("utf-8", errors="replace")
+
+def get_loading_style(hwnd, element_id):
+    background = ctypes.c_uint32()
+    spinner_color = ctypes.c_uint32()
+    text_color = ctypes.c_uint32()
+    spinner_type = ctypes.c_int()
+    lock_input = ctypes.c_int()
+    ok = dll.EU_GetLoadingStyle(
+        hwnd, element_id,
+        ctypes.byref(background), ctypes.byref(spinner_color),
+        ctypes.byref(text_color), ctypes.byref(spinner_type),
+        ctypes.byref(lock_input),
+    )
+    if not ok:
+        return None
+    return {
+        "background": background.value,
+        "spinner_color": spinner_color.value,
+        "text_color": text_color.value,
+        "spinner_type": spinner_type.value,
+        "lock_input": bool(lock_input.value),
+    }
+
+def show_loading(hwnd, target_element_id=0, text="加载中", fullscreen=False,
+                 lock_input=False, background=0, spinner_color=0, text_color=0,
+                 spinner="dots"):
+    data = make_utf8(text)
+    return dll.EU_ShowLoading(
+        hwnd, target_element_id,
+        bytes_arg(data), len(data),
+        1 if fullscreen else 0, 1 if lock_input else 0,
+        background, spinner_color, text_color,
+        _loading_spinner_type(spinner),
+    )
+
+def close_loading(hwnd, element_id):
+    return bool(dll.EU_CloseLoading(hwnd, element_id))
 
 def get_loading_full_state(hwnd, element_id):
     values = [ctypes.c_int() for _ in range(9)]

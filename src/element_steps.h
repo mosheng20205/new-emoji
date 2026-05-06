@@ -2,13 +2,25 @@
 #include "element_base.h"
 #include <vector>
 
+struct StepsVisualItem {
+    std::wstring title;
+    std::wstring description;
+    std::wstring icon;
+};
+
 class Steps : public Element {
 public:
     std::vector<std::wstring> items;
     std::vector<std::wstring> descriptions;
+    std::vector<std::wstring> icons;
     std::vector<int> statuses; // 0 wait, 1 process, 2 finish, 3 error
     int active_index = 0;
     int direction = 0; // 0 horizontal, 1 vertical
+    int space = 0; // 0 = auto
+    bool align_center = false;
+    bool simple = false;
+    int finish_status = 2;
+    int process_status = 1;
     int last_clicked_index = -1;
     int click_count = 0;
     int change_count = 0;
@@ -25,14 +37,18 @@ public:
 
     void set_items(const std::vector<std::wstring>& values);
     void set_step_items(const std::vector<std::pair<std::wstring, std::wstring>>& values);
+    void set_icon_items(const std::vector<StepsVisualItem>& values);
     void set_active_index(int value);
     void set_direction(int value);
+    void set_options(int space_value, bool align_center_value, bool simple_value,
+                     int finish_status_value, int process_status_value);
     void set_statuses(const std::vector<int>& values);
     void activate_index(int value, int action);
     int hover_index() const { return m_hover_index; }
     int press_index() const { return m_press_index; }
     int status_at(int index) const;
     int failed_count() const;
+    std::wstring icon_at(int index) const;
 
 private:
     int m_hover_index = -1;

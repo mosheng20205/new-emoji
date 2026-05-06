@@ -7,7 +7,11 @@ public:
     int alert_type = 0;
     int effect = 0;
     bool closable = true;
+    bool show_icon = true;
+    bool center = false;
+    bool wrap_description = false;
     bool closed = false;
+    std::wstring close_text;
     int close_count = 0;
     int last_action = 0; // 0 none, 1 set, 2 mouse, 3 keyboard, 4 trigger
     ElementValueCallback close_cb = nullptr;
@@ -24,6 +28,8 @@ public:
     void set_type(int value);
     void set_effect(int value);
     void set_closable(bool value);
+    void set_advanced_options(bool show_icon_value, bool center_value, bool wrap_description_value);
+    void set_close_text(const std::wstring& value);
     void set_closed(bool value);
     void close_alert(int action);
     bool close_hover() const { return m_close_hover; }

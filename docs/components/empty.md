@@ -2,9 +2,9 @@
 
 ## 简介
 
-`Empty` 是 new_emoji 的 数据展示 组件。当前状态：**已完成**。
+`Empty` 是 new_emoji 的数据展示组件。当前状态：**已完成**。
 
-已补自定义图标、描述、操作按钮、操作专用回调、点击状态读回、Python 封装和独立中文 emoji 验证
+已补齐 Element Plus 常见空状态样式：描述文字、自定义图片、本地/HTTP/HTTPS 图片源、图片尺寸、内置操作按钮、真实子元素按钮插槽、操作回调、图片状态读回、Python 封装和桌面端中文 emoji 全样式演示。
 
 ## 创建
 
@@ -12,19 +12,23 @@
 |---|---|
 | 创建导出 | `EU_CreateEmpty` |
 | 组件分类 | 数据展示 |
-| Python helper | `examples/python/new_emoji_ui.py` 中的 `create_empty` 或同类 helper |
+| Python helper | `create_empty` / `set_empty_image` / `set_empty_image_size` |
 | 易语言命令 | 见 `DLL命令/易语言DLL命令.md` |
 
 ## 相关 API
 
 | API | 说明 |
 |---|---|
-| `EU_CreateEmpty` | 当前组件相关导出 |
-| `EU_GetEmptyActionClicked` | 当前组件相关导出 |
-| `EU_SetEmptyActionCallback` | 当前组件相关导出 |
-| `EU_SetEmptyActionClicked` | 当前组件相关导出 |
-| `EU_SetEmptyDescription` | 当前组件相关导出 |
-| `EU_SetEmptyOptions` | 当前组件相关导出 |
+| `EU_CreateEmpty` | 创建空状态，传入标题、描述和逻辑坐标尺寸 |
+| `EU_SetEmptyDescription` | 设置描述文字 |
+| `EU_SetEmptyOptions` | 设置 emoji 图标和内置操作按钮文字 |
+| `EU_SetEmptyImage` | 设置空状态图片，支持本地路径、HTTP、HTTPS |
+| `EU_SetEmptyImageSize` | 设置图片显示尺寸，0 为自适应 |
+| `EU_GetEmptyImageStatus` | 读取图片状态：0 默认图标/无图片，1 已加载，2 加载失败，3 加载中 |
+| `EU_GetEmptyImageSize` | 读取图片逻辑尺寸 |
+| `EU_SetEmptyActionClicked` | 设置内置操作按钮点击状态 |
+| `EU_GetEmptyActionClicked` | 读取内置操作按钮点击状态 |
+| `EU_SetEmptyActionCallback` | 设置内置操作按钮回调 |
 
 ## Python 使用
 
@@ -34,22 +38,30 @@ import sys
 sys.path.insert(0, "examples/python")
 import new_emoji_ui as ui
 
-hwnd = ui.create_window("✨ 空状态 示例", 240, 120, 860, 560)
-root = ui.create_container(hwnd, 0, 0, 0, 820, 500)
-# 请根据 `examples/python/new_emoji_ui.py` 中的 helper 创建 `Empty`。
-# 示例界面文案应使用中文，并在标题、按钮或核心内容中加入 emoji。
+hwnd = ui.create_window("📭 空状态 示例", 240, 120, 980, 680)
+root = ui.create_container(hwnd, 0, 0, 0, 940, 620)
+
+empty = ui.create_empty(
+    hwnd, root,
+    "暂无订单 🍔",
+    "当前筛选条件下没有订单，可调整条件后重试。",
+    40, 40, 360, 260,
+    image="https://shadow.elemecdn.com/app/element/hamburger.9cf7b091-55e9-11e9-a976-7f4d0b07eef6.png",
+    image_size=200,
+)
+
+# 默认插槽按钮：把真实 Button 挂载到 Empty 子树。
+ui.create_button(hwnd, empty, "➕", "创建内容", 106, 204, 148, 42)
+
 ui.dll.EU_ShowWindow(hwnd, 1)
 ```
 
-## 易语言调用
-
-易语言侧以 `DLL命令/易语言DLL命令.md` 为准。命令名使用中文，DLL 入口名保持真实 `EU_` 导出名。
-
 ## 状态与交互
 
-- 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
-- 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
-- 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
+- 无图片时绘制 emoji 图标；设置图片后优先绘制图片，加载中和失败时显示占位图标。
+- `image_size=0` 使用自适应尺寸；正数按逻辑尺寸绘制并随 DPI 缩放。
+- 内置 `action` 按钮保持兼容；需要更复杂按钮时，直接以 Empty 的元素 ID 作为父元素创建 Button。
+- 子按钮使用普通元素命中测试和绘制流程，可使用 `EU_SetElementClickCallback` 绑定事件。
 
 ## DPI 与首次窗口尺寸
 
@@ -57,8 +69,8 @@ ui.dll.EU_ShowWindow(hwnd, 1)
 
 ## 测试
 
-优先运行对应完整测试文件，例如 `tests/python/test_empty_complete_components.py`。如果该组件被组合测试覆盖，请查看 `tests/python/test_*_complete_components.py`。
+优先运行 `tests/python/test_empty_complete_components.py`，并在 `component_gallery.py` 中打开 Empty 专属页做视觉检查。
 
 ## 文档维护
 
-如果 `Empty` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py` 和 `DLL命令/易语言DLL命令.md`。
+如果 `Empty` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py`、`tests/python/test_new_emoji.py`、`DLL命令/易语言DLL命令.md` 和 `component_gallery.py`。

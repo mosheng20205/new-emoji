@@ -38,6 +38,12 @@ static void select_draw_text(RenderContext& ctx, const std::wstring& text,
     layout->Release();
 }
 
+static DWRITE_TEXT_ALIGNMENT select_text_alignment_from_int(int alignment) {
+    if (alignment == 1) return DWRITE_TEXT_ALIGNMENT_CENTER;
+    if (alignment == 2) return DWRITE_TEXT_ALIGNMENT_TRAILING;
+    return DWRITE_TEXT_ALIGNMENT_LEADING;
+}
+
 int Select::option_height() const {
     int h = select_round_px(style.font_size * 1.8f);
     return h < 26 ? 26 : h;
@@ -252,6 +258,22 @@ void Select::set_option_disabled(int index, bool disabled) {
     invalidate();
 }
 
+void Select::set_option_alignment(int alignment) {
+    if (alignment < 0) alignment = 0;
+    if (alignment > 2) alignment = 2;
+    if (option_alignment == alignment) return;
+    option_alignment = alignment;
+    invalidate();
+}
+
+void Select::set_value_alignment(int alignment) {
+    if (alignment < 0) alignment = 0;
+    if (alignment > 2) alignment = 2;
+    if (value_alignment == alignment) return;
+    value_alignment = alignment;
+    invalidate();
+}
+
 void Select::set_multiple(bool enabled) {
     multiple = enabled;
     if (multiple) {
@@ -344,7 +366,8 @@ void Select::paint(RenderContext& ctx) {
     float value_w = (float)bounds.w - value_x - pad_r - arrow_w;
     if (value_w < 1.0f) value_w = 1.0f;
     std::wstring value_text = !search_text.empty() && open ? search_text : selected_text();
-    select_draw_text(ctx, value_text, style, fg, value_x, 0.0f, value_w, (float)bounds.h);
+    select_draw_text(ctx, value_text, style, fg, value_x, 0.0f, value_w, (float)bounds.h,
+                     select_text_alignment_from_int(value_alignment));
     select_draw_text(ctx, open ? L"\u25b2" : L"\u25bc", style, t->text_secondary,
                      (float)bounds.w - pad_r - arrow_w, 0.0f, arrow_w, (float)bounds.h,
                      DWRITE_TEXT_ALIGNMENT_CENTER);
@@ -394,7 +417,8 @@ void Select::paint_dropdown(RenderContext& ctx) {
         }
         select_draw_text(ctx, options[i], style, item_color,
                          pad_l + (multiple ? 24.0f : 0.0f), y,
-                         (float)bounds.w - pad_l - pad_r - (multiple ? 24.0f : 0.0f), (float)item_h);
+                         (float)bounds.w - pad_l - pad_r - (multiple ? 24.0f : 0.0f), (float)item_h,
+                         select_text_alignment_from_int(option_alignment));
     }
 }
 

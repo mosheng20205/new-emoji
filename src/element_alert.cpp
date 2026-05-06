@@ -24,17 +24,28 @@ static Color feedback_color(const Theme* t, int type) {
     }
 }
 
+static float estimate_text_width(const std::wstring& value, float font_size) {
+    float width = 0.0f;
+    for (wchar_t ch : value) {
+        if (ch == L'\0') continue;
+        width += ch < 128 ? font_size * 0.55f : font_size;
+    }
+    return width;
+}
+
 static void draw_text(RenderContext& ctx, const std::wstring& text, const ElementStyle& style,
                       Color color, float x, float y, float w, float h,
                       float font_scale = 1.0f,
-                      DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_LEADING) {
+                      DWRITE_TEXT_ALIGNMENT align = DWRITE_TEXT_ALIGNMENT_LEADING,
+                      bool wrap = false,
+                      DWRITE_PARAGRAPH_ALIGNMENT paragraph = DWRITE_PARAGRAPH_ALIGNMENT_CENTER) {
     if (text.empty() || w <= 0.0f || h <= 0.0f) return;
     auto* layout = ctx.create_text_layout(text, style.font_name, style.font_size * font_scale, w, h);
     if (!layout) return;
     apply_emoji_font_fallback(layout, text);
     layout->SetTextAlignment(align);
-    layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-    layout->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+    layout->SetParagraphAlignment(paragraph);
+    layout->SetWordWrapping(wrap ? DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING_NO_WRAP);
     ctx.rt->DrawTextLayout(D2D1::Point2F(x, y), layout,
         ctx.get_brush(color), D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
     layout->Release();
@@ -65,6 +76,20 @@ void Alert::set_closable(bool value) {
     invalidate();
 }
 
+void Alert::set_advanced_options(bool show_icon_value, bool center_value, bool wrap_description_value) {
+    show_icon = show_icon_value;
+    center = center_value;
+    wrap_description = wrap_description_value;
+    last_action = 1;
+    invalidate();
+}
+
+void Alert::set_close_text(const std::wstring& value) {
+    close_text = value;
+    last_action = 1;
+    invalidate();
+}
+
 void Alert::set_closed(bool value) {
     closed = value;
     visible = !closed;
@@ -86,6 +111,10 @@ Rect Alert::close_rect() const {
     int size = round_px(style.font_size * 1.45f);
     if (size < 18) size = 18;
     if (size > bounds.h - 8) size = bounds.h - 8;
+    if (!close_text.empty()) {
+        int text_w = round_px(estimate_text_width(close_text, style.font_size) + style.font_size * 0.9f);
+        if (text_w > size) size = text_w;
+    }
     int x = bounds.w - style.pad_right - size;
     int y = (bounds.h - size) / 2;
     return { x, y, size, size };
@@ -125,25 +154,29 @@ void Alert::paint(RenderContext& ctx) {
     float icon_d = (std::max)(18.0f, style.font_size * 1.35f);
     float icon_x = (float)style.pad_left;
     float icon_y = ((float)bounds.h - icon_d) * 0.5f;
-    ctx.rt->FillEllipse(D2D1::Ellipse(D2D1::Point2F(icon_x + icon_d * 0.5f, icon_y + icon_d * 0.5f),
-                                      icon_d * 0.5f, icon_d * 0.5f),
-                        ctx.get_brush(fg));
-    std::wstring icon = alert_type == 1 ? L"✓" : (alert_type == 2 ? L"!" : (alert_type == 3 ? L"x" : L"i"));
-    draw_text(ctx, icon, style, effect == 1 ? base : 0xFFFFFFFF,
-              icon_x, icon_y, icon_d, icon_d, 0.9f, DWRITE_TEXT_ALIGNMENT_CENTER);
+    if (show_icon) {
+        ctx.rt->FillEllipse(D2D1::Ellipse(D2D1::Point2F(icon_x + icon_d * 0.5f, icon_y + icon_d * 0.5f),
+                                          icon_d * 0.5f, icon_d * 0.5f),
+                            ctx.get_brush(fg));
+        std::wstring icon = alert_type == 1 ? L"✓" : (alert_type == 2 ? L"!" : (alert_type == 3 ? L"x" : L"i"));
+        draw_text(ctx, icon, style, effect == 1 ? base : 0xFFFFFFFF,
+                  icon_x, icon_y, icon_d, icon_d, 0.9f, DWRITE_TEXT_ALIGNMENT_CENTER);
+    }
 
-    float text_x = icon_x + icon_d + 10.0f;
+    float text_x = show_icon ? icon_x + icon_d + 10.0f : (float)style.pad_left;
     float right = closable ? (float)close_rect().x - 8.0f : (float)bounds.w - style.pad_right;
     float text_w = right - text_x;
     if (text_w < 1.0f) text_w = 1.0f;
     float title_h = description.empty() ? (float)bounds.h : style.font_size * 1.55f;
     float title_y = description.empty() ? 0.0f : (float)style.pad_top;
+    DWRITE_TEXT_ALIGNMENT text_align = center ? DWRITE_TEXT_ALIGNMENT_CENTER : DWRITE_TEXT_ALIGNMENT_LEADING;
     draw_text(ctx, text.empty() ? L"Alert" : text, style, body,
-              text_x, title_y, text_w, title_h);
+              text_x, title_y, text_w, title_h, 1.0f, text_align);
     if (!description.empty()) {
         draw_text(ctx, description, style, effect == 1 ? 0xFFEFF6FF : t->text_secondary,
                   text_x, title_y + title_h - 2.0f, text_w,
-                  (float)bounds.h - title_y - title_h, 0.92f);
+                  (float)bounds.h - title_y - title_h, 0.92f, text_align,
+                  wrap_description, DWRITE_PARAGRAPH_ALIGNMENT_NEAR);
     }
 
     if (closable) {
@@ -157,11 +190,17 @@ void Alert::paint(RenderContext& ctx) {
         }
         float cx = (float)cr.x + cr.w * 0.5f;
         float cy = (float)cr.y + cr.h * 0.5f;
-        float s = (std::max)(4.0f, style.font_size * 0.32f);
-        ctx.rt->DrawLine(D2D1::Point2F(cx - s, cy - s), D2D1::Point2F(cx + s, cy + s),
-                         ctx.get_brush(close_fg), 1.2f);
-        ctx.rt->DrawLine(D2D1::Point2F(cx + s, cy - s), D2D1::Point2F(cx - s, cy + s),
-                         ctx.get_brush(close_fg), 1.2f);
+        if (!close_text.empty()) {
+            draw_text(ctx, close_text, style, close_fg,
+                      (float)cr.x, (float)cr.y, (float)cr.w, (float)cr.h,
+                      0.92f, DWRITE_TEXT_ALIGNMENT_CENTER);
+        } else {
+            float s = (std::max)(4.0f, style.font_size * 0.32f);
+            ctx.rt->DrawLine(D2D1::Point2F(cx - s, cy - s), D2D1::Point2F(cx + s, cy + s),
+                             ctx.get_brush(close_fg), 1.2f);
+            ctx.rt->DrawLine(D2D1::Point2F(cx + s, cy - s), D2D1::Point2F(cx - s, cy + s),
+                             ctx.get_brush(close_fg), 1.2f);
+        }
     }
 
     ctx.pop_clip();

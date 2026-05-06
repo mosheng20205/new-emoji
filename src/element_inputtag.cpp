@@ -242,6 +242,14 @@ void InputTag::commit_input() {
     invalidate();
 }
 
+void InputTag::commit_text(const std::wstring& value) {
+    if (value.empty()) return;
+    m_cursor_pos = normalized_cursor();
+    input_value.insert(m_cursor_pos, value);
+    m_cursor_pos += (int)value.size();
+    invalidate();
+}
+
 void InputTag::sync_text() {
     text.clear();
     for (size_t i = 0; i < tags.size(); ++i) {
@@ -291,11 +299,17 @@ void InputTag::paint(RenderContext& ctx) {
         ctx.rt->DrawRoundedRectangle(ROUNDED(chip, 14.0f, 14.0f),
             ctx.get_brush(with_alpha(t->accent, dark ? 0x42 : 0x30)), 1.0f);
         draw_text(ctx, tags[i], style, fg, chip.left + 12.0f, chip.top, chip.right - chip.left - 38.0f, 28.0f);
+        bool close_hot = (i == m_hover_close);
+        bool close_down = (i == m_press_close);
+        Color close_bg = close_down ? with_alpha(t->accent, dark ? 0x90 : 0x80)
+            : (close_hot ? with_alpha(t->accent, dark ? 0x68 : 0x4C)
+                         : with_alpha(t->text_secondary, 0x46));
+        Color close_fg = (close_hot || close_down) ? 0xFFFFFFFF : bg;
         D2D1_RECT_F close = { chip.right - 22.0f, chip.top + 7.0f, chip.right - 8.0f, chip.top + 21.0f };
         ctx.rt->FillEllipse(D2D1::Ellipse(
             D2D1::Point2F((close.left + close.right) * 0.5f, (close.top + close.bottom) * 0.5f), 6.0f, 6.0f),
-            ctx.get_brush(with_alpha(t->text_secondary, 0x46)));
-        draw_text(ctx, L"x", style, bg, close.left, close.top, close.right - close.left, close.bottom - close.top,
+            ctx.get_brush(close_bg));
+        draw_text(ctx, L"x", style, close_fg, close.left, close.top, close.right - close.left, close.bottom - close.top,
                   DWRITE_TEXT_ALIGNMENT_CENTER);
         x += tw + 8;
     }
@@ -338,7 +352,23 @@ void InputTag::on_mouse_up(int x, int y, MouseButton) {
         remove_tag(idx);
     }
     m_press_close = -1;
+    m_hover_close = close_at(x, y);
     pressed = false;
+    invalidate();
+}
+
+void InputTag::on_mouse_move(int x, int y) {
+    int next_hover = close_at(x, y);
+    if (m_hover_close != next_hover) {
+        m_hover_close = next_hover;
+        invalidate();
+    }
+}
+
+void InputTag::on_mouse_leave() {
+    Element::on_mouse_leave();
+    m_hover_close = -1;
+    m_press_close = -1;
     invalidate();
 }
 
@@ -376,10 +406,7 @@ void InputTag::on_char(wchar_t ch) {
         return;
     }
     if (ch <= 32 || ch == L'\r' || ch == L'\n') return;
-    m_cursor_pos = normalized_cursor();
-    input_value.insert(m_cursor_pos, 1, ch);
-    ++m_cursor_pos;
-    invalidate();
+    commit_text(std::wstring(1, ch));
 }
 
 void InputTag::on_focus() {

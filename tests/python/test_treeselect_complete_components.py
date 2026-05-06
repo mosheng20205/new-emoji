@@ -7,6 +7,7 @@ import test_new_emoji as ui
 
 g_hwnd = None
 g_tree_select_id = 0
+g_json_tree_select_id = 0
 g_search_id = 0
 g_multi_id = 0
 g_clear_id = 0
@@ -23,6 +24,34 @@ TREE_ITEMS = [
     ("🔎 自动补全", 2, True),
     ("📊 数据展示", 1, True),
 ]
+
+TREE_SELECT_JSON_DATA = {
+    "props": {"label": "name", "children": "zones", "isLeaf": "leaf"},
+    "defaultExpandedKeys": ["sel-root", "sel-dev"],
+    "defaultCheckedKeys": ["sel-tree"],
+    "currentKey": "sel-tree",
+    "data": [
+        {
+            "key": "sel-root",
+            "name": "🏢 部门目录",
+            "icon": "🏢",
+            "tag": "组织",
+            "zones": [
+                {
+                    "key": "sel-dev",
+                    "name": "👩‍💻 产品研发",
+                    "icon": "👩‍💻",
+                    "tag": "常用",
+                    "zones": [
+                        {"key": "sel-tree", "name": "🌳 树选择任务", "leaf": True, "tag": "选中"},
+                        {"key": "sel-lock", "name": "🔒 只读任务", "leaf": True, "disabled": True},
+                    ],
+                },
+                {"key": "sel-lazy", "name": "⏳ 远程成员", "lazy": True, "leaf": False},
+            ],
+        }
+    ],
+}
 
 
 @ui.CloseCallback
@@ -60,7 +89,7 @@ def on_click(element_id):
 
 
 def main():
-    global g_hwnd, g_tree_select_id, g_search_id, g_multi_id, g_clear_id
+    global g_hwnd, g_tree_select_id, g_json_tree_select_id, g_search_id, g_multi_id, g_clear_id
 
     hwnd = ui.create_window("🌳 树选择器完整验证", 240, 90, 760, 520)
     if not hwnd:
@@ -85,6 +114,35 @@ def main():
     ui.set_tree_select_options(hwnd, g_tree_select_id, multiple=True, clearable=True, searchable=True)
     ui.set_tree_select_open(hwnd, g_tree_select_id, True)
 
+    ui.create_text(hwnd, content_id, "🧩 JSON 高级选择", 28, 228, 180, 28)
+    g_json_tree_select_id = ui.create_tree_select_json(
+        hwnd, content_id, TREE_SELECT_JSON_DATA,
+        options={
+            "multiple": True,
+            "clearable": True,
+            "searchable": True,
+            "open": True,
+            "accordion": True,
+            "draggable": True,
+            "searchText": "树",
+        },
+        selected_keys=["sel-tree"],
+        expanded_keys=["sel-root", "sel-dev", "sel-lazy"],
+        x=28, y=264, w=340, h=40,
+    )
+    ui.append_tree_select_node_json(hwnd, g_json_tree_select_id, "sel-dev", {
+        "key": "sel-added",
+        "label": "✨ 临时成员",
+        "leaf": True,
+        "tag": "新增",
+    })
+    ui.update_tree_select_node_json(hwnd, g_json_tree_select_id, "sel-added", {
+        "key": "sel-added",
+        "label": "✨ 临时成员已确认",
+        "leaf": True,
+        "tag": "确认",
+    })
+
     g_search_id = ui.create_button(hwnd, content_id, "🔎", "搜索“树”", 420, 164, 170, 42)
     g_multi_id = ui.create_button(hwnd, content_id, "✅", "设置多选", 420, 222, 170, 42)
     g_clear_id = ui.create_button(hwnd, content_id, "🧹", "清空选择", 420, 280, 170, 42)
@@ -96,11 +154,21 @@ def main():
 
     ui.dll.EU_ShowWindow(hwnd, 1)
     ui.dll.EU_SetElementFocus(hwnd, g_tree_select_id)
+    json_state = ui.get_tree_select_state_json(hwnd, g_json_tree_select_id)
+    selected_keys = ui.get_tree_select_selected_keys_json(hwnd, g_json_tree_select_id)
+    expanded_keys = ui.get_tree_select_expanded_keys_json(hwnd, g_json_tree_select_id)
+    if "sel-tree" not in selected_keys:
+        raise AssertionError(f"JSON 选择键读回异常: {selected_keys}")
+    if not json_state.get("open") or not json_state.get("searchable") or not json_state.get("multiple"):
+        raise AssertionError(f"JSON 树选择状态异常: {json_state}")
+    if "sel-root" not in expanded_keys or "sel-lazy" not in expanded_keys:
+        raise AssertionError(f"JSON 展开键读回异常: {expanded_keys}")
     print(
         "[初始] "
         f"打开={ui.get_tree_select_open(hwnd, g_tree_select_id)} "
         f"配置={ui.get_tree_select_options(hwnd, g_tree_select_id)}"
     )
+    print(f"[JSON] 状态={json_state} 选中={selected_keys} 展开={expanded_keys}")
     print("树选择器完整验证已显示。关闭窗口或等待 60 秒结束。")
 
     msg = wintypes.MSG()
@@ -134,7 +202,9 @@ def main():
             time.sleep(0.01)
 
     final_options = ui.get_tree_select_options(hwnd, g_tree_select_id)
+    final_json = ui.get_tree_select_state_json(hwnd, g_json_tree_select_id)
     print(f"[结果] {final_options}")
+    print(f"[JSON结果] {final_json}")
     print("树选择器完整验证结束。")
 
 

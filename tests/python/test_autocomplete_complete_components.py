@@ -165,6 +165,15 @@ def main():
     msg = wintypes.MSG()
     pump_messages(user32, msg, 0.35)
 
+    click_logical_point(user32, hwnd, 44 + 80, 156 + 21)
+    pump_messages(user32, msg, 0.25)
+    require_equal("首次点击聚焦后保持下拉打开", ui.get_autocomplete_open(hwnd, focus_auto), 1)
+    click_logical_point(user32, hwnd, 44 + 80, 156 + 21)
+    pump_messages(user32, msg, 0.25)
+    require_equal("已聚焦后再次点击可关闭下拉", ui.get_autocomplete_open(hwnd, focus_auto), 0)
+
+    ui.dll.EU_SetElementFocus(hwnd, delayed_auto)
+    pump_messages(user32, msg, 0.2)
     ui.dll.EU_SetElementFocus(hwnd, focus_auto)
     pump_messages(user32, msg, 0.35)
     require_equal("激活即列出 open", ui.get_autocomplete_options(hwnd, focus_auto)["open"], 1)

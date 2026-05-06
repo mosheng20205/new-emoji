@@ -347,15 +347,21 @@ void Autocomplete::on_mouse_up(int x, int y, MouseButton) {
         set_selected_index(idx);
         open = false;
     } else if (part == PartMain && m_press_part == PartMain) {
-        open = !open;
+        if (m_opened_on_focus) {
+            set_open(true);
+        } else {
+            set_open(!open);
+        }
     }
     m_press_part = PartNone;
     m_press_index = -1;
+    m_opened_on_focus = false;
     pressed = false;
     invalidate();
 }
 
 void Autocomplete::on_key_down(int vk, int) {
+    m_opened_on_focus = false;
     if (vk == VK_RETURN) {
         if (open && selected_index >= 0 && selected_index < (int)suggestions.size()) {
             set_selected_index(selected_index);
@@ -397,6 +403,7 @@ void Autocomplete::on_key_down(int vk, int) {
 
 void Autocomplete::on_char(wchar_t ch) {
     if (ch == L'\r' || ch == L'\n' || ch == 27 || ch < 32) return;
+    m_opened_on_focus = false;
     if (m_replace_on_next_char) {
         value.clear();
         m_replace_on_next_char = false;
@@ -408,8 +415,13 @@ void Autocomplete::on_char(wchar_t ch) {
 
 void Autocomplete::on_focus() {
     has_focus = true;
-    if (trigger_on_focus) set_open(true);
-    else invalidate();
+    if (trigger_on_focus) {
+        set_open(true);
+        m_opened_on_focus = open;
+    } else {
+        m_opened_on_focus = false;
+        invalidate();
+    }
 }
 
 void Autocomplete::on_blur() {
@@ -417,6 +429,7 @@ void Autocomplete::on_blur() {
     open = false;
     m_hover_index = -1;
     m_press_part = PartNone;
+    m_opened_on_focus = false;
     m_click_callback_armed = false;
     invalidate();
 }

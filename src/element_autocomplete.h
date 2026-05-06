@@ -62,6 +62,7 @@ private:
     Part m_press_part = PartNone;
     bool m_click_callback_armed = false;
     bool m_replace_on_next_char = false;
+    bool m_opened_on_focus = false;
 
     Rect suffix_icon_rect() const;
     float left_padding() const;

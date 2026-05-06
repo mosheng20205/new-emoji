@@ -7,6 +7,7 @@ import test_new_emoji as ui
 
 g_hwnd = None
 g_tree_id = 0
+g_json_tree_id = 0
 g_expand_id = 0
 g_check_id = 0
 
@@ -21,6 +22,34 @@ TREE_ITEMS = [
     ("🔀 穿梭框", 2, True, False, False),
     ("📊 数据展示", 1, True, False, False),
 ]
+
+TREE_JSON_DATA = {
+    "props": {"label": "name", "children": "zones", "isLeaf": "leaf"},
+    "defaultExpandedKeys": ["json-root", "json-team"],
+    "defaultCheckedKeys": ["json-ui"],
+    "currentKey": "json-ui",
+    "data": [
+        {
+            "key": "json-root",
+            "name": "📦 JSON 项目资源",
+            "icon": "📦",
+            "tag": "主目录",
+            "zones": [
+                {
+                    "key": "json-team",
+                    "name": "👥 研发小组",
+                    "icon": "👥",
+                    "tag": "展开",
+                    "zones": [
+                        {"key": "json-ui", "name": "🎨 界面任务", "leaf": True, "tag": "进行中"},
+                        {"key": "json-disabled", "name": "🔒 冻结节点", "leaf": True, "disabled": True},
+                    ],
+                },
+                {"key": "json-lazy", "name": "⏳ 懒加载分支", "lazy": True, "leaf": False},
+            ],
+        }
+    ],
+}
 
 
 @ui.CloseCallback
@@ -53,7 +82,7 @@ def on_click(element_id):
 
 
 def main():
-    global g_hwnd, g_tree_id, g_expand_id, g_check_id
+    global g_hwnd, g_tree_id, g_json_tree_id, g_expand_id, g_check_id
 
     hwnd = ui.create_window("🌲 树组件完整验证", 220, 80, 760, 560)
     if not hwnd:
@@ -77,9 +106,50 @@ def main():
     ui.set_tree_options(hwnd, g_tree_id, show_checkbox=True, keyboard_navigation=True, lazy_mode=True)
     ui.set_tree_item_lazy(hwnd, g_tree_id, 4, True)
 
-    ui.create_text(hwnd, content_id, "✅ 已勾选的节点会显示主题色复选框", 482, 136, 240, 32)
-    ui.create_text(hwnd, content_id, "⌨️ 聚焦树后可用上下键移动，空格切换勾选", 482, 174, 240, 48)
-    ui.create_text(hwnd, content_id, "⏳ 懒加载节点展开后会记录最后请求索引", 482, 232, 240, 48)
+    ui.create_text(hwnd, content_id, "🧩 JSON 高级树", 482, 128, 220, 30)
+    g_json_tree_id = ui.create_tree_json(
+        hwnd, content_id, TREE_JSON_DATA,
+        options={
+            "showCheckbox": True,
+            "lazy": True,
+            "accordion": True,
+            "draggable": True,
+            "showActions": True,
+            "filterText": "JSON",
+        },
+        x=482, y=164, w=230, h=128,
+    )
+    ui.append_tree_node_json(hwnd, g_json_tree_id, "json-team", {
+        "key": "json-added",
+        "label": "✨ 动态追加",
+        "leaf": True,
+        "tag": "新增",
+    })
+    ui.update_tree_node_json(hwnd, g_json_tree_id, "json-added", {
+        "key": "json-added",
+        "label": "✨ 动态已更新",
+        "leaf": True,
+        "tag": "更新",
+    })
+    ui.set_tree_checked_keys_json(hwnd, g_json_tree_id, ["json-ui", "json-disabled"])
+    ui.set_tree_expanded_keys_json(hwnd, g_json_tree_id, ["json-root", "json-team", "json-lazy"])
+    ui.set_tree_expanded_keys_json(hwnd, g_json_tree_id, ["json-root"])
+    ui.append_tree_node_json(hwnd, g_json_tree_id, "json-team", {
+        "key": "json-hidden-add",
+        "label": "✨ 折叠父级下的新增项",
+        "leaf": True,
+        "tag": "隐藏",
+    })
+    collapsed_after_append = ui.get_tree_state_json(hwnd, g_json_tree_id)
+    if "json-team" in collapsed_after_append.get("expandedKeys", []):
+        raise AssertionError(f"普通追加不应强制展开父节点: {collapsed_after_append}")
+    ui.set_tree_options_json(hwnd, g_json_tree_id, {"filterText": "动态"})
+    ui.set_tree_expanded_keys_json(hwnd, g_json_tree_id, [])
+    filtered_collapsed = ui.get_tree_state_json(hwnd, g_json_tree_id)
+    if filtered_collapsed.get("visibleCount", 0) > 1:
+        raise AssertionError(f"过滤状态折叠根节点后仍暴露子节点: {filtered_collapsed}")
+    ui.set_tree_options_json(hwnd, g_json_tree_id, {"filterText": "JSON"})
+    ui.set_tree_expanded_keys_json(hwnd, g_json_tree_id, ["json-root", "json-lazy"])
 
     g_expand_id = ui.create_button(hwnd, content_id, "⏳", "展开待加载", 482, 310, 180, 42)
     g_check_id = ui.create_button(hwnd, content_id, "✅", "勾选树选择器", 482, 366, 180, 42)
@@ -90,6 +160,15 @@ def main():
     ui.dll.EU_SetElementFocus(hwnd, g_tree_id)
 
     initial = ui.get_tree_options(hwnd, g_tree_id)
+    json_state = ui.get_tree_state_json(hwnd, g_json_tree_id)
+    checked_keys = ui.get_tree_checked_keys_json(hwnd, g_json_tree_id)
+    expanded_keys = ui.get_tree_expanded_keys_json(hwnd, g_json_tree_id)
+    if "json-ui" not in checked_keys or "json-disabled" in checked_keys:
+        raise AssertionError(f"JSON 勾选键读回异常: {checked_keys}")
+    if "json-root" not in expanded_keys or "json-lazy" not in expanded_keys:
+        raise AssertionError(f"JSON 展开键读回异常: {expanded_keys}")
+    if not json_state.get("showCheckbox") or not json_state.get("draggable"):
+        raise AssertionError(f"JSON 选项读回异常: {json_state}")
     print(
         "[初始] "
         f"复选={initial['show_checkbox']} "
@@ -97,6 +176,7 @@ def main():
         f"懒加载={initial['lazy_mode']} "
         f"可见节点={ui.get_tree_visible_count(hwnd, g_tree_id)}"
     )
+    print(f"[JSON] 状态={json_state} 勾选={checked_keys} 展开={expanded_keys}")
     print("树组件完整验证已显示。关闭窗口或等待 60 秒结束。")
 
     msg = wintypes.MSG()
@@ -131,12 +211,14 @@ def main():
             time.sleep(0.01)
 
     final_options = ui.get_tree_options(hwnd, g_tree_id)
+    final_json = ui.get_tree_state_json(hwnd, g_json_tree_id)
     print(
         "[结果] "
         f"选中={ui.get_tree_selected(hwnd, g_tree_id)} "
         f"已勾选={final_options['checked_count']} "
         f"最后懒加载={final_options['last_lazy_index']}"
     )
+    print(f"[JSON结果] {final_json}")
     print("树组件完整验证结束。")
 
 

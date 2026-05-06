@@ -5,6 +5,7 @@ class Badge : public Element {
 public:
     std::wstring value;
     int max_value = 99;
+    int badge_type = 0;
     bool dot = false;
     bool hidden = false;
     bool show_zero = true;
@@ -18,12 +19,15 @@ public:
 
     void set_value(const std::wstring& value_text);
     void set_max_value(int value);
+    void set_type(int value);
     void set_dot(bool value);
     void set_options(bool dot_value, bool show_zero_value, int offset_x_value, int offset_y_value);
     void set_layout_options(int placement_value, bool standalone_value);
     bool is_hidden() const;
+    int get_type() const { return badge_type; }
 
 private:
     std::wstring display_value() const;
+    float content_anchor_width(const std::wstring& badge_text) const;
     Rect badge_rect(const std::wstring& badge_text) const;
 };

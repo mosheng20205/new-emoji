@@ -3,11 +3,28 @@
 #include "render_context.h"
 #include "theme.h"
 #include <algorithm>
+#include <cmath>
 
 #define ROUNDED(r, rx, ry) D2D1_ROUNDED_RECT{ (r), (rx), (ry) }
 
 static Color with_alpha(Color color, unsigned alpha) {
     return (color & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
+}
+
+static int scale_int(int value, float scale) {
+    return (int)std::lround((float)value * scale);
+}
+
+static CardBodyStyle scale_body_style(const CardBodyStyle& value, float scale) {
+    CardBodyStyle out = value;
+    out.pad_left = scale_int(value.pad_left, scale);
+    out.pad_top = scale_int(value.pad_top, scale);
+    out.pad_right = scale_int(value.pad_right, scale);
+    out.pad_bottom = scale_int(value.pad_bottom, scale);
+    out.font_size = value.font_size * scale;
+    out.item_gap = scale_int(value.item_gap, scale);
+    out.item_padding_y = scale_int(value.item_padding_y, scale);
+    return out;
 }
 
 static void draw_text(RenderContext& ctx, const std::wstring& text, const ElementStyle& style,
@@ -29,6 +46,11 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+void Card::apply_dpi_scale(float scale) {
+    Element::apply_dpi_scale(scale);
+    body_style = scale_body_style(logical_body_style, scale);
+}
+
 void Card::set_title(const std::wstring& value) {
     title = value;
     invalidate();
@@ -42,6 +64,16 @@ void Card::set_body(const std::wstring& value) {
 
 void Card::set_footer(const std::wstring& value) {
     footer = value;
+    invalidate();
+}
+
+void Card::set_items(const std::vector<std::wstring>& values) {
+    items = values;
+    invalidate();
+}
+
+void Card::set_body_style(const CardBodyStyle& value) {
+    logical_body_style = value;
     invalidate();
 }
 
@@ -94,6 +126,17 @@ int Card::action_at(int x, int y) const {
     return -1;
 }
 
+Element* Card::hit_test(int x, int y) {
+    int lx = x - bounds.x;
+    int ly = y - bounds.y;
+    bool inside = visible && lx >= 0 && lx < bounds.w && ly >= 0 && ly < bounds.h;
+    if (hoverable && hovered != inside) {
+        hovered = inside;
+        if (shadow == 2) invalidate();
+    }
+    return Element::hit_test(x, y);
+}
+
 void Card::paint(RenderContext& ctx) {
     if (!visible || bounds.w <= 0 || bounds.h <= 0) return;
 
@@ -127,12 +170,8 @@ void Card::paint(RenderContext& ctx) {
 
     D2D1_RECT_F rect = { 0, 0, (float)bounds.w, (float)bounds.h };
     ctx.rt->FillRoundedRectangle(ROUNDED(rect, radius, radius), ctx.get_brush(bg));
-    ctx.rt->DrawRoundedRectangle(ROUNDED(D2D1::RectF(0.5f, 0.5f,
-        (float)bounds.w - 0.5f, (float)bounds.h - 0.5f), radius, radius),
-        ctx.get_brush(border), 1.0f);
 
     float pad_x = (float)style.pad_left;
-    float pad_y = (float)style.pad_top;
     float content_w = (float)bounds.w - style.pad_left - style.pad_right;
     if (content_w < 1.0f) content_w = 1.0f;
     float header_h = title.empty() ? 0.0f : (std::max)(style.font_size * 2.9f, 40.0f);
@@ -147,11 +186,38 @@ void Card::paint(RenderContext& ctx) {
     }
 
     float footer_h = footer_height();
-    float body_top = title.empty() ? pad_y : header_h + pad_y;
-    float body_h = (float)bounds.h - body_top - style.pad_bottom - footer_h;
+    float body_x = (float)body_style.pad_left;
+    float body_top = title.empty() ? (float)body_style.pad_top : header_h + (float)body_style.pad_top;
+    float body_w = (float)bounds.w - body_style.pad_left - body_style.pad_right;
+    float body_h = (float)bounds.h - body_top - body_style.pad_bottom - footer_h;
+    if (body_w < 1.0f) body_w = 1.0f;
     if (body_h < 1.0f) body_h = 1.0f;
-    draw_text(ctx, body.empty() ? text : body, style, body_fg,
-              pad_x, body_top, content_w, body_h, 1.0f);
+
+    ElementStyle body_text_style = style;
+    body_text_style.font_size = body_style.font_size > 0.0f ? body_style.font_size : style.font_size;
+    if (!items.empty()) {
+        float row_text_h = (std::max)(body_text_style.font_size * 1.45f, body_text_style.font_size + 6.0f);
+        float row_h = row_text_h + (float)body_style.item_padding_y * 2.0f;
+        float y = body_top;
+        for (size_t i = 0; i < items.size() && y < body_top + body_h; ++i) {
+            float available_h = (std::min)(row_h, body_top + body_h - y);
+            draw_text(ctx, items[i], body_text_style, body_fg,
+                      body_x, y + (float)body_style.item_padding_y,
+                      body_w, (std::max)(1.0f, available_h - (float)body_style.item_padding_y * 2.0f),
+                      1.0f, DWRITE_FONT_WEIGHT_NORMAL, DWRITE_WORD_WRAPPING_NO_WRAP,
+                      DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+            y += row_h;
+            if (body_style.divider && i + 1 < items.size() && y < body_top + body_h) {
+                ctx.rt->DrawLine(D2D1::Point2F(body_x, y),
+                                 D2D1::Point2F(body_x + body_w, y),
+                                 ctx.get_brush(with_alpha(border, 0xAA)), 1.0f);
+            }
+            y += (float)body_style.item_gap;
+        }
+    } else {
+        draw_text(ctx, body.empty() ? text : body, body_text_style, body_fg,
+                  body_x, body_top, body_w, body_h, 1.0f);
+    }
 
     if (footer_h > 0.0f) {
         float footer_top = (float)bounds.h - footer_h;
@@ -187,6 +253,17 @@ void Card::paint(RenderContext& ctx) {
             right -= aw + gap;
         }
     }
+
+    D2D1_RECT_F content_clip = { 0.0f, 0.0f, (float)bounds.w, (float)bounds.h };
+    ctx.push_clip(content_clip);
+    for (auto& ch : children) {
+        if (ch->visible) ch->paint(ctx);
+    }
+    ctx.pop_clip();
+
+    ctx.rt->DrawRoundedRectangle(ROUNDED(D2D1::RectF(0.5f, 0.5f,
+        (float)bounds.w - 0.5f, (float)bounds.h - 0.5f), radius, radius),
+        ctx.get_brush(border), style.border_width > 0.0f ? style.border_width : 1.0f);
 
     ctx.pop_clip();
     ctx.rt->SetTransform(saved);

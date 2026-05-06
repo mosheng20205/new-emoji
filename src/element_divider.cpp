@@ -5,6 +5,10 @@
 #include <algorithm>
 #include <cmath>
 
+static int clamp_int(int value, int min_value, int max_value) {
+    return (std::max)(min_value, (std::min)(max_value, value));
+}
+
 static void draw_text(RenderContext& ctx, const std::wstring& text, const ElementStyle& style,
                       Color color, float x, float y, float w, float h) {
     if (text.empty() || w <= 0.0f || h <= 0.0f) return;
@@ -19,6 +23,20 @@ static void draw_text(RenderContext& ctx, const std::wstring& text, const Elemen
     layout->Release();
 }
 
+std::wstring Divider::display_text() const {
+    if (content_icon.empty()) return text;
+    if (text.empty()) return content_icon;
+    return content_icon + L" " + text;
+}
+
+void Divider::apply_dpi_scale(float scale) {
+    Element::apply_dpi_scale(scale);
+    if (scale <= 0.0f) scale = 1.0f;
+    line_width = logical_line_width > 0.0f ? logical_line_width * scale : 1.0f * scale;
+    line_margin = (int)std::lround((float)logical_line_margin * scale);
+    text_gap = (int)std::lround((float)logical_text_gap * scale);
+}
+
 void Divider::set_direction(int value) {
     direction = value == 1 ? 1 : 0;
     invalidate();
@@ -31,12 +49,20 @@ void Divider::set_content_position(int value) {
     invalidate();
 }
 
+void Divider::set_line_style(int value) {
+    line_style = clamp_int(value, 0, 3);
+    dashed = line_style == 1;
+    invalidate();
+}
+
 void Divider::set_options(int new_direction, int position, Color color, float width, int dash, const std::wstring& label) {
     set_direction(new_direction);
     set_content_position(position);
     text = label;
-    line_width = width > 0.0f ? width : 1.0f;
-    dashed = dash != 0;
+    content_icon.clear();
+    logical_line_width = width > 0.0f ? width : 1.0f;
+    line_width = logical_line_width;
+    set_line_style(dash != 0 ? 1 : 0);
     if (has_logical_style) {
         logical_style.border_color = color;
     } else {
@@ -50,33 +76,61 @@ void Divider::get_options(int& out_direction, int& position, Color& color, float
     out_direction = direction;
     position = content_position;
     color = s.border_color;
-    width = line_width;
+    width = logical_line_width;
     dash = dashed ? 1 : 0;
 }
 
 void Divider::set_spacing(int margin, int gap) {
-    line_margin = (std::max)(0, (std::min)(96, margin));
-    text_gap = (std::max)(0, (std::min)(40, gap));
+    logical_line_margin = clamp_int(margin, 0, 96);
+    logical_text_gap = clamp_int(gap, 0, 40);
+    line_margin = logical_line_margin;
+    text_gap = logical_text_gap;
     invalidate();
 }
 
 void Divider::get_spacing(int& margin, int& gap) const {
-    margin = line_margin;
-    gap = text_gap;
+    margin = logical_line_margin;
+    gap = logical_text_gap;
+}
+
+void Divider::set_content(const std::wstring& icon, const std::wstring& label) {
+    content_icon = icon;
+    text = label;
+    invalidate();
+}
+
+void Divider::get_content(std::wstring& icon, std::wstring& label) const {
+    icon = content_icon;
+    label = text;
 }
 
 static void draw_line(RenderContext& ctx, D2D1_POINT_2F a, D2D1_POINT_2F b,
-                      ID2D1Brush* brush, float width, bool dashed) {
-    if (!dashed) {
-        ctx.rt->DrawLine(a, b, brush, width);
-        return;
-    }
+                      ID2D1Brush* brush, float width, int line_style) {
     bool horizontal = fabsf(a.y - b.y) < 0.1f;
     float start = horizontal ? a.x : a.y;
     float end = horizontal ? b.x : b.y;
     if (end < start) std::swap(start, end);
-    float dash = 8.0f;
-    float gap = 5.0f;
+    if (end - start <= 0.5f || width <= 0.0f) return;
+
+    if (line_style == 3) {
+        float offset = (std::max)(2.0f, width + 2.0f);
+        if (horizontal) {
+            ctx.rt->DrawLine(D2D1::Point2F(start, a.y - offset), D2D1::Point2F(end, a.y - offset), brush, width);
+            ctx.rt->DrawLine(D2D1::Point2F(start, a.y + offset), D2D1::Point2F(end, a.y + offset), brush, width);
+        } else {
+            ctx.rt->DrawLine(D2D1::Point2F(a.x - offset, start), D2D1::Point2F(a.x - offset, end), brush, width);
+            ctx.rt->DrawLine(D2D1::Point2F(a.x + offset, start), D2D1::Point2F(a.x + offset, end), brush, width);
+        }
+        return;
+    }
+
+    if (line_style == 0) {
+        ctx.rt->DrawLine(a, b, brush, width);
+        return;
+    }
+
+    float dash = line_style == 2 ? (std::max)(width, 2.0f) : 8.0f;
+    float gap = line_style == 2 ? (std::max)(width * 2.2f, 4.0f) : 5.0f;
     for (float p = start; p < end; p += dash + gap) {
         float q = (std::min)(p + dash, end);
         if (horizontal) {
@@ -102,11 +156,14 @@ void Divider::paint(RenderContext& ctx) {
     D2D1_RECT_F clip = { 0, 0, (float)bounds.w, (float)bounds.h };
     ctx.push_clip(clip);
 
+    float stroke = (std::max)(1.0f, line_width);
+    int draw_style = clamp_int(line_style, 0, 3);
+
     if (direction == 1) {
         float x = (float)bounds.w * 0.5f;
         draw_line(ctx, D2D1::Point2F(x, (float)style.pad_top + (float)line_margin),
                   D2D1::Point2F(x, (float)bounds.h - style.pad_bottom - (float)line_margin),
-                  ctx.get_brush(line), line_width, dashed);
+                  ctx.get_brush(line), stroke, draw_style);
         ctx.pop_clip();
         ctx.rt->SetTransform(saved);
         return;
@@ -116,12 +173,13 @@ void Divider::paint(RenderContext& ctx) {
     float start_x = (float)style.pad_left + (float)line_margin;
     float end_x = (float)bounds.w - (float)style.pad_right - (float)line_margin;
     if (end_x < start_x) end_x = start_x;
-    if (text.empty()) {
+    std::wstring content = display_text();
+    if (content.empty()) {
         draw_line(ctx, D2D1::Point2F(start_x, y),
                   D2D1::Point2F(end_x, y),
-                  ctx.get_brush(line), line_width, dashed);
+                  ctx.get_brush(line), stroke, draw_style);
     } else {
-        float text_w = (std::min)((float)bounds.w * 0.55f, (float)text.size() * style.font_size * 0.72f + 28.0f);
+        float text_w = (std::min)((float)bounds.w * 0.70f, (float)content.size() * style.font_size * 0.72f + 32.0f);
         float text_h = (std::max)(style.font_size * 1.7f, 24.0f);
         float text_x = ((float)bounds.w - text_w) * 0.5f;
         if (content_position == 0) text_x = (float)style.pad_left + 24.0f;
@@ -131,10 +189,10 @@ void Divider::paint(RenderContext& ctx) {
 
         float gap = (float)text_gap;
         draw_line(ctx, D2D1::Point2F(start_x, y),
-                  D2D1::Point2F(text_x - gap, y), ctx.get_brush(line), line_width, dashed);
+                  D2D1::Point2F(text_x - gap, y), ctx.get_brush(line), stroke, draw_style);
         draw_line(ctx, D2D1::Point2F(text_x + text_w + gap, y),
-                  D2D1::Point2F(end_x, y), ctx.get_brush(line), line_width, dashed);
-        draw_text(ctx, text, style, fg, text_x, y - text_h * 0.5f, text_w, text_h);
+                  D2D1::Point2F(end_x, y), ctx.get_brush(line), stroke, draw_style);
+        draw_text(ctx, content, style, fg, text_x, y - text_h * 0.5f, text_w, text_h);
     }
 
     ctx.pop_clip();

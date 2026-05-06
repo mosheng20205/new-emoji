@@ -7,6 +7,7 @@ import test_new_emoji as ui
 
 g_hwnd = None
 g_alert_id = 0
+g_custom_alert_id = 0
 g_close_button_id = 0
 g_reopen_button_id = 0
 g_events = []
@@ -54,7 +55,7 @@ def pump_messages(user32, msg, duration):
 
 
 def main():
-    global g_hwnd, g_alert_id, g_close_button_id, g_reopen_button_id
+    global g_hwnd, g_alert_id, g_custom_alert_id, g_close_button_id, g_reopen_button_id
 
     hwnd = ui.create_window("🚨 警告提示完整组件验证", 220, 80, 920, 620)
     if not hwnd:
@@ -103,8 +104,28 @@ def main():
         h=72,
     )
 
-    g_close_button_id = ui.create_button(hwnd, content_id, "✖️", "程序关闭", 46, 382, 140, 42)
-    g_reopen_button_id = ui.create_button(hwnd, content_id, "🔄", "重新显示", 210, 382, 140, 42)
+    long_desc = "这是一句绕口令：黑灰化肥会挥发发灰黑化肥挥发；灰黑化肥会挥发发黑灰化肥发挥。黑灰化肥会挥发发灰黑化肥黑灰挥发化为灰。"
+    g_custom_alert_id = ui.create_alert_ex(
+        hwnd,
+        content_id,
+        title="🎯 居中长描述",
+        description=long_desc,
+        alert_type=0,
+        effect=0,
+        closable=True,
+        show_icon=False,
+        center=True,
+        wrap_description=True,
+        close_text="知道了",
+        x=46,
+        y=346,
+        w=760,
+        h=92,
+    )
+    ui.set_alert_close_callback(hwnd, g_custom_alert_id, on_alert_close)
+
+    g_close_button_id = ui.create_button(hwnd, content_id, "✖️", "程序关闭", 46, 470, 140, 42)
+    g_reopen_button_id = ui.create_button(hwnd, content_id, "🔄", "重新显示", 210, 470, 140, 42)
     ui.dll.EU_SetElementClickCallback(hwnd, g_close_button_id, on_click)
     ui.dll.EU_SetElementClickCallback(hwnd, g_reopen_button_id, on_click)
 
@@ -112,6 +133,17 @@ def main():
     print("[初始状态]", initial)
     if not initial or initial["alert_type"] != 1 or initial["closable"] != 1 or initial["closed"] != 0:
         raise RuntimeError("警告提示初始状态读回失败")
+    if ui.get_alert_advanced_options(hwnd, g_alert_id) != (True, False, False):
+        raise RuntimeError("旧警告提示高级默认值不兼容")
+    custom_options = ui.get_alert_advanced_options(hwnd, g_custom_alert_id)
+    if custom_options != (False, True, True):
+        raise RuntimeError(f"高级警告提示选项读回失败: {custom_options}")
+    if ui.get_alert_text(hwnd, g_custom_alert_id, 0) != "🎯 居中长描述":
+        raise RuntimeError("警告提示标题读回失败")
+    if ui.get_alert_text(hwnd, g_custom_alert_id, 1) != long_desc:
+        raise RuntimeError("警告提示描述读回失败")
+    if ui.get_alert_text(hwnd, g_custom_alert_id, 2) != "知道了":
+        raise RuntimeError("警告提示关闭文字读回失败")
 
     ui.set_alert_description(hwnd, g_alert_id, "✅ 已更新描述：关闭事件和完整状态都能读回。")
     ui.set_alert_type(hwnd, g_alert_id, 3)
@@ -133,9 +165,28 @@ def main():
     if reopened["closed"] != 0:
         raise RuntimeError("警告提示重新显示失败")
 
-    ui.dll.EU_SetElementFocus(hwnd, g_alert_id)
+    ui.dll.EU_ShowWindow(hwnd, 1)
     user32 = ctypes.windll.user32
     msg = wintypes.MSG()
+    scale = user32.GetDpiForWindow(hwnd) / 96.0 if hasattr(user32, "GetDpiForWindow") else 1.0
+    for logical_x, logical_y in [(754, 392), (754, 430), (784, 392), (734, 392)]:
+        click_x = int(logical_x * scale)
+        click_y = int(logical_y * scale)
+        user32.SendMessageW(hwnd, 0x0201, 0x0001, (click_y << 16) | click_x)
+        user32.SendMessageW(hwnd, 0x0202, 0x0000, (click_y << 16) | click_x)
+        pump_messages(user32, msg, 0.15)
+        if ui.get_alert_full_state(hwnd, g_custom_alert_id)["closed"] == 1:
+            break
+    custom_closed = ui.get_alert_full_state(hwnd, g_custom_alert_id)
+    print("[自定义关闭文字点击]", custom_closed)
+    if custom_closed["closed"] != 1 or custom_closed["last_action"] != 2:
+        raise RuntimeError("警告提示自定义关闭文字点击失败")
+    ui.set_alert_closed(hwnd, g_custom_alert_id, False)
+    ui.set_alert_close_text(hwnd, g_custom_alert_id, "关闭")
+    if ui.get_alert_text(hwnd, g_custom_alert_id, 2) != "关闭":
+        raise RuntimeError("警告提示关闭文字更新失败")
+
+    ui.dll.EU_SetElementFocus(hwnd, g_alert_id)
     user32.PostMessageW(hwnd, 0x0100, 0x1B, 0)
     pump_messages(user32, msg, 0.25)
     key_closed = ui.get_alert_full_state(hwnd, g_alert_id)
@@ -144,7 +195,6 @@ def main():
         raise RuntimeError("警告提示键盘关闭失败")
     ui.set_alert_closed(hwnd, g_alert_id, False)
 
-    ui.dll.EU_ShowWindow(hwnd, 1)
     print("警告提示完整组件示例已显示。关闭窗口或等待 60 秒结束。")
 
     start = time.time()

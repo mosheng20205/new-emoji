@@ -5,6 +5,8 @@
 #include "element_dialog.h"
 #include "element_drawer.h"
 #include "element_upload.h"
+#include "element_image.h"
+#include "element_loading.h"
 #include "factory.h"
 #include "dpi_context.h"
 #include <algorithm>
@@ -24,6 +26,15 @@ static Upload* find_open_upload_preview(Element* el) {
     }
     auto* upload = dynamic_cast<Upload*>(el);
     return (upload && upload->preview_open) ? upload : nullptr;
+}
+
+static Image* find_open_image_preview(Element* el) {
+    if (!el || !el->visible) return nullptr;
+    for (auto it = el->children.rbegin(); it != el->children.rend(); ++it) {
+        if (Image* found = find_open_image_preview(it->get())) return found;
+    }
+    auto* image = dynamic_cast<Image*>(el);
+    return (image && image->preview_open) ? image : nullptr;
 }
 
 ElementTree::ElementTree(HWND hwnd, float dpi_scale) : m_hwnd(hwnd), m_dpi_scale(dpi_scale) {
@@ -131,6 +142,12 @@ void ElementTree::layout() {
             if (auto* mb = dynamic_cast<MessageBoxElement*>(ch.get())) {
                 mb->layout(modal_area);
                 continue;
+            }
+            if (auto* loading = dynamic_cast<Loading*>(ch.get())) {
+                if (loading->fullscreen) {
+                    loading->layout({0, tb_h, w, h - tb_h});
+                    continue;
+                }
             }
             if (!ch->visible) continue;
             if (auto* p = dynamic_cast<Panel*>(ch.get())) {
@@ -251,6 +268,14 @@ void ElementTree::dispatch_lbutton_down(int x, int y) {
         upload->on_mouse_down(lx, ly, MouseButton::Left);
         return;
     }
+    if (auto* image = find_open_image_preview(m_root.get())) {
+        set_focus(image);
+        set_capture(image);
+        int lx = x, ly = y;
+        mouse_to_local(image, lx, ly);
+        image->on_mouse_down(lx, ly, MouseButton::Left);
+        return;
+    }
     Element* hit = hit_test_impl(m_root.get(), x, y);
     if (hit && hit->enabled) {
         set_focus(hit);
@@ -264,6 +289,7 @@ void ElementTree::dispatch_lbutton_up(int x, int y) {
     Element* captured = m_capture;
     if (!captured) {
         captured = find_open_upload_preview(m_root.get());
+        if (!captured) captured = find_open_image_preview(m_root.get());
         if (!captured) return;
     }
 
@@ -313,6 +339,11 @@ void ElementTree::dispatch_key_down(int vk, int mods) {
             return;
         }
     }
+    if (auto* image = find_open_image_preview(m_root.get())) {
+        set_focus(image);
+        image->on_key_down(vk, mods);
+        return;
+    }
     if (m_focus && m_focus->enabled) {
         m_focus->on_key_down(vk, mods);
         if (m_focus->key_cb) m_focus->key_cb(m_focus->id, vk, 1, (mods & KeyMod::Shift) != 0,
@@ -337,10 +368,12 @@ void ElementTree::dispatch_char(wchar_t ch) {
 bool ElementTree::has_modal_overlay_at(int x, int y) const {
     Element* hit = hit_test_impl(m_root.get(), x, y);
     auto* upload = dynamic_cast<Upload*>(hit);
+    auto* image = dynamic_cast<Image*>(hit);
     return dynamic_cast<Dialog*>(hit) != nullptr
         || dynamic_cast<Drawer*>(hit) != nullptr
         || dynamic_cast<MessageBoxElement*>(hit) != nullptr
-        || (upload && upload->preview_open);
+        || (upload && upload->preview_open)
+        || (image && image->preview_open);
 }
 
 Element* ElementTree::hit_test_impl(Element* el, int x, int y) const {

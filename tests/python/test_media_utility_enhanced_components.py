@@ -9,7 +9,7 @@ g_hwnd = None
 g_image_id = 0
 g_carousel_id = 0
 g_upload_id = 0
-g_scrollbar_id = 0
+g_infinite_scroll_id = 0
 g_preview_id = 0
 g_next_id = 0
 g_retry_id = 0
@@ -39,12 +39,12 @@ def on_click(element_id):
         ui.clear_upload_files(g_hwnd, g_upload_id)
         print("[上传] 已清空，文件数:", ui.dll.EU_GetUploadFileCount(g_hwnd, g_upload_id))
     elif element_id == g_scroll_id:
-        ui.scrollbar_scroll(g_hwnd, g_scrollbar_id, 1)
-        print("[滚动条] 当前值:", ui.dll.EU_GetScrollbarValue(g_hwnd, g_scrollbar_id))
+        ui.set_infinite_scroll_scroll(g_hwnd, g_infinite_scroll_id, 120)
+        print("[无限滚动] 当前状态:", ui.get_infinite_scroll_full_state(g_hwnd, g_infinite_scroll_id))
 
 
 def main():
-    global g_hwnd, g_image_id, g_carousel_id, g_upload_id, g_scrollbar_id
+    global g_hwnd, g_image_id, g_carousel_id, g_upload_id, g_infinite_scroll_id
     global g_preview_id, g_next_id, g_retry_id, g_clear_id, g_scroll_id
 
     hwnd = ui.create_window("🖼️ 媒体工具增强组件", 220, 80, 1040, 700)
@@ -60,7 +60,7 @@ def main():
     intro_id = ui.create_text(
         hwnd,
         content_id,
-        "这一批补齐图片预览、走马灯推进/自动播放标记、上传失败重试/清空，以及滚动条步进滚动 API。",
+        "这一批补齐图片预览、走马灯推进/自动播放标记、上传失败重试/清空，以及无限滚动列表 API。",
         28, 68, 900, 46,
     )
     ui.set_text_options(hwnd, intro_id, align=0, valign=0, wrap=True, ellipsis=False)
@@ -107,17 +107,21 @@ def main():
     )
     assert ui.get_upload_file_status(hwnd, g_upload_id, 1) == (3, 42)
 
-    ui.create_text(hwnd, content_id, "🧭 滚动条步进", 500, 405, 200, 28)
-    ui.create_card(
-        hwnd, content_id,
-        "滚动内容区域",
-        "这里用独立滚动条模拟内容同步。点击右侧按钮会按 wheel_step 递增，便于调用方接入真实滚轮或内容滚动。",
-        1,
-        500, 440, 330, 120,
+    ui.create_text(hwnd, content_id, "♾️ 无限滚动任务", 500, 405, 220, 28)
+    g_infinite_scroll_id = ui.create_infinite_scroll(
+        hwnd,
+        content_id,
+        [
+            ("🖼️ 打开预览层", "图片预览覆盖层可用", "预览"),
+            ("🎬 推进走马灯", "按钮和自动推进都会更新状态", "轮播"),
+            ("📤 重试失败上传", "失败文件可重试并读回状态", "上传"),
+            ("🧹 清空上传队列", "清空后保持界面稳定", "队列"),
+            ("♾️ 滚动到底部", "触底后由回调追加数据", "加载"),
+        ],
+        500, 440, 386, 170,
     )
-    g_scrollbar_id = ui.create_scrollbar(hwnd, content_id, 20, 180, 1, 846, 442, 24, 116)
-    ui.set_scrollbar_wheel_step(hwnd, g_scrollbar_id, 18)
-    assert ui.get_scrollbar_options(hwnd, g_scrollbar_id) == (20, 180, 20, 1, False, 18)
+    ui.set_infinite_scroll_options(hwnd, g_infinite_scroll_id, 48, 6, 40, 2, True, True)
+    assert ui.get_infinite_scroll_full_state(hwnd, g_infinite_scroll_id)["item_count"] == 5
 
     g_preview_id = ui.create_button(hwnd, content_id, "🔍", "打开预览", 28, 620, 120, 36)
     g_next_id = ui.create_button(hwnd, content_id, "⏭️", "下一页", 164, 620, 110, 36)
@@ -133,7 +137,7 @@ def main():
         f"Image={ui.get_image_options(hwnd, g_image_id)} "
         f"Carousel={ui.get_carousel_options(hwnd, g_carousel_id)} "
         f"Upload#2={ui.get_upload_file_status(hwnd, g_upload_id, 1)} "
-        f"Scrollbar={ui.get_scrollbar_options(hwnd, g_scrollbar_id)}"
+        f"InfiniteScroll={ui.get_infinite_scroll_full_state(hwnd, g_infinite_scroll_id)}"
     )
     print("媒体工具增强示例已显示。关闭窗口或等待 60 秒结束。")
 
