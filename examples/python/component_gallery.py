@@ -1086,24 +1086,138 @@ def showcase_input(hwnd, stage, w, h):
 
 
 def showcase_input_group(hwnd, stage, w, h):
-    base = add_demo_panel(hwnd, stage, "🔗 prepend / append 组合输入", 28, 30, w - 56, 260)
-    ui.create_input_group(hwnd, base, value="", placeholder="请输入域名",
-                          prepend={"type": "text", "text": "Http://"},
-                          append={"type": "text", "text": ".com"},
-                          x=36, y=76, w=420, h=40)
-    ui.create_input_group(hwnd, base, value="", placeholder="请输入内容",
-                          prepend={"type": "select", "items": [("餐厅名", "1"), ("订单号", "2"), ("用户电话", "3")], "selected": 0, "placeholder": "请选择"},
-                          append={"type": "button", "emoji": "🔎", "text": "", "variant": 1},
-                          x=492, y=76, w=540, h=40)
-    ui.create_input_group(hwnd, base, value="可清空内容", placeholder="组合输入",
-                          prepend={"type": "text", "text": "前置"},
-                          append={"type": "button", "emoji": "🚀", "text": "发送", "variant": 1},
-                          size=1, clearable=True, x=36, y=146, w=460, h=40)
-    ui.create_input_group(hwnd, base, value="小尺寸组合", placeholder="mini 组",
-                          prepend={"type": "text", "text": "标签"},
-                          append={"type": "button", "emoji": "✅", "text": "", "variant": 2},
-                          size=3, x=522, y=150, w=360, h=30)
-    add_text(hwnd, base, "InputGroup 会暴露内部 element id，外部可以继续用现有 Input / Button / Select 的 Set/Get 和回调。", 36, 212, 900, 24, MUTED)
+    status = add_text(hwnd, stage, "📌 状态：等待操作。", 36, h - 58, w - 72, 28, MUTED)
+
+    def set_status(message, group_id=0):
+        if group_id:
+            options = ui.get_input_group_options(hwnd, group_id) or {}
+            value = ui.get_input_group_value(hwnd, group_id)
+            input_id = ui.get_input_group_input_element_id(hwnd, group_id)
+            left_id = ui.get_input_group_addon_element_id(hwnd, group_id, 0)
+            right_id = ui.get_input_group_addon_element_id(hwnd, group_id, 1)
+            ui.set_element_text(
+                hwnd, status,
+                f"{message} · 值「{value or '空'}」 · size {options.get('size', '-')}"
+                f" · input={input_id} · 左={left_id} · 右={right_id}"
+            )
+        else:
+            ui.set_element_text(hwnd, status, message)
+
+    base = add_demo_panel(hwnd, stage, "🔗 附加项组合：文本、按钮、选择器", 28, 30, w - 56, 238)
+    ui.create_input_group(hwnd, base, value="new-emoji", placeholder="请输入域名",
+                          prepend={"type": "text", "text": "https://"},
+                          append={"type": "text", "text": ".cn"},
+                          clearable=True, x=36, y=70, w=420, h=40)
+    search_group = ui.create_input_group(hwnd, base, value="", placeholder="请输入订单、电话或客户名",
+                                         prepend={"type": "select", "items": [("餐厅名 🍜", "1"), ("订单号 🧾", "2"), ("用户电话 📞", "3")], "selected": 0, "placeholder": "检索范围"},
+                                         append={"type": "button", "emoji": "🔎", "text": "搜索  ", "variant": 1},
+                                         x=492, y=70, w=620, h=40)
+    ui.create_input_group(hwnd, base, value="emoji-ui", placeholder="请输入账号",
+                          prepend={"type": "button", "emoji": "👤", "text": "账号  ", "variant": 6},
+                          append={"type": "button", "emoji": "✅", "text": "提交", "variant": 2},
+                          size=1, clearable=True, x=36, y=138, w=520, h=40)
+    ui.create_input_group(hwnd, base, value="A-1024", placeholder="请输入编号",
+                          prepend={"type": "text", "text": "工单"},
+                          append={"type": "select", "items": [("待处理 🧾", "todo"), ("处理中 🚀", "doing"), ("已完成 ✅", "done")], "selected": 1, "placeholder": "状态"},
+                          x=592, y=138, w=560, h=40)
+    add_text(hwnd, base, "prepend / append 可分别挂载文本、按钮或 Select；按钮和选择器都是可继续绑定回调的真实子元素。", 36, 194, 1040, 24, MUTED)
+
+    sizes = add_demo_panel(hwnd, stage, "📏 尺寸与输入行为：clearable、密码、字数统计、autosize", 28, 292, w - 56, 238)
+    for i, (label, size, y, height) in enumerate([
+        ("默认尺寸", 0, 68, 40),
+        ("medium", 1, 68, 40),
+        ("small", 2, 132, 36),
+        ("mini", 3, 134, 30),
+    ]):
+        x = 36 + i * 278
+        ui.create_input_group(hwnd, sizes, value="", placeholder=label,
+                              prepend={"type": "text", "text": f"{label}"},
+                              append={"type": "button", "emoji": "✨", "text": "", "variant": 1},
+                              size=size, x=x, y=y, w=250, h=height)
+    ui.create_input_group(hwnd, sizes, value="secret-emoji", placeholder="请输入密码",
+                          prepend={"type": "text", "text": "密码 🔐"},
+                          append={"type": "text", "text": "可显隐"},
+                          size=0, clearable=True, password=True, show_word_limit=True,
+                          x=36, y=178, w=440, h=40)
+    ui.create_input_group(hwnd, sizes, value="第一行：组合输入也能承接多行。\n第二行：用于备注、地址或说明。", placeholder="请输入多行备注",
+                          prepend={"type": "text", "text": "备注 📝"},
+                          append={"type": "button", "emoji": "💾", "text": "保存  ", "variant": 1},
+                          size=0, clearable=True, show_word_limit=True, autosize=True,
+                          min_rows=2, max_rows=4, x=506, y=174, w=640, h=52)
+
+    api = add_demo_panel(hwnd, stage, "🎛️ 运行时 API：Set/Get、切换附加项、读回内部 ID", 28, 554, w - 56, 250)
+    api_group = ui.create_input_group(hwnd, api, value="浦东会议室", placeholder="请输入地点",
+                                      prepend={"type": "text", "text": "地点 📍"},
+                                      append={"type": "button", "emoji": "🚀", "text": "预约", "variant": 1},
+                                      clearable=True, x=36, y=70, w=580, h=40)
+    id_text = add_text(hwnd, api, "", 660, 74, 760, 28, TEXT)
+
+    def refresh_ids(prefix="📊 当前结构"):
+        input_id = ui.get_input_group_input_element_id(hwnd, api_group)
+        left_id = ui.get_input_group_addon_element_id(hwnd, api_group, 0)
+        right_id = ui.get_input_group_addon_element_id(hwnd, api_group, 1)
+        ui.set_element_text(hwnd, id_text, f"{prefix}：input={input_id} · prepend={left_id} · append={right_id}")
+        set_status(prefix, api_group)
+
+    def write_value(_eid):
+        ui.set_input_group_value(hwnd, api_group, "深圳设计评审 ✨")
+        refresh_ids("✍️ 已通过 EU_SetInputGroupValue 写入")
+
+    def read_value(_eid):
+        refresh_ids("📖 已通过 EU_GetInputGroupValue 读回")
+
+    def toggle_left(_eid):
+        if ui.get_input_group_addon_element_id(hwnd, api_group, 0):
+            ui.clear_input_group_addon(hwnd, api_group, 0)
+            refresh_ids("🧹 已清空左侧附加项")
+        else:
+            ui.set_input_group_text_addon(hwnd, api_group, 0, "地点 📍")
+            refresh_ids("↩️ 已恢复左侧文本附加项")
+
+    def switch_right(_eid):
+        ui.set_input_group_select_addon(hwnd, api_group, 1, [("会议室 🏢", "room"), ("线上会议 💻", "online"), ("外出拜访 🚗", "visit")], 0, "类型")
+        select_id = ui.get_input_group_addon_element_id(hwnd, api_group, 1)
+        if select_id:
+            ui.set_select_open(hwnd, select_id, True)
+        refresh_ids("🔄 右侧已切换为 Select")
+
+    def use_input_child(_eid):
+        input_id = ui.get_input_group_input_element_id(hwnd, api_group)
+        if input_id:
+            ui.set_input_value(hwnd, input_id, "内部 Input 直接改值 ✅")
+        refresh_ids("🧩 已通过内部 Input ID 改值")
+
+    for i, (emoji, text, handler) in enumerate([
+        ("✍️", "写入值", write_value),
+        ("📖", "读回值", read_value),
+        ("🧹", "清空/恢复左侧", toggle_left),
+        ("🔄", "右侧改为选择", switch_right),
+        ("🧩", "内部 Input 改值", use_input_child),
+    ]):
+        btn = ui.create_button(hwnd, api, emoji, text, 36 + i * 150, 136, 132, 36, variant=1 if i != 2 else 3)
+        set_click(hwnd, btn, handler)
+    refresh_ids()
+
+    callbacks_panel = add_demo_panel(hwnd, stage, "🧷 子元素回调与禁用态", 28, 828, w - 56, 214)
+    callback_group = ui.create_input_group(hwnd, callbacks_panel, value="年度报表", placeholder="请输入文件名",
+                                           prepend={"type": "select", "items": [("文档 📄", "doc"), ("图片 🖼️", "image"), ("压缩包 📦", "zip")], "selected": 0, "placeholder": "类型"},
+                                           append={"type": "button", "emoji": "📤", "text": "上传  ", "variant": 1},
+                                           x=36, y=70, w=620, h=40)
+    callback_note = add_text(hwnd, callbacks_panel, "点击「上传」会触发 append Button 回调；选择器可直接用 Select API 打开和改选。", 696, 76, 700, 26, MUTED)
+    select_id = ui.get_input_group_addon_element_id(hwnd, callback_group, 0)
+    button_id = ui.get_input_group_addon_element_id(hwnd, callback_group, 1)
+    if select_id:
+        ui.set_select_open(hwnd, select_id, True)
+    if button_id:
+        set_click(hwnd, button_id, lambda _eid: set_status("📤 上传按钮回调已触发", callback_group))
+
+    disabled_group = ui.create_input_group(hwnd, callbacks_panel, value="只读组合", placeholder="禁用态",
+                                           prepend={"type": "text", "text": "禁用"},
+                                           append={"type": "button", "emoji": "🔒", "text": "锁定", "variant": 5},
+                                           x=36, y=134, w=420, h=40)
+    ui.set_element_enabled(hwnd, disabled_group, False)
+    add_text(hwnd, callbacks_panel, "禁用 InputGroup 会让内部输入与附加项一起进入禁用态，适合只读表单、权限不足和提交中状态。", 492, 140, 760, 26, MUTED)
+    ui.set_element_text(hwnd, callback_note, f"内部 ID：select={select_id} · button={button_id}；它们可继续绑定 Select / Button API。")
 
 
 def showcase_input_tag(hwnd, stage, w, h):
