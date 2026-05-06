@@ -659,6 +659,151 @@ def showcase_container(hwnd, stage, w, h):
     ui.create_table(hwnd, main_area, columns, rows, True, True, 0, 0, min(w - 430, 1180), 216)
 
 
+def showcase_header(hwnd, stage, w, h):
+    intro = add_demo_panel(hwnd, stage, "📌 Header：页面顶栏与工具区", 28, 30, w - 56, 220)
+    add_text(hwnd, intro, "Header 适合放页面标题、全局搜索、状态入口和主要操作，通常固定在内容区顶部。", 30, 58, w - 110, 28, MUTED)
+    header = ui.create_header(hwnd, intro, "📌 项目看板", 30, 104, w - 116, 64)
+    ui.set_panel_style(hwnd, header, 0xFF2F4F7F, 0xFF78A8F8, 1.0, 8.0, 10)
+    ui.create_button(hwnd, header, "🔍", "搜索", w - 430, 14, 112, 36, variant=5)
+    ui.create_button(hwnd, header, "➕", "新建", w - 300, 14, 112, 36, variant=1)
+    ui.create_button(hwnd, header, "⚙", "设置", w - 170, 14, 112, 36, variant=5)
+
+    matrix = add_demo_panel(hwnd, stage, "🧩 常见顶栏高度", 28, 284, w - 56, 250)
+    for i, (label, hh) in enumerate([("紧凑顶栏", 42), ("标准顶栏", 56), ("强调顶栏", 72)]):
+        y = 62 + i * 58
+        ui.create_header(hwnd, matrix, f"📌 {label}", 32, y, min(620, w - 130), hh)
+        add_text(hwnd, matrix, f"{hh}px", 690, y + 10, 100, 24, MUTED)
+    add_text(hwnd, matrix, "顶栏可以单独使用，也可以和 Aside / Main / Footer 组合成完整后台壳。", 32, 214, w - 120, 28, MUTED)
+
+
+def showcase_aside(hwnd, stage, w, h):
+    shell = add_demo_panel(hwnd, stage, "🧭 Aside：侧边导航区域", 28, 30, w - 56, 430)
+    add_text(hwnd, shell, "Aside 通常承载导航、分组菜单或筛选条件，重点是稳定宽度和纵向扫描。", 30, 58, w - 110, 28, MUTED)
+    aside = ui.create_aside(hwnd, shell, "", 30, 102, 260, 280)
+    ui.set_panel_style(hwnd, aside, 0xFF263552, 0xFF5C86D6, 1.0, 8.0, 10)
+    menu_items = ["总览 🏠", "组件库 🧩", "> 基础布局", "> 表单输入", "> 数据展示", "设置 ⚙"]
+    menu = ui.create_menu(hwnd, aside, menu_items, 1, 1, 10, 10, 238, 250)
+    ui.set_menu_expanded(hwnd, menu, [1])
+    main = ui.create_main(hwnd, shell, "📄 右侧主工作区", 318, 102, min(760, w - 410), 280)
+    ui.set_panel_style(hwnd, main, 0xFF27314D, 0xFF465473, 1.0, 8.0, 12)
+    add_text(hwnd, shell, "左侧 Aside 保持固定宽度，右侧 Main 承接主要内容。", 318, 392, w - 410, 28, MUTED)
+
+    sizes = add_demo_panel(hwnd, stage, "📐 常见侧栏宽度", 28, 500, w - 56, 210)
+    for i, (label, ww) in enumerate([("窄导航", 160), ("标准导航", 220), ("筛选面板", 300)]):
+        x = 32 + i * 360
+        ui.create_aside(hwnd, sizes, f"🧭 {label}", x, 62, ww, 90)
+        add_text(hwnd, sizes, f"宽度 {ww}px", x, 164, 180, 24, MUTED)
+
+
+def showcase_main(hwnd, stage, w, h):
+    workspace = add_demo_panel(hwnd, stage, "📄 Main：主要内容工作区", 28, 30, w - 56, 430)
+    add_text(hwnd, workspace, "Main 用于承载表格、表单、图表、详情页等核心内容，通常占据布局里的剩余空间。", 30, 58, w - 110, 28, MUTED)
+    main = ui.create_main(hwnd, workspace, "", 30, 102, w - 116, 270)
+    ui.set_panel_style(hwnd, main, 0xFF27314D, 0xFF5C86D6, 1.0, 8.0, 16)
+    add_text(hwnd, main, "📄 当前任务", 24, 22, 180, 28, TEXT)
+    ui.create_progress(hwnd, main, "构建进度", 68, 1, 24, 72, min(520, w - 190), 36)
+    columns = ["模块", "状态", "负责人"]
+    rows = [["布局", "已完成 ✅", "小林"], ["输入", "进行中 🔧", "小周"], ["反馈", "待验证 🔍", "小陈"]]
+    ui.create_table(hwnd, main, columns, rows, True, True, 24, 130, min(760, w - 180), 112)
+
+    split = add_demo_panel(hwnd, stage, "🧱 与其他区域组合", 28, 500, w - 56, 250)
+    ui.create_header(hwnd, split, "📌 顶栏", 30, 62, w - 116, 44)
+    ui.create_aside(hwnd, split, "🧭 侧栏", 30, 118, 190, 88)
+    ui.create_main(hwnd, split, "📄 Main 自动成为视觉重心", 238, 118, min(620, w - 340), 88)
+
+
+def showcase_footer(hwnd, stage, w, h):
+    page = add_demo_panel(hwnd, stage, "✅ Footer：底部状态与操作区", 28, 30, w - 56, 300)
+    add_text(hwnd, page, "Footer 适合放版权、状态提示、分页、确认操作或向导按钮，通常贴在内容底部。", 30, 58, w - 110, 28, MUTED)
+    content = ui.create_main(hwnd, page, "📄 表单内容区域", 30, 104, w - 116, 90)
+    ui.set_panel_style(hwnd, content, 0xFF27314D, 0xFF465473, 1.0, 8.0, 10)
+    footer = ui.create_footer(hwnd, page, "", 30, 206, w - 116, 58)
+    ui.set_panel_style(hwnd, footer, 0xFF263552, 0xFF5C86D6, 1.0, 8.0, 10)
+    add_text(hwnd, footer, "✅ 已自动保存草稿", 18, 18, 240, 24, TEXT)
+    ui.create_button(hwnd, footer, "", "取消", w - 350, 12, 112, 36, variant=0)
+    ui.create_button(hwnd, footer, "✅", "提交", w - 220, 12, 112, 36, variant=1)
+
+    variants = add_demo_panel(hwnd, stage, "📐 常见底栏用途", 28, 390, w - 56, 260)
+    examples = [("状态底栏", "同步完成 ✅"), ("分页底栏", "第 1 / 12 页 📄"), ("向导底栏", "上一步 / 下一步 ➡")]
+    for i, (label, text) in enumerate(examples):
+        y = 64 + i * 58
+        add_text(hwnd, variants, label, 32, y + 8, 120, 24, MUTED)
+        ui.create_footer(hwnd, variants, text, 170, y, min(620, w - 260), 40)
+
+
+def showcase_border(hwnd, stage, w, h):
+    intro = add_demo_panel(hwnd, stage, "▣ Border：边框、标题与区域分组", 28, 30, w - 56, 250)
+    add_text(hwnd, intro, "Border 用来表达区域边界、表单分组、焦点范围和轻量容器，不负责复杂内容布局。", 30, 58, w - 110, 28, MUTED)
+    specs = [
+        ("全部边框", 15, 0xFF78A8F8, 1.0, 8.0, False, "基础信息"),
+        ("顶部边框", 1, 0xFFFFC24D, 2.0, 0.0, False, "状态提示"),
+        ("左侧强调", 8, 0xFF69D282, 3.0, 0.0, False, "成功步骤"),
+        ("虚线边框", 15, 0xFFFF9BC2, 1.5, 10.0, True, "可拖放区域"),
+    ]
+    for i, (label, sides, color, width_v, radius, dashed, title) in enumerate(specs):
+        x = 32 + i * 330
+        add_text(hwnd, intro, title, x + 6, 106, 220, 24, TEXT)
+        b = ui.create_border(hwnd, intro, x, 136, 292, 64)
+        ui.set_border_options(hwnd, b, sides, color, width_v, radius, "")
+        ui.set_border_dashed(hwnd, b, dashed)
+        add_text(hwnd, intro, label, x + 14, 214, 220, 24, TEXT)
+
+    matrix = add_demo_panel(hwnd, stage, "🧾 表单分组和状态区域", 28, 314, w - 56, 300)
+    add_text(hwnd, matrix, "账号资料", 40, 72, 220, 24, TEXT)
+    account = ui.create_border(hwnd, matrix, 34, 106, min(520, w // 3), 134)
+    ui.set_border_options(hwnd, account, 15, 0xFF78A8F8, 1.0, 8.0, "")
+    add_text(hwnd, matrix, "👤 用户名称：小林", 62, 132, 240, 26, TEXT)
+    add_text(hwnd, matrix, "📧 邮箱：team@example.com", 62, 168, 280, 26, MUTED)
+    add_text(hwnd, matrix, "🔒 权限：编辑者", 62, 204, 240, 26, MUTED)
+
+    warning_x = 590
+    add_text(hwnd, matrix, "左边框强调", warning_x, 72, 220, 24, TEXT)
+    warning = ui.create_border(hwnd, matrix, warning_x, 106, min(520, w - 700), 134)
+    ui.set_border_options(hwnd, warning, 8, 0xFFFFC24D, 4.0, 6.0, "")
+    add_text(hwnd, matrix, "⚠️ 发布前检查", warning_x + 28, 132, 260, 28, TEXT)
+    add_text(hwnd, matrix, "缺少说明文案时，可以只用左侧边框强调状态，不必放一个完整卡片。", warning_x + 28, 172, min(430, w - warning_x - 90), 52, MUTED)
+
+    readback = add_demo_panel(hwnd, stage, "🔎 Set/Get 与虚线状态", 28, 656, w - 56, 160)
+    add_text(hwnd, readback, "读回样例", 40, 62, 180, 24, TEXT)
+    sample = ui.create_border(hwnd, readback, 34, 96, 360, 44)
+    ui.set_border_options(hwnd, sample, 15, 0xFF69D282, 2.0, 12.0, "")
+    ui.set_border_dashed(hwnd, sample, True)
+    sides, color, width_v, radius = ui.get_border_options(hwnd, sample)
+    add_text(hwnd, readback, f"当前边框：sides={sides} · color=0x{color:08X} · width={width_v:.1f} · radius={radius:.1f} · dashed={ui.get_border_dashed(hwnd, sample)}", 430, 102, w - 540, 30, TEXT)
+
+
+def showcase_affix(hwnd, stage, w, h):
+    intro = add_demo_panel(hwnd, stage, "📌 Affix：固定操作和吸顶状态", 28, 30, w - 56, 250)
+    add_text(hwnd, intro, "Affix 用于让关键操作在滚动后仍保持可见，适合保存栏、目录入口、返回顶部和审核动作。", 30, 58, w - 110, 28, MUTED)
+    free = ui.create_affix(hwnd, intro, "📌 未固定", "滚动位置低于阈值，仍在文档流中。", 80, 34, 106, 420, 88)
+    ui.set_affix_options(hwnd, free, 40, 80, 0, 88, 5)
+    fixed = ui.create_affix(hwnd, intro, "📌 已固定", "滚动超过阈值，操作区吸附到顶部。", 80, 500, 106, 420, 88)
+    ui.set_affix_options(hwnd, fixed, 160, 80, 0, 88, 12)
+    free_state = ui.get_affix_options(hwnd, free)
+    fixed_state = ui.get_affix_options(hwnd, fixed)
+    add_text(hwnd, intro, f"未固定：scroll={free_state['scroll_position']} / offset={free_state['offset']} / fixed={free_state['fixed']}", 34, 206, 480, 28, MUTED)
+    add_text(hwnd, intro, f"已固定：scroll={fixed_state['scroll_position']} / offset={fixed_state['offset']} / fixed={fixed_state['fixed']}", 500, 206, 520, 28, TEXT)
+
+    toolbar = add_demo_panel(hwnd, stage, "🧰 真实页面：吸顶操作条", 28, 314, w - 56, 230)
+    add_text(hwnd, toolbar, "向下滚动后，保存、发布、预览这类操作通常需要保持在顶部可触达。", 34, 58, w - 120, 28, MUTED)
+    top_bar = ui.create_affix(hwnd, toolbar, "📌 固定操作条", "草稿已保存 · 阈值 96px · 层级 20", 96, 34, 104, w - 124, 64)
+    ui.set_affix_options(hwnd, top_bar, 168, 96, 0, 64, 20)
+    action_x = w - 650
+    ui.create_button(hwnd, toolbar, "👁", "预览", action_x, 118, 104, 36, variant=5)
+    ui.create_button(hwnd, toolbar, "💾", "保存", action_x + 120, 118, 104, 36, variant=1)
+    ui.create_button(hwnd, toolbar, "🚀", "发布", action_x + 240, 118, 104, 36, variant=1)
+
+    positions = add_demo_panel(hwnd, stage, "🎯 侧边固定动作与层级", 28, 590, w - 56, 260)
+    add_text(hwnd, positions, "不同 Affix 可以用不同 offset 和 z-index 表达优先级：目录入口靠上，返回顶部靠下，危险操作单独分组。", 34, 58, w - 120, 28, MUTED)
+    items = [("📚 目录", "固定在 24px", 24, 10), ("⬆ 返回顶部", "固定在 96px", 96, 30), ("⚠️ 审核提醒", "固定在 168px", 168, 40)]
+    for i, (title, body, offset, z) in enumerate(items):
+        x = 34 + i * 380
+        aff = ui.create_affix(hwnd, positions, title, body, offset, x, 112, 330, 78)
+        ui.set_affix_options(hwnd, aff, offset + 120, offset, 0, 78, z)
+        state = ui.get_affix_options(hwnd, aff)
+        add_text(hwnd, positions, f"z-index {state['z_index']} · fixed={state['fixed']}", x, 202, 260, 24, MUTED)
+
+
 def showcase_layout(hwnd, stage, w, h):
     header = add_demo_panel(hwnd, stage, "🧭 自动布局示意", 28, 30, w - 56, 250)
     layout = ui.create_layout(hwnd, header, 0, 18, 28, 70, w - 112, 148)
@@ -5024,18 +5169,90 @@ def showcase_carousel(hwnd, stage, w, h):
     add_text(hwnd, control_panel, "🧪 这一组用于桌面软件里常见的暂停/继续操作；状态栏会实时说明当前动作。", 862, 62, max(360, w - 960), 38, MUTED)
 
 
+def showcase_icon(hwnd, stage, w, h):
+    hero = add_demo_panel(hwnd, stage, "⭐ Icon：专门绘制 emoji / 符号", 28, 30, w - 56, 250)
+    add_text(hwnd, hero, "Icon 是一个轻量视觉元素，适合状态、入口、列表前缀和工具栏符号；它会参与 D2D/DirectWrite 彩色 emoji 渲染。", 30, 58, w - 150, 28, MUTED)
+    samples = [
+        ("⭐", "常用标记", 1.35, 0, 0xFFFFD54A),
+        ("▶", "主要动作", 1.50, 0, 0xFF8CB6FF),
+        ("✅", "成功状态", 1.30, 0, 0xFF69D282),
+        ("⚠", "警告提示", 1.36, 0, 0xFFFFC24D),
+        ("🔒", "权限/安全", 1.25, 0, 0xFFB9C5E8),
+        ("☀", "主题外观", 1.48, 0, 0xFFFFD166),
+    ]
+    for i, (icon, label, scale, rotation, color) in enumerate(samples):
+        x = 34 + i * 178
+        box = add_themed_panel(hwnd, hero, x, 102, 142, 108, "panel_canvas", "panel_canvas_border", 1.0, 8.0, 8)
+        icon_id = ui.create_icon(hwnd, box, icon, 45, 15, 52, 52)
+        ui.set_icon_options(hwnd, icon_id, scale, rotation)
+        ui.set_element_color(hwnd, icon_id, 0, color)
+        label_id = add_text(hwnd, box, label, 12, 76, 118, 24, MUTED)
+        ui.set_text_options(hwnd, label_id, align=1, valign=0, wrap=False, ellipsis=False)
+
+    toolbar = add_demo_panel(hwnd, stage, "🧰 在真实界面里的用法", 28, 312, w - 56, 184)
+    ui.create_button(hwnd, toolbar, "📁", "打开", 30, 72, 126, 42, variant=5)
+    ui.create_button(hwnd, toolbar, "✓", "保存", 174, 72, 126, 42, variant=1)
+    ui.create_button(hwnd, toolbar, "🔍", "查找", 318, 72, 126, 42, variant=5)
+    ui.create_button(hwnd, toolbar, "⚙", "设置", 462, 72, 126, 42, variant=5)
+    add_text(hwnd, toolbar, "Icon 本身只负责画符号；按钮、菜单、列表等组件可以把 emoji 作为图标语义复用。", 30, 132, min(900, w - 110), 28, MUTED)
+
+    readback = add_demo_panel(hwnd, stage, "🔎 尺寸、颜色与旋转读回", 28, 534, w - 56, 170)
+    status_icon = ui.create_icon(hwnd, readback, "⭐", 36, 66, 54, 54)
+    ui.set_icon_options(hwnd, status_icon, 1.55, -12.0)
+    ui.set_element_color(hwnd, status_icon, 0, 0xFFFFD54A)
+    scale, rotation = ui.get_icon_options(hwnd, status_icon)
+    add_text(hwnd, readback, f"当前图标：⭐  · 缩放 {scale:.2f} · 旋转 {rotation:.0f}° · 前景色 0xFFFFD54A", 112, 80, w - 210, 28, TEXT)
+    add_text(hwnd, readback, "这块演示强调：Icon 是可见内容，不是间距；它的工作重点是 emoji 显示质量和视觉状态表达。", 112, 114, w - 210, 28, MUTED)
+
+
+def showcase_space(hwnd, stage, w, h):
+    intro = add_demo_panel(hwnd, stage, "↔️ Space：不可见的占位间距", 28, 30, w - 56, 210)
+    add_text(hwnd, intro, "Space 不绘制内容，也不接收鼠标命中；它在 Layout 中占据固定宽高，用来把相邻元素稳定隔开。", 30, 58, w - 130, 28, MUTED)
+    btn_w = 112
+    btn_h = 40
+    row_x = 34
+    row_y = 104
+    ui.create_button(hwnd, intro, "", "新建", row_x, row_y, btn_w, btn_h, variant=5)
+    ui.create_space(hwnd, intro, row_x + btn_w, row_y, 26, btn_h)
+    ui.create_button(hwnd, intro, "", "打开", row_x + btn_w + 26, row_y, btn_w, btn_h, variant=5)
+    ui.create_space(hwnd, intro, row_x + btn_w * 2 + 26, row_y, 64, btn_h)
+    ui.create_button(hwnd, intro, "", "保存", row_x + btn_w * 2 + 26 + 64, row_y, btn_w, btn_h, variant=1)
+    add_text(hwnd, intro, "上方两个空白段分别是 26px 和 64px 的 Space；它们本身看不见，但会影响按钮位置。", 34, 160, w - 120, 28, TEXT)
+
+    compare = add_demo_panel(hwnd, stage, "📏 同一组按钮，不同 Space 宽度", 28, 278, w - 56, 260)
+    specs = [(24, "紧凑工具栏"), (56, "表单操作区"), (96, "分组强调")]
+    for i, (space_w, label) in enumerate(specs):
+        y = 62 + i * 62
+        add_text(hwnd, compare, label, 32, y + 8, 120, 24, MUTED)
+        x = 160
+        ui.create_button(hwnd, compare, "", "确认", x, y, 108, 36, variant=1)
+        add_themed_panel(hwnd, compare, x + 108, y + 4, space_w, 28, "panel_gold", "panel_gold_border", 1.0, 4.0, 0)
+        ui.create_button(hwnd, compare, "", "取消", x + 108 + space_w, y, 108, 36, variant=0)
+        add_text(hwnd, compare, f"Space {space_w}px", x + 108 + space_w + 126, y + 6, 140, 24, 0xFFFFE4B5)
+
+    layout_case = add_demo_panel(hwnd, stage, "🧱 纵向占位：留出说明区或呼吸感", 28, 576, w - 56, 220)
+    ui.create_button(hwnd, layout_case, "", "第一行信息", 34, 62, 220, 34, variant=5)
+    ui.create_space(hwnd, layout_case, 34, 96, 220, 30)
+    ui.create_button(hwnd, layout_case, "", "第二行信息", 34, 126, 220, 34, variant=5)
+    add_text(hwnd, layout_case, "Space 常用于工具栏分组、表单行距、卡片内部留白。它不是装饰元素，所以需要用周围组件的位置变化来观察效果。", 790, 86, max(360, w - 900), 52, MUTED)
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
     "Link": showcase_link,
+    "Icon": showcase_icon,
+    "Space": showcase_space,
     "Radio": showcase_radio,
     "Container": showcase_container,
-    "Header": showcase_container,
-    "Aside": showcase_container,
-    "Main": showcase_container,
-    "Footer": showcase_container,
+    "Header": showcase_header,
+    "Aside": showcase_aside,
+    "Main": showcase_main,
+    "Footer": showcase_footer,
     "Layout": showcase_layout,
+    "Border": showcase_border,
     "Divider": showcase_divider,
+    "Affix": showcase_affix,
     "Watermark": showcase_watermark,
     "Checkbox": showcase_checkbox,
     "Input": showcase_input,
