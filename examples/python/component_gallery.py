@@ -5463,6 +5463,134 @@ def showcase_popconfirm(hwnd, stage, w, h):
     add_text(hwnd, result_panel, "程序触发会更新 result、confirm_count/cancel_count 和回调状态。", 34, 186, w - 120, 28, MUTED)
 
 
+def showcase_result(hwnd, stage, w, h):
+    status = add_text(
+        hwnd, stage,
+        "✅ Result 结果页覆盖类型图标、标题/副标题、额外内容、最多 4 个操作、鼠标/键盘/程序触发、回调和状态读回。",
+        36, 28, w - 72, 28, MUTED,
+    )
+    ui.set_text_options(hwnd, status, align=0, valign=0, wrap=True, ellipsis=False)
+
+    preview_w = min(920, w - 500)
+    preview = add_demo_panel(hwnd, stage, "🎉 主结果预览", 28, 72, preview_w, 500)
+    controls = add_demo_panel(hwnd, stage, "🎛️ 功能控制区", 56 + preview_w, 72, w - preview_w - 84, 500)
+    state_panel = add_demo_panel(hwnd, stage, "📋 状态读回与回调", 28, 602, w - 56, 370)
+
+    result_id = ui.create_result(
+        hwnd, preview,
+        "✅ 提交成功",
+        "订单已经进入处理队列，稍后会同步到工作台。",
+        1,
+        56, 78, preview_w - 112, 330,
+    )
+    ui.set_result_actions(hwnd, result_id, ["详情 👀", "继续 🚀", "首页 🏠", "客服 💬"])
+    ui.set_result_extra_content(
+        hwnd, result_id,
+        "📦 自定义内容：编号 A-2026-0506，负责人 小易，当前状态 已归档。支持中文换行与彩色 emoji。",
+    )
+
+    add_text(hwnd, preview, "🧭 键盘：点击“聚焦结果页”后，方向键切换操作，Enter/Space 触发当前操作。", 56, 428, preview_w - 112, 28, MUTED)
+
+    event_text = add_text(hwnd, state_panel, "📣 最近回调：等待操作", 34, 68, w - 124, 30, TEXT)
+    options_text = add_text(hwnd, state_panel, "⚙️ Options：等待读回", 34, 112, w - 124, 30, MUTED)
+    full_text = add_text(hwnd, state_panel, "🧾 FullState：等待读回", 34, 156, w - 124, 56, MUTED)
+    text_text = add_text(hwnd, state_panel, "📝 Text：等待读回", 34, 224, w - 124, 68, MUTED)
+    ui.set_text_options(hwnd, full_text, align=0, valign=0, wrap=True, ellipsis=False)
+    ui.set_text_options(hwnd, text_text, align=0, valign=0, wrap=True, ellipsis=False)
+
+    type_names = ["信息", "成功", "警告", "错误"]
+    source_names = {0: "无", 1: "设置", 2: "鼠标", 3: "键盘", 4: "程序"}
+
+    def refresh_state(prefix="📋 状态已刷新"):
+        options = ui.get_result_options(hwnd, result_id)
+        state = ui.get_result_full_state(hwnd, result_id)
+        title = ui.get_result_text(hwnd, result_id, 0)
+        subtitle = ui.get_result_text(hwnd, result_id, 1)
+        extra = ui.get_result_text(hwnd, result_id, 2)
+        actions = [ui.get_result_action_text(hwnd, result_id, i) for i in range(4)]
+        actions = [item for item in actions if item]
+        if options:
+            result_type, action_count, last_action = options
+            ui.set_element_text(
+                hwnd, options_text,
+                f"⚙️ Options：类型={type_names[result_type]}，操作数={action_count}，最后操作={last_action}",
+            )
+        if state:
+            ui.set_element_text(
+                hwnd, full_text,
+                "🧾 FullState："
+                f"hover={state['hover_action']}，press={state['press_action']}，"
+                f"点击次数={state['action_click_count']}，来源={source_names.get(state['last_action_source'], state['last_action_source'])}，"
+                f"额外内容={'有' if state['has_extra_content'] else '无'}",
+            )
+        ui.set_element_text(
+            hwnd, text_text,
+            f"📝 Text：标题「{title}」；副标题「{subtitle}」；额外「{extra}」；操作={actions}",
+        )
+        ui.set_element_text(hwnd, status, prefix)
+
+    @ui.ValueCallback
+    def on_result_action(element_id, action_index, action_count, source):
+        label = ui.get_result_action_text(hwnd, element_id, action_index)
+        ui.set_element_text(
+            hwnd, event_text,
+            f"📣 最近回调：#{element_id} 触发「{label}」，索引={action_index}，操作数={action_count}，来源={source_names.get(source, source)}",
+        )
+        refresh_state("📣 回调已触发，状态读回已同步。")
+
+    keep_callback(on_result_action)
+    ui.set_result_action_callback(hwnd, result_id, on_result_action)
+
+    scenarios = [
+        ("ℹ️ 信息", 0, "ℹ️ 已收到请求", "系统正在整理资料，请稍候查看进度。", "📌 额外内容：信息状态适合展示说明、队列、提示和后续入口。"),
+        ("✅ 成功", 1, "✅ 提交成功", "订单已经进入处理队列，稍后会同步到工作台。", "📦 额外内容：编号 A-2026-0506，负责人 小易，当前状态 已归档。"),
+        ("⚠️ 警告", 2, "⚠️ 需要确认", "当前方案还缺少一项审批，请确认后继续。", "🧩 额外内容：缺少财务复核，预计 15 分钟内补齐。"),
+        ("❌ 错误", 3, "❌ 发布失败", "网络连接超时，未能完成本次发布。", "🛠️ 额外内容：可重试、返回草稿或联系值班同学。"),
+    ]
+
+    def apply_scenario(result_type, title, subtitle, extra):
+        ui.set_result_type(hwnd, result_id, result_type)
+        ui.set_element_text(hwnd, result_id, title)
+        ui.set_result_subtitle(hwnd, result_id, subtitle)
+        ui.set_result_extra_content(hwnd, result_id, extra)
+        refresh_state(f"🎨 已切换为{type_names[result_type]}结果。")
+
+    add_text(hwnd, controls, "结果类型", 28, 64, 96, 26, MUTED)
+    for index, (label, result_type, title, subtitle, extra) in enumerate(scenarios):
+        btn = ui.create_button(hwnd, controls, label[:2], label[3:], 28 + (index % 2) * 150, 100 + (index // 2) * 48, 132, 36)
+        set_click(hwnd, btn, lambda _id, rt=result_type, t=title, st=subtitle, ex=extra: apply_scenario(rt, t, st, ex))
+
+    add_text(hwnd, controls, "操作配置", 28, 206, 96, 26, MUTED)
+    three_btn = ui.create_button(hwnd, controls, "🔁", "三操作", 28, 242, 132, 36)
+    four_btn = ui.create_button(hwnd, controls, "➕", "四操作", 178, 242, 132, 36)
+    short_btn = ui.create_button(hwnd, controls, "✂️", "清空额外内容", 28, 290, 132, 36)
+    rich_btn = ui.create_button(hwnd, controls, "📝", "恢复额外内容", 178, 290, 132, 36)
+    set_click(hwnd, three_btn, lambda _id: (ui.set_result_actions(hwnd, result_id, ["详情 👀", "继续 🚀", "首页 🏠"]), refresh_state("🔁 已切换为三操作按钮。")))
+    set_click(hwnd, four_btn, lambda _id: (ui.set_result_actions(hwnd, result_id, ["详情 👀", "继续 🚀", "首页 🏠", "客服 💬"]), refresh_state("➕ 已切换为四操作按钮。")))
+    set_click(hwnd, short_btn, lambda _id: (ui.set_result_extra_content(hwnd, result_id, ""), refresh_state("✂️ 已清空额外内容。")))
+    set_click(hwnd, rich_btn, lambda _id: (ui.set_result_extra_content(hwnd, result_id, "📝 额外内容已恢复：展示编号、负责人、状态和下一步建议。"), refresh_state("📝 已恢复额外内容。")))
+
+    def trigger_program_action(action_index):
+        options = ui.get_result_options(hwnd, result_id)
+        action_count = options[1] if options else 0
+        if action_index >= action_count:
+            refresh_state(f"⚡ 当前只有 {action_count} 个操作，第 {action_index} 个操作不会触发。")
+            return
+        ui.trigger_result_action(hwnd, result_id, action_index)
+        refresh_state(f"⚡ 已程序触发第 {action_index} 个操作。")
+
+    add_text(hwnd, controls, "程序触发", 28, 360, 96, 26, MUTED)
+    for index, label in enumerate(["0", "1", "2", "3"]):
+        btn = ui.create_button(hwnd, controls, "⚡", label, 28 + index * 72, 396, 56, 34)
+        set_click(hwnd, btn, lambda _id, action_index=index: trigger_program_action(action_index))
+    focus_btn = ui.create_button(hwnd, controls, "⌨️", "聚焦结果页", 28, 442, 132, 36)
+    read_btn = ui.create_button(hwnd, controls, "📋", "立即读回", 178, 442, 132, 36)
+    set_click(hwnd, focus_btn, lambda _id: (ui.dll.EU_SetElementFocus(hwnd, result_id), refresh_state("⌨️ Result 已获得焦点，请使用方向键和 Enter/Space。")))
+    set_click(hwnd, read_btn, lambda _id: refresh_state("📋 已手动读回 Result 全部状态。"))
+
+    refresh_state("✅ Result 完整功能演示已加载。")
+
+
 def showcase_rate(hwnd, stage, w, h):
     status = add_text(hwnd, stage, "⭐ Rate 评分覆盖默认、分段颜色、文字、表情图标、禁用分数、半星、清空、只读和分数模板。", 36, 28, w - 72, 28, MUTED)
     form = add_demo_panel(hwnd, stage, "📝 评分设置表单", 28, 72, 740, 520)
@@ -7875,6 +8003,7 @@ SPECIAL_SHOWCASES = {
     "Image": showcase_image,
     "Carousel": showcase_carousel,
     "Alert": showcase_alert,
+    "Result": showcase_result,
     "Message": showcase_message,
     "MessageBox": showcase_messagebox,
     "Notification": showcase_notification,
