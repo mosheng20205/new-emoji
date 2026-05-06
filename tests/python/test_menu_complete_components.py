@@ -87,7 +87,7 @@ def main():
     intro_id = ui.create_text(
         hwnd,
         content_id,
-        "验证横向默认、横向暗色、纵向默认、纵向暗色、多级子菜单、分组、禁用项、链接元数据、收起侧栏、颜色与状态读回。",
+        "验证横向默认、横向暗色、纵向默认、纵向暗色、多级子菜单、分组、禁用项、长纵向滚动条、链接元数据、收起侧栏、颜色与状态读回。",
         28, 70, 920, 54,
     )
     ui.set_text_options(hwnd, intro_id, align=0, valign=0, wrap=True, ellipsis=False)
@@ -139,6 +139,15 @@ def main():
     ui.dll.EU_SetElementClickCallback(hwnd, g_path_id, on_click)
     ui.dll.EU_SetElementClickCallback(hwnd, g_horizontal_id, on_click)
 
+    long_items = ["组件总览"]
+    for i in range(1, 26):
+        long_items.append(f"> 第 {i:02d} 个菜单项")
+    long_menu = ui.create_menu(hwnd, content_id, long_items, 20, 1, 900, 404, 200, 196)
+    ui.set_menu_item_meta(hwnd, long_menu, ["🧭"] + ["📌"] * 25, [], [], [], [f"long_{i}" for i in range(26)])
+    ui.set_menu_expanded(hwnd, long_menu, [0])
+    ui.set_menu_active(hwnd, long_menu, 20)
+    ui.create_text(hwnd, content_id, "🧭 长菜单会出现纵向滚动条，滚轮和拖动均可滚动。", 900, 610, 220, 44)
+
     colors = ui.get_menu_colors(hwnd, dark_horizontal)
     if colors != (0xFF545C64, 0xFFFFFFFF, 0xFFFFD04B, 0xFF646E78, 0xFF9CA3AF, 0xFF545C64):
         raise RuntimeError("菜单颜色读回失败")
@@ -148,9 +157,12 @@ def main():
     meta_group = ui.get_menu_item_meta(hwnd, g_menu_id, 1)
     meta_link = ui.get_menu_item_meta(hwnd, horizontal, 6)
     state = ui.get_menu_state(hwnd, g_menu_id)
+    long_state = ui.get_menu_state(hwnd, long_menu)
     path = ui.get_menu_active_path(hwnd, g_menu_id)
     if not state or state["count"] != len(vertical_items) or state["level"] != 2:
         raise RuntimeError("菜单完整状态读回失败")
+    if not long_state or long_state["count"] != len(long_items) or long_state["active"] != 20:
+        raise RuntimeError("长菜单滚动状态读回失败")
     if not meta_group or not meta_group["group"] or not meta_group["disabled"]:
         raise RuntimeError("菜单分组元数据读回失败")
     if not meta_link or meta_link["href"] != "https://www.ele.me" or meta_link["target"] != "_blank":

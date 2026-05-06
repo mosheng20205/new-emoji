@@ -22,11 +22,11 @@
     {
         "index":  "3",
         "name":  "EditBox",
-        "zh":  "编辑框",
+        "zh":  "兼容编辑内核",
         "create":  "EU_CreateEditBox",
         "status":  "已完成",
-        "summary":  "已补 IME 组合/提交、选区、复制粘贴、占位、密码/多行、只读、文本变化回调、状态读回和独立中文 emoji 验证",
-        "category":  "基础/布局",
+        "summary":  "作为早期 MVP 兼容编辑内核保留，已补 IME 组合/提交、选区、复制粘贴、占位、密码/多行、只读、文本变化回调、状态读回和独立中文 emoji 验证；新表单输入推荐使用 Input",
+        "category":  "兼容内核",
         "slug":  "edit-box"
     },
     {

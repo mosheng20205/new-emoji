@@ -18,6 +18,10 @@ static Color with_alpha(Color color, unsigned alpha) {
     return (color & 0x00FFFFFF) | ((alpha & 0xFF) << 24);
 }
 
+static D2D1_RECT_F to_d2d_rect(const Rect& r) {
+    return D2D1::RectF((float)r.x, (float)r.y, (float)(r.x + r.w), (float)(r.y + r.h));
+}
+
 static std::wstring trim_marker_space(const std::wstring& value) {
     size_t start = 0;
     while (start < value.size() && (value[start] == L' ' || value[start] == L'\t')) ++start;
@@ -96,6 +100,7 @@ void Menu::set_items(const std::vector<std::wstring>& values) {
         expanded_items.push_back(true);
     }
     resize_meta();
+    clamp_scroll();
     set_active_index(active_index);
 }
 
@@ -113,11 +118,13 @@ void Menu::set_active_index(int index) {
             active_index = index;
         }
     }
+    ensure_item_visible(active_index);
     invalidate();
 }
 
 void Menu::set_orientation(int value) {
     orientation = value == 1 ? 1 : 0;
+    clamp_scroll();
     invalidate();
 }
 
@@ -135,6 +142,7 @@ void Menu::set_colors(Color bg, Color text_color, Color active_text_color,
 void Menu::set_collapsed(bool value) {
     collapsed = value;
     if (active_index >= 0 && !is_visible_item(active_index)) set_active_index(active_index);
+    clamp_scroll();
     invalidate();
 }
 
@@ -157,6 +165,7 @@ void Menu::set_item_meta(const std::vector<std::wstring>& icons,
         if (index >= 0 && index < (int)group_items.size()) group_items[(size_t)index] = true;
     }
     if (active_index >= 0 && is_disabled(active_index)) set_active_index(active_index);
+    clamp_scroll();
     invalidate();
 }
 
@@ -172,6 +181,7 @@ void Menu::set_expanded_indices(const std::vector<int>& indices) {
         }
     }
     if (active_index >= 0 && !is_visible_item(active_index)) set_active_index(active_index);
+    clamp_scroll();
     invalidate();
 }
 
@@ -312,6 +322,8 @@ void Menu::toggle_expanded(int index) {
     if (!has_child(index) || index < 0 || index >= (int)expanded_items.size()) return;
     expanded_items[(size_t)index] = !expanded_items[(size_t)index];
     if (active_index >= 0 && !is_visible_item(active_index)) active_index = index;
+    clamp_scroll();
+    ensure_item_visible(active_index);
 }
 
 void Menu::fire_select(int index) {
@@ -336,6 +348,94 @@ void Menu::choose_item(int index) {
     set_active_index(index);
     fire_select(index);
     open_href_if_needed(index);
+}
+
+int Menu::content_height() const {
+    if (orientation != 1) return bounds.h;
+    int h = style.pad_top + style.pad_bottom;
+    for (int item_index : visible_indices()) {
+        h += item_height(item_index);
+    }
+    return h;
+}
+
+int Menu::viewport_height() const {
+    return (std::max)(0, bounds.h);
+}
+
+int Menu::max_scroll() const {
+    if (orientation != 1) return 0;
+    return (std::max)(0, content_height() - viewport_height());
+}
+
+void Menu::clamp_scroll() {
+    int max_value = max_scroll();
+    if (m_scroll_y < 0) m_scroll_y = 0;
+    if (m_scroll_y > max_value) m_scroll_y = max_value;
+}
+
+void Menu::update_scroll(int value) {
+    int old = m_scroll_y;
+    m_scroll_y = value;
+    clamp_scroll();
+    if (m_scroll_y != old) invalidate();
+}
+
+void Menu::ensure_item_visible(int index) {
+    if (orientation != 1 || index < 0 || index >= (int)items.size()) return;
+    if (!is_visible_item(index)) return;
+    int y = style.pad_top;
+    for (int item_index : visible_indices()) {
+        if (item_index == index) break;
+        y += item_height(item_index);
+    }
+    int h = item_height(index);
+    int view_top = m_scroll_y + style.pad_top;
+    int view_bottom = m_scroll_y + bounds.h - style.pad_bottom;
+    if (y < view_top) {
+        update_scroll(y - style.pad_top);
+    } else if (y + h > view_bottom) {
+        update_scroll(y + h - bounds.h + style.pad_bottom);
+    }
+}
+
+bool Menu::has_vertical_scrollbar() const {
+    return orientation == 1 && max_scroll() > 0;
+}
+
+Rect Menu::scrollbar_track_rect() const {
+    int track_w = (std::max)(6, round_px(7.0f * style.font_size / 14.0f));
+    int pad = (std::max)(4, round_px(4.0f * style.font_size / 14.0f));
+    return { bounds.w - style.pad_right - track_w - 2, style.pad_top + pad,
+             track_w, (std::max)(0, bounds.h - style.pad_top - style.pad_bottom - pad * 2) };
+}
+
+Rect Menu::scrollbar_thumb_rect() const {
+    Rect track = scrollbar_track_rect();
+    int max_value = max_scroll();
+    if (track.h <= 0 || max_value <= 0) return { track.x, track.y, track.w, track.h };
+    int ch = content_height();
+    int thumb_h = (std::max)(28, (int)std::lround((double)track.h * (double)viewport_height() / (double)(std::max)(1, ch)));
+    if (thumb_h > track.h) thumb_h = track.h;
+    int travel = (std::max)(1, track.h - thumb_h);
+    int thumb_y = track.y + (int)std::lround((double)m_scroll_y * (double)travel / (double)max_value);
+    return { track.x, thumb_y, track.w, thumb_h };
+}
+
+void Menu::update_scroll_from_thumb(int y) {
+    Rect track = scrollbar_track_rect();
+    Rect thumb = scrollbar_thumb_rect();
+    int max_value = max_scroll();
+    int travel = track.h - thumb.h;
+    if (max_value <= 0 || travel <= 0) {
+        update_scroll(0);
+        return;
+    }
+    int thumb_y = y - m_drag_offset;
+    if (thumb_y < track.y) thumb_y = track.y;
+    if (thumb_y > track.y + travel) thumb_y = track.y + travel;
+    int next = (int)std::lround((double)(thumb_y - track.y) * (double)max_value / (double)travel);
+    update_scroll(next);
 }
 
 int Menu::item_height(int index) const {
@@ -365,8 +465,13 @@ Rect Menu::item_rect(int index) const {
             if (item_index == index) break;
             y += item_height(item_index);
         }
+        y -= m_scroll_y;
         int width = collapsed ? (std::min)(bounds.w - style.pad_left - style.pad_right, collapsed_width())
                               : bounds.w - style.pad_left - style.pad_right;
+        if (has_vertical_scrollbar()) {
+            Rect tr = scrollbar_track_rect();
+            width = (std::max)(0, tr.x - style.pad_left - 4);
+        }
         return { style.pad_left, y, width, item_height(index) };
     }
     int gap = round_px(6.0f * style.font_size / 14.0f);
@@ -387,6 +492,7 @@ Rect Menu::item_rect(int index) const {
 }
 
 int Menu::item_at(int x, int y) const {
+    if (has_vertical_scrollbar() && scrollbar_track_rect().contains(x, y)) return -1;
     std::vector<int> visible = visible_indices();
     for (int i : visible) {
         if (item_rect(i).contains(x, y)) return i;
@@ -424,7 +530,9 @@ void Menu::paint(RenderContext& ctx) {
     std::vector<int> visible = visible_indices();
     for (int i : visible) {
         Rect r = item_rect(i);
-        if (r.x >= bounds.w || r.y >= bounds.h) break;
+        if (r.x >= bounds.w) break;
+        if (r.y + r.h < 0) continue;
+        if (r.y >= bounds.h) break;
         bool active = i == active_index;
         bool hot = i == m_hover_index;
         bool disabled = is_disabled(i);
@@ -483,11 +591,25 @@ void Menu::paint(RenderContext& ctx) {
         }
     }
 
+    if (has_vertical_scrollbar()) {
+        Rect tr = scrollbar_track_rect();
+        Rect th = scrollbar_thumb_rect();
+        float radius = (float)tr.w * 0.5f;
+        ctx.rt->FillRoundedRectangle(ROUNDED(to_d2d_rect(tr), radius, radius),
+                                     ctx.get_brush(dark ? with_alpha(0xFFFFFFFF, 0x14) : with_alpha(0xFF000000, 0x10)));
+        ctx.rt->FillRoundedRectangle(ROUNDED(to_d2d_rect(th), radius, radius),
+                                     ctx.get_brush(m_dragging_scrollbar ? active_fg : with_alpha(fg, dark ? 0x9A : 0x78)));
+    }
+
     ctx.pop_clip();
     ctx.rt->SetTransform(saved);
 }
 
 void Menu::on_mouse_move(int x, int y) {
+    if (pressed && m_dragging_scrollbar) {
+        update_scroll_from_thumb(y);
+        return;
+    }
     int idx = item_at(x, y);
     if (idx >= 0 && is_disabled(idx)) idx = -1;
     if (idx != m_hover_index) {
@@ -501,10 +623,32 @@ void Menu::on_mouse_leave() {
     pressed = false;
     m_hover_index = -1;
     m_press_index = -1;
+    m_dragging_scrollbar = false;
     invalidate();
 }
 
 void Menu::on_mouse_down(int x, int y, MouseButton) {
+    if (has_vertical_scrollbar()) {
+        Rect thumb = scrollbar_thumb_rect();
+        Rect track = scrollbar_track_rect();
+        if (thumb.contains(x, y)) {
+            m_dragging_scrollbar = true;
+            m_drag_offset = y - thumb.y;
+            m_press_index = -1;
+            pressed = true;
+            invalidate();
+            return;
+        }
+        if (track.contains(x, y)) {
+            m_dragging_scrollbar = true;
+            m_drag_offset = thumb.h / 2;
+            m_press_index = -1;
+            pressed = true;
+            update_scroll_from_thumb(y);
+            invalidate();
+            return;
+        }
+    }
     m_press_index = item_at(x, y);
     if (is_disabled(m_press_index)) m_press_index = -1;
     pressed = true;
@@ -512,11 +656,15 @@ void Menu::on_mouse_down(int x, int y, MouseButton) {
 }
 
 void Menu::on_mouse_up(int x, int y, MouseButton) {
-    int idx = item_at(x, y);
-    if (idx >= 0 && idx == m_press_index && !is_disabled(idx)) {
-        choose_item(idx);
+    if (!m_dragging_scrollbar) {
+        int idx = item_at(x, y);
+        if (idx >= 0 && idx == m_press_index && !is_disabled(idx)) {
+            choose_item(idx);
+        }
     }
     m_press_index = -1;
+    m_dragging_scrollbar = false;
+    m_drag_offset = 0;
     pressed = false;
     invalidate();
 }
@@ -534,7 +682,19 @@ void Menu::on_key_down(int vk, int) {
     } else if (vk == VK_END) {
         int next = next_visible_enabled((int)items.size(), -1);
         if (next >= 0) set_active_index(next);
+    } else if (vk == VK_PRIOR) {
+        update_scroll(m_scroll_y - (std::max)(item_height(active_index), bounds.h - item_height(active_index)));
+    } else if (vk == VK_NEXT) {
+        update_scroll(m_scroll_y + (std::max)(item_height(active_index), bounds.h - item_height(active_index)));
     } else if (vk == VK_RETURN || vk == VK_SPACE) {
         if (active_index >= 0) choose_item(active_index);
     }
+}
+
+void Menu::on_mouse_wheel(int, int, int delta) {
+    if (orientation != 1 || delta == 0 || max_scroll() <= 0) return;
+    int steps = delta / WHEEL_DELTA;
+    if (steps == 0) steps = delta > 0 ? 1 : -1;
+    int step = (std::max)(24, item_height(active_index >= 0 ? active_index : 0));
+    update_scroll(m_scroll_y - steps * step * 2);
 }

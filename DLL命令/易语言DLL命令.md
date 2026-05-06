@@ -82,7 +82,7 @@
     .参数 宽度, 整数型, , 逻辑尺寸
     .参数 高度, 整数型, , 逻辑尺寸
 
-.DLL命令 创建编辑框, 整数型, "new_emoji.dll", "EU_CreateEditBox", , 对应 C++ 导出命令 EU_CreateEditBox；返回元素ID，失败返回0
+.DLL命令 创建编辑框, 整数型, "new_emoji.dll", "EU_CreateEditBox", , 兼容编辑内核；新表单输入推荐使用“创建输入框”/EU_CreateInput；返回元素ID，失败返回0
     .参数 窗口句柄, 整数型
     .参数 父元素ID, 整数型
     .参数 X坐标, 整数型, , 逻辑坐标

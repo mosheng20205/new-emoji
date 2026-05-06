@@ -2,6 +2,8 @@
 
 计划内 88 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
 
+`Input` 是当前推荐的表单输入组件；`EditBox` 作为早期 MVP 的兼容编辑内核单独保留，不再放入基础布局分类。
+
 ## 🧱 基础/布局
 `Button` 已补齐 Element 风格常用按钮样式，包括语义变体、朴素、圆角、圆形、加载中和尺寸选项。
 
@@ -9,7 +11,6 @@
 |---|---|---|---|---|
 | `Panel` | 面板 | `EU_CreatePanel` | 已完成 | [面板](./panel.md) |
 | `Button` | 按钮 | `EU_CreateButton` | 已完成 | [按钮](./button.md) |
-| `EditBox` | 编辑框 | `EU_CreateEditBox` | 已完成 | [编辑框](./edit-box.md) |
 | `InfoBox` | 信息框 | `EU_CreateInfoBox` | 已完成 | [信息框](./info-box.md) |
 | `Text` | 文本 | `EU_CreateText` | 已完成 | [文本](./text.md) |
 | `Link` | 链接 | `EU_CreateLink` | 已完成 | [链接](./link.md) |
@@ -23,6 +24,11 @@
 | `Layout` | 布局 | `EU_CreateLayout` | 已完成 | [布局](./layout.md) |
 | `Border` | 边框 | `EU_CreateBorder` | 已完成 | [边框](./border.md) |
 | `Divider` | 分割线 | `EU_CreateDivider` | 已完成，支持横/竖向、文本位置、图标内容、实线/虚线/点线/双线、颜色、线宽和间距 | [分割线](./divider.md) |
+
+## 🧩 兼容内核
+| 组件 | 中文名 | 创建导出 | 状态 | 文档 |
+|---|---|---|---|---|
+| `EditBox` | 兼容编辑内核 | `EU_CreateEditBox` | 已完成，表单输入推荐使用 `Input` | [兼容编辑内核](./edit-box.md) |
 
 ## 📝 表单/选择
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
@@ -93,7 +99,7 @@
 | 组件 | 中文名 | 创建导出 | 状态 | 文档 |
 |---|---|---|---|---|
 | `Dropdown` | 下拉菜单 | `EU_CreateDropdown` | 已完成 | [下拉菜单](./dropdown.md) |
-| `Menu` | 菜单 / NavMenu 导航菜单 | `EU_CreateMenu` | 已完成 | [菜单 / NavMenu 导航菜单](./menu.md) |
+| `Menu` | 菜单 / NavMenu 导航菜单 | `EU_CreateMenu` | 已完成，支持纵向滚动条 | [菜单 / NavMenu 导航菜单](./menu.md) |
 | `Anchor` | 锚点 | `EU_CreateAnchor` | 已完成 | [锚点](./anchor.md) |
 | `Backtop` | 回到顶部 | `EU_CreateBacktop` | 已完成 | [回到顶部](./backtop.md) |
 | `Segmented` | 分段控制器 | `EU_CreateSegmented` | 已完成 | [分段控制器](./segmented.md) |

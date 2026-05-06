@@ -99,14 +99,18 @@ LIGHT_THEME = {
 
 callbacks = []
 page_ids = []
-nav_buttons = {}
-category_buttons = {}
-component_buttons = {}
 category_components = {}
+nav_menu_id = 0
+nav_menu_items = []
+nav_menu_icons = []
+nav_menu_commands = []
+nav_menu_expanded = []
+nav_menu_page_index = {}
 panel_roles = []
 text_roles = []
 gallery_errors = []
 status_text_id = 0
+gallery_hwnd = None
 current_page_name = ""
 current_category_name = ""
 current_theme_mode = 1
@@ -228,9 +232,21 @@ def apply_gallery_theme(hwnd, mode):
         ui.set_panel_style(hwnd, element_id, colors[fill_role], colors[border_role], stroke, radius, padding)
     for element_id, role in text_roles:
         ui.set_element_color(hwnd, element_id, 0, colors[role])
+    apply_nav_menu_theme(hwnd)
     if current_category_name and "/" in current_page_name:
         _category, component = current_page_name.split("/", 1)
         show_component(hwnd, current_category_name, component)
+
+
+def apply_nav_menu_theme(hwnd):
+    if not nav_menu_id:
+        return
+    colors = palette()
+    ui.set_menu_colors(
+        hwnd, nav_menu_id,
+        colors["nav"], colors["muted"], colors["active"],
+        colors["nav_item"], colors["muted"], colors["border_soft"],
+    )
 
 
 def show_component(hwnd, category_name, component_name):
@@ -241,17 +257,11 @@ def show_component(hwnd, category_name, component_name):
     current_category_name = category_name
     for name, page_id in page_ids:
         ui.set_element_visible(hwnd, page_id, name == page_name)
-    for name, button_id in category_buttons.items():
-        ui.set_element_color(hwnd, button_id, colors["active"] if name == category_name else colors["nav_bg"], colors["active_text"] if name == category_name else colors["muted"])
-    for category, buttons in component_buttons.items():
-        for name, button_id in buttons.items():
-            ui.set_element_visible(hwnd, button_id, category == category_name)
-            if category == category_name and name == component_name:
-                ui.set_element_color(hwnd, button_id, colors["active"], colors["active_text"])
-            elif category == category_name:
-                ui.set_element_color(hwnd, button_id, colors["nav_item"], colors["muted"])
+    menu_index = nav_menu_page_index.get(page_name, -1)
+    if nav_menu_id and menu_index >= 0:
+        ui.set_menu_active(hwnd, nav_menu_id, menu_index)
     if status_text_id:
-        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 共 88 个组件 · 左侧二级菜单切换演示")
+        ui.set_element_text(hwnd, status_text_id, f"当前组件：{category_name} / {component_name} · 推荐演示 87 个组件 · 编辑内核 API 兼容保留")
         ui.set_element_color(hwnd, status_text_id, 0, colors["muted"])
 
 
@@ -259,6 +269,54 @@ def show_category(hwnd, category_name):
     components = category_components.get(category_name, [])
     if components:
         show_component(hwnd, category_name, components[0][0])
+
+
+def build_nav_menu_model():
+    global nav_menu_items, nav_menu_icons, nav_menu_commands, nav_menu_expanded, nav_menu_page_index
+    nav_menu_items = []
+    nav_menu_icons = []
+    nav_menu_commands = []
+    nav_menu_expanded = []
+    nav_menu_page_index = {}
+    for category_name, components in category_components.items():
+        category_index = len(nav_menu_items)
+        nav_menu_items.append(category_name)
+        nav_menu_icons.append("📁")
+        nav_menu_commands.append(f"cat::{category_name}")
+        nav_menu_expanded.append(category_index)
+        for component_name, emoji, _summary in components:
+            item_index = len(nav_menu_items)
+            nav_menu_items.append(f"> {component_name}")
+            nav_menu_icons.append(emoji)
+            nav_menu_commands.append(f"cmp::{category_name}::{component_name}")
+            nav_menu_page_index[f"{category_name}/{component_name}"] = item_index
+
+
+@ui.MenuSelectCallback
+def on_gallery_nav_select(_element_id, item_index, _path_ptr, _path_len, command_ptr, command_len):
+    global nav_menu_expanded
+    if not gallery_hwnd:
+        return
+    command = ctypes.string_at(command_ptr, command_len).decode("utf-8", errors="replace") if command_ptr and command_len > 0 else ""
+    if command.startswith("cmp::"):
+        parts = command.split("::", 2)
+        if len(parts) == 3:
+            show_component(gallery_hwnd, parts[1], parts[2])
+    elif command.startswith("cat::"):
+        category_name = command[5:]
+        was_expanded = item_index in nav_menu_expanded
+        if was_expanded:
+            nav_menu_expanded = [index for index in nav_menu_expanded if index != item_index]
+        else:
+            nav_menu_expanded = sorted(nav_menu_expanded + [item_index])
+        if nav_menu_id:
+            ui.set_menu_expanded(gallery_hwnd, nav_menu_id, nav_menu_expanded)
+        if was_expanded:
+            if status_text_id:
+                ui.set_element_text(gallery_hwnd, status_text_id, f"已收起分类：{category_name} · 点击一级菜单可展开/收起")
+                ui.set_element_color(gallery_hwnd, status_text_id, 0, palette()["muted"])
+        else:
+            show_category(gallery_hwnd, category_name)
 
 
 def add_text(hwnd, parent, text, x, y, w, h, color=TEXT):
@@ -5030,7 +5088,7 @@ SPECIAL_SHOWCASES = {
 
 
 COMPACT_SHOWCASE = {
-    "Button", "EditBox", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
+    "Button", "InfoBox", "Text", "Link", "Icon", "Space", "Checkbox", "Radio", "Switch",
     "Slider", "Input", "InputGroup", "Tag", "Progress", "Avatar", "Statistic",
     "StatusDot", "Backtop", "Segmented", "InfiniteScroll", "Breadcrumb", "Tabs", "Alert", "Loading",
     "Message", "MessageBox", "Tooltip", "Popover", "Popconfirm",
@@ -5673,10 +5731,9 @@ def make_media_page(hwnd, root):
 
 
 def build_pages(hwnd, root):
-    make_page(hwnd, root, "基础布局", "窗口、布局、文本和基础视觉元素，适合快速理解单 HWND + D2D 的渲染风格。", [
+    make_page(hwnd, root, "基础布局", "面板、容器、区域、间距和基础视觉元素，适合快速理解单 HWND + D2D 的布局风格。", [
         ("Panel", "🧱", "面板容器", lambda h, p, x, y, w, hh: ui.set_panel_style(h, ui.create_panel(h, p, x, y, w, 58), 0xFFEAF4FF, 0xFF74A7E8, 1.0, 8.0, 8)),
         ("Button", "🚀", "按钮交互", demo_button),
-        ("EditBox", "✍️", "基础编辑框", lambda h, p, x, y, w, hh: (lambda eid: ui.set_editbox_text(h, eid, "中文输入 + emoji 🎉"))(ui.create_editbox(h, p, x, y, w, 34))),
         ("InfoBox", "💡", "信息提示", lambda h, p, x, y, w, hh: ui.create_infobox(h, p, "💡 提示", "支持中文与 emoji", x, y, w, 64)),
         ("Text", "🔤", "文本渲染", lambda h, p, x, y, w, hh: ui.create_text(h, p, "彩色 emoji 文本 🌈", x, y, w, 34)),
         ("Link", "🔗", "链接状态", lambda h, p, x, y, w, hh: ui.create_link(h, p, "打开文档导航 🔗", x, y, w, 30)),
@@ -5780,10 +5837,12 @@ def build_pages(hwnd, root):
 
 
 def main():
-    hwnd = ui.create_window("🧩 new_emoji 88 个组件总览", 20, 0, WINDOW_W, WINDOW_H)
+    global gallery_hwnd, nav_menu_id
+    hwnd = ui.create_window("🧩 new_emoji 组件总览", 20, 0, WINDOW_W, WINDOW_H)
+    gallery_hwnd = hwnd
     root = ui.create_container(hwnd, 0, 0, 0, ROOT_W, ROOT_H)
     add_text(hwnd, root, "🧩 new_emoji 组件总览", 28, 18, 250, 34, TEXT)
-    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n88 个组件", 28, 54, 250, 72, MUTED)
+    add_text(hwnd, root, "单 HWND + 纯 D2D 渲染\n中文/emoji · 主题/DPI\n推荐演示 87 个", 28, 54, 250, 72, MUTED)
     global status_text_id
     status_text_id = add_text(hwnd, root, "正在加载组件演示...", PAGE_X + 20, ROOT_H + 10, PAGE_W - 40, 28, MUTED)
 
@@ -5798,37 +5857,20 @@ def main():
     set_click(hwnd, dark, lambda _eid: apply_gallery_theme(hwnd, 1))
     set_click(hwnd, system, lambda _eid: apply_gallery_theme(hwnd, 0))
 
-    nav_panel = ui.create_panel(hwnd, root, 22, 196, 380, 314)
+    build_pages(hwnd, root)
+    build_nav_menu_model()
+
+    nav_y = 196
+    nav_h = ROOT_H - nav_y - 20
+    nav_panel = ui.create_panel(hwnd, root, 22, nav_y, 380, nav_h)
     ui.set_panel_style(hwnd, nav_panel, 0xFF1F2338, BORDER_SOFT, 1.0, 8.0, 8)
     register_panel(nav_panel, "nav", "border_soft", 1.0, 8.0, 8)
-    add_text(hwnd, nav_panel, "📁 一级分类", 14, 12, 180, 24, TEXT)
-
-    component_panel = ui.create_panel(hwnd, root, 22, 526, 380, 350)
-    ui.set_panel_style(hwnd, component_panel, 0xFF1F2338, BORDER_SOFT, 1.0, 8.0, 8)
-    register_panel(component_panel, "nav", "border_soft", 1.0, 8.0, 8)
-    add_text(hwnd, component_panel, "🧩 二级组件", 14, 12, 180, 24, TEXT)
-
-    build_pages(hwnd, root)
-
-    y = 46
-    for name in category_components:
-        btn = ui.create_button(hwnd, nav_panel, "📁", name, 18, y, 344, 36)
-        category_buttons[name] = btn
-        set_click(hwnd, btn, lambda _eid, category=name: show_category(hwnd, category))
-        y += 43
-
-    for category, components in category_components.items():
-        buttons = {}
-        for i, (name, emoji, _summary) in enumerate(components):
-            col = i % 2
-            row = i // 2
-            x = 18 + col * 172
-            y = 46 + row * 36
-            btn = ui.create_button(hwnd, component_panel, emoji, name, x, y, 162, 30)
-            ui.set_element_visible(hwnd, btn, False)
-            buttons[name] = btn
-            set_click(hwnd, btn, lambda _eid, c=category, n=name: show_component(hwnd, c, n))
-        component_buttons[category] = buttons
+    add_text(hwnd, nav_panel, "🧭 组件导航", 14, 12, 180, 24, TEXT)
+    nav_menu_id = ui.create_menu(hwnd, nav_panel, nav_menu_items, 0, 1, 12, 46, 356, nav_h - 62)
+    ui.set_menu_item_meta(hwnd, nav_menu_id, nav_menu_icons, [], [], [], nav_menu_commands)
+    ui.set_menu_expanded(hwnd, nav_menu_id, nav_menu_expanded)
+    ui.set_menu_select_callback(hwnd, nav_menu_id, keep_callback(on_gallery_nav_select))
+    apply_nav_menu_theme(hwnd)
 
     page_aliases = {
         "foundation": "基础布局",
@@ -5852,7 +5894,7 @@ def main():
     elif START_THEME.lower() in ("dark", "1", "深色"):
         apply_gallery_theme(hwnd, 1)
     ui.dll.EU_ShowWindow(hwnd, 1)
-    print(f"new_emoji 组件总览已启动：88 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
+    print(f"new_emoji 组件总览已启动：推荐演示 87 个组件，窗口将保持 {VISIBLE_SECONDS} 秒。")
     if gallery_errors:
         print("以下组件卡片创建失败：")
         for name, error in gallery_errors:

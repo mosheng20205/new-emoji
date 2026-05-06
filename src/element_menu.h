@@ -32,6 +32,7 @@ public:
     void on_mouse_down(int x, int y, MouseButton btn) override;
     void on_mouse_up(int x, int y, MouseButton btn) override;
     void on_key_down(int vk, int mods) override;
+    void on_mouse_wheel(int x, int y, int delta) override;
 
     void set_items(const std::vector<std::wstring>& values);
     void set_active_index(int index);
@@ -60,6 +61,9 @@ public:
 private:
     int m_hover_index = -1;
     int m_press_index = -1;
+    int m_scroll_y = 0;
+    int m_drag_offset = 0;
+    bool m_dragging_scrollbar = false;
 
     void resize_meta();
     bool is_disabled(int index) const;
@@ -73,6 +77,16 @@ private:
     void choose_item(int index);
     void fire_select(int index);
     void open_href_if_needed(int index);
+    int content_height() const;
+    int viewport_height() const;
+    int max_scroll() const;
+    void clamp_scroll();
+    void update_scroll(int value);
+    void ensure_item_visible(int index);
+    bool has_vertical_scrollbar() const;
+    Rect scrollbar_track_rect() const;
+    Rect scrollbar_thumb_rect() const;
+    void update_scroll_from_thumb(int y);
     int item_height(int index) const;
     int collapsed_width() const;
     int item_at(int x, int y) const;

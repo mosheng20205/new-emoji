@@ -13,7 +13,7 @@
 | `EU_GetWindowBounds` | |
 | `EU_CreatePanel` | |
 | `EU_CreateButton` | |
-| `EU_CreateEditBox` | |
+| `EU_CreateEditBox` | 保留兼容的底层编辑内核；新表单输入推荐 `EU_CreateInput` |
 | `EU_CreateInfoBox` | |
 | `EU_CreateText` | |
 | `EU_CreateLink` | |
@@ -183,12 +183,12 @@
 | `EU_GetButtonState` | |
 | `EU_SetButtonOptions` | |
 | `EU_GetButtonOptions` | |
-| `EU_SetEditBoxText` | |
-| `EU_SetEditBoxOptions` | |
-| `EU_GetEditBoxOptions` | |
-| `EU_GetEditBoxState` | |
-| `EU_GetEditBoxText` | |
-| `EU_SetEditBoxTextCallback` | |
+| `EU_SetEditBoxText` | 设置兼容编辑内核文本 |
+| `EU_SetEditBoxOptions` | 设置兼容编辑内核只读、密码、多行、焦点色和占位文本 |
+| `EU_GetEditBoxOptions` | 读取兼容编辑内核选项 |
+| `EU_GetEditBoxState` | 读取兼容编辑内核光标、选区和文本长度 |
+| `EU_GetEditBoxText` | 读取兼容编辑内核文本 |
+| `EU_SetEditBoxTextCallback` | 设置兼容编辑内核文本变化回调 |
 | `EU_SetElementFocus` | |
 | `EU_SetCheckboxChecked` | |
 | `EU_GetCheckboxChecked` | |
