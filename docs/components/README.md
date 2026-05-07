@@ -1,6 +1,23 @@
+﻿# 组件文档导航
+
+## Chrome 外壳组件
+
+本轮组件总数更新为 `91` 个，新增 Chrome 高仿外壳组件与增强能力：
+
+| 组件 | 中文名 | 创建导出 | 状态 | 文档 |
+|---|---|---|---|---|
+| `IconButton` | 工具栏图标按钮 | `EU_CreateIconButton` | 已完成 | [工具栏图标按钮](./icon-button.md) |
+| `Omnibox` | 地址栏 | `EU_CreateOmnibox` | 已完成 | [地址栏](./omnibox.md) |
+| `BrowserViewport` | 浏览内容占位区 | `EU_CreateBrowserViewport` | 已完成 | [浏览内容占位区](./browser-viewport.md) |
+
+相关增强：`Tabs` 支持 Chrome 标签栏模式，`Menu` / `Popover` / `Dropdown` 支持通用 Popup 与 Element Popup 绑定，`Container` 支持显式 Flex，主题补齐 `chrome.*` token。
+
+窗口外壳能力已抽象为通用 [Window Frame 窗口框架](./window-frame.md)，用于无标题栏、自绘标题栏、拖拽区、缩放边框和元素绑定窗口命令。
+
+---
 # 组件文档导航
 
-计划内 88 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
+计划内 91 个组件均已完成封装。每个组件都有单独文档，组件 API 变更时必须同步更新对应文档。
 
 `Input` 是当前推荐的表单输入组件；`EditBox` 作为早期 MVP 的兼容编辑内核单独保留，不再放入基础布局分类。
 
@@ -133,3 +150,5 @@
 | `Tooltip` | 文字提示 | `EU_CreateTooltip` | 已完成：12 方位 / dark-light / disabled / 换行 | [文字提示](./tooltip.md) |
 | `Popover` | 弹出框 | `EU_CreatePopover` | 已完成：slot / 四触发 / 12 方位 / 键盘关闭 | [弹出框](./popover.md) |
 | `Popconfirm` | 气泡确认框 | `EU_CreatePopconfirm` | 已完成：12 方位 / 自定义按钮 / 图标 / 结果回调 | [气泡确认框](./popconfirm.md) |
+
+

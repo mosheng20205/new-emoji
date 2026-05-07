@@ -20,6 +20,13 @@ public:
     int size = 0;           // 0 default, 1 medium, 2 small, 3 mini
     bool split_button = false;
     bool hide_on_click = true;
+    int popup_anchor_element_id = 0;
+    int popup_placement = 4;
+    int popup_offset = 8;
+    int popup_offset_x = 0;
+    int popup_offset_y = 0;
+    bool popup_close_on_outside = true;
+    bool popup_close_on_escape = true;
     ElementClickCallback main_click_cb = nullptr;
     DropdownCommandCallback command_cb = nullptr;
 
@@ -50,6 +57,10 @@ public:
     const std::wstring& item_command(int index) const;
     bool is_divided(int index) const;
     bool is_open() const;
+    void set_popup_anchor(int anchor_id);
+    void set_popup_placement(int placement, int offset_x, int offset_y);
+    void set_popup_dismiss_behavior(bool close_on_outside, bool close_on_escape);
+    Rect popup_rect() const;
     int item_count() const;
     int disabled_count() const;
     int selected_level() const;
@@ -79,6 +90,7 @@ private:
     int visible_row_count() const;
     int menu_width() const;
     int menu_height() const;
+    int menu_x() const;
     int menu_y() const;
     int item_at(int x, int y) const;
     bool is_disabled(int index) const;

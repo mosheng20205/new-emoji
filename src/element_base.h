@@ -23,6 +23,10 @@ public:
     bool pressed = false;
     bool has_focus = false;
     bool mouse_passthrough = false;
+    int flex_grow = 0;
+    int min_w = 0, min_h = 0, max_w = 0, max_h = 0;
+    int margin_left = 0, margin_top = 0, margin_right = 0, margin_bottom = 0;
+    int align_self = -1;
 
     Element* parent = nullptr;
     std::vector<std::unique_ptr<Element>> children;
@@ -30,6 +34,8 @@ public:
     // Callbacks (stored per-element, C-style)
     ElementClickCallback click_cb = nullptr;
     ElementKeyCallback   key_cb = nullptr;
+    int window_command = 0;
+    int popup_bindings[5] = {0, 0, 0, 0, 0};
     // Owner HWND for invalidation — set by ElementTree
     HWND owner_hwnd = nullptr;
 

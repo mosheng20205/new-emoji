@@ -22,6 +22,33 @@ static D2D1_RECT_F to_d2d_rect(const Rect& r) {
     return D2D1::RectF((float)r.x, (float)r.y, (float)(r.x + r.w), (float)(r.y + r.h));
 }
 
+static const Element* root_element(const Element* el) {
+    const Element* root = el;
+    while (root && root->parent) root = root->parent;
+    return root;
+}
+
+static const Element* find_element_by_id(const Element* el, int id) {
+    if (!el) return nullptr;
+    if (el->id == id) return el;
+    for (const auto& ch : el->children) {
+        if (const Element* found = find_element_by_id(ch.get(), id)) return found;
+    }
+    return nullptr;
+}
+
+static int popup_side(int placement) {
+    if (placement >= 0 && placement <= 2) return 0;
+    if (placement >= 3 && placement <= 5) return 1;
+    if (placement >= 6 && placement <= 8) return 2;
+    return 3;
+}
+
+static int popup_align(int placement) {
+    int pos = placement % 3;
+    return pos == 0 ? -1 : (pos == 2 ? 1 : 0);
+}
+
 static std::wstring trim_marker_space(const std::wstring& value) {
     size_t start = 0;
     while (start < value.size() && (value[start] == L' ' || value[start] == L'\t')) ++start;
@@ -58,6 +85,10 @@ void Menu::resize_meta() {
     item_targets.resize(items.size());
     item_commands.resize(items.size());
     group_items.resize(items.size(), false);
+    item_shortcuts.resize(items.size());
+    checked_items.resize(items.size(), false);
+    separator_items.resize(items.size(), false);
+    submenu_ids.resize(items.size(), 0);
 }
 
 void Menu::set_items(const std::vector<std::wstring>& values) {
@@ -71,6 +102,10 @@ void Menu::set_items(const std::vector<std::wstring>& values) {
     item_targets.clear();
     item_commands.clear();
     group_items.clear();
+    item_shortcuts.clear();
+    checked_items.clear();
+    separator_items.clear();
+    submenu_ids.clear();
     display_items.reserve(items.size());
     item_levels.reserve(items.size());
     disabled_items.reserve(items.size());
@@ -167,6 +202,116 @@ void Menu::set_item_meta(const std::vector<std::wstring>& icons,
     if (active_index >= 0 && is_disabled(active_index)) set_active_index(active_index);
     clamp_scroll();
     invalidate();
+}
+
+void Menu::set_item_icon(int index, const std::wstring& icon) {
+    resize_meta();
+    if (index < 0 || index >= (int)item_icons.size()) return;
+    item_icons[(size_t)index] = icon;
+    invalidate();
+}
+
+void Menu::set_item_shortcut(int index, const std::wstring& shortcut) {
+    resize_meta();
+    if (index < 0 || index >= (int)item_shortcuts.size()) return;
+    item_shortcuts[(size_t)index] = shortcut;
+    invalidate();
+}
+
+void Menu::set_item_checked(int index, bool checked) {
+    resize_meta();
+    if (index < 0 || index >= (int)checked_items.size()) return;
+    checked_items[(size_t)index] = checked;
+    invalidate();
+}
+
+void Menu::set_item_separator(int index, bool separator) {
+    resize_meta();
+    if (index < 0 || index >= (int)separator_items.size()) return;
+    separator_items[(size_t)index] = separator;
+    invalidate();
+}
+
+void Menu::set_item_submenu(int index, int submenu_id) {
+    resize_meta();
+    if (index < 0 || index >= (int)submenu_ids.size()) return;
+    submenu_ids[(size_t)index] = submenu_id;
+    invalidate();
+}
+
+void Menu::set_popup_position(int anchor_id, int placement, int offset) {
+    popup_anchor_element_id = anchor_id;
+    popup_placement = (std::max)(0, (std::min)(11, placement));
+    popup_offset = (std::max)(0, offset);
+    popup_offset_x = 0;
+    popup_offset_y = 0;
+    invalidate();
+}
+
+void Menu::set_popup_placement(int placement, int offset_x, int offset_y) {
+    popup_placement = (std::max)(0, (std::min)(11, placement));
+    popup_offset_x = offset_x;
+    popup_offset_y = offset_y;
+    invalidate();
+}
+
+void Menu::set_popup_dismiss_behavior(bool close_on_outside, bool close_on_escape) {
+    popup_close_on_outside = close_on_outside;
+    popup_close_on_escape = close_on_escape;
+    invalidate();
+}
+
+void Menu::update_popup_position_from_anchor() {
+    if (popup_anchor_element_id <= 0 || !parent) return;
+    const Element* root = root_element(this);
+    const Element* anchor = find_element_by_id(root, popup_anchor_element_id);
+    if (!anchor) return;
+
+    int ax = 0, ay = 0;
+    int px = 0, py = 0;
+    anchor->get_absolute_pos(ax, ay);
+    parent->get_absolute_pos(px, py);
+
+    int gap = popup_offset;
+    int x = ax + (anchor->bounds.w - bounds.w) / 2;
+    int y = ay + anchor->bounds.h + gap;
+    int side = popup_side(popup_placement);
+    int align = popup_align(popup_placement);
+    if (side == 2) {
+        x = ax - bounds.w - gap;
+        y = ay + (anchor->bounds.h - bounds.h) / 2;
+    } else if (side == 3) {
+        x = ax + anchor->bounds.w + gap;
+        y = ay + (anchor->bounds.h - bounds.h) / 2;
+    } else if (side == 0) {
+        x = ax + (anchor->bounds.w - bounds.w) / 2;
+        y = ay - bounds.h - gap;
+    }
+    if (side == 0 || side == 1) {
+        if (align < 0) x = ax;
+        else if (align > 0) x = ax + anchor->bounds.w - bounds.w;
+    } else {
+        if (align < 0) y = ay;
+        else if (align > 0) y = ay + anchor->bounds.h - bounds.h;
+    }
+    x += popup_offset_x;
+    y += popup_offset_y;
+
+    if (root) {
+        int rx = 0, ry = 0;
+        root->get_absolute_pos(rx, ry);
+        int min_x = rx + 6;
+        int min_y = ry + 6;
+        int max_x = rx + root->bounds.w - bounds.w - 6;
+        int max_y = ry + root->bounds.h - bounds.h - 6;
+        if (max_x < min_x) max_x = min_x;
+        if (max_y < min_y) max_y = min_y;
+        x = (std::max)(min_x, (std::min)(max_x, x));
+        y = (std::max)(min_y, (std::min)(max_y, y));
+    }
+
+    bounds.x = x - px;
+    bounds.y = y - py;
 }
 
 int Menu::item_count() const {
@@ -502,6 +647,7 @@ int Menu::item_at(int x, int y) const {
 
 void Menu::paint(RenderContext& ctx) {
     if (!visible || bounds.w <= 0 || bounds.h <= 0) return;
+    update_popup_position_from_anchor();
 
     D2D1_MATRIX_3X2_F saved;
     ctx.rt->GetTransform(&saved);
@@ -539,6 +685,14 @@ void Menu::paint(RenderContext& ctx) {
         bool group = is_group(i);
         int level = i < (int)item_levels.size() ? item_levels[i] : 0;
 
+        if (i < (int)separator_items.size() && separator_items[(size_t)i]) {
+            float y = (float)r.y + (float)r.h * 0.5f;
+            ctx.rt->DrawLine(D2D1::Point2F((float)r.x + 8.0f, y),
+                             D2D1::Point2F((float)(r.x + r.w) - 8.0f, y),
+                             ctx.get_brush(t->chrome_menu_separator), 1.0f);
+            continue;
+        }
+
         if (group) {
             if (collapsed && orientation == 1) continue;
             ElementStyle group_style = style;
@@ -563,6 +717,10 @@ void Menu::paint(RenderContext& ctx) {
             draw_text(ctx, glyph, style, item_color, (float)r.x, (float)r.y, (float)r.w, (float)r.h);
         } else {
             float x = (float)r.x + 8.0f + indent;
+            if (i < (int)checked_items.size() && checked_items[(size_t)i]) {
+                draw_text(ctx, L"✓", style, item_color, x, (float)r.y, 18.0f, (float)r.h);
+                x += 20.0f;
+            }
             if (has_child(i)) {
                 draw_text(ctx, is_expanded(i) ? L"v" : L">", style, item_color,
                           x, (float)r.y, 14.0f, (float)r.h);
@@ -574,8 +732,17 @@ void Menu::paint(RenderContext& ctx) {
                 x += 24.0f;
             }
             draw_text(ctx, i < (int)display_items.size() ? display_items[i] : items[i], style, item_color,
-                      x, (float)r.y, (float)(r.x + r.w) - x - 8.0f, (float)r.h,
+                      x, (float)r.y, (float)(r.x + r.w) - x - 78.0f, (float)r.h,
                       orientation == 1 ? DWRITE_TEXT_ALIGNMENT_LEADING : DWRITE_TEXT_ALIGNMENT_CENTER);
+            if (i < (int)item_shortcuts.size() && !item_shortcuts[(size_t)i].empty()) {
+                draw_text(ctx, item_shortcuts[(size_t)i], style, t->chrome_menu_secondary_fg,
+                          (float)(r.x + r.w) - 76.0f, (float)r.y, 48.0f, (float)r.h,
+                          DWRITE_TEXT_ALIGNMENT_TRAILING);
+            }
+            if (i < (int)submenu_ids.size() && submenu_ids[(size_t)i] != 0) {
+                draw_text(ctx, L">", style, item_color, (float)(r.x + r.w) - 24.0f,
+                          (float)r.y, 16.0f, (float)r.h);
+            }
         }
 
         if (active && !disabled) {
@@ -655,11 +822,15 @@ void Menu::on_mouse_down(int x, int y, MouseButton) {
     invalidate();
 }
 
-void Menu::on_mouse_up(int x, int y, MouseButton) {
+void Menu::on_mouse_up(int x, int y, MouseButton button) {
     if (!m_dragging_scrollbar) {
         int idx = item_at(x, y);
+        if (button == MouseButton::Right && idx >= 0 && !is_disabled(idx) && context_cb) {
+            context_cb(id, idx, x, y);
+        }
         if (idx >= 0 && idx == m_press_index && !is_disabled(idx)) {
             choose_item(idx);
+            if (popup_anchor_element_id > 0) visible = false;
         }
     }
     m_press_index = -1;

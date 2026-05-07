@@ -3,6 +3,8 @@
 #include <d2d1.h>
 #include <vector>
 
+struct Theme;
+
 struct TabsItem {
     std::wstring label;
     std::wstring name;
@@ -10,6 +12,10 @@ struct TabsItem {
     std::wstring icon;
     bool disabled = false;
     bool closable = true;
+    bool loading = false;
+    bool pinned = false;
+    bool muted = false;
+    bool alerting = false;
 };
 
 class Tabs : public Element {
@@ -36,6 +42,16 @@ public:
     ElementValueCallback change_cb = nullptr;
     ElementValueCallback close_cb = nullptr;
     ElementValueCallback add_cb = nullptr;
+    ElementReorderCallback reorder_cb = nullptr;
+    bool chrome_mode = false;
+    bool chrome_new_button_visible = true;
+    bool chrome_reorder_enabled = false;
+    bool chrome_detach_enabled = false;
+    int chrome_min_width = 72;
+    int chrome_max_width = 220;
+    int chrome_pinned_width = 46;
+    int chrome_height = 34;
+    int chrome_overlap = 8;
 
     const wchar_t* type_name() const override { return L"Tabs"; }
     void paint(RenderContext& ctx) override;
@@ -56,6 +72,16 @@ public:
     void set_options(int type, bool close_enabled, bool add_enabled);
     void set_editable(bool value);
     void set_content_visible(bool value);
+    void set_chrome_mode(bool enabled);
+    void set_item_icon(int index, const std::wstring& icon);
+    void set_item_loading(int index, bool value);
+    void set_item_pinned(int index, bool value);
+    void set_item_muted(int index, bool value);
+    void set_item_closable(int index, bool value);
+    void set_item_chrome_state(int index, bool loading, bool pinned, bool muted, bool alerting);
+    void set_chrome_metrics(int min_width, int max_width, int pinned_width, int height, int overlap);
+    void set_new_button_visible(bool visible);
+    void set_drag_options(bool reorder_enabled, bool detach_enabled);
     void add_tab(const std::wstring& label);
     void close_tab(int index);
     void set_scroll_offset(int offset);
@@ -87,4 +113,5 @@ private:
     void ensure_active_visible();
     void select_index(int value, int action);
     void sync_legacy_items();
+    void paint_chrome(RenderContext& ctx, const Theme* t);
 };

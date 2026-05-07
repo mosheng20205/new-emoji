@@ -7,9 +7,31 @@
 #include "element_upload.h"
 #include "element_image.h"
 #include "element_loading.h"
+#include "element_icon_button.h"
+#include "element_menu.h"
+#include "element_popover.h"
+#include "element_dropdown.h"
 #include "factory.h"
 #include "dpi_context.h"
+#include "window_state.h"
 #include <algorithm>
+
+static void execute_window_command(HWND hwnd, int command) {
+    if (!hwnd || command <= 0) return;
+    switch (command) {
+    case 1:
+        ShowWindow(hwnd, SW_MINIMIZE);
+        break;
+    case 2:
+        ShowWindow(hwnd, IsZoomed(hwnd) ? SW_RESTORE : SW_MAXIMIZE);
+        break;
+    case 3:
+        SendMessageW(hwnd, WM_CLOSE, 0, 0);
+        break;
+    default:
+        break;
+    }
+}
 
 static void notify_dpi_scale_changed(Element* el, float old_scale, float new_scale) {
     if (!el) return;
@@ -37,6 +59,85 @@ static Image* find_open_image_preview(Element* el) {
     return (image && image->preview_open) ? image : nullptr;
 }
 
+static bool popup_is_open(Element* el) {
+    if (auto* pop = dynamic_cast<Popover*>(el)) return pop->is_open();
+    if (auto* menu = dynamic_cast<Menu*>(el)) return menu->popup_anchor_element_id > 0 && menu->visible;
+    if (auto* dropdown = dynamic_cast<Dropdown*>(el)) return dropdown->is_open();
+    return false;
+}
+
+static bool popup_close_on_outside(Element* el) {
+    if (auto* pop = dynamic_cast<Popover*>(el)) return pop->close_on_outside;
+    if (auto* menu = dynamic_cast<Menu*>(el)) return menu->popup_close_on_outside;
+    if (auto* dropdown = dynamic_cast<Dropdown*>(el)) return dropdown->popup_close_on_outside;
+    return false;
+}
+
+static bool popup_close_on_escape(Element* el) {
+    if (auto* pop = dynamic_cast<Popover*>(el)) return pop->close_on_escape;
+    if (auto* menu = dynamic_cast<Menu*>(el)) return menu->popup_close_on_escape;
+    if (auto* dropdown = dynamic_cast<Dropdown*>(el)) return dropdown->popup_close_on_escape;
+    return false;
+}
+
+static int popup_anchor_id(Element* el) {
+    if (auto* pop = dynamic_cast<Popover*>(el)) return pop->anchor_element_id;
+    if (auto* menu = dynamic_cast<Menu*>(el)) return menu->popup_anchor_element_id;
+    if (auto* dropdown = dynamic_cast<Dropdown*>(el)) return dropdown->popup_anchor_element_id;
+    return 0;
+}
+
+static void set_popup_open(Element* el, bool open) {
+    if (auto* pop = dynamic_cast<Popover*>(el)) {
+        pop->set_open(open);
+    } else if (auto* menu = dynamic_cast<Menu*>(el)) {
+        menu->visible = open;
+        if (open) menu->update_popup_position_from_anchor();
+        menu->invalidate();
+    } else if (auto* dropdown = dynamic_cast<Dropdown*>(el)) {
+        dropdown->set_open(open);
+    }
+}
+
+static Rect absolute_rect(const Element* el) {
+    if (!el) return {};
+    int x = 0, y = 0;
+    el->get_absolute_pos(x, y);
+    return { x, y, el->bounds.w, el->bounds.h };
+}
+
+static Rect popup_absolute_rect(Element* el) {
+    if (auto* pop = dynamic_cast<Popover*>(el)) {
+        pop->refresh_popup_rect();
+        Rect r = pop->get_popup_rect();
+        int x = 0, y = 0;
+        pop->get_absolute_pos(x, y);
+        r.x += x;
+        r.y += y;
+        return r;
+    }
+    if (auto* menu = dynamic_cast<Menu*>(el)) {
+        menu->update_popup_position_from_anchor();
+        return absolute_rect(menu);
+    }
+    if (auto* dropdown = dynamic_cast<Dropdown*>(el)) {
+        Rect r = dropdown->popup_rect();
+        int x = 0, y = 0;
+        dropdown->get_absolute_pos(x, y);
+        r.x += x;
+        r.y += y;
+        return r;
+    }
+    return {};
+}
+
+template <typename Fn>
+static void walk_elements(Element* el, Fn&& fn) {
+    if (!el) return;
+    fn(el);
+    for (auto& ch : el->children) walk_elements(ch.get(), fn);
+}
+
 ElementTree::ElementTree(HWND hwnd, float dpi_scale) : m_hwnd(hwnd), m_dpi_scale(dpi_scale) {
     m_root = std::make_unique<Element>();
     m_root->id = 0;
@@ -60,6 +161,13 @@ ElementTree::ElementTree(HWND hwnd, float dpi_scale) : m_hwnd(hwnd), m_dpi_scale
 }
 
 ElementTree::~ElementTree() { m_root.reset(); }
+
+int ElementTree::title_bar_height() const {
+    WindowState* st = window_state(m_hwnd);
+    if (st && !st->titlebar_visible) return 0;
+    int logical = st ? st->titlebar_logical_height : 30;
+    return (int)std::lround((float)logical * m_dpi_scale);
+}
 
 void ElementTree::set_dpi_scale(float s) {
     float old = m_dpi_scale;
@@ -127,6 +235,7 @@ void ElementTree::layout() {
         auto* tb = m_root->children[0].get();
         tb->bounds.w = w;
         tb->bounds.h = tb_h;
+        tb->visible = tb_h > 0;
         Rect modal_area = {0, 0, w, h};
         // Position regular children below title bar; modal overlays cover the full D2D client area.
         for (size_t i = 1; i < m_root->children.size(); i++) {
@@ -204,6 +313,7 @@ void ElementTree::set_focus(Element* el) {
     if (m_focus) m_focus->on_blur();
     m_focus = el;
     if (m_focus) m_focus->on_focus();
+    if (m_focus) trigger_element_popup(m_focus, 3, false);
 }
 
 void ElementTree::set_capture(Element* el) {
@@ -239,6 +349,7 @@ void ElementTree::dispatch_mouse_move(int x, int y) {
         if (m_hover) m_hover->on_mouse_leave();
         m_hover = hit;
         if (m_hover) m_hover->on_mouse_enter();
+        if (m_hover) trigger_element_popup(m_hover, 2, false);
     }
     if (m_hover) {
         int lx = x, ly = y; mouse_to_local(m_hover, lx, ly);
@@ -276,6 +387,7 @@ void ElementTree::dispatch_lbutton_down(int x, int y) {
         image->on_mouse_down(lx, ly, MouseButton::Left);
         return;
     }
+    dismiss_popups_at(x, y);
     Element* hit = hit_test_impl(m_root.get(), x, y);
     if (hit && hit->enabled) {
         set_focus(hit);
@@ -308,12 +420,19 @@ void ElementTree::dispatch_lbutton_up(int x, int y) {
     captured->on_mouse_up(lx, ly, MouseButton::Left);
     if (!IsWindow(hwnd)) return;
 
+    if (should_click && captured->window_command > 0) {
+        execute_window_command(hwnd, captured->window_command);
+        return;
+    }
+    if (should_click && trigger_element_popup(captured, 0, true)) return;
+    if (should_click && toggle_icon_button_popup(captured)) return;
     if (should_click && captured_cb) captured_cb(captured_id);
     if (!IsWindow(hwnd)) return;
     if (should_click && tree_cb) tree_cb(captured_id);
 }
 
 void ElementTree::dispatch_rbutton_down(int x, int y) {
+    dismiss_popups_at(x, y);
     Element* hit = hit_test_impl(m_root.get(), x, y);
     if (hit && hit->enabled) {
         set_focus(hit);
@@ -327,12 +446,14 @@ void ElementTree::dispatch_rbutton_up(int x, int y) {
     int lx = x, ly = y;
     mouse_to_local(hit, lx, ly);
     hit->on_mouse_up(lx, ly, MouseButton::Right);
+    if (trigger_element_popup(hit, 1, true)) return;
 }
 
 // ── Keyboard ──────────────────────────────────────────────────────────
 
 void ElementTree::dispatch_key_down(int vk, int mods) {
     if (vk == VK_ESCAPE) {
+        if (dismiss_popups_on_escape()) return;
         if (auto* upload = find_open_upload_preview(m_root.get())) {
             set_focus(upload);
             upload->set_preview_open(-1, false);
@@ -349,6 +470,78 @@ void ElementTree::dispatch_key_down(int vk, int mods) {
         if (m_focus->key_cb) m_focus->key_cb(m_focus->id, vk, 1, (mods & KeyMod::Shift) != 0,
                                              (mods & KeyMod::Control) != 0, (mods & KeyMod::Alt) != 0);
     }
+}
+
+void ElementTree::close_other_popups(int keep_popup_id) {
+    walk_elements(m_root.get(), [keep_popup_id](Element* el) {
+        if (popup_is_open(el) && el->id != keep_popup_id) set_popup_open(el, false);
+    });
+}
+
+bool ElementTree::toggle_icon_button_popup(Element* button) {
+    auto* icon = dynamic_cast<IconButton*>(button);
+    if (!icon || icon->dropdown_element_id <= 0) return false;
+    Element* popup = find_by_id(icon->dropdown_element_id);
+    if (!popup) return false;
+    bool next_open = !popup_is_open(popup);
+    close_other_popups(popup->id);
+    set_popup_open(popup, next_open);
+    icon->suppress_tooltip_once();
+    InvalidateRect(m_hwnd, nullptr, FALSE);
+    return true;
+}
+
+bool ElementTree::trigger_element_popup(Element* element, int trigger, bool toggle) {
+    if (!element || trigger < 0 || trigger > 4) return false;
+    int popup_id = element->popup_bindings[trigger];
+    if (popup_id <= 0) return false;
+    Element* popup = find_by_id(popup_id);
+    if (!popup) return false;
+
+    if (auto* pop = dynamic_cast<Popover*>(popup)) {
+        pop->anchor_element_id = element->id;
+        pop->trigger_mode = 3;
+    } else if (auto* menu = dynamic_cast<Menu*>(popup)) {
+        menu->popup_anchor_element_id = element->id;
+    } else if (auto* dropdown = dynamic_cast<Dropdown*>(popup)) {
+        dropdown->set_popup_anchor(element->id);
+    } else {
+        return false;
+    }
+
+    bool next_open = toggle ? !popup_is_open(popup) : true;
+    close_other_popups(popup->id);
+    set_popup_open(popup, next_open);
+    if (auto* icon = dynamic_cast<IconButton*>(element)) icon->suppress_tooltip_once();
+    InvalidateRect(m_hwnd, nullptr, FALSE);
+    return true;
+}
+
+bool ElementTree::dismiss_popups_at(int x, int y) {
+    bool closed = false;
+    walk_elements(m_root.get(), [&](Element* el) {
+        if (!popup_is_open(el) || !popup_close_on_outside(el)) return;
+        Rect popup_rect = popup_absolute_rect(el);
+        if (popup_rect.contains(x, y)) return;
+        int anchor_id = popup_anchor_id(el);
+        Element* anchor = anchor_id > 0 ? find_by_id(anchor_id) : nullptr;
+        if (anchor && absolute_rect(anchor).contains(x, y)) return;
+        set_popup_open(el, false);
+        closed = true;
+    });
+    if (closed) InvalidateRect(m_hwnd, nullptr, FALSE);
+    return closed;
+}
+
+bool ElementTree::dismiss_popups_on_escape() {
+    bool closed = false;
+    walk_elements(m_root.get(), [&](Element* el) {
+        if (!popup_is_open(el) || !popup_close_on_escape(el)) return;
+        set_popup_open(el, false);
+        closed = true;
+    });
+    if (closed) InvalidateRect(m_hwnd, nullptr, FALSE);
+    return closed;
 }
 
 void ElementTree::dispatch_key_up(int vk, int mods) {

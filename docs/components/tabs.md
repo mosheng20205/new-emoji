@@ -92,3 +92,24 @@ python tests/python/test_tabs_complete_components.py
 ```
 
 该测试覆盖三种类型、四方向、表头对齐、扩展项目、按名称激活、内容读回、editable、增删回调、滚动和纵向键盘导航。
+## Chrome 标签栏模式
+
+`Tabs` 保留原通用标签页行为，并通过 `EU_SetTabsChromeMode(hwnd, element_id, 1)` 开启 Chrome 外壳绘制模式。
+
+新增能力：
+
+```text
+EU_SetTabsChromeMode / EU_GetTabsChromeMode
+EU_SetTabsItemIcon
+EU_SetTabsItemLoading
+EU_SetTabsItemPinned
+EU_SetTabsItemMuted
+EU_SetTabsItemClosable
+EU_SetTabsItemChromeState / EU_GetTabsItemChromeState
+EU_SetTabsChromeMetrics
+EU_SetTabsNewButtonVisible
+EU_SetTabsDragOptions
+EU_SetTabsReorderCallback
+```
+
+Chrome 模式下支持圆角顶部标签、活动标签前置、固定标签、加载态、静音态、告警态和新建标签按钮。`detach_enabled` 当前只记录配置，不创建真实新窗口。

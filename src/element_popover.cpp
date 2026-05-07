@@ -17,6 +17,15 @@ static const Element* root_element(const Element* el) {
     return root;
 }
 
+static const Element* find_element_by_id(const Element* el, int id) {
+    if (!el) return nullptr;
+    if (el->id == id) return el;
+    for (const auto& ch : el->children) {
+        if (const Element* found = find_element_by_id(ch.get(), id)) return found;
+    }
+    return nullptr;
+}
+
 static void keep_rect_inside_root(const Element* el, Rect& r, int margin) {
     if (!el) return;
     const Element* root = root_element(el);
@@ -128,6 +137,17 @@ void Popover::set_behavior(int trigger, int outside_close, int arrow, int new_of
     close_on_outside = outside_close != 0;
     show_arrow = arrow != 0;
     offset = new_offset >= 0 ? new_offset : 8;
+    offset_x = 0;
+    offset_y = 0;
+    last_action = 1;
+    invalidate();
+}
+
+void Popover::set_popup_placement(int next_placement, int next_offset_x, int next_offset_y) {
+    advanced_placement = (std::max)(0, (std::min)(11, next_placement));
+    use_advanced_placement = true;
+    offset_x = next_offset_x;
+    offset_y = next_offset_y;
     last_action = 1;
     invalidate();
 }
@@ -196,28 +216,48 @@ void Popover::update_popup_rect() {
     int gap = round_px((float)offset * s);
     int pw = round_px((float)popup_width * s);
     int ph = round_px((float)popup_height * s);
-    int x = (bounds.w - pw) / 2;
-    int y = bounds.h + gap;
+    int anchor_x = 0;
+    int anchor_y = 0;
+    int anchor_w = bounds.w;
+    int anchor_h = bounds.h;
+    int own_abs_x = 0;
+    int own_abs_y = 0;
+    get_absolute_pos(own_abs_x, own_abs_y);
+    if (anchor_element_id > 0) {
+        const Element* root = root_element(this);
+        if (const Element* anchor = find_element_by_id(root, anchor_element_id)) {
+            anchor->get_absolute_pos(anchor_x, anchor_y);
+            anchor_x -= own_abs_x;
+            anchor_y -= own_abs_y;
+            anchor_w = anchor->bounds.w;
+            anchor_h = anchor->bounds.h;
+        }
+    }
+
+    int x = anchor_x + (anchor_w - pw) / 2;
+    int y = anchor_y + anchor_h + gap;
     int active = use_advanced_placement ? advanced_placement : old_popover_to_advanced(placement);
     int side = popup_side(active);
     int align = popup_align(active);
     if (side == 2) {
-        x = -pw - gap;
-        y = (bounds.h - ph) / 2;
+        x = anchor_x - pw - gap;
+        y = anchor_y + (anchor_h - ph) / 2;
     } else if (side == 3) {
-        x = bounds.w + gap;
-        y = (bounds.h - ph) / 2;
+        x = anchor_x + anchor_w + gap;
+        y = anchor_y + (anchor_h - ph) / 2;
     } else if (side == 0) {
-        x = (bounds.w - pw) / 2;
-        y = -ph - gap;
+        x = anchor_x + (anchor_w - pw) / 2;
+        y = anchor_y - ph - gap;
     }
     if (side == 0 || side == 1) {
-        if (align < 0) x = 0;
-        else if (align > 0) x = bounds.w - pw;
+        if (align < 0) x = anchor_x;
+        else if (align > 0) x = anchor_x + anchor_w - pw;
     } else {
-        if (align < 0) y = 0;
-        else if (align > 0) y = bounds.h - ph;
+        if (align < 0) y = anchor_y;
+        else if (align > 0) y = anchor_y + anchor_h - ph;
     }
+    x += offset_x;
+    y += offset_y;
     popup_rect = { x, y, pw, ph };
     keep_rect_inside_root(this, popup_rect, round_px(6.0f * s));
     close_rect = {
@@ -279,8 +319,8 @@ void Popover::draw_popup(RenderContext& ctx) {
     const Theme* t = theme_for_window(owner_hwnd);
     bool dark = is_dark_theme_for_window(owner_hwnd);
     float s = scale();
-    Color bg = dark ? 0xFF242637 : 0xFFFFFFFF;
-    Color border = t->border_default;
+    Color bg = t->chrome_popover_bg ? t->chrome_popover_bg : (dark ? 0xFF242637 : 0xFFFFFFFF);
+    Color border = t->chrome_popover_border ? t->chrome_popover_border : t->border_default;
     float radius = 6.0f * s;
 
     D2D1_RECT_F rect = {
@@ -427,7 +467,7 @@ void Popover::on_mouse_up(int x, int y, MouseButton) {
 }
 
 void Popover::on_key_down(int vk, int) {
-    if (vk == VK_ESCAPE) {
+    if (vk == VK_ESCAPE && close_on_escape) {
         apply_open(false, 3);
     } else if (vk == VK_TAB && open) {
         if (has_close_button()) {

@@ -13,6 +13,10 @@ public:
     std::vector<std::wstring> item_hrefs;
     std::vector<std::wstring> item_targets;
     std::vector<std::wstring> item_commands;
+    std::vector<std::wstring> item_shortcuts;
+    std::vector<bool> checked_items;
+    std::vector<bool> separator_items;
+    std::vector<int> submenu_ids;
     std::vector<bool> group_items;
     int active_index = 0;
     int orientation = 0; // 0 horizontal, 1 vertical
@@ -24,6 +28,14 @@ public:
     Color menu_disabled_text_color = 0;
     Color menu_border_color = 0;
     MenuSelectCallback select_cb = nullptr;
+    ElementValueCallback context_cb = nullptr;
+    int popup_anchor_element_id = 0;
+    int popup_placement = 3;
+    int popup_offset = 8;
+    int popup_offset_x = 0;
+    int popup_offset_y = 0;
+    bool popup_close_on_outside = true;
+    bool popup_close_on_escape = true;
 
     const wchar_t* type_name() const override { return L"Menu"; }
     void paint(RenderContext& ctx) override;
@@ -46,6 +58,15 @@ public:
                        const std::vector<std::wstring>& hrefs,
                        const std::vector<std::wstring>& targets,
                        const std::vector<std::wstring>& commands);
+    void set_item_icon(int index, const std::wstring& icon);
+    void set_item_shortcut(int index, const std::wstring& shortcut);
+    void set_item_checked(int index, bool checked);
+    void set_item_separator(int index, bool separator);
+    void set_item_submenu(int index, int submenu_id);
+    void set_popup_position(int anchor_id, int placement, int offset);
+    void set_popup_placement(int placement, int offset_x, int offset_y);
+    void set_popup_dismiss_behavior(bool close_on_outside, bool close_on_escape);
+    void update_popup_position_from_anchor();
     int item_count() const;
     int visible_count() const;
     int expanded_count() const;

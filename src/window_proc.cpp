@@ -26,10 +26,12 @@
 #include "utf8_helpers.h"
 #include <map>
 #include <vector>
+#include <cmath>
 
 extern HMODULE g_module;
 
 std::map<HWND, WindowState*> g_windows;
+thread_local WindowCreateParams* g_pending_create_params = nullptr;
 static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
 extern std::map<UINT_PTR, Button*> g_button_timer_map;
@@ -57,18 +59,45 @@ static std::wstring get_ime_string(HWND hwnd, HIMC imc, DWORD index) {
 
 // ── Hit test helpers ─────────────────────────────────────────────────
 
+void apply_window_frame_flags(WindowState* st, int flags, bool explicit_flags) {
+    if (!st) return;
+    st->frame_flags = flags;
+    st->frame_flags_explicit = explicit_flags;
+    st->titlebar_visible = (flags & EU_WINDOW_FRAME_HIDE_TITLEBAR) == 0;
+    st->rounded_corners = (flags & EU_WINDOW_FRAME_ROUNDED) != 0;
+    if (st->rounded_corners) {
+        if (st->rounded_corner_radius <= 0) st->rounded_corner_radius = 8;
+    }
+    if (st->element_tree) st->element_tree->layout();
+    if (st->hwnd) InvalidateRect(st->hwnd, nullptr, FALSE);
+}
+
+static bool frame_resize_enabled(WindowState* st) {
+    if (!st) return true;
+    if (!st->frame_flags_explicit) return true;
+    if (st->frame_flags == EU_WINDOW_FRAME_DEFAULT) return true;
+    return (st->frame_flags & EU_WINDOW_FRAME_RESIZABLE) != 0;
+}
+
 static int get_resize_dir(HWND hwnd, int x, int y) {
+    WindowState* st = window_state(hwnd);
+    if (!frame_resize_enabled(st)) return 0;
     RECT rc;
     GetClientRectForWindowDpi(hwnd, &rc);
-    int b = 6;
-    if (x < b && y < b)                         return HTTOPLEFT;
-    if (x > rc.right - b && y < b)              return HTTOPRIGHT;
-    if (x < b && y > rc.bottom - b)             return HTBOTTOMLEFT;
-    if (x > rc.right - b && y > rc.bottom - b)  return HTBOTTOMRIGHT;
-    if (x < b)                                  return HTLEFT;
-    if (x > rc.right - b)                       return HTRIGHT;
-    if (y < b)                                  return HTTOP;
-    if (y > rc.bottom - b)                      return HTBOTTOM;
+    float scale = st ? st->dpi_scale : 1.0f;
+    int left = st ? (int)std::lround(st->resize_border_left * scale) : 6;
+    int top = st ? (int)std::lround(st->resize_border_top * scale) : 6;
+    int right = st ? (int)std::lround(st->resize_border_right * scale) : 6;
+    int bottom = st ? (int)std::lround(st->resize_border_bottom * scale) : 6;
+    if (left < 0) left = 0; if (top < 0) top = 0; if (right < 0) right = 0; if (bottom < 0) bottom = 0;
+    if (x < left && y < top)                         return HTTOPLEFT;
+    if (x > rc.right - right && y < top)              return HTTOPRIGHT;
+    if (x < left && y > rc.bottom - bottom)           return HTBOTTOMLEFT;
+    if (x > rc.right - right && y > rc.bottom - bottom) return HTBOTTOMRIGHT;
+    if (x < left)                                     return HTLEFT;
+    if (x > rc.right - right)                         return HTRIGHT;
+    if (y < top)                                      return HTTOP;
+    if (y > rc.bottom - bottom)                       return HTBOTTOM;
     return 0;
 }
 
@@ -80,6 +109,16 @@ static TitleBar* get_title_bar(WindowState* st) {
 }
 
 static bool is_titlebar_drag_point(WindowState* st, int x, int y) {
+    if (st) {
+        for (const auto& r : st->no_drag_regions) {
+            if (r.contains(x, y)) return false;
+        }
+    }
+    if (st && !st->drag_regions.empty()) {
+        for (const auto& r : st->drag_regions) {
+            if (r.contains(x, y)) return true;
+        }
+    }
     TitleBar* tb = get_title_bar(st);
     if (!tb || !tb->visible || !tb->enabled) return false;
     if (!tb->bounds.contains(x, y)) return false;
@@ -87,6 +126,14 @@ static bool is_titlebar_drag_point(WindowState* st, int x, int y) {
     int lx = x - tb->bounds.x;
     int ly = y - tb->bounds.y;
     return !tb->hit_test_button(lx, ly);
+}
+
+static bool is_no_drag_point(WindowState* st, int x, int y) {
+    if (!st) return false;
+    for (const auto& r : st->no_drag_regions) {
+        if (r.contains(x, y)) return true;
+    }
+    return false;
 }
 
 static bool is_titlebar_button_point(WindowState* st, int x, int y) {
@@ -182,10 +229,18 @@ void register_window_class() {
         case WM_CREATE: {
             st = new WindowState();
             st->hwnd = hwnd;
-            st->titlebar_color = static_cast<Color>((UINT_PTR)((CREATESTRUCTW*)lp)->lpCreateParams & 0xFFFFFFFF);
+            WindowCreateParams* pending = g_pending_create_params;
+            if (pending) {
+                st->titlebar_color = pending->titlebar_color;
+                st->frame_flags = pending->frame_flags;
+                st->frame_flags_explicit = true;
+            } else {
+                st->titlebar_color = static_cast<Color>((UINT_PTR)((CREATESTRUCTW*)lp)->lpCreateParams & 0xFFFFFFFF);
+            }
             st->dpi_scale = GetDpiForWindow(hwnd) / 96.0f;
             st->last_dpi = (float)GetDpiForWindow(hwnd);
             g_windows[hwnd] = st;
+            if (pending) apply_window_frame_flags(st, pending->frame_flags, true);
             ensure_factories();
             init_themes();
             set_window_theme_mode(hwnd, st->theme_mode);
@@ -293,6 +348,7 @@ void register_window_class() {
             ScreenToClient(hwnd, &pt);
             if (is_modal_overlay_point(st, pt.x, pt.y)) return HTCLIENT;
             if (is_titlebar_button_point(st, pt.x, pt.y)) return HTCLIENT;
+            if (is_no_drag_point(st, pt.x, pt.y)) return HTCLIENT;
             int dir = get_resize_dir(hwnd, pt.x, pt.y);
             if (dir) return dir;
             return HTCLIENT;
@@ -341,8 +397,9 @@ void register_window_class() {
         case WM_LBUTTONDOWN: {
             int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
             bool modal_point = is_modal_overlay_point(st, x, y);
+            bool no_drag_point = is_no_drag_point(st, x, y);
             int dir = get_resize_dir(hwnd, x, y);
-            if (!modal_point && dir && st) {
+            if (!modal_point && !no_drag_point && dir && st) {
                 st->sizing = true;
                 st->size_dir = dir;
                 st->size_start.x = x; st->size_start.y = y;
@@ -350,7 +407,7 @@ void register_window_class() {
                 SetCapture(hwnd);
                 return 0;
             }
-            if (!modal_point && is_titlebar_drag_point(st, x, y)) {
+            if (!modal_point && !no_drag_point && is_titlebar_drag_point(st, x, y)) {
                 SetFocus(hwnd);
                 ReleaseCapture();
                 SendMessageW(hwnd, WM_NCLBUTTONDOWN, HTCAPTION, 0);

@@ -87,3 +87,43 @@ python tests/python/test_menu_complete_components.py
 ## 文档维护
 
 如果 `Menu` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py`、`tests/python/test_new_emoji.py` 和 `DLL命令/易语言DLL命令.md`。
+## Chrome 菜单增强
+
+菜单现在可作为 Chrome 三点菜单、扩展菜单和站点信息菜单使用。新增：
+
+```text
+EU_SetMenuItemIcon
+EU_SetMenuItemShortcut
+EU_SetMenuItemChecked
+EU_SetMenuItemSeparator
+EU_SetMenuItemSubmenu
+EU_SetMenuPopupPosition
+EU_SetContextMenuCallback
+```
+
+每项可配置图标、快捷键、勾选、分隔线、二级菜单元素和右键上下文回调。
+
+## 通用 Popup API
+
+`Menu` 可作为锚定悬浮菜单使用，打开时显示、关闭时隐藏，并跟随 anchor 元素重新定位：
+
+```text
+EU_SetPopupAnchorElement
+EU_SetPopupPlacement
+EU_SetPopupOpen / EU_GetPopupOpen
+EU_SetPopupDismissBehavior
+```
+
+`EU_SetMenuPopupPosition` 保持兼容；新项目建议使用通用 Popup API，这样 `Menu` 与 `Popover` 可共用同一套锚点、方位、打开状态和外部/Esc 关闭策略。
+
+## Element Popup 绑定 / 右键菜单
+
+`Menu` 可作为任意组件的左键或右键弹出菜单使用：
+
+```text
+EU_SetElementPopup(hwnd, element_id, menu_id, trigger)
+EU_ClearElementPopup(hwnd, element_id, trigger)
+EU_GetElementPopup(hwnd, element_id, trigger)
+```
+
+推荐右键菜单使用 `trigger=1`。触发时由 `ElementTree` 统一处理右键命中，不要求 `Panel`、`Button`、`Omnibox` 等组件自己实现右键逻辑；打开当前菜单时会关闭同窗口内其他绑定弹层。

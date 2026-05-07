@@ -18,6 +18,9 @@ extern HMODULE g_module;
 #include "element_text.h"
 #include "element_link.h"
 #include "element_icon.h"
+#include "element_icon_button.h"
+#include "element_omnibox.h"
+#include "element_browser_viewport.h"
 #include "element_space.h"
 #include "element_container.h"
 #include "element_layout.h"
@@ -105,8 +108,9 @@ static int scale_to_px(int v, float scale) {
 
 // ── Window management ────────────────────────────────────────────────
 
-HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
-                               int x, int y, int w, int h, Color titlebar_color) {
+static HWND create_window_core(const unsigned char* title_bytes, int title_len,
+                               int x, int y, int w, int h, Color titlebar_color,
+                               int frame_flags, bool explicit_frame_flags) {
     register_window_class();
     ensure_factories();
     init_themes();
@@ -131,11 +135,17 @@ HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
     // Pure popup — no native frame; resize and DPI handled manually
     DWORD style = WS_POPUP | WS_CLIPCHILDREN;
 
+    WindowCreateParams params;
+    params.titlebar_color = titlebar_color;
+    params.frame_flags = frame_flags;
+    if (explicit_frame_flags) g_pending_create_params = &params;
+
     HWND hwnd = CreateWindowExW(
         WS_EX_ACCEPTFILES, L"NewEmojiWindow", title.c_str(), style,
         x, y, sw, sh,
         nullptr, nullptr, g_module,
-        (LPVOID)(UINT_PTR)titlebar_color);
+        explicit_frame_flags ? nullptr : (LPVOID)(UINT_PTR)titlebar_color);
+    if (explicit_frame_flags) g_pending_create_params = nullptr;
     if (oldCtx) SetThreadDpiAwarenessContext(oldCtx);
     if (pmAware) {
         WindowState* st = window_state(hwnd);
@@ -143,6 +153,19 @@ HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
     }
 
     return hwnd;
+}
+
+HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
+                               int x, int y, int w, int h, Color titlebar_color) {
+    return create_window_core(title_bytes, title_len, x, y, w, h, titlebar_color,
+                              EU_WINDOW_FRAME_DEFAULT, false);
+}
+
+HWND __stdcall EU_CreateWindowEx(const unsigned char* title_bytes, int title_len,
+                                 int x, int y, int w, int h, Color titlebar_color,
+                                 int frame_flags) {
+    return create_window_core(title_bytes, title_len, x, y, w, h, titlebar_color,
+                              frame_flags, true);
 }
 
 HWND __stdcall EU_CreateWindowDark(const unsigned char* title_bytes, int title_len,
@@ -352,6 +375,12 @@ static T* find_typed_element(HWND hwnd, int element_id) {
     return dynamic_cast<T*>(el);
 }
 
+static Element* find_element(HWND hwnd, int element_id) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return nullptr;
+    return st->element_tree->find_by_id(element_id);
+}
+
 static std::vector<std::wstring> split_option_list(const unsigned char* bytes, int len) {
     std::vector<std::wstring> items;
     std::wstring full = utf8_to_wide(bytes, len);
@@ -385,6 +414,48 @@ static std::vector<std::wstring> split_option_list_keep_empty(const unsigned cha
     }
     items.push_back(current);
     return items;
+}
+
+static std::vector<std::wstring> split_omnibox_fields(const std::wstring& line) {
+    std::vector<std::wstring> fields;
+    std::wstring cur;
+    for (wchar_t ch : line) {
+        if (ch == L'\t') {
+            fields.push_back(cur);
+            cur.clear();
+        } else {
+            cur.push_back(ch);
+        }
+    }
+    fields.push_back(cur);
+    return fields;
+}
+
+static std::vector<OmniboxActionIcon> parse_omnibox_action_icons(const unsigned char* bytes, int len) {
+    std::vector<OmniboxActionIcon> result;
+    for (const auto& row : split_option_list(bytes, len)) {
+        auto fields = split_omnibox_fields(row);
+        OmniboxActionIcon item;
+        item.icon = fields.size() > 0 ? fields[0] : L"";
+        item.name = fields.size() > 1 ? fields[1] : L"";
+        result.push_back(item);
+    }
+    return result;
+}
+
+static std::vector<OmniboxSuggestion> parse_omnibox_suggestions(const unsigned char* bytes, int len) {
+    std::vector<OmniboxSuggestion> result;
+    for (const auto& row : split_option_list(bytes, len)) {
+        auto fields = split_omnibox_fields(row);
+        OmniboxSuggestion item;
+        item.type = fields.size() > 0 ? fields[0] : L"";
+        item.icon = fields.size() > 1 ? fields[1] : L"";
+        item.primary = fields.size() > 2 ? fields[2] : (fields.size() > 0 ? fields[0] : L"");
+        item.secondary = fields.size() > 3 ? fields[3] : L"";
+        item.completion = fields.size() > 4 ? fields[4] : item.primary;
+        result.push_back(item);
+    }
+    return result;
 }
 
 static std::vector<std::wstring> split_tab_fields(const std::wstring& line) {
@@ -929,6 +1000,71 @@ int __stdcall EU_CreateIcon(HWND hwnd, int parent_id,
                             const unsigned char* text_bytes, int text_len,
                             int x, int y, int w, int h) {
     return create_text_like<Icon>(hwnd, parent_id, text_bytes, text_len, x, y, w, h);
+}
+
+int __stdcall EU_CreateIconButton(HWND hwnd, int parent_id,
+                                  const unsigned char* icon_bytes, int icon_len,
+                                  const unsigned char* tooltip_bytes, int tooltip_len,
+                                  int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<IconButton>();
+    el->set_logical_bounds({x, y, w, h});
+    el->icon = utf8_to_wide(icon_bytes, icon_len);
+    el->text = el->icon;
+    el->tooltip = utf8_to_wide(tooltip_bytes, tooltip_len);
+    ElementStyle s = el->style;
+    s.bg_color = 0;
+    s.border_color = 0;
+    s.corner_radius = 999.0f;
+    s.pad_left = s.pad_top = s.pad_right = s.pad_bottom = 3;
+    s.font_size = 16.0f;
+    el->set_logical_style(s);
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CreateOmnibox(HWND hwnd, int parent_id,
+                               const unsigned char* value_bytes, int value_len,
+                               const unsigned char* placeholder_bytes, int placeholder_len,
+                               int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<Omnibox>();
+    el->set_logical_bounds({x, y, w, h});
+    el->set_value(utf8_to_wide(value_bytes, value_len));
+    el->set_placeholder(utf8_to_wide(placeholder_bytes, placeholder_len));
+    ElementStyle s = el->style;
+    s.bg_color = 0;
+    s.border_color = 0;
+    s.font_size = 14.0f;
+    s.pad_left = s.pad_top = s.pad_right = s.pad_bottom = 0;
+    el->set_logical_style(s);
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
+}
+
+int __stdcall EU_CreateBrowserViewport(HWND hwnd, int parent_id, int x, int y, int w, int h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    Element* parent = find_parent_or_root(st, parent_id);
+    auto el = std::make_unique<BrowserViewport>();
+    el->set_logical_bounds({x, y, w, h});
+    ElementStyle s = el->style;
+    s.bg_color = 0;
+    s.border_color = 0;
+    s.font_size = 14.0f;
+    el->set_logical_style(s);
+    Element* raw = st->element_tree->add_child(parent, std::move(el));
+    st->element_tree->layout();
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return raw->id;
 }
 
 int __stdcall EU_CreateSpace(HWND hwnd, int parent_id, int x, int y, int w, int h) {
@@ -12395,6 +12531,617 @@ void __stdcall EU_SetPopconfirmResultCallback(HWND hwnd, int element_id, Element
     }
 }
 
+// ── Chrome shell APIs ─────────────────────────────────────────────────
+
+void __stdcall EU_SetIconButtonIcon(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->icon = utf8_to_wide(bytes, len);
+        el->text = el->icon;
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetIconButtonTooltip(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->tooltip = utf8_to_wide(bytes, len);
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetIconButtonBadge(HWND hwnd, int element_id,
+                                     const unsigned char* bytes, int len, int visible) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->badge_text = utf8_to_wide(bytes, len);
+        el->badge_visible = visible != 0;
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetIconButtonChecked(HWND hwnd, int element_id, int checked) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->checked = checked != 0;
+        el->invalidate();
+    }
+}
+
+int __stdcall EU_GetIconButtonChecked(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<IconButton>(hwnd, element_id);
+    return el && el->checked ? 1 : 0;
+}
+
+void __stdcall EU_SetIconButtonDropdown(HWND hwnd, int element_id, int dropdown_element_id) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->dropdown_element_id = dropdown_element_id;
+        el->popup_bindings[0] = dropdown_element_id;
+        if (auto* pop = dynamic_cast<Popover*>(find_element(hwnd, dropdown_element_id))) {
+            pop->anchor_element_id = element_id;
+            pop->trigger_mode = 3;
+        } else if (auto* menu = dynamic_cast<Menu*>(find_element(hwnd, dropdown_element_id))) {
+            menu->popup_anchor_element_id = element_id;
+            menu->visible = false;
+        } else if (auto* dropdown = dynamic_cast<Dropdown*>(find_element(hwnd, dropdown_element_id))) {
+            dropdown->set_popup_anchor(element_id);
+        }
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetIconButtonColors(HWND hwnd, int element_id,
+                                      Color normal_bg, Color hover_bg, Color pressed_bg,
+                                      Color checked_bg, Color disabled_bg,
+                                      Color icon_color, Color disabled_icon_color) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->set_colors(normal_bg, hover_bg, pressed_bg, checked_bg, disabled_bg,
+                       icon_color, disabled_icon_color);
+    }
+}
+
+void __stdcall EU_SetIconButtonShape(HWND hwnd, int element_id, int shape, int radius) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->set_shape(shape, radius);
+    }
+}
+
+void __stdcall EU_SetIconButtonPadding(HWND hwnd, int element_id,
+                                       int left, int top, int right, int bottom) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->set_padding(left, top, right, bottom);
+    }
+}
+
+void __stdcall EU_SetIconButtonIconSize(HWND hwnd, int element_id, int size) {
+    if (auto* el = find_typed_element<IconButton>(hwnd, element_id)) {
+        el->set_icon_size(size);
+    }
+}
+
+int __stdcall EU_GetIconButtonState(HWND hwnd, int element_id,
+                                    int* checked, int* hovered, int* pressed, int* badge_visible) {
+    auto* el = find_typed_element<IconButton>(hwnd, element_id);
+    if (!el) return 0;
+    if (checked) *checked = el->checked ? 1 : 0;
+    if (hovered) *hovered = el->hovered ? 1 : 0;
+    if (pressed) *pressed = el->pressed ? 1 : 0;
+    if (badge_visible) *badge_visible = el->badge_visible ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetTabsChromeMode(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_chrome_mode(enabled != 0);
+}
+
+int __stdcall EU_GetTabsChromeMode(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    return el && el->chrome_mode ? 1 : 0;
+}
+
+void __stdcall EU_SetTabsItemIcon(HWND hwnd, int element_id, int index,
+                                  const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_item_icon(index, utf8_to_wide(bytes, len));
+}
+
+void __stdcall EU_SetTabsItemLoading(HWND hwnd, int element_id, int index, int loading) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_item_loading(index, loading != 0);
+}
+
+void __stdcall EU_SetTabsItemPinned(HWND hwnd, int element_id, int index, int pinned) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_item_pinned(index, pinned != 0);
+}
+
+void __stdcall EU_SetTabsItemMuted(HWND hwnd, int element_id, int index, int muted) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_item_muted(index, muted != 0);
+}
+
+void __stdcall EU_SetTabsItemClosable(HWND hwnd, int element_id, int index, int closable) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_item_closable(index, closable != 0);
+}
+
+void __stdcall EU_SetTabsItemChromeState(HWND hwnd, int element_id, int index,
+                                         int loading, int pinned, int muted, int alerting) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_item_chrome_state(index, loading != 0, pinned != 0, muted != 0, alerting != 0);
+    }
+}
+
+int __stdcall EU_GetTabsItemChromeState(HWND hwnd, int element_id, int index,
+                                        int* loading, int* pinned, int* muted, int* alerting) {
+    auto* el = find_typed_element<Tabs>(hwnd, element_id);
+    if (!el || index < 0 || index >= (int)el->tab_items.size()) return 0;
+    const auto& item = el->tab_items[(size_t)index];
+    if (loading) *loading = item.loading ? 1 : 0;
+    if (pinned) *pinned = item.pinned ? 1 : 0;
+    if (muted) *muted = item.muted ? 1 : 0;
+    if (alerting) *alerting = item.alerting ? 1 : 0;
+    return 1;
+}
+
+void __stdcall EU_SetTabsChromeMetrics(HWND hwnd, int element_id,
+                                       int min_width, int max_width, int pinned_width,
+                                       int height, int overlap) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_chrome_metrics(min_width, max_width, pinned_width, height, overlap);
+    }
+}
+
+void __stdcall EU_SetTabsNewButtonVisible(HWND hwnd, int element_id, int visible) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->set_new_button_visible(visible != 0);
+}
+
+void __stdcall EU_SetTabsDragOptions(HWND hwnd, int element_id, int reorder_enabled, int detach_enabled) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) {
+        el->set_drag_options(reorder_enabled != 0, detach_enabled != 0);
+    }
+}
+
+void __stdcall EU_SetTabsReorderCallback(HWND hwnd, int element_id, ElementReorderCallback cb) {
+    if (auto* el = find_typed_element<Tabs>(hwnd, element_id)) el->reorder_cb = cb;
+}
+
+void __stdcall EU_SetOmniboxValue(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_value(utf8_to_wide(bytes, len));
+}
+
+int __stdcall EU_GetOmniboxValue(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size) {
+    auto* el = find_typed_element<Omnibox>(hwnd, element_id);
+    return el ? copy_wide_as_utf8(el->value, buffer, buffer_size) : 0;
+}
+
+void __stdcall EU_SetOmniboxPlaceholder(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_placeholder(utf8_to_wide(bytes, len));
+}
+
+void __stdcall EU_SetOmniboxSecurityState(HWND hwnd, int element_id, int state,
+                                          const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_security_state(state, utf8_to_wide(bytes, len));
+}
+
+void __stdcall EU_SetOmniboxPrefixChip(HWND hwnd, int element_id,
+                                       const unsigned char* icon_bytes, int icon_len,
+                                       const unsigned char* text_bytes, int text_len,
+                                       Color bg_color, Color fg_color) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) {
+        el->set_prefix_chip(utf8_to_wide(icon_bytes, icon_len), utf8_to_wide(text_bytes, text_len), bg_color, fg_color);
+    }
+}
+
+void __stdcall EU_SetOmniboxActionIcons(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_action_icons(parse_omnibox_action_icons(bytes, len));
+}
+
+void __stdcall EU_SetOmniboxSuggestionItems(HWND hwnd, int element_id, const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_suggestions(parse_omnibox_suggestions(bytes, len));
+}
+
+void __stdcall EU_SetOmniboxSuggestionOpen(HWND hwnd, int element_id, int open) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_suggestion_open(open != 0);
+}
+
+void __stdcall EU_SetOmniboxSuggestionSelected(HWND hwnd, int element_id, int index) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->set_selected_suggestion(index);
+}
+
+int __stdcall EU_GetOmniboxSuggestionState(HWND hwnd, int element_id,
+                                           int* open, int* selected, int* count) {
+    auto* el = find_typed_element<Omnibox>(hwnd, element_id);
+    if (!el) return 0;
+    if (open) *open = el->suggestions_open ? 1 : 0;
+    if (selected) *selected = el->selected_suggestion;
+    if (count) *count = (int)el->suggestions.size();
+    return 1;
+}
+
+void __stdcall EU_SetOmniboxCommitCallback(HWND hwnd, int element_id, ElementTextCallback cb) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->commit_cb = cb;
+}
+
+void __stdcall EU_SetOmniboxIconButtonCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<Omnibox>(hwnd, element_id)) el->icon_cb = cb;
+}
+
+void __stdcall EU_SetMenuItemIcon(HWND hwnd, int element_id, int index,
+                                  const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->set_item_icon(index, utf8_to_wide(bytes, len));
+}
+
+void __stdcall EU_SetMenuItemShortcut(HWND hwnd, int element_id, int index,
+                                      const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->set_item_shortcut(index, utf8_to_wide(bytes, len));
+}
+
+void __stdcall EU_SetMenuItemChecked(HWND hwnd, int element_id, int index, int checked) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->set_item_checked(index, checked != 0);
+}
+
+void __stdcall EU_SetMenuItemSeparator(HWND hwnd, int element_id, int index, int separator) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->set_item_separator(index, separator != 0);
+}
+
+void __stdcall EU_SetMenuItemSubmenu(HWND hwnd, int element_id, int index, int submenu_element_id) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->set_item_submenu(index, submenu_element_id);
+}
+
+void __stdcall EU_SetMenuPopupPosition(HWND hwnd, int element_id, int anchor_element_id,
+                                       int placement, int offset) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->set_popup_position(anchor_element_id, placement, offset);
+}
+
+void __stdcall EU_SetContextMenuCallback(HWND hwnd, int element_id, ElementValueCallback cb) {
+    if (auto* el = find_typed_element<Menu>(hwnd, element_id)) el->context_cb = cb;
+}
+
+void __stdcall EU_SetPopoverAnchorElement(HWND hwnd, int element_id, int anchor_element_id) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) { el->anchor_element_id = anchor_element_id; el->invalidate(); }
+}
+
+void __stdcall EU_SetPopoverArrow(HWND hwnd, int element_id, int visible, int size) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        el->show_arrow = visible != 0;
+        el->arrow_size = (std::max)(4, size);
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetPopoverElevation(HWND hwnd, int element_id, int level) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        el->elevation = (std::max)(0, (std::min)(4, level));
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetPopoverAutoPlacement(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        el->auto_placement = enabled != 0;
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetPopoverDismissBehavior(HWND hwnd, int element_id,
+                                            int close_on_outside, int close_on_escape) {
+    if (auto* el = find_typed_element<Popover>(hwnd, element_id)) {
+        el->close_on_outside = close_on_outside != 0;
+        el->close_on_escape = close_on_escape != 0;
+        el->invalidate();
+    }
+}
+
+void __stdcall EU_SetPopupAnchorElement(HWND hwnd, int popup_id, int anchor_element_id) {
+    if (auto* pop = find_typed_element<Popover>(hwnd, popup_id)) {
+        pop->anchor_element_id = anchor_element_id;
+        pop->trigger_mode = 3;
+        pop->invalidate();
+        return;
+    }
+    if (auto* menu = find_typed_element<Menu>(hwnd, popup_id)) {
+        menu->popup_anchor_element_id = anchor_element_id;
+        menu->update_popup_position_from_anchor();
+        menu->invalidate();
+        return;
+    }
+    if (auto* dropdown = find_typed_element<Dropdown>(hwnd, popup_id)) {
+        dropdown->set_popup_anchor(anchor_element_id);
+    }
+}
+
+void __stdcall EU_SetPopupPlacement(HWND hwnd, int popup_id, int placement, int offset_x, int offset_y) {
+    if (auto* pop = find_typed_element<Popover>(hwnd, popup_id)) {
+        pop->set_popup_placement(placement, offset_x, offset_y);
+        return;
+    }
+    if (auto* menu = find_typed_element<Menu>(hwnd, popup_id)) {
+        menu->set_popup_placement(placement, offset_x, offset_y);
+        menu->update_popup_position_from_anchor();
+        return;
+    }
+    if (auto* dropdown = find_typed_element<Dropdown>(hwnd, popup_id)) {
+        dropdown->set_popup_placement(placement, offset_x, offset_y);
+    }
+}
+
+void __stdcall EU_SetPopupOpen(HWND hwnd, int popup_id, int open) {
+    if (auto* pop = find_typed_element<Popover>(hwnd, popup_id)) {
+        pop->set_open(open != 0);
+        return;
+    }
+    if (auto* menu = find_typed_element<Menu>(hwnd, popup_id)) {
+        menu->visible = open != 0;
+        if (menu->visible) menu->update_popup_position_from_anchor();
+        menu->invalidate();
+        return;
+    }
+    if (auto* dropdown = find_typed_element<Dropdown>(hwnd, popup_id)) {
+        dropdown->set_open(open != 0);
+    }
+}
+
+int __stdcall EU_GetPopupOpen(HWND hwnd, int popup_id) {
+    if (auto* pop = find_typed_element<Popover>(hwnd, popup_id)) return pop->is_open() ? 1 : 0;
+    if (auto* menu = find_typed_element<Menu>(hwnd, popup_id)) return menu->visible ? 1 : 0;
+    if (auto* dropdown = find_typed_element<Dropdown>(hwnd, popup_id)) return dropdown->is_open() ? 1 : 0;
+    return 0;
+}
+
+void __stdcall EU_SetPopupDismissBehavior(HWND hwnd, int popup_id,
+                                          int close_on_outside, int close_on_escape) {
+    if (auto* pop = find_typed_element<Popover>(hwnd, popup_id)) {
+        pop->close_on_outside = close_on_outside != 0;
+        pop->close_on_escape = close_on_escape != 0;
+        pop->invalidate();
+        return;
+    }
+    if (auto* menu = find_typed_element<Menu>(hwnd, popup_id)) {
+        menu->set_popup_dismiss_behavior(close_on_outside != 0, close_on_escape != 0);
+        return;
+    }
+    if (auto* dropdown = find_typed_element<Dropdown>(hwnd, popup_id)) {
+        dropdown->set_popup_dismiss_behavior(close_on_outside != 0, close_on_escape != 0);
+    }
+}
+
+static bool is_supported_popup(Element* el) {
+    return dynamic_cast<Popover*>(el) || dynamic_cast<Menu*>(el) || dynamic_cast<Dropdown*>(el);
+}
+
+void __stdcall EU_SetElementPopup(HWND hwnd, int element_id, int popup_id, int trigger) {
+    if (trigger < 0 || trigger > 4) return;
+    Element* el = find_element(hwnd, element_id);
+    Element* popup = find_element(hwnd, popup_id);
+    if (!el || !popup || !is_supported_popup(popup)) return;
+    el->popup_bindings[trigger] = popup_id;
+    if (trigger != 4) {
+        EU_SetPopupAnchorElement(hwnd, popup_id, element_id);
+    }
+    el->invalidate();
+}
+
+void __stdcall EU_ClearElementPopup(HWND hwnd, int element_id, int trigger) {
+    if (trigger < 0 || trigger > 4) return;
+    Element* el = find_element(hwnd, element_id);
+    if (!el) return;
+    el->popup_bindings[trigger] = 0;
+    el->invalidate();
+}
+
+int __stdcall EU_GetElementPopup(HWND hwnd, int element_id, int trigger) {
+    if (trigger < 0 || trigger > 4) return 0;
+    Element* el = find_element(hwnd, element_id);
+    return el ? el->popup_bindings[trigger] : 0;
+}
+
+void __stdcall EU_SetTitleBarVisible(HWND hwnd, int visible) {
+    if (auto* st = window_state(hwnd)) {
+        st->titlebar_visible = visible != 0;
+        if (st->element_tree) st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetTitleBarHeight(HWND hwnd, int height) {
+    if (auto* st = window_state(hwnd)) {
+        st->titlebar_logical_height = (std::max)(0, height);
+        if (st->element_tree) st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetTitleBarButtonStyle(HWND hwnd, int button_width, int button_height,
+                                         Color icon_color, Color hover_bg, Color close_hover_bg) {
+    if (auto* st = window_state(hwnd)) {
+        st->titlebar_button_w = button_width;
+        st->titlebar_button_h = button_height;
+        st->titlebar_button_icon_color = icon_color;
+        st->titlebar_button_hover_bg = hover_bg;
+        st->titlebar_close_hover_bg = close_hover_bg;
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_GetWindowFrameFlags(HWND hwnd) {
+    if (auto* st = window_state(hwnd)) return st->frame_flags;
+    return 0;
+}
+
+void __stdcall EU_SetWindowFrameFlags(HWND hwnd, int frame_flags) {
+    if (auto* st = window_state(hwnd)) {
+        apply_window_frame_flags(st, frame_flags, true);
+    }
+}
+
+void __stdcall EU_SetWindowResizeBorder(HWND hwnd, int left, int top, int right, int bottom) {
+    if (auto* st = window_state(hwnd)) {
+        st->resize_border_left = (std::max)(0, left);
+        st->resize_border_top = (std::max)(0, top);
+        st->resize_border_right = (std::max)(0, right);
+        st->resize_border_bottom = (std::max)(0, bottom);
+    }
+}
+
+int __stdcall EU_GetWindowResizeBorder(HWND hwnd, int* left, int* top, int* right, int* bottom) {
+    if (auto* st = window_state(hwnd)) {
+        if (left) *left = st->resize_border_left;
+        if (top) *top = st->resize_border_top;
+        if (right) *right = st->resize_border_right;
+        if (bottom) *bottom = st->resize_border_bottom;
+        return 1;
+    }
+    return 0;
+}
+
+void __stdcall EU_SetWindowDragRegion(HWND hwnd, int x, int y, int w, int h, int enabled) {
+    if (auto* st = window_state(hwnd)) {
+        Rect r{
+            scale_to_px(x, st->dpi_scale),
+            scale_to_px(y, st->dpi_scale),
+            scale_to_px(w, st->dpi_scale),
+            scale_to_px(h, st->dpi_scale)
+        };
+        if (enabled) st->drag_regions.push_back(r);
+        else {
+            st->drag_regions.erase(std::remove_if(st->drag_regions.begin(), st->drag_regions.end(),
+                [&](const Rect& cur) { return cur.x == r.x && cur.y == r.y && cur.w == r.w && cur.h == r.h; }),
+                st->drag_regions.end());
+        }
+    }
+}
+
+void __stdcall EU_ClearWindowDragRegions(HWND hwnd) {
+    if (auto* st = window_state(hwnd)) st->drag_regions.clear();
+}
+
+void __stdcall EU_SetWindowNoDragRegion(HWND hwnd, int x, int y, int w, int h, int enabled) {
+    if (auto* st = window_state(hwnd)) {
+        Rect r{
+            scale_to_px(x, st->dpi_scale),
+            scale_to_px(y, st->dpi_scale),
+            scale_to_px(w, st->dpi_scale),
+            scale_to_px(h, st->dpi_scale)
+        };
+        if (enabled) st->no_drag_regions.push_back(r);
+        else {
+            st->no_drag_regions.erase(std::remove_if(st->no_drag_regions.begin(), st->no_drag_regions.end(),
+                [&](const Rect& cur) { return cur.x == r.x && cur.y == r.y && cur.w == r.w && cur.h == r.h; }),
+                st->no_drag_regions.end());
+        }
+    }
+}
+
+void __stdcall EU_ClearWindowNoDragRegions(HWND hwnd) {
+    if (auto* st = window_state(hwnd)) st->no_drag_regions.clear();
+}
+
+void __stdcall EU_SetElementWindowCommand(HWND hwnd, int element_id, int command) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = st->element_tree->find_by_id(element_id)) {
+        el->window_command = (std::max)(0, (std::min)(3, command));
+    }
+}
+
+int __stdcall EU_GetElementWindowCommand(HWND hwnd, int element_id) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return 0;
+    if (auto* el = st->element_tree->find_by_id(element_id)) return el->window_command;
+    return 0;
+}
+
+void __stdcall EU_SetWindowCaptionButtonBounds(HWND hwnd, int x, int y, int w, int h) {
+    if (auto* st = window_state(hwnd)) {
+        st->caption_button_x = x;
+        st->caption_button_y = y;
+        st->caption_button_w = w;
+        st->caption_button_h = h;
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetWindowRoundedCorners(HWND hwnd, int enabled, int radius) {
+    if (auto* st = window_state(hwnd)) {
+        st->rounded_corners = enabled != 0;
+        st->rounded_corner_radius = (std::max)(0, radius);
+    }
+}
+
+void __stdcall EU_SetContainerFlexLayout(HWND hwnd, int element_id,
+                                         int direction, int gap,
+                                         int align_items, int justify_content) {
+    if (auto* el = find_typed_element<Container>(hwnd, element_id)) {
+        el->set_flex_options(direction, gap, align_items, justify_content);
+    }
+}
+
+void __stdcall EU_SetElementFlexGrow(HWND hwnd, int element_id, int grow) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = st->element_tree->find_by_id(element_id)) {
+        el->flex_grow = (std::max)(0, grow);
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetElementMinMaxSize(HWND hwnd, int element_id, int min_w, int min_h, int max_w, int max_h) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = st->element_tree->find_by_id(element_id)) {
+        el->min_w = min_w; el->min_h = min_h; el->max_w = max_w; el->max_h = max_h;
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetElementMargin(HWND hwnd, int element_id, int left, int top, int right, int bottom) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = st->element_tree->find_by_id(element_id)) {
+        el->margin_left = left; el->margin_top = top; el->margin_right = right; el->margin_bottom = bottom;
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetElementAlignSelf(HWND hwnd, int element_id, int align_self) {
+    WindowState* st = window_state(hwnd);
+    if (!st || !st->element_tree) return;
+    if (auto* el = st->element_tree->find_by_id(element_id)) {
+        el->align_self = align_self;
+        st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+void __stdcall EU_SetBrowserViewportState(HWND hwnd, int element_id, int state) {
+    if (auto* el = find_typed_element<BrowserViewport>(hwnd, element_id)) el->set_state(state);
+}
+
+void __stdcall EU_SetBrowserViewportPlaceholder(HWND hwnd, int element_id,
+                                                const unsigned char* title_bytes, int title_len,
+                                                const unsigned char* desc_bytes, int desc_len,
+                                                const unsigned char* icon_bytes, int icon_len) {
+    if (auto* el = find_typed_element<BrowserViewport>(hwnd, element_id)) {
+        el->set_placeholder(utf8_to_wide(title_bytes, title_len),
+                            utf8_to_wide(desc_bytes, desc_len),
+                            utf8_to_wide(icon_bytes, icon_len));
+    }
+}
+
+void __stdcall EU_SetBrowserViewportLoading(HWND hwnd, int element_id, int loading, int progress) {
+    if (auto* el = find_typed_element<BrowserViewport>(hwnd, element_id)) el->set_loading(loading != 0, progress);
+}
+
+void __stdcall EU_SetBrowserViewportScreenshot(HWND hwnd, int element_id,
+                                               const unsigned char* bytes, int len) {
+    if (auto* el = find_typed_element<BrowserViewport>(hwnd, element_id)) el->set_screenshot_source(utf8_to_wide(bytes, len));
+}
+
+int __stdcall EU_GetBrowserViewportState(HWND hwnd, int element_id,
+                                         int* state, int* loading, int* progress) {
+    auto* el = find_typed_element<BrowserViewport>(hwnd, element_id);
+    if (!el) return 0;
+    if (state) *state = el->state;
+    if (loading) *loading = el->loading ? 1 : 0;
+    if (progress) *progress = el->progress;
+    return 1;
+}
+
 // ── Callbacks ────────────────────────────────────────────────────────
 
 void __stdcall EU_SetElementClickCallback(HWND hwnd, int element_id, ElementClickCallback cb) {
@@ -12448,6 +13195,34 @@ int __stdcall EU_SetThemeColor(HWND hwnd, const unsigned char* token_bytes, int 
     if (st->element_tree) st->element_tree->layout();
     InvalidateRect(hwnd, nullptr, FALSE);
     return 1;
+}
+
+void __stdcall EU_SetChromeThemePreset(HWND hwnd, int preset) {
+    set_window_chrome_preset(hwnd, preset);
+    if (auto* st = window_state(hwnd)) {
+        if (st->element_tree) st->element_tree->layout();
+        InvalidateRect(hwnd, nullptr, FALSE);
+    }
+}
+
+int __stdcall EU_SetThemeToken(HWND hwnd, const unsigned char* token_bytes, int token_len, Color value) {
+    return EU_SetThemeColor(hwnd, token_bytes, token_len, value);
+}
+
+int __stdcall EU_GetThemeToken(HWND hwnd, const unsigned char* token_bytes, int token_len, Color* value) {
+    if (!token_bytes || token_len <= 0 || !value) return 0;
+    std::string token(reinterpret_cast<const char*>(token_bytes), token_len);
+    return get_window_theme_color(hwnd, token, value) ? 1 : 0;
+}
+
+void __stdcall EU_SetHighContrastMode(HWND hwnd, int enabled) {
+    set_window_high_contrast_mode(hwnd, enabled != 0);
+    InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+void __stdcall EU_SetIncognitoMode(HWND hwnd, int enabled) {
+    set_window_incognito_mode(hwnd, enabled != 0);
+    InvalidateRect(hwnd, nullptr, FALSE);
 }
 
 void __stdcall EU_ResetTheme(HWND hwnd) {

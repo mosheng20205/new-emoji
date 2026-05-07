@@ -258,6 +258,7 @@ class Program
 <img src="imgs/DonutChart.png" alt="DonutChart" width="480">
 <img src="imgs/Drawer.png" alt="Drawer" width="480">
 <img src="imgs/Dropdown.png" alt="Dropdown" width="480">
+<img src="imgs/ElementPopup.png" alt="ElementPopup" width="480">
 <img src="imgs/Empty.png" alt="Empty" width="480">
 <img src="imgs/Footer.png" alt="Footer" width="480">
 <img src="imgs/Gauge.png" alt="Gauge" width="480">

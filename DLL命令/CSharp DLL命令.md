@@ -6972,3 +6972,59 @@ public static extern void EU_ResetTheme(IntPtr hwnd);
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_InvalidateElement(IntPtr hwnd, int element_id);
 ```
+
+## Chrome 高仿外壳 API
+
+### 新增组件
+
+| 导出 | 说明 |
+|---|---|
+| `EU_CreateIconButton` | 创建透明默认态的工具栏图标按钮，支持 hover/press/checked、徽标、tooltip、dropdown。 |
+| `EU_CreateOmnibox` | 创建 Chrome 风格地址栏，支持安全状态、前缀 chip、动作图标、建议列表和提交回调。 |
+| `EU_CreateBrowserViewport` | 创建浏览内容占位区，提供空白页、加载中、截图占位、错误页和新标签页状态。 |
+
+### 主要增强导出
+
+## 通用 Popup API
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopupAnchorElement(IntPtr hwnd, int popup_id, int anchor_element_id);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopupPlacement(IntPtr hwnd, int popup_id, int placement, int offset_x, int offset_y);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopupOpen(IntPtr hwnd, int popup_id, int open);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetPopupOpen(IntPtr hwnd, int popup_id);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopupDismissBehavior(IntPtr hwnd, int popup_id, int close_on_outside, int close_on_escape);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetElementPopup(IntPtr hwnd, int element_id, int popup_id, int trigger);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_ClearElementPopup(IntPtr hwnd, int element_id, int trigger);
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetElementPopup(IntPtr hwnd, int element_id, int trigger);
+```
+
+`EU_SetPopup*` 支持 `Popover`、`Menu` 和 `Dropdown`。`EU_SetElementPopup` 的 `trigger`：`0=左键`、`1=右键`、`2=悬停`、`3=聚焦`、`4=手动`。
+
+`EU_SetTabsChromeMode`、`EU_GetTabsChromeMode`、`EU_SetTabsItemChromeState`、`EU_GetTabsItemChromeState`、`EU_SetMenuItemIcon`、`EU_SetMenuItemShortcut`、`EU_SetMenuItemChecked`、`EU_SetPopoverAnchorElement`、`EU_SetPopoverDismissBehavior`、`EU_SetPopupAnchorElement`、`EU_SetPopupPlacement`、`EU_SetPopupOpen`、`EU_GetPopupOpen`、`EU_SetPopupDismissBehavior`、`EU_SetElementPopup`、`EU_ClearElementPopup`、`EU_GetElementPopup`、`EU_SetWindowDragRegion`、`EU_SetContainerFlexLayout`、`EU_SetChromeThemePreset`、`EU_SetThemeToken`、`EU_GetThemeToken`、`EU_SetHighContrastMode`、`EU_SetIncognitoMode`。
+
+易语言命令左侧可使用中文名，例如 `创建工具栏图标按钮`、`创建地址栏`、`创建浏览内容占位区`；右侧 DLL 入口名保持上述 `EU_` 导出名。
+## Window Frame 通用窗口框架 API
+
+C# P/Invoke 应补充以下入口：
+
+```text
+EU_CreateWindowEx
+EU_GetWindowFrameFlags
+EU_SetWindowFrameFlags
+EU_SetWindowResizeBorder
+EU_GetWindowResizeBorder
+EU_SetWindowNoDragRegion
+EU_ClearWindowNoDragRegions
+EU_SetElementWindowCommand
+EU_GetElementWindowCommand
+```
+
+命名统一使用 Window Frame / 窗口框架，不使用 ChromeFlags；浏览器式外壳只是 `frame_flags` 的推荐组合。

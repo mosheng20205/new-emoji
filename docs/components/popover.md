@@ -44,3 +44,41 @@ ui.create_table(hwnd, content,
 ## 测试
 
 优先运行 `tests/python/test_popover_complete_components.py`。gallery 的 `Popover` 详情页覆盖四触发、嵌套表格和删除确认式组合内容。
+## Chrome 气泡增强
+
+`Popover` 增加锚定按钮、小箭头、阴影层级、自动定位和关闭策略，用于下载气泡、站点信息气泡等 Chrome 外壳场景。
+
+```text
+EU_SetPopoverAnchorElement
+EU_SetPopoverArrow
+EU_SetPopoverElevation
+EU_SetPopoverAutoPlacement
+EU_SetPopoverDismissBehavior
+```
+
+关闭策略支持外部点击关闭和 Esc 关闭两个独立开关。
+
+## 通用 Popup API
+
+`Popover` 现在也可通过通用 Popup API 控制，适合把下载气泡、扩展气泡锚定到任意按钮下方：
+
+```text
+EU_SetPopupAnchorElement
+EU_SetPopupPlacement
+EU_SetPopupOpen / EU_GetPopupOpen
+EU_SetPopupDismissBehavior
+```
+
+`placement` 使用 12 方位：`0 top-start`、`1 top`、`2 top-end`、`3 bottom-start`、`4 bottom`、`5 bottom-end`、`6 left-start`、`7 left`、`8 left-end`、`9 right-start`、`10 right`、`11 right-end`。设置锚点后窗口 resize 会按锚点重新计算弹层位置。
+
+## Element Popup 绑定
+
+`Popover` 可作为“组件弹层绑定”的目标，由任意 Element 通过左键、右键、悬停或聚焦打开：
+
+```text
+EU_SetElementPopup(hwnd, element_id, popover_id, trigger)
+EU_ClearElementPopup(hwnd, element_id, trigger)
+EU_GetElementPopup(hwnd, element_id, trigger)
+```
+
+`trigger`：`0=左键点击`、`1=右键点击`、`2=悬停`、`3=聚焦`、`4=手动`。触发时会自动把 Popover 锚定到当前组件，并关闭同窗口内其他已打开的绑定弹层。

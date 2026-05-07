@@ -1118,6 +1118,14 @@
 | `EU_GetPopoverText` | |
 | `EU_GetPopoverFullState` | |
 | `EU_SetPopoverActionCallback` | |
+| `EU_SetPopupAnchorElement` | 设置 Popover/Menu/Dropdown 通用弹层锚点元素 |
+| `EU_SetPopupPlacement` | 设置 Popover/Menu/Dropdown 通用弹层 12 方位和偏移 |
+| `EU_SetPopupOpen` | 打开或关闭 Popover/Menu/Dropdown 通用弹层 |
+| `EU_GetPopupOpen` | 读取 Popover/Menu/Dropdown 通用弹层打开状态 |
+| `EU_SetPopupDismissBehavior` | 设置 Popover/Menu/Dropdown 外部点击和 Esc 关闭策略 |
+| `EU_SetElementPopup` | 绑定任意 Element 与 Popover/Menu/Dropdown，支持左键、右键、悬停、聚焦、手动触发 |
+| `EU_ClearElementPopup` | 清除某个 Element 指定触发方式的弹层绑定 |
+| `EU_GetElementPopup` | 读取某个 Element 指定触发方式绑定的 popup ID |
 | `EU_SetPopconfirmOpen` | |
 | `EU_SetPopconfirmOptions` | |
 | `EU_SetPopconfirmAdvancedOptions` | 设置 Popconfirm 12 方位、触发、外部关闭、箭头和 offset |
@@ -1143,3 +1151,33 @@
 | `EU_SetThemeColor` | |
 | `EU_ResetTheme` | |
 | `EU_InvalidateElement` | |
+
+## Chrome 高仿外壳 API
+
+### 新增组件
+
+| 导出 | 说明 |
+|---|---|
+| `EU_CreateIconButton` | 创建透明默认态的工具栏图标按钮，支持 hover/press/checked、徽标、tooltip、dropdown。 |
+| `EU_CreateOmnibox` | 创建 Chrome 风格地址栏，支持安全状态、前缀 chip、动作图标、建议列表和提交回调。 |
+| `EU_CreateBrowserViewport` | 创建浏览内容占位区，提供空白页、加载中、截图占位、错误页和新标签页状态。 |
+
+### 主要增强导出
+
+`EU_SetTabsChromeMode`、`EU_GetTabsChromeMode`、`EU_SetTabsItemChromeState`、`EU_GetTabsItemChromeState`、`EU_SetMenuItemIcon`、`EU_SetMenuItemShortcut`、`EU_SetMenuItemChecked`、`EU_SetPopoverAnchorElement`、`EU_SetPopoverDismissBehavior`、`EU_SetPopupAnchorElement`、`EU_SetPopupPlacement`、`EU_SetPopupOpen`、`EU_GetPopupOpen`、`EU_SetPopupDismissBehavior`、`EU_SetElementPopup`、`EU_ClearElementPopup`、`EU_GetElementPopup`、`EU_SetWindowDragRegion`、`EU_SetContainerFlexLayout`、`EU_SetChromeThemePreset`、`EU_SetThemeToken`、`EU_GetThemeToken`、`EU_SetHighContrastMode`、`EU_SetIncognitoMode`。
+
+易语言命令左侧可使用中文名，例如 `创建工具栏图标按钮`、`创建地址栏`、`创建浏览内容占位区`；右侧 DLL 入口名保持上述 `EU_` 导出名。
+
+## Window Frame 通用窗口框架 API
+
+| 导出 | 说明 |
+|---|---|
+| `EU_CreateWindowEx` | 创建扩展窗口，使用 `frame_flags` 开启无标题栏、自绘按钮、缩放边框等通用窗口外壳能力。 |
+| `EU_GetWindowFrameFlags` | 读取窗口框架 flags。 |
+| `EU_SetWindowFrameFlags` | 设置窗口框架 flags，v1 主要更新内部状态、布局和重绘。 |
+| `EU_SetWindowResizeBorder` | 设置四边自定义缩放命中宽度。 |
+| `EU_GetWindowResizeBorder` | 读取四边自定义缩放命中宽度。 |
+| `EU_SetWindowNoDragRegion` | 设置非拖拽区域，避免按钮、地址栏、标签项被拖拽区覆盖。 |
+| `EU_ClearWindowNoDragRegions` | 清空非拖拽区域。 |
+| `EU_SetElementWindowCommand` | 将任意 Element 绑定为最小化、最大化/还原、关闭窗口按钮。 |
+| `EU_GetElementWindowCommand` | 读取 Element 绑定的窗口命令。 |

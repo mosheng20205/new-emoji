@@ -11378,6 +11378,56 @@ def on_messagebox_ex_result(messagebox_id, action, value_ptr, value_len):
 
 # 鈹€鈹€ Test 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
+def verify_chrome_shell_basics():
+    examples_path = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "examples", "python"))
+    if examples_path not in sys.path:
+        sys.path.insert(0, examples_path)
+    import new_emoji_ui as chrome_ui
+
+    required_exports = [
+        "EU_CreateIconButton", "EU_CreateOmnibox", "EU_CreateBrowserViewport",
+        "EU_SetTabsChromeMode", "EU_SetThemeToken", "EU_GetThemeToken",
+        "EU_SetWindowDragRegion", "EU_SetContainerFlexLayout",
+        "EU_CreateWindowEx", "EU_GetWindowFrameFlags", "EU_SetWindowFrameFlags",
+        "EU_SetWindowResizeBorder", "EU_SetWindowNoDragRegion", "EU_SetElementWindowCommand",
+        "EU_SetPopupAnchorElement", "EU_SetPopupPlacement", "EU_SetPopupOpen",
+        "EU_GetPopupOpen", "EU_SetPopupDismissBehavior",
+        "EU_SetElementPopup", "EU_ClearElementPopup", "EU_GetElementPopup",
+    ]
+    for name in required_exports:
+        if not hasattr(chrome_ui.dll, name):
+            raise RuntimeError(f"缺少 Chrome 外壳导出：{name}")
+
+    hwnd = chrome_ui.create_window("Chrome 外壳基础验证 🌐", 240, 140, 760, 420)
+    if not hwnd:
+        raise RuntimeError("Chrome 外壳基础验证窗口创建失败")
+    root = chrome_ui.create_container(hwnd, 0, 0, 0, 720, 360)
+    icon_btn = chrome_ui.create_icon_button(hwnd, root, "⋮", "菜单", 24, 24, 36, 36)
+    omnibox = chrome_ui.create_omnibox(hwnd, root, "new_emoji", "搜索或输入网址 🔍", 72, 24, 420, 36)
+    viewport = chrome_ui.create_browser_viewport(hwnd, root, 24, 82, 650, 240)
+    tabs = chrome_ui.create_tabs(hwnd, root, ["新标签页 🌐", "文档 📚"], 0, 0, 24, 330, 420, 38)
+    if min(icon_btn, omnibox, viewport, tabs) <= 0:
+        raise RuntimeError("Chrome 外壳组件创建失败")
+
+    chrome_ui.set_icon_button_checked(hwnd, icon_btn, True)
+    chrome_ui.set_tabs_chrome_mode(hwnd, tabs, True)
+    chrome_ui.set_omnibox_value(hwnd, omnibox, "chrome://new-emoji")
+    chrome_ui.set_browser_viewport_loading(hwnd, viewport, True, 35)
+    chrome_ui.set_theme_token(hwnd, "chrome.toolbar_bg", 0xFFEAF1FB)
+    if not chrome_ui.get_icon_button_checked(hwnd, icon_btn):
+        raise RuntimeError("IconButton Set/Get 失败")
+    if not chrome_ui.get_tabs_chrome_mode(hwnd, tabs):
+        raise RuntimeError("Tabs Chrome mode Set/Get 失败")
+    if chrome_ui.get_omnibox_value(hwnd, omnibox) != "chrome://new-emoji":
+        raise RuntimeError("Omnibox Set/Get 失败")
+    state = chrome_ui.get_browser_viewport_state(hwnd, viewport)
+    if not state or not state["loading"] or state["progress"] != 35:
+        raise RuntimeError("BrowserViewport Set/Get 失败")
+    if chrome_ui.get_theme_token(hwnd, "chrome.toolbar_bg") != 0xFFEAF1FB:
+        raise RuntimeError("Chrome Theme Token Set/Get 失败")
+    chrome_ui.dll.EU_DestroyWindow(hwnd)
+
+
 def main():
     global g_hwnd, g_message_button_id, g_confirm_button_id
     global g_light_theme_button_id, g_dark_theme_button_id, g_system_theme_button_id
@@ -11388,6 +11438,7 @@ def main():
     global g_empty_id, g_skeleton_id, g_descriptions_id, g_table_id
     global g_breadcrumb_id, g_tabs_id, g_pagination_id, g_steps_id
 
+    verify_chrome_shell_basics()
     print("Creating window...")
     hwnd = create_window("馃榾 New Emoji UI Test 馃帀", 200, 80, 920, 1420)
     if not hwnd:

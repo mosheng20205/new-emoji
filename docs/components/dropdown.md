@@ -149,3 +149,19 @@ ui.set_dropdown_open(hwnd, dd, True)
 ## 文档维护
 
 如果 `Dropdown` 新增、删除、重命名或修改 API，必须同步更新本文件、`docs/components/README.md`、`docs/api-index.md`、`examples/python/new_emoji_ui.py`、`tests/python/test_new_emoji.py`、`examples/python/component_gallery.py`、`tests/python/test_dropdown_complete_components.py` 和 `DLL命令/易语言DLL命令.md`。
+
+## 通用 Popup 与组件绑定
+
+`Dropdown` 除了自身 `click / hover / manual` 触发方式，也可以作为通用 Popup 被任意 Element 打开：
+
+```text
+EU_SetPopupAnchorElement
+EU_SetPopupPlacement
+EU_SetPopupOpen / EU_GetPopupOpen
+EU_SetPopupDismissBehavior
+EU_SetElementPopup
+EU_ClearElementPopup
+EU_GetElementPopup
+```
+
+典型右键菜单用法：创建一个 `Dropdown`，把自身 trigger 设为 manual，再通过 `EU_SetElementPopup(hwnd, panel_id, dropdown_id, 1)` 绑定到普通面板或按钮。触发时 Dropdown 会按锚点重新计算菜单位置，并参与外部点击和 Esc 关闭策略。

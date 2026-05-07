@@ -141,6 +141,77 @@ void Tabs::set_content_visible(bool value) {
     invalidate();
 }
 
+void Tabs::set_chrome_mode(bool enabled) {
+    chrome_mode = enabled;
+    tab_position = 0;
+    content_visible = false;
+    last_action = 1;
+    invalidate();
+}
+
+void Tabs::set_item_icon(int index, const std::wstring& icon) {
+    if (index < 0 || index >= (int)tab_items.size()) return;
+    tab_items[index].icon = icon;
+    sync_legacy_items();
+    invalidate();
+}
+
+void Tabs::set_item_loading(int index, bool value) {
+    if (index < 0 || index >= (int)tab_items.size()) return;
+    tab_items[index].loading = value;
+    invalidate();
+}
+
+void Tabs::set_item_pinned(int index, bool value) {
+    if (index < 0 || index >= (int)tab_items.size()) return;
+    tab_items[index].pinned = value;
+    clamp_scroll();
+    invalidate();
+}
+
+void Tabs::set_item_muted(int index, bool value) {
+    if (index < 0 || index >= (int)tab_items.size()) return;
+    tab_items[index].muted = value;
+    invalidate();
+}
+
+void Tabs::set_item_closable(int index, bool value) {
+    if (index < 0 || index >= (int)tab_items.size()) return;
+    tab_items[index].closable = value;
+    invalidate();
+}
+
+void Tabs::set_item_chrome_state(int index, bool loading, bool pinned, bool muted, bool alerting) {
+    if (index < 0 || index >= (int)tab_items.size()) return;
+    tab_items[index].loading = loading;
+    tab_items[index].pinned = pinned;
+    tab_items[index].muted = muted;
+    tab_items[index].alerting = alerting;
+    clamp_scroll();
+    invalidate();
+}
+
+void Tabs::set_chrome_metrics(int min_width, int max_width, int pinned_width, int height, int overlap) {
+    chrome_min_width = (std::max)(36, min_width);
+    chrome_max_width = (std::max)(chrome_min_width, max_width);
+    chrome_pinned_width = (std::max)(28, pinned_width);
+    chrome_height = (std::max)(24, height);
+    chrome_overlap = (std::max)(0, overlap);
+    clamp_scroll();
+    invalidate();
+}
+
+void Tabs::set_new_button_visible(bool visible) {
+    chrome_new_button_visible = visible;
+    invalidate();
+}
+
+void Tabs::set_drag_options(bool reorder_enabled, bool detach_enabled) {
+    chrome_reorder_enabled = reorder_enabled;
+    chrome_detach_enabled = detach_enabled;
+    invalidate();
+}
+
 void Tabs::add_tab(const std::wstring& label) {
     TabsItem item;
     item.label = label.empty() ? L"✨ 新标签" : label;
@@ -203,6 +274,7 @@ bool Tabs::is_vertical() const {
 }
 
 float Tabs::header_extent() const {
+    if (chrome_mode) return (float)chrome_height;
     if (!content_visible) return is_vertical() ? (float)bounds.w : (float)bounds.h;
     if (is_vertical()) return (std::max)(120.0f, (std::min)(190.0f, (float)bounds.w * 0.32f));
     return (std::max)(38.0f, (std::min)(52.0f, (float)bounds.h * 0.28f));
@@ -235,6 +307,15 @@ float Tabs::tabs_view_extent() const {
 
 float Tabs::tab_extent() const {
     if (tab_items.empty()) return 0.0f;
+    if (chrome_mode) {
+        int pinned_count = 0;
+        for (const auto& item : tab_items) if (item.pinned) ++pinned_count;
+        int regular_count = (int)tab_items.size() - pinned_count;
+        float view = tabs_view_extent() - (float)pinned_count * (float)chrome_pinned_width;
+        if (regular_count <= 0) return (float)chrome_pinned_width;
+        float width = view / (float)regular_count + (float)chrome_overlap;
+        return (std::max)((float)chrome_min_width, (std::min)((float)chrome_max_width, width));
+    }
     float view = tabs_view_extent();
     if (view <= 0.0f) return is_vertical() ? 42.0f : 96.0f;
     if (is_vertical()) return 42.0f;
@@ -243,6 +324,11 @@ float Tabs::tab_extent() const {
 }
 
 int Tabs::total_tabs_extent() const {
+    if (chrome_mode) {
+        int total = 0;
+        for (const auto& item : tab_items) total += item.pinned ? chrome_pinned_width : (int)tab_extent() - chrome_overlap;
+        return total + chrome_overlap;
+    }
     return (int)(tab_extent() * (float)tab_items.size() + 0.5f);
 }
 
@@ -289,6 +375,27 @@ int Tabs::part_at(int x, int y, int* part) const {
     if (x < 0 || y < 0 || x >= bounds.w || y >= bounds.h) return -1;
     D2D1_RECT_F hr = header_rect();
     if ((float)x < hr.left || (float)x >= hr.right || (float)y < hr.top || (float)y >= hr.bottom) return -1;
+    if (chrome_mode) {
+        float cursor = (float)style.pad_left - (float)scroll_offset;
+        for (int i = 0; i < (int)tab_items.size(); ++i) {
+            float w = tab_items[i].pinned ? (float)chrome_pinned_width : tab_extent();
+            float start = cursor;
+            float end = cursor + w;
+            if ((float)x >= start && (float)x < end) {
+                bool close_hit = item_close_enabled(i) && !tab_items[i].pinned &&
+                    (float)x >= end - 28.0f && (float)x <= end - 8.0f &&
+                    y >= 6 && y <= chrome_height - 6;
+                if (part) *part = close_hit ? 2 : 1;
+                return i;
+            }
+            cursor += w - (float)chrome_overlap;
+        }
+        if ((addable || editable || chrome_new_button_visible) &&
+            (float)x >= cursor + 6.0f && (float)x <= cursor + 34.0f) {
+            if (part) *part = 3;
+        }
+        return -1;
+    }
     float view = tabs_view_extent();
     float axis = is_vertical() ? ((float)y - hr.top) : ((float)x - hr.left);
     float cross = is_vertical() ? ((float)x - hr.left) : ((float)y - hr.top);
@@ -318,6 +425,78 @@ int Tabs::tab_at(int x, int y) const {
     return part_at(x, y, &part);
 }
 
+void Tabs::paint_chrome(RenderContext& ctx, const Theme* t) {
+    D2D1_RECT_F full = {0, 0, (float)bounds.w, (float)bounds.h};
+    ctx.push_clip(full);
+    ctx.rt->FillRectangle(full, ctx.get_brush(t->chrome_frame_bg));
+
+    float cursor = (float)style.pad_left - (float)scroll_offset;
+    float tab_h = (float)(chrome_height > 0 ? chrome_height : bounds.h);
+    auto paint_one = [&](int i) {
+        if (i < 0 || i >= (int)tab_items.size()) return;
+        const auto& item = tab_items[i];
+        float w = item.pinned ? (float)chrome_pinned_width : tab_extent();
+        float x = cursor;
+        cursor += w - (float)chrome_overlap;
+        if (x + w < 0.0f || x > (float)bounds.w) return;
+        bool active_tab = i == active_index;
+        bool hot = i == m_hover_index;
+        Color bg = active_tab ? t->chrome_tab_active_bg : (hot ? t->chrome_tab_hover_bg : t->chrome_tab_inactive_bg);
+        Color fg = active_tab ? t->chrome_tab_active_fg : t->chrome_tab_inactive_fg;
+        D2D1_RECT_F r = {x, 2.0f, x + w, tab_h + 2.0f};
+        ctx.rt->FillRoundedRectangle(ROUNDED(r, 10.0f, 10.0f), ctx.get_brush(bg));
+        if (active_tab) {
+            ctx.rt->DrawRoundedRectangle(ROUNDED(r, 10.0f, 10.0f), ctx.get_brush(t->chrome_tab_border), 1.0f);
+        }
+        std::wstring icon = item.loading ? L"\u25CC" : item.icon;
+        float label_x = x + 14.0f;
+        if (!icon.empty()) {
+            draw_text(ctx, icon, style, item.alerting ? t->chrome_tab_alert_color : fg,
+                      x + 10.0f, 0.0f, 22.0f, tab_h, DWRITE_TEXT_ALIGNMENT_CENTER);
+            label_x = x + 36.0f;
+        }
+        if (!item.pinned) {
+            std::wstring label = item.label;
+            if (item.muted) label += L"  \U0001F507";
+            float close_w = item_close_enabled(i) ? 24.0f : 0.0f;
+            draw_text(ctx, label, style, fg, label_x, 0.0f, x + w - label_x - 10.0f - close_w, tab_h,
+                      DWRITE_TEXT_ALIGNMENT_LEADING);
+            if (item_close_enabled(i)) {
+                D2D1_RECT_F xr = {x + w - 28.0f, 7.0f, x + w - 8.0f, tab_h - 7.0f};
+                if (hot && m_hover_part == 2) {
+                    ctx.rt->FillEllipse(D2D1::Ellipse(D2D1::Point2F((xr.left + xr.right) * 0.5f,
+                                                                     (xr.top + xr.bottom) * 0.5f),
+                                                       9.0f, 9.0f),
+                                        ctx.get_brush(t->chrome_icon_button_hover_bg));
+                }
+                draw_text(ctx, L"x", style, fg, xr.left, xr.top, xr.right - xr.left, xr.bottom - xr.top);
+            }
+        }
+    };
+
+    float saved_cursor = cursor;
+    for (int i = 0; i < (int)tab_items.size(); ++i) {
+        if (i != active_index) paint_one(i);
+    }
+    cursor = saved_cursor;
+    for (int i = 0; i < active_index && i < (int)tab_items.size(); ++i) {
+        cursor += (tab_items[i].pinned ? (float)chrome_pinned_width : tab_extent()) - (float)chrome_overlap;
+    }
+    paint_one(active_index);
+
+    if (chrome_new_button_visible || addable || editable) {
+        float plus_x = cursor + 8.0f;
+        D2D1_RECT_F pr = {plus_x, 6.0f, plus_x + 26.0f, 32.0f};
+        if (m_hover_part == 3) {
+            ctx.rt->FillRoundedRectangle(ROUNDED(pr, 13.0f, 13.0f),
+                                         ctx.get_brush(t->chrome_icon_button_hover_bg));
+        }
+        draw_text(ctx, L"+", style, t->chrome_tab_inactive_fg, pr.left, pr.top,
+                  pr.right - pr.left, pr.bottom - pr.top);
+    }
+    ctx.pop_clip();
+}
+
 void Tabs::paint(RenderContext& ctx) {
     if (!visible || bounds.w <= 0 || bounds.h <= 0) return;
 
@@ -329,6 +508,11 @@ void Tabs::paint(RenderContext& ctx) {
     Tabs* self = const_cast<Tabs*>(this);
     self->clamp_scroll();
     const Theme* t = theme_for_window(owner_hwnd);
+    if (chrome_mode) {
+        paint_chrome(ctx, t);
+        ctx.rt->SetTransform(saved);
+        return;
+    }
     bool dark = is_dark_theme_for_window(owner_hwnd);
     Color fg = style.fg_color ? style.fg_color : t->text_secondary;
     Color border = style.border_color ? style.border_color : t->border_default;

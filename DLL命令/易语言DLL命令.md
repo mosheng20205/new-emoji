@@ -8021,3 +8021,81 @@ JSON 示例：
 .DLL命令 刷新元素, , "new_emoji.dll", "EU_InvalidateElement", , 对应 C++ 导出命令 EU_InvalidateElement
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
+
+## Chrome 高仿外壳 API
+
+### 新增组件
+
+| 导出 | 说明 |
+|---|---|
+| `EU_CreateIconButton` | 创建透明默认态的工具栏图标按钮，支持 hover/press/checked、徽标、tooltip、dropdown。 |
+| `EU_CreateOmnibox` | 创建 Chrome 风格地址栏，支持安全状态、前缀 chip、动作图标、建议列表和提交回调。 |
+| `EU_CreateBrowserViewport` | 创建浏览内容占位区，提供空白页、加载中、截图占位、错误页和新标签页状态。 |
+
+### 主要增强导出
+
+## 通用 Popup 命令
+
+.DLL命令 设置弹层锚点元素, , "new_emoji.dll", "EU_SetPopupAnchorElement", , 设置 Popover/Menu/Dropdown 的通用锚点元素
+    .参数 窗口句柄, 整数型
+    .参数 弹层ID, 整数型
+    .参数 锚点元素ID, 整数型
+
+.DLL命令 设置弹层位置, , "new_emoji.dll", "EU_SetPopupPlacement", , 设置 Popover/Menu/Dropdown 的 12 方位和偏移
+    .参数 窗口句柄, 整数型
+    .参数 弹层ID, 整数型
+    .参数 方位, 整数型
+    .参数 横向偏移, 整数型
+    .参数 纵向偏移, 整数型
+
+.DLL命令 设置弹层打开状态, , "new_emoji.dll", "EU_SetPopupOpen", , 打开或关闭 Popover/Menu/Dropdown 通用弹层
+    .参数 窗口句柄, 整数型
+    .参数 弹层ID, 整数型
+    .参数 是否打开, 整数型
+
+.DLL命令 取弹层打开状态, 整数型, "new_emoji.dll", "EU_GetPopupOpen", , 返回 1 表示打开，0 表示关闭或元素不存在
+    .参数 窗口句柄, 整数型
+    .参数 弹层ID, 整数型
+
+.DLL命令 设置弹层关闭行为, , "new_emoji.dll", "EU_SetPopupDismissBehavior", , 设置外部点击关闭和 Esc 关闭策略
+    .参数 窗口句柄, 整数型
+    .参数 弹层ID, 整数型
+    .参数 外部点击关闭, 整数型
+    .参数 Esc关闭, 整数型
+
+.DLL命令 设置组件弹层绑定, , "new_emoji.dll", "EU_SetElementPopup", , 绑定任意组件与 Popover/Menu/Dropdown
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 弹层ID, 整数型
+    .参数 触发方式, 整数型, , 0左键 1右键 2悬停 3聚焦 4手动
+
+.DLL命令 清除组件弹层绑定, , "new_emoji.dll", "EU_ClearElementPopup", , 清除指定触发方式的弹层绑定
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 触发方式, 整数型
+
+.DLL命令 取组件弹层绑定, 整数型, "new_emoji.dll", "EU_GetElementPopup", , 返回绑定的弹层ID，未绑定返回0
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 触发方式, 整数型
+
+`EU_SetTabsChromeMode`、`EU_GetTabsChromeMode`、`EU_SetTabsItemChromeState`、`EU_GetTabsItemChromeState`、`EU_SetMenuItemIcon`、`EU_SetMenuItemShortcut`、`EU_SetMenuItemChecked`、`EU_SetPopoverAnchorElement`、`EU_SetPopoverDismissBehavior`、`EU_SetPopupAnchorElement`、`EU_SetPopupPlacement`、`EU_SetPopupOpen`、`EU_GetPopupOpen`、`EU_SetPopupDismissBehavior`、`EU_SetElementPopup`、`EU_ClearElementPopup`、`EU_GetElementPopup`、`EU_SetWindowDragRegion`、`EU_SetContainerFlexLayout`、`EU_SetChromeThemePreset`、`EU_SetThemeToken`、`EU_GetThemeToken`、`EU_SetHighContrastMode`、`EU_SetIncognitoMode`。
+
+易语言命令左侧可使用中文名，例如 `创建工具栏图标按钮`、`创建地址栏`、`创建浏览内容占位区`；右侧 DLL 入口名保持上述 `EU_` 导出名。
+## Window Frame 通用窗口框架 API
+
+建议中文命令名：
+
+```text
+创建扩展窗口 -> EU_CreateWindowEx
+读取窗口框架标记 -> EU_GetWindowFrameFlags
+设置窗口框架标记 -> EU_SetWindowFrameFlags
+设置窗口缩放边框 -> EU_SetWindowResizeBorder
+读取窗口缩放边框 -> EU_GetWindowResizeBorder
+设置窗口非拖拽区域 -> EU_SetWindowNoDragRegion
+清空窗口非拖拽区域 -> EU_ClearWindowNoDragRegions
+设置元素窗口命令 -> EU_SetElementWindowCommand
+读取元素窗口命令 -> EU_GetElementWindowCommand
+```
+
+`frame_flags` 使用通用窗口框架语义，不使用 Chrome 专属命名：`0x0001=无边框`，`0x0002=自定义标题栏`，`0x0004=自绘窗口按钮`，`0x0008=可缩放`，`0x0010=圆角`，`0x0020=隐藏内置标题栏`。

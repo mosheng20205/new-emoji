@@ -15,7 +15,7 @@ public:
     Element* focused() const { return m_focus; }
     void set_dpi_scale(float s);
     float dpi_scale() const { return m_dpi_scale; }
-    int title_bar_height() const { return (int)(30.0f * m_dpi_scale); }
+    int title_bar_height() const;
 
     // ── Element management ────────────────────────────────────────
     Element* add_child(Element* parent, std::unique_ptr<Element> child);
@@ -59,4 +59,9 @@ private:
     Element* hit_test_impl(Element* el, int x, int y) const;
     Element* find_by_id_impl(Element* el, int id) const;
     void     remove_from_parent(Element* child);
+    bool     dismiss_popups_at(int x, int y);
+    bool     dismiss_popups_on_escape();
+    bool     toggle_icon_button_popup(Element* button);
+    bool     trigger_element_popup(Element* element, int trigger, bool toggle);
+    void     close_other_popups(int keep_popup_id);
 };

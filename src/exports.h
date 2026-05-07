@@ -7,6 +7,9 @@ struct WindowState;
 // ── Window management ────────────────────────────────────────────────
 HWND __stdcall EU_CreateWindow(const unsigned char* title_bytes, int title_len,
                                int x, int y, int w, int h, Color titlebar_color);
+HWND __stdcall EU_CreateWindowEx(const unsigned char* title_bytes, int title_len,
+                                 int x, int y, int w, int h, Color titlebar_color,
+                                 int frame_flags);
 HWND __stdcall EU_CreateWindowDark(const unsigned char* title_bytes, int title_len,
                                    int x, int y, int w, int h, Color titlebar_color);
 void __stdcall EU_DestroyWindow(HWND hwnd);
@@ -35,6 +38,15 @@ int __stdcall EU_CreateLink(HWND hwnd, int parent_id,
 int __stdcall EU_CreateIcon(HWND hwnd, int parent_id,
                             const unsigned char* text_bytes, int text_len,
                             int x, int y, int w, int h);
+int __stdcall EU_CreateIconButton(HWND hwnd, int parent_id,
+                                  const unsigned char* icon_bytes, int icon_len,
+                                  const unsigned char* tooltip_bytes, int tooltip_len,
+                                  int x, int y, int w, int h);
+int __stdcall EU_CreateOmnibox(HWND hwnd, int parent_id,
+                               const unsigned char* value_bytes, int value_len,
+                               const unsigned char* placeholder_bytes, int placeholder_len,
+                               int x, int y, int w, int h);
+int __stdcall EU_CreateBrowserViewport(HWND hwnd, int parent_id, int x, int y, int w, int h);
 int __stdcall EU_CreateSpace(HWND hwnd, int parent_id, int x, int y, int w, int h);
 int __stdcall EU_CreateContainer(HWND hwnd, int parent_id, int x, int y, int w, int h);
 int __stdcall EU_CreateHeader(HWND hwnd, int parent_id,
@@ -2355,6 +2367,95 @@ int  __stdcall EU_GetPopconfirmFullState(HWND hwnd, int element_id,
                                          int* popup_y, int* popup_w, int* popup_h);
 void __stdcall EU_SetPopconfirmResultCallback(HWND hwnd, int element_id, ElementValueCallback cb);
 
+void __stdcall EU_SetIconButtonIcon(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetIconButtonTooltip(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetIconButtonBadge(HWND hwnd, int element_id, const unsigned char* bytes, int len, int visible);
+void __stdcall EU_SetIconButtonChecked(HWND hwnd, int element_id, int checked);
+int  __stdcall EU_GetIconButtonChecked(HWND hwnd, int element_id);
+void __stdcall EU_SetIconButtonDropdown(HWND hwnd, int element_id, int dropdown_element_id);
+void __stdcall EU_SetIconButtonColors(HWND hwnd, int element_id, Color normal_bg, Color hover_bg, Color pressed_bg,
+                                      Color checked_bg, Color disabled_bg, Color icon_color, Color disabled_icon_color);
+void __stdcall EU_SetIconButtonShape(HWND hwnd, int element_id, int shape, int radius);
+void __stdcall EU_SetIconButtonPadding(HWND hwnd, int element_id, int left, int top, int right, int bottom);
+void __stdcall EU_SetIconButtonIconSize(HWND hwnd, int element_id, int size);
+int  __stdcall EU_GetIconButtonState(HWND hwnd, int element_id, int* checked, int* hovered, int* pressed, int* badge_visible);
+
+void __stdcall EU_SetTabsChromeMode(HWND hwnd, int element_id, int enabled);
+int  __stdcall EU_GetTabsChromeMode(HWND hwnd, int element_id);
+void __stdcall EU_SetTabsItemIcon(HWND hwnd, int element_id, int index, const unsigned char* bytes, int len);
+void __stdcall EU_SetTabsItemLoading(HWND hwnd, int element_id, int index, int loading);
+void __stdcall EU_SetTabsItemPinned(HWND hwnd, int element_id, int index, int pinned);
+void __stdcall EU_SetTabsItemMuted(HWND hwnd, int element_id, int index, int muted);
+void __stdcall EU_SetTabsItemClosable(HWND hwnd, int element_id, int index, int closable);
+void __stdcall EU_SetTabsItemChromeState(HWND hwnd, int element_id, int index, int loading, int pinned, int muted, int alerting);
+int  __stdcall EU_GetTabsItemChromeState(HWND hwnd, int element_id, int index, int* loading, int* pinned, int* muted, int* alerting);
+void __stdcall EU_SetTabsChromeMetrics(HWND hwnd, int element_id, int min_width, int max_width, int pinned_width, int height, int overlap);
+void __stdcall EU_SetTabsNewButtonVisible(HWND hwnd, int element_id, int visible);
+void __stdcall EU_SetTabsDragOptions(HWND hwnd, int element_id, int reorder_enabled, int detach_enabled);
+void __stdcall EU_SetTabsReorderCallback(HWND hwnd, int element_id, ElementReorderCallback cb);
+
+void __stdcall EU_SetOmniboxValue(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+int  __stdcall EU_GetOmniboxValue(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetOmniboxPlaceholder(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetOmniboxSecurityState(HWND hwnd, int element_id, int state, const unsigned char* bytes, int len);
+void __stdcall EU_SetOmniboxPrefixChip(HWND hwnd, int element_id, const unsigned char* icon_bytes, int icon_len,
+                                       const unsigned char* text_bytes, int text_len, Color bg_color, Color fg_color);
+void __stdcall EU_SetOmniboxActionIcons(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetOmniboxSuggestionItems(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+void __stdcall EU_SetOmniboxSuggestionOpen(HWND hwnd, int element_id, int open);
+void __stdcall EU_SetOmniboxSuggestionSelected(HWND hwnd, int element_id, int index);
+int  __stdcall EU_GetOmniboxSuggestionState(HWND hwnd, int element_id, int* open, int* selected, int* count);
+void __stdcall EU_SetOmniboxCommitCallback(HWND hwnd, int element_id, ElementTextCallback cb);
+void __stdcall EU_SetOmniboxIconButtonCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+
+void __stdcall EU_SetMenuItemIcon(HWND hwnd, int element_id, int index, const unsigned char* bytes, int len);
+void __stdcall EU_SetMenuItemShortcut(HWND hwnd, int element_id, int index, const unsigned char* bytes, int len);
+void __stdcall EU_SetMenuItemChecked(HWND hwnd, int element_id, int index, int checked);
+void __stdcall EU_SetMenuItemSeparator(HWND hwnd, int element_id, int index, int separator);
+void __stdcall EU_SetMenuItemSubmenu(HWND hwnd, int element_id, int index, int submenu_element_id);
+void __stdcall EU_SetMenuPopupPosition(HWND hwnd, int element_id, int anchor_element_id, int placement, int offset);
+void __stdcall EU_SetContextMenuCallback(HWND hwnd, int element_id, ElementValueCallback cb);
+void __stdcall EU_SetPopoverAnchorElement(HWND hwnd, int element_id, int anchor_element_id);
+void __stdcall EU_SetPopoverArrow(HWND hwnd, int element_id, int visible, int size);
+void __stdcall EU_SetPopoverElevation(HWND hwnd, int element_id, int level);
+void __stdcall EU_SetPopoverAutoPlacement(HWND hwnd, int element_id, int enabled);
+void __stdcall EU_SetPopoverDismissBehavior(HWND hwnd, int element_id, int close_on_outside, int close_on_escape);
+void __stdcall EU_SetPopupAnchorElement(HWND hwnd, int popup_id, int anchor_element_id);
+void __stdcall EU_SetPopupPlacement(HWND hwnd, int popup_id, int placement, int offset_x, int offset_y);
+void __stdcall EU_SetPopupOpen(HWND hwnd, int popup_id, int open);
+int  __stdcall EU_GetPopupOpen(HWND hwnd, int popup_id);
+void __stdcall EU_SetPopupDismissBehavior(HWND hwnd, int popup_id, int close_on_outside, int close_on_escape);
+void __stdcall EU_SetElementPopup(HWND hwnd, int element_id, int popup_id, int trigger);
+void __stdcall EU_ClearElementPopup(HWND hwnd, int element_id, int trigger);
+int  __stdcall EU_GetElementPopup(HWND hwnd, int element_id, int trigger);
+
+void __stdcall EU_SetTitleBarVisible(HWND hwnd, int visible);
+void __stdcall EU_SetTitleBarHeight(HWND hwnd, int height);
+void __stdcall EU_SetTitleBarButtonStyle(HWND hwnd, int button_width, int button_height, Color icon_color, Color hover_bg, Color close_hover_bg);
+int  __stdcall EU_GetWindowFrameFlags(HWND hwnd);
+void __stdcall EU_SetWindowFrameFlags(HWND hwnd, int frame_flags);
+void __stdcall EU_SetWindowResizeBorder(HWND hwnd, int left, int top, int right, int bottom);
+int  __stdcall EU_GetWindowResizeBorder(HWND hwnd, int* left, int* top, int* right, int* bottom);
+void __stdcall EU_SetWindowDragRegion(HWND hwnd, int x, int y, int w, int h, int enabled);
+void __stdcall EU_ClearWindowDragRegions(HWND hwnd);
+void __stdcall EU_SetWindowNoDragRegion(HWND hwnd, int x, int y, int w, int h, int enabled);
+void __stdcall EU_ClearWindowNoDragRegions(HWND hwnd);
+void __stdcall EU_SetElementWindowCommand(HWND hwnd, int element_id, int command);
+int  __stdcall EU_GetElementWindowCommand(HWND hwnd, int element_id);
+void __stdcall EU_SetWindowCaptionButtonBounds(HWND hwnd, int x, int y, int w, int h);
+void __stdcall EU_SetWindowRoundedCorners(HWND hwnd, int enabled, int radius);
+void __stdcall EU_SetContainerFlexLayout(HWND hwnd, int element_id, int direction, int gap, int align_items, int justify_content);
+void __stdcall EU_SetElementFlexGrow(HWND hwnd, int element_id, int grow);
+void __stdcall EU_SetElementMinMaxSize(HWND hwnd, int element_id, int min_w, int min_h, int max_w, int max_h);
+void __stdcall EU_SetElementMargin(HWND hwnd, int element_id, int left, int top, int right, int bottom);
+void __stdcall EU_SetElementAlignSelf(HWND hwnd, int element_id, int align_self);
+void __stdcall EU_SetBrowserViewportState(HWND hwnd, int element_id, int state);
+void __stdcall EU_SetBrowserViewportPlaceholder(HWND hwnd, int element_id, const unsigned char* title_bytes, int title_len,
+                                                const unsigned char* desc_bytes, int desc_len, const unsigned char* icon_bytes, int icon_len);
+void __stdcall EU_SetBrowserViewportLoading(HWND hwnd, int element_id, int loading, int progress);
+void __stdcall EU_SetBrowserViewportScreenshot(HWND hwnd, int element_id, const unsigned char* bytes, int len);
+int  __stdcall EU_GetBrowserViewportState(HWND hwnd, int element_id, int* state, int* loading, int* progress);
+
 // ── Callbacks ────────────────────────────────────────────────────────
 void __stdcall EU_SetElementClickCallback(HWND hwnd, int element_id, ElementClickCallback cb);
 void __stdcall EU_SetElementKeyCallback(HWND hwnd, int element_id, ElementKeyCallback cb);
@@ -2366,4 +2467,9 @@ void __stdcall EU_SetDarkMode(HWND hwnd, int dark_mode);
 void __stdcall EU_SetThemeMode(HWND hwnd, int mode);
 int  __stdcall EU_GetThemeMode(HWND hwnd);
 int  __stdcall EU_SetThemeColor(HWND hwnd, const unsigned char* token_bytes, int token_len, Color value);
+void __stdcall EU_SetChromeThemePreset(HWND hwnd, int preset);
+int  __stdcall EU_SetThemeToken(HWND hwnd, const unsigned char* token_bytes, int token_len, Color value);
+int  __stdcall EU_GetThemeToken(HWND hwnd, const unsigned char* token_bytes, int token_len, Color* value);
+void __stdcall EU_SetHighContrastMode(HWND hwnd, int enabled);
+void __stdcall EU_SetIncognitoMode(HWND hwnd, int enabled);
 void __stdcall EU_ResetTheme(HWND hwnd);

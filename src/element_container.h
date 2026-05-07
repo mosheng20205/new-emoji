@@ -7,12 +7,15 @@ public:
     int flow_direction = 0; // 0 auto, 1 horizontal, 2 vertical
     int flow_gap = 0;
     int actual_direction = 0; // 1 horizontal, 2 vertical
+    int flex_align_items = 0;
+    int flex_justify_content = 0;
 
     Container() { fill_parent = true; }
     const wchar_t* type_name() const override { return L"Container"; }
     void layout(const Rect& available) override;
     void apply_dpi_scale(float scale) override;
     void set_flow_options(int enabled, int direction, int gap);
+    void set_flex_options(int direction, int gap, int align_items, int justify_content);
     int get_logical_gap() const { return logical_flow_gap; }
 
 private:

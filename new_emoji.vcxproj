@@ -188,6 +188,9 @@
     <ClInclude Include="src\element_text.h" />
     <ClInclude Include="src\element_link.h" />
     <ClInclude Include="src\element_icon.h" />
+    <ClInclude Include="src\element_icon_button.h" />
+    <ClInclude Include="src\element_omnibox.h" />
+    <ClInclude Include="src\element_browser_viewport.h" />
     <ClInclude Include="src\element_space.h" />
     <ClInclude Include="src\element_container.h" />
     <ClInclude Include="src\element_layout.h" />
@@ -282,6 +285,9 @@
     <ClCompile Include="src\element_text.cpp" />
     <ClCompile Include="src\element_link.cpp" />
     <ClCompile Include="src\element_icon.cpp" />
+    <ClCompile Include="src\element_icon_button.cpp" />
+    <ClCompile Include="src\element_omnibox.cpp" />
+    <ClCompile Include="src\element_browser_viewport.cpp" />
     <ClCompile Include="src\element_space.cpp" />
     <ClCompile Include="src\element_container.cpp" />
     <ClCompile Include="src\element_layout.cpp" />

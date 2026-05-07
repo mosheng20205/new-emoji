@@ -8097,6 +8097,79 @@ def showcase_skeleton(hwnd, stage, w, h):
     refresh_state("✅ Skeleton 完整功能演示已加载。")
 
 
+def showcase_element_popup_binding(hwnd, stage, w, h):
+    status = add_text(
+        hwnd, stage,
+        "🖱️ 组件弹层绑定：任意 Element 可用左键、右键、悬停、聚焦触发 Menu / Popover / Dropdown。",
+        36, 28, w - 72, 30, MUTED,
+    )
+    right_panel = add_demo_panel(hwnd, stage, "🖱️ 右键绑定 Menu", 28, 72, 540, 270)
+    click_panel = add_demo_panel(hwnd, stage, "👆 左键绑定 Popover", 596, 72, 430, 270)
+    dropdown_panel = add_demo_panel(hwnd, stage, "📂 右键绑定 Dropdown", 1054, 72, max(420, w - 1082), 270)
+    api_panel = add_demo_panel(hwnd, stage, "📋 API 组合", 28, 372, w - 56, 230)
+
+    target_panel = ui.create_panel(hwnd, right_panel, 28, 68, 210, 86)
+    ui.set_panel_style(hwnd, target_panel, 0xFFEAF4FF, 0xFF74A7E8, 1.0, 8.0, 10)
+    add_text(hwnd, target_panel, "右键这个面板 🧱", 18, 18, 170, 28, TEXT)
+    add_text(hwnd, target_panel, "绑定的是 Menu", 18, 48, 170, 24, MUTED)
+    target_button = ui.create_button(hwnd, right_panel, "🚀", "右键按钮", 268, 78, 150, 38)
+    target_omnibox = ui.create_omnibox(hwnd, right_panel, "", "右键地址栏菜单 🔍", 268, 140, 220, 38)
+
+    menu_panel = ui.create_menu(hwnd, stage, ["复制组件", "固定到工具栏", "查看属性"], 0, 1, -900, 0, 238, 142)
+    for i, icon in enumerate(["📋", "📌", "🔎"]):
+        ui.set_menu_item_icon(hwnd, menu_panel, i, icon)
+    ui.set_popup_placement(hwnd, menu_panel, 5, 0, 8)
+    ui.set_popup_dismiss_behavior(hwnd, menu_panel, True, True)
+    ui.set_element_popup(hwnd, target_panel, menu_panel, "right_click")
+
+    menu_button = ui.create_menu(hwnd, stage, ["执行动作", "复制按钮文案", "禁用按钮"], 0, 1, -900, 0, 238, 142)
+    for i, icon in enumerate(["⚡", "📋", "⛔"]):
+        ui.set_menu_item_icon(hwnd, menu_button, i, icon)
+    ui.set_popup_placement(hwnd, menu_button, 5, 0, 8)
+    ui.set_popup_dismiss_behavior(hwnd, menu_button, True, True)
+    ui.set_element_popup(hwnd, target_button, menu_button, "right_click")
+
+    menu_omnibox = ui.create_menu(hwnd, stage, ["复制网址", "粘贴并搜索", "全选文字", "编辑搜索引擎"], 0, 1, -900, 0, 248, 176)
+    for i, icon in enumerate(["📋", "📥", "✅", "⚙️"]):
+        ui.set_menu_item_icon(hwnd, menu_omnibox, i, icon)
+    ui.set_popup_placement(hwnd, menu_omnibox, 5, 0, 8)
+    ui.set_popup_dismiss_behavior(hwnd, menu_omnibox, True, True)
+    ui.set_element_popup(hwnd, target_omnibox, menu_omnibox, "right_click")
+
+    pop_target = ui.create_button(hwnd, click_panel, "🗯️", "左键打开气泡", 34, 76, 168, 40)
+    pop = ui.create_popover(
+        hwnd, stage, "", "左键 Popover 🗯️",
+        "普通 Button 通过 EU_SetElementPopup 绑定 Popover，不需要组件自己写弹层逻辑。",
+        placement=3, x=-900, y=0, w=1, h=1,
+    )
+    ui.set_popover_advanced_options(hwnd, pop, placement=5, open=False, popup_width=310, popup_height=138, closable=True)
+    ui.set_popup_placement(hwnd, pop, 5, 0, 8)
+    ui.set_popup_dismiss_behavior(hwnd, pop, True, True)
+    ui.set_element_popup(hwnd, pop_target, pop, "click")
+    add_text(hwnd, click_panel, "左键点击按钮，绑定层会自动把 Popover 锚定到按钮下方。", 34, 140, 340, 54, MUTED)
+
+    dd_target = ui.create_panel(hwnd, dropdown_panel, 30, 78, 230, 76)
+    ui.set_panel_style(hwnd, dd_target, 0xFFFDF6EC, 0xFFE6A23C, 1.0, 8.0, 10)
+    add_text(hwnd, dd_target, "右键这个区域 📂", 18, 18, 180, 28, TEXT)
+    add_text(hwnd, dd_target, "绑定的是 Dropdown", 18, 46, 180, 24, MUTED)
+    bound_dropdown = ui.create_dropdown(hwnd, stage, "📂 绑定菜单", ["📄 打开", "✏️ 重命名", "🗑️ 删除"], 0, -900, 0, 190, 36)
+    ui.set_dropdown_options(hwnd, bound_dropdown, trigger_mode=2, hide_on_click=True, split_button=False, button_variant=0, size=0, trigger_style=0)
+    ui.set_popup_placement(hwnd, bound_dropdown, 5, 0, 8)
+    ui.set_popup_dismiss_behavior(hwnd, bound_dropdown, True, True)
+    ui.set_popup_open(hwnd, bound_dropdown, False)
+    ui.set_element_popup(hwnd, dd_target, bound_dropdown, "right_click")
+    add_text(hwnd, dropdown_panel, "Dropdown 保留自身 click/hover/manual，同时也能作为通用 popup 被任意组件触发。", 30, 170, max(340, w - 1130), 48, MUTED)
+
+    api_rows = [
+        ["绑定", "EU_SetElementPopup(hwnd, element, popup, trigger)", "✅"],
+        ["清除", "EU_ClearElementPopup(hwnd, element, trigger)", "✅"],
+        ["读回", "EU_GetElementPopup(hwnd, element, trigger)", "✅"],
+        ["弹层", "EU_SetPopupOpen / Anchor / Placement / Dismiss", "✅"],
+    ]
+    ui.create_table(hwnd, api_panel, ["能力", "API", "状态"], api_rows, True, True, 30, 70, min(w - 112, 980), 138)
+    ui.set_element_text(hwnd, status, "🖱️ 右键面板、按钮、地址栏或 Dropdown 示例区域，可分别弹出绑定菜单。")
+
+
 SPECIAL_SHOWCASES = {
     "Panel": showcase_panel,
     "Button": showcase_button,
@@ -8150,6 +8223,7 @@ SPECIAL_SHOWCASES = {
     "Steps": showcase_steps,
     "Empty": showcase_empty,
     "Skeleton": showcase_skeleton,
+    "ElementPopup": showcase_element_popup_binding,
     "Descriptions": showcase_descriptions,
     "Table": showcase_table,
     "Card": showcase_card,
@@ -9221,6 +9295,7 @@ def build_pages(hwnd, root):
         ("Drawer", "📚", "抽屉", demo_drawer_button),
         ("Tooltip", "💭", "文字提示", lambda h, p, x, y, w, hh: ui.create_tooltip(h, p, "悬停我 💭", "这是 Tooltip 内容", 2, x, y, 130, 36)),
         ("Popover", "🗯️", "气泡卡片", lambda h, p, x, y, w, hh: ui.create_popover(h, p, "打开气泡", "Popover", "支持标题和内容", 3, x, y, 140, 36)),
+        ("ElementPopup", "🖱️", "右键弹层绑定", lambda h, p, x, y, w, hh: ui.create_button(h, p, "🖱️", "右键绑定", x, y, 140, 36), True),
         ("Popconfirm", "❓", "确认气泡", lambda h, p, x, y, w, hh: ui.create_popconfirm(h, p, "删除确认", "确认操作", "是否继续？", "确定", "取消", 3, x, y, 140, 36)),
         ("Tour", "🧭", "引导", lambda h, p, x, y, w, hh: ui.create_tour(h, p, ["第一步：选择分类", "第二步：查看组件", "第三步：运行示例"], 0, True, x, y, w, 86)),
     ])

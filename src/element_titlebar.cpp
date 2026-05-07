@@ -1,14 +1,28 @@
 #include "element_titlebar.h"
 #include "render_context.h"
 #include "theme.h"
+#include "window_state.h"
 
 static const int kBtnCount = 3;
 
 void TitleBar::get_btn_rect(Btn b, int& x, int& y, int& w, int& h) const {
-    w = btn_w(); h = btn_h();
+    WindowState* st = window_state(owner_hwnd);
+    w = st && st->titlebar_button_w > 0 ? (int)(st->titlebar_button_w * dpi_scale) : btn_w();
+    h = st && st->titlebar_button_h > 0 ? (int)(st->titlebar_button_h * dpi_scale) : btn_h();
     int idx = (int)b - 1;  // 0=Minimize, 1=Maximize, 2=Close
-    x = bounds.w - (kBtnCount - idx) * w;
-    y = (bounds.h - h) / 2;
+    if (st && st->caption_button_x >= 0 && st->caption_button_w > 0) {
+        int base_x = (int)(st->caption_button_x * dpi_scale);
+        int base_y = (int)(st->caption_button_y * dpi_scale);
+        int base_w = (int)(st->caption_button_w * dpi_scale);
+        int base_h = (int)(st->caption_button_h * dpi_scale);
+        w = base_w / kBtnCount;
+        h = base_h > 0 ? base_h : h;
+        x = base_x + idx * w;
+        y = base_y;
+    } else {
+        x = bounds.w - (kBtnCount - idx) * w;
+        y = (bounds.h - h) / 2;
+    }
     if (y < 0) y = 0;
 }
 
@@ -50,17 +64,23 @@ void TitleBar::paint(RenderContext& ctx) {
         int bx, by, bw, bh;
         get_btn_rect(b, bx, by, bw, bh);
         const Theme* t = theme_for_window(owner_hwnd);
-        Color c = text_color ? text_color : t->titlebar_text;
+        WindowState* st = window_state(owner_hwnd);
+        Color c = st && st->titlebar_button_icon_color ? st->titlebar_button_icon_color :
+            (text_color ? text_color : t->titlebar_text);
         if (m_press_btn == b && m_hover_btn == b) {
             c = (b == Close) ? 0xFFFFFFFF : 0x80FFFFFF;
             // Subtle background
             D2D1_RECT_F br = { (float)bx, (float)by, (float)(bx + bw), (float)(by + bh) };
-            Color bg = (b == Close) ? 0xFFE81123 : 0x40FFFFFF;
+            Color bg = (b == Close)
+                ? (st && st->titlebar_close_hover_bg ? st->titlebar_close_hover_bg : 0xFFE81123)
+                : (st && st->titlebar_button_hover_bg ? st->titlebar_button_hover_bg : 0x40FFFFFF);
             ctx.rt->FillRectangle(br, ctx.get_brush(bg));
         } else if (m_hover_btn == b) {
             c = 0xFFFFFFFF;
             D2D1_RECT_F br = { (float)bx, (float)by, (float)(bx + bw), (float)(by + bh) };
-            Color bg = (b == Close) ? 0xFFE81123 : 0x30FFFFFF;
+            Color bg = (b == Close)
+                ? (st && st->titlebar_close_hover_bg ? st->titlebar_close_hover_bg : 0xFFE81123)
+                : (st && st->titlebar_button_hover_bg ? st->titlebar_button_hover_bg : 0x30FFFFFF);
             ctx.rt->FillRectangle(br, ctx.get_brush(bg));
         }
         switch (b) {

@@ -15,7 +15,14 @@ public:
     bool close_on_outside = true;
     int trigger_mode = 0; // 0 click, 1 hover, 2 focus, 3 manual
     int offset = 8;
+    int offset_x = 0;
+    int offset_y = 0;
     int content_parent_id = 0;
+    int anchor_element_id = 0;
+    int arrow_size = 8;
+    int elevation = 1;
+    bool auto_placement = false;
+    bool close_on_escape = true;
     int open_count = 0;
     int close_count = 0;
     int last_action = 0; // 0 none, 1 set, 2 mouse, 3 keyboard, 4 focus, 5 trigger
@@ -47,6 +54,8 @@ public:
     bool close_hot() const { return close_hover; }
     Rect get_popup_rect() const { return popup_rect; }
     Rect get_close_rect() const { return close_rect; }
+    void set_popup_placement(int placement, int next_offset_x, int next_offset_y);
+    void refresh_popup_rect() { update_popup_rect(); }
 
 protected:
     bool open = false;

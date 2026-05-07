@@ -1,6 +1,7 @@
 LIBRARY new_emoji
 EXPORTS
     EU_CreateWindow
+    EU_CreateWindowEx
     EU_CreateWindowDark
     EU_DestroyWindow
     EU_ShowWindow
@@ -14,6 +15,9 @@ EXPORTS
     EU_CreateText
     EU_CreateLink
     EU_CreateIcon
+    EU_CreateIconButton
+    EU_CreateOmnibox
+    EU_CreateBrowserViewport
     EU_CreateSpace
     EU_CreateContainer
     EU_CreateHeader
@@ -1150,5 +1154,91 @@ EXPORTS
     EU_SetThemeMode
     EU_GetThemeMode
     EU_SetThemeColor
+    EU_SetChromeThemePreset
+    EU_SetThemeToken
+    EU_GetThemeToken
+    EU_SetHighContrastMode
+    EU_SetIncognitoMode
     EU_ResetTheme
     EU_InvalidateElement
+    EU_SetIconButtonIcon
+    EU_SetIconButtonTooltip
+    EU_SetIconButtonBadge
+    EU_SetIconButtonChecked
+    EU_GetIconButtonChecked
+    EU_SetIconButtonDropdown
+    EU_SetIconButtonColors
+    EU_SetIconButtonShape
+    EU_SetIconButtonPadding
+    EU_SetIconButtonIconSize
+    EU_GetIconButtonState
+    EU_SetTabsChromeMode
+    EU_GetTabsChromeMode
+    EU_SetTabsItemIcon
+    EU_SetTabsItemLoading
+    EU_SetTabsItemPinned
+    EU_SetTabsItemMuted
+    EU_SetTabsItemClosable
+    EU_SetTabsItemChromeState
+    EU_GetTabsItemChromeState
+    EU_SetTabsChromeMetrics
+    EU_SetTabsNewButtonVisible
+    EU_SetTabsDragOptions
+    EU_SetTabsReorderCallback
+    EU_SetOmniboxValue
+    EU_GetOmniboxValue
+    EU_SetOmniboxPlaceholder
+    EU_SetOmniboxSecurityState
+    EU_SetOmniboxPrefixChip
+    EU_SetOmniboxActionIcons
+    EU_SetOmniboxSuggestionItems
+    EU_SetOmniboxSuggestionOpen
+    EU_SetOmniboxSuggestionSelected
+    EU_GetOmniboxSuggestionState
+    EU_SetOmniboxCommitCallback
+    EU_SetOmniboxIconButtonCallback
+    EU_SetMenuItemIcon
+    EU_SetMenuItemShortcut
+    EU_SetMenuItemChecked
+    EU_SetMenuItemSeparator
+    EU_SetMenuItemSubmenu
+    EU_SetMenuPopupPosition
+    EU_SetContextMenuCallback
+    EU_SetPopoverAnchorElement
+    EU_SetPopoverArrow
+    EU_SetPopoverElevation
+    EU_SetPopoverAutoPlacement
+    EU_SetPopoverDismissBehavior
+    EU_SetPopupAnchorElement
+    EU_SetPopupPlacement
+    EU_SetPopupOpen
+    EU_GetPopupOpen
+    EU_SetPopupDismissBehavior
+    EU_SetElementPopup
+    EU_ClearElementPopup
+    EU_GetElementPopup
+    EU_SetTitleBarVisible
+    EU_SetTitleBarHeight
+    EU_SetTitleBarButtonStyle
+    EU_GetWindowFrameFlags
+    EU_SetWindowFrameFlags
+    EU_SetWindowResizeBorder
+    EU_GetWindowResizeBorder
+    EU_SetWindowDragRegion
+    EU_ClearWindowDragRegions
+    EU_SetWindowNoDragRegion
+    EU_ClearWindowNoDragRegions
+    EU_SetElementWindowCommand
+    EU_GetElementWindowCommand
+    EU_SetWindowCaptionButtonBounds
+    EU_SetWindowRoundedCorners
+    EU_SetContainerFlexLayout
+    EU_SetElementFlexGrow
+    EU_SetElementMinMaxSize
+    EU_SetElementMargin
+    EU_SetElementAlignSelf
+    EU_SetBrowserViewportState
+    EU_SetBrowserViewportPlaceholder
+    EU_SetBrowserViewportLoading
+    EU_SetBrowserViewportScreenshot
+    EU_GetBrowserViewportState

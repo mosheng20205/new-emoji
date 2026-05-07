@@ -19,6 +19,7 @@ static Rect current_scaled_bounds(const Element* el) {
 }
 
 static bool is_flex_child(Element* el, int direction) {
+    if (el && el->flex_grow > 0) return true;
     if (dynamic_cast<Main*>(el)) return true;
     if (dynamic_cast<Container*>(el)) return true;
     Rect r = current_scaled_bounds(el);
@@ -52,14 +53,18 @@ void Container::layout(const Rect& available) {
     int visible_count = 0;
     int fixed_main = 0;
     int flex_count = 0;
+    int flex_weight = 0;
     for (auto& ch : children) {
         if (!ch->visible) continue;
         visible_count++;
         if (is_flex_child(ch.get(), actual_direction)) {
             flex_count++;
+            flex_weight += ch->flex_grow > 0 ? ch->flex_grow : 1;
         } else {
             Rect r = current_scaled_bounds(ch.get());
-            fixed_main += actual_direction == 1 ? r.w : r.h;
+            fixed_main += (actual_direction == 1 ? r.w : r.h)
+                + (actual_direction == 1 ? ch->margin_left + ch->margin_right
+                                          : ch->margin_top + ch->margin_bottom);
         }
     }
 
@@ -76,30 +81,46 @@ void Container::layout(const Rect& available) {
         bool flex = is_flex_child(ch.get(), actual_direction);
         int main_size = actual_direction == 1 ? r.w : r.h;
         if (flex) {
+            int weight = ch->flex_grow > 0 ? ch->flex_grow : 1;
             if (remaining_flex <= 1) {
                 main_size = remaining;
             } else {
-                main_size = remaining / remaining_flex;
+                main_size = flex_weight > 0 ? remaining * weight / flex_weight : remaining / remaining_flex;
             }
             remaining -= main_size;
+            flex_weight -= weight;
             remaining_flex--;
+        }
+        if (actual_direction == 1) {
+            if (ch->min_w > 0 && main_size < ch->min_w) main_size = ch->min_w;
+            if (ch->max_w > 0 && main_size > ch->max_w) main_size = ch->max_w;
+        } else {
+            if (ch->min_h > 0 && main_size < ch->min_h) main_size = ch->min_h;
+            if (ch->max_h > 0 && main_size > ch->max_h) main_size = ch->max_h;
         }
 
         if (actual_direction == 1) {
-            r.x = cursor;
-            r.y = content.y;
+            r.x = cursor + ch->margin_left;
+            r.y = content.y + ch->margin_top;
             r.w = (std::max)(0, main_size);
-            r.h = content.h;
-            cursor += r.w + flow_gap;
+            r.h = (std::max)(0, content.h - ch->margin_top - ch->margin_bottom);
+            cursor += r.w + ch->margin_left + ch->margin_right + flow_gap;
         } else {
-            r.x = content.x;
-            r.y = cursor;
-            r.w = content.w;
+            r.x = content.x + ch->margin_left;
+            r.y = cursor + ch->margin_top;
+            r.w = (std::max)(0, content.w - ch->margin_left - ch->margin_right);
             r.h = (std::max)(0, main_size);
-            cursor += r.h + flow_gap;
+            cursor += r.h + ch->margin_top + ch->margin_bottom + flow_gap;
         }
         ch->layout(r);
     }
+}
+
+void Container::set_flex_options(int direction, int gap, int align_items, int justify_content) {
+    set_flow_options(1, direction, gap);
+    flex_align_items = (std::max)(0, (std::min)(2, align_items));
+    flex_justify_content = (std::max)(0, (std::min)(3, justify_content));
+    invalidate();
 }
 
 void Container::set_flow_options(int enabled, int direction, int gap) {

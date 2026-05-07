@@ -67,6 +67,33 @@ static int clamp_int(int value, int lo, int hi) {
     return value;
 }
 
+static const Element* root_element(const Element* el) {
+    const Element* root = el;
+    while (root && root->parent) root = root->parent;
+    return root;
+}
+
+static const Element* find_element_by_id(const Element* el, int id) {
+    if (!el) return nullptr;
+    if (el->id == id) return el;
+    for (const auto& ch : el->children) {
+        if (const Element* found = find_element_by_id(ch.get(), id)) return found;
+    }
+    return nullptr;
+}
+
+static int popup_side(int placement) {
+    if (placement >= 0 && placement <= 2) return 0;
+    if (placement >= 3 && placement <= 5) return 1;
+    if (placement >= 6 && placement <= 8) return 2;
+    return 3;
+}
+
+static int popup_align(int placement) {
+    int pos = placement % 3;
+    return pos == 0 ? -1 : (pos == 2 ? 1 : 0);
+}
+
 static std::wstring trim_marker_space(const std::wstring& value) {
     size_t start = 0;
     while (start < value.size() && (value[start] == L' ' || value[start] == L'\t')) ++start;
@@ -140,7 +167,78 @@ int Dropdown::menu_height() const {
     return row_height() * visible_row_count();
 }
 
+int Dropdown::menu_x() const {
+    if (popup_anchor_element_id <= 0) return 0;
+    const Element* root = root_element(this);
+    const Element* anchor = find_element_by_id(root, popup_anchor_element_id);
+    if (!anchor) return 0;
+
+    int own_x = 0, own_y = 0;
+    int ax = 0, ay = 0;
+    get_absolute_pos(own_x, own_y);
+    anchor->get_absolute_pos(ax, ay);
+
+    int mw = menu_width();
+    int mh = menu_height();
+    int x = ax + (anchor->bounds.w - mw) / 2;
+    int side = popup_side(popup_placement);
+    int align = popup_align(popup_placement);
+    if (side == 2) {
+        x = ax - mw - popup_offset;
+    } else if (side == 3) {
+        x = ax + anchor->bounds.w + popup_offset;
+    } else {
+        if (align < 0) x = ax;
+        else if (align > 0) x = ax + anchor->bounds.w - mw;
+    }
+
+    x += popup_offset_x;
+    if (root) {
+        int rx = 0, ry = 0;
+        root->get_absolute_pos(rx, ry);
+        int min_x = rx + 6;
+        int max_x = rx + root->bounds.w - mw - 6;
+        if (max_x < min_x) max_x = min_x;
+        x = (std::max)(min_x, (std::min)(max_x, x));
+    }
+    (void)mh;
+    return x - own_x;
+}
+
 int Dropdown::menu_y() const {
+    if (popup_anchor_element_id > 0) {
+        const Element* root = root_element(this);
+        const Element* anchor = find_element_by_id(root, popup_anchor_element_id);
+        if (!anchor) return bounds.h + 4;
+
+        int own_x = 0, own_y = 0;
+        int ax = 0, ay = 0;
+        get_absolute_pos(own_x, own_y);
+        anchor->get_absolute_pos(ax, ay);
+
+        int mh = menu_height();
+        int y = ay + anchor->bounds.h + popup_offset;
+        int side = popup_side(popup_placement);
+        int align = popup_align(popup_placement);
+        if (side == 2 || side == 3) {
+            y = ay + (anchor->bounds.h - mh) / 2;
+            if (align < 0) y = ay;
+            else if (align > 0) y = ay + anchor->bounds.h - mh;
+        } else if (side == 0) {
+            y = ay - mh - popup_offset;
+        }
+        y += popup_offset_y;
+
+        if (root) {
+            int rx = 0, ry = 0;
+            root->get_absolute_pos(rx, ry);
+            int min_y = ry + 6;
+            int max_y = ry + root->bounds.h - mh - 6;
+            if (max_y < min_y) max_y = min_y;
+            y = (std::max)(min_y, (std::min)(max_y, y));
+        }
+        return y - own_y;
+    }
     int mh = menu_height();
     if (parent && bounds.y + bounds.h + mh + 6 > parent->bounds.h && bounds.y > mh + 6) {
         return -mh - 4;
@@ -280,6 +378,29 @@ bool Dropdown::is_open() const {
     return open;
 }
 
+void Dropdown::set_popup_anchor(int anchor_id) {
+    popup_anchor_element_id = anchor_id;
+    trigger_mode = 2;
+    invalidate();
+}
+
+void Dropdown::set_popup_placement(int placement, int offset_x, int offset_y) {
+    popup_placement = clamp_int(placement, 0, 11);
+    popup_offset_x = offset_x;
+    popup_offset_y = offset_y;
+    invalidate();
+}
+
+void Dropdown::set_popup_dismiss_behavior(bool close_on_outside, bool close_on_escape) {
+    popup_close_on_outside = close_on_outside;
+    popup_close_on_escape = close_on_escape;
+    invalidate();
+}
+
+Rect Dropdown::popup_rect() const {
+    return { menu_x(), menu_y(), menu_width(), menu_height() };
+}
+
 int Dropdown::item_count() const {
     return (int)items.size();
 }
@@ -356,9 +477,11 @@ void Dropdown::choose_item(int index) {
 
 int Dropdown::item_at(int x, int y) const {
     if (!open || items.empty()) return -1;
+    int mx = menu_x();
     int my = menu_y();
     int mh = menu_height();
-    if (x < 0 || x >= menu_width() || y < my || y >= my + mh) return -1;
+    int mw = menu_width();
+    if (x < mx || x >= mx + mw || y < my || y >= my + mh) return -1;
     int idx = m_scroll + (y - my) / row_height();
     return (idx >= 0 && idx < (int)items.size()) ? idx : -1;
 }
@@ -485,7 +608,8 @@ void Dropdown::paint_overlay(RenderContext& ctx) {
     int mw = menu_width();
     int rh = row_height();
     int mh = menu_height();
-    D2D1_RECT_F menu = { 0, (float)my, (float)mw, (float)(my + mh) };
+    int mx = menu_x();
+    D2D1_RECT_F menu = { (float)mx, (float)my, (float)(mx + mw), (float)(my + mh) };
     ctx.rt->FillRoundedRectangle(ROUNDED(menu, 4.0f, 4.0f), ctx.get_brush(bg));
     ctx.rt->DrawRoundedRectangle(ROUNDED(D2D1::RectF(menu.left + 0.5f, menu.top + 0.5f,
         menu.right - 0.5f, menu.bottom - 0.5f), 4.0f, 4.0f),
@@ -497,17 +621,17 @@ void Dropdown::paint_overlay(RenderContext& ctx) {
         float y = (float)(my + (i - m_scroll) * rh);
         bool disabled = is_disabled(i);
         if (is_divided(i)) {
-            ctx.rt->DrawLine(D2D1::Point2F(8.0f, y + 0.5f),
-                             D2D1::Point2F((float)mw - 8.0f, y + 0.5f),
+            ctx.rt->DrawLine(D2D1::Point2F((float)mx + 8.0f, y + 0.5f),
+                             D2D1::Point2F((float)(mx + mw) - 8.0f, y + 0.5f),
                              ctx.get_brush(t->border_default), 1.0f);
         }
         if (!disabled && (i == m_hover_index || i == selected_index)) {
             Color row_bg = i == selected_index ? (t->accent & 0x33FFFFFF) : t->button_hover;
-            D2D1_RECT_F row = { 2.0f, y + 1.0f, (float)mw - 2.0f, y + (float)rh - 1.0f };
+            D2D1_RECT_F row = { (float)mx + 2.0f, y + 1.0f, (float)(mx + mw) - 2.0f, y + (float)rh - 1.0f };
             ctx.rt->FillRectangle(row, ctx.get_brush(row_bg));
         }
         int level = i < (int)item_levels.size() ? item_levels[i] : 0;
-        float indent = (float)(trigger_pad_x() + level * 18);
+        float indent = (float)(mx + trigger_pad_x() + level * 18);
         Color item_color = disabled ? t->text_secondary : (i == selected_index ? t->accent : fg);
         const std::wstring& icon = item_icon(i);
         float icon_w = icon.empty() ? 0.0f : 22.0f;
@@ -515,16 +639,16 @@ void Dropdown::paint_overlay(RenderContext& ctx) {
             draw_text(ctx, icon, text_style, item_color, indent, y, icon_w, (float)rh);
         }
         draw_text(ctx, i < (int)display_items.size() ? display_items[i] : items[i], text_style, item_color,
-                  indent + icon_w, y, (float)mw - indent - icon_w - style.pad_right - 20.0f, (float)rh,
+                  indent + icon_w, y, (float)(mx + mw) - indent - icon_w - style.pad_right - 20.0f, (float)rh,
                   DWRITE_TEXT_ALIGNMENT_LEADING);
         if (has_child(i)) {
             draw_text(ctx, L">", text_style, disabled ? t->text_secondary : t->text_secondary,
-                      (float)mw - style.pad_right - 18.0f, y, 18.0f, (float)rh);
+                      (float)(mx + mw) - style.pad_right - 18.0f, y, 18.0f, (float)rh);
         }
     }
 
     if ((int)items.size() > visible) {
-        float track_x = (float)mw - 5.0f;
+        float track_x = (float)(mx + mw) - 5.0f;
         float track_h = (float)mh - 8.0f;
         float thumb_h = (std::max)(18.0f, track_h * visible / (float)items.size());
         int max_scroll = (std::max)(1, (int)items.size() - visible);

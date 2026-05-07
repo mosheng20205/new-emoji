@@ -37,6 +37,7 @@ MessageBoxExCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 TextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 ValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+ReorderCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
 BeforeCloseCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
 TableCellCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
 TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int,
@@ -74,6 +75,27 @@ CAROUSEL_ARROW_MODES = {"hover": 0, "always": 1, "never": 2}
 CAROUSEL_DIRECTIONS = {"horizontal": 0, "vertical": 1}
 CAROUSEL_TYPES = {"normal": 0, "card": 1}
 
+EU_WINDOW_FRAME_DEFAULT = 0x0000
+EU_WINDOW_FRAME_BORDERLESS = 0x0001
+EU_WINDOW_FRAME_CUSTOM_CAPTION = 0x0002
+EU_WINDOW_FRAME_CUSTOM_BUTTONS = 0x0004
+EU_WINDOW_FRAME_RESIZABLE = 0x0008
+EU_WINDOW_FRAME_ROUNDED = 0x0010
+EU_WINDOW_FRAME_HIDE_TITLEBAR = 0x0020
+EU_WINDOW_FRAME_BROWSER_SHELL = (
+    EU_WINDOW_FRAME_BORDERLESS |
+    EU_WINDOW_FRAME_CUSTOM_CAPTION |
+    EU_WINDOW_FRAME_CUSTOM_BUTTONS |
+    EU_WINDOW_FRAME_RESIZABLE |
+    EU_WINDOW_FRAME_ROUNDED |
+    EU_WINDOW_FRAME_HIDE_TITLEBAR
+)
+
+EU_WINDOW_COMMAND_NONE = 0
+EU_WINDOW_COMMAND_MINIMIZE = 1
+EU_WINDOW_COMMAND_TOGGLE_MAXIMIZE = 2
+EU_WINDOW_COMMAND_CLOSE = 3
+
 # 鈹€鈹€ Export signatures 鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€鈹€
 
 def ptr(s): return ctypes.c_char_p(s) if isinstance(s, bytes) else ctypes.c_char_p(s.encode('utf-8'))
@@ -82,6 +104,10 @@ dll.EU_CreateWindow.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                  ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                  ctypes.c_uint32]
 dll.EU_CreateWindow.restype = wintypes.HWND
+dll.EU_CreateWindowEx.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                  ctypes.c_uint32, ctypes.c_int]
+dll.EU_CreateWindowEx.restype = wintypes.HWND
 
 dll.EU_DestroyWindow.argtypes = [wintypes.HWND]
 dll.EU_ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -120,6 +146,22 @@ dll.EU_CreateIcon.argtypes = [wintypes.HWND, ctypes.c_int,
                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateIcon.restype = ctypes.c_int
+
+dll.EU_CreateIconButton.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateIconButton.restype = ctypes.c_int
+
+dll.EU_CreateOmnibox.argtypes = [wintypes.HWND, ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateOmnibox.restype = ctypes.c_int
+
+dll.EU_CreateBrowserViewport.argtypes = [wintypes.HWND, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateBrowserViewport.restype = ctypes.c_int
 
 dll.EU_CreateSpace.argtypes = [wintypes.HWND, ctypes.c_int,
                                ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -924,6 +966,13 @@ dll.EU_GetThemeMode.argtypes = [wintypes.HWND]
 dll.EU_GetThemeMode.restype = ctypes.c_int
 dll.EU_ResetTheme.argtypes = [wintypes.HWND]
 dll.EU_ResetTheme.restype = None
+dll.EU_SetChromeThemePreset.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetThemeToken.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_uint32]
+dll.EU_GetThemeToken.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                 ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetThemeToken.restype = ctypes.c_int
+dll.EU_SetHighContrastMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetIncognitoMode.argtypes = [wintypes.HWND, ctypes.c_int]
 
 dll.EU_GetEditBoxText.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
@@ -2314,6 +2363,15 @@ dll.EU_GetMenuItemMeta.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetMenuItemMeta.restype = ctypes.c_int
 dll.EU_SetMenuSelectCallback.argtypes = [wintypes.HWND, ctypes.c_int, MenuSelectCallback]
+dll.EU_SetMenuItemIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMenuItemShortcut.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                       ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMenuItemChecked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuItemSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuItemSubmenu.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuPopupPosition.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetContextMenuCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
 dll.EU_SetAnchorItems.argtypes = [wintypes.HWND, ctypes.c_int,
                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetAnchorActive.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
@@ -3185,7 +3243,131 @@ dll.EU_GetPopoverFullState.argtypes = [wintypes.HWND, ctypes.c_int,
                                        ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetPopoverFullState.restype = ctypes.c_int
 dll.EU_SetPopoverActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+dll.EU_SetPopoverAnchorElement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverArrow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverElevation.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverAutoPlacement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverDismissBehavior.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopupAnchorElement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopupPlacement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopupOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetPopupOpen.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetPopupOpen.restype = ctypes.c_int
+dll.EU_SetPopupDismissBehavior.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementPopup.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_ClearElementPopup.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetElementPopup.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetElementPopup.restype = ctypes.c_int
 dll.EU_SetPopconfirmOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+
+# Chrome shell extensions
+dll.EU_SetIconButtonIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetIconButtonTooltip.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetIconButtonBadge.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonChecked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetIconButtonChecked.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetIconButtonChecked.restype = ctypes.c_int
+dll.EU_SetIconButtonDropdown.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonColors.argtypes = [wintypes.HWND, ctypes.c_int,
+                                       ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32,
+                                       ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetIconButtonShape.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonPadding.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonIconSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetIconButtonState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                      ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetIconButtonState.restype = ctypes.c_int
+
+dll.EU_SetTabsChromeMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTabsChromeMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTabsChromeMode.restype = ctypes.c_int
+dll.EU_SetTabsItemIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTabsItemLoading.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemPinned.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemMuted.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemClosable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemChromeState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                          ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTabsItemChromeState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                          ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTabsItemChromeState.restype = ctypes.c_int
+dll.EU_SetTabsChromeMetrics.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsNewButtonVisible.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsDragOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsReorderCallback.argtypes = [wintypes.HWND, ctypes.c_int, ReorderCallback]
+
+dll.EU_SetOmniboxValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetOmniboxValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetOmniboxValue.restype = ctypes.c_int
+dll.EU_SetOmniboxPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxSecurityState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxPrefixChip.argtypes = [wintypes.HWND, ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                        ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetOmniboxActionIcons.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxSuggestionItems.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxSuggestionOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetOmniboxSuggestionSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetOmniboxSuggestionState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                             ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                             ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetOmniboxSuggestionState.restype = ctypes.c_int
+dll.EU_SetOmniboxCommitCallback.argtypes = [wintypes.HWND, ctypes.c_int, TextCallback]
+dll.EU_SetOmniboxIconButtonCallback.argtypes = [wintypes.HWND, ctypes.c_int, ValueCallback]
+
+dll.EU_SetTitleBarVisible.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetTitleBarHeight.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetTitleBarButtonStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                          ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_GetWindowFrameFlags.argtypes = [wintypes.HWND]
+dll.EU_GetWindowFrameFlags.restype = ctypes.c_int
+dll.EU_SetWindowFrameFlags.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetWindowResizeBorder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int]
+dll.EU_GetWindowResizeBorder.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                         ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetWindowResizeBorder.restype = ctypes.c_int
+dll.EU_SetWindowDragRegion.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                       ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_ClearWindowDragRegions.argtypes = [wintypes.HWND]
+dll.EU_SetWindowNoDragRegion.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                         ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_ClearWindowNoDragRegions.argtypes = [wintypes.HWND]
+dll.EU_SetElementWindowCommand.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetElementWindowCommand.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetElementWindowCommand.restype = ctypes.c_int
+dll.EU_SetWindowCaptionButtonBounds.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                               ctypes.c_int, ctypes.c_int]
+dll.EU_SetWindowRoundedCorners.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetContainerFlexLayout.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                          ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementFlexGrow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementMinMaxSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                        ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementMargin.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                    ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementAlignSelf.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+
+dll.EU_SetBrowserViewportState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetBrowserViewportPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetBrowserViewportLoading.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetBrowserViewportScreenshot.argtypes = [wintypes.HWND, ctypes.c_int,
+                                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetBrowserViewportState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                           ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetBrowserViewportState.restype = ctypes.c_int
 dll.EU_SetPopconfirmOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int,
                                         ctypes.c_int, ctypes.c_int]
@@ -3364,6 +3546,104 @@ def create_window(title="New Emoji Test", x=300, y=200, w=800, h=600):
     )
     return hwnd
 
+def create_window_ex(title="New Emoji Test", x=300, y=200, w=800, h=600,
+                     titlebar_color=0xFF181825, frame_flags=EU_WINDOW_FRAME_DEFAULT):
+    data = make_utf8(title)
+    return dll.EU_CreateWindowEx(
+        (ctypes.c_ubyte * len(data))(*data), len(data),
+        x, y, w, h,
+        titlebar_color,
+        frame_flags,
+    )
+
+def create_borderless_window(title="无标题栏窗口", x=300, y=200, w=800, h=600):
+    flags = (
+        EU_WINDOW_FRAME_BORDERLESS |
+        EU_WINDOW_FRAME_CUSTOM_CAPTION |
+        EU_WINDOW_FRAME_CUSTOM_BUTTONS |
+        EU_WINDOW_FRAME_RESIZABLE |
+        EU_WINDOW_FRAME_ROUNDED |
+        EU_WINDOW_FRAME_HIDE_TITLEBAR
+    )
+    return create_window_ex(title, x, y, w, h, 0xFF181825, flags)
+
+def create_browser_shell_window(title="浏览器式窗口", x=300, y=200, w=1000, h=700):
+    return create_window_ex(title, x, y, w, h, 0xFF181825, EU_WINDOW_FRAME_BROWSER_SHELL)
+
+def set_titlebar_visible(hwnd, visible=True):
+    dll.EU_SetTitleBarVisible(hwnd, 1 if visible else 0)
+
+def set_titlebar_height(hwnd, height=32):
+    dll.EU_SetTitleBarHeight(hwnd, height)
+
+def set_titlebar_button_style(hwnd, button_width=46, button_height=32,
+                              icon_color=0xFF5F6368, hover_bg=0x14000000,
+                              close_hover_bg=0xFFE81123):
+    dll.EU_SetTitleBarButtonStyle(hwnd, button_width, button_height, icon_color, hover_bg, close_hover_bg)
+
+def set_window_drag_region(hwnd, x, y, w, h, enabled=True):
+    dll.EU_SetWindowDragRegion(hwnd, x, y, w, h, 1 if enabled else 0)
+
+def clear_window_drag_regions(hwnd):
+    dll.EU_ClearWindowDragRegions(hwnd)
+
+def set_window_caption_button_bounds(hwnd, x, y, w, h):
+    dll.EU_SetWindowCaptionButtonBounds(hwnd, x, y, w, h)
+
+def set_window_rounded_corners(hwnd, enabled=True, radius=8):
+    dll.EU_SetWindowRoundedCorners(hwnd, 1 if enabled else 0, radius)
+
+def get_window_frame_flags(hwnd):
+    return dll.EU_GetWindowFrameFlags(hwnd)
+
+def set_window_frame_flags(hwnd, frame_flags):
+    dll.EU_SetWindowFrameFlags(hwnd, frame_flags)
+
+def set_window_resize_border(hwnd, left=6, top=6, right=6, bottom=6):
+    dll.EU_SetWindowResizeBorder(hwnd, left, top, right, bottom)
+
+def get_window_resize_border(hwnd):
+    left = ctypes.c_int()
+    top = ctypes.c_int()
+    right = ctypes.c_int()
+    bottom = ctypes.c_int()
+    ok = dll.EU_GetWindowResizeBorder(hwnd, ctypes.byref(left), ctypes.byref(top),
+                                      ctypes.byref(right), ctypes.byref(bottom))
+    if not ok:
+        return None
+    return left.value, top.value, right.value, bottom.value
+
+def set_window_no_drag_region(hwnd, x, y, w, h, enabled=True):
+    dll.EU_SetWindowNoDragRegion(hwnd, x, y, w, h, 1 if enabled else 0)
+
+def clear_window_no_drag_regions(hwnd):
+    dll.EU_ClearWindowNoDragRegions(hwnd)
+
+def set_element_window_command(hwnd, element_id, command):
+    dll.EU_SetElementWindowCommand(hwnd, element_id, command)
+
+def get_element_window_command(hwnd, element_id):
+    return dll.EU_GetElementWindowCommand(hwnd, element_id)
+
+def set_chrome_theme_preset(hwnd, preset=0):
+    dll.EU_SetChromeThemePreset(hwnd, preset)
+
+def set_theme_token(hwnd, token, color):
+    data = make_utf8(token)
+    dll.EU_SetThemeToken(hwnd, bytes_arg(data), len(data), color)
+
+def get_theme_token(hwnd, token):
+    data = make_utf8(token)
+    color = ctypes.c_uint32()
+    ok = dll.EU_GetThemeToken(hwnd, bytes_arg(data), len(data), ctypes.byref(color))
+    return color.value if ok else None
+
+def set_high_contrast_mode(hwnd, enabled=True):
+    dll.EU_SetHighContrastMode(hwnd, 1 if enabled else 0)
+
+def set_incognito_mode(hwnd, enabled=True):
+    dll.EU_SetIncognitoMode(hwnd, 1 if enabled else 0)
+
 def create_panel(hwnd, parent_id=0, x=0, y=0, w=800, h=600, color=0):
     pid = dll.EU_CreatePanel(hwnd, parent_id, x, y, w, h)
     if color:
@@ -3472,6 +3752,190 @@ def create_link(hwnd, parent_id, text="Link", x=0, y=0, w=200, h=28,
 def create_icon(hwnd, parent_id, text="✓", x=0, y=0, w=36, h=36):
     data = make_utf8(text)
     return dll.EU_CreateIcon(hwnd, parent_id, bytes_arg(data), len(data), x, y, w, h)
+
+def create_icon_button(hwnd, parent_id, icon="⋮", tooltip="", x=0, y=0, w=36, h=36):
+    icon_data = make_utf8(icon)
+    tip_data = make_utf8(tooltip)
+    return dll.EU_CreateIconButton(
+        hwnd, parent_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(tip_data), len(tip_data),
+        x, y, w, h,
+    )
+
+def set_icon_button_icon(hwnd, element_id, icon):
+    data = make_utf8(icon)
+    dll.EU_SetIconButtonIcon(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_icon_button_tooltip(hwnd, element_id, tooltip):
+    data = make_utf8(tooltip)
+    dll.EU_SetIconButtonTooltip(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_icon_button_badge(hwnd, element_id, text="", visible=True):
+    data = make_utf8(text)
+    dll.EU_SetIconButtonBadge(hwnd, element_id, bytes_arg(data), len(data), 1 if visible else 0)
+
+def set_icon_button_checked(hwnd, element_id, checked=True):
+    dll.EU_SetIconButtonChecked(hwnd, element_id, 1 if checked else 0)
+
+def get_icon_button_checked(hwnd, element_id):
+    return bool(dll.EU_GetIconButtonChecked(hwnd, element_id))
+
+def set_icon_button_dropdown(hwnd, element_id, dropdown_element_id):
+    dll.EU_SetIconButtonDropdown(hwnd, element_id, dropdown_element_id)
+
+def set_icon_button_colors(hwnd, element_id, normal_bg=0x00000000, hover_bg=0x14000000,
+                           pressed_bg=0x22000000, checked_bg=0x1F000000,
+                           disabled_bg=0x00000000, icon_color=0xFF3C4043,
+                           disabled_icon_color=0xFF9AA0A6):
+    dll.EU_SetIconButtonColors(
+        hwnd, element_id, normal_bg, hover_bg, pressed_bg, checked_bg,
+        disabled_bg, icon_color, disabled_icon_color,
+    )
+
+def set_icon_button_shape(hwnd, element_id, shape=1, radius=18):
+    dll.EU_SetIconButtonShape(hwnd, element_id, shape, radius)
+
+def set_icon_button_padding(hwnd, element_id, left=6, top=6, right=6, bottom=6):
+    dll.EU_SetIconButtonPadding(hwnd, element_id, left, top, right, bottom)
+
+def set_icon_button_icon_size(hwnd, element_id, size=18):
+    dll.EU_SetIconButtonIconSize(hwnd, element_id, size)
+
+def get_icon_button_state(hwnd, element_id):
+    checked = ctypes.c_int()
+    hovered = ctypes.c_int()
+    pressed = ctypes.c_int()
+    badge_visible = ctypes.c_int()
+    ok = dll.EU_GetIconButtonState(
+        hwnd, element_id,
+        ctypes.byref(checked), ctypes.byref(hovered),
+        ctypes.byref(pressed), ctypes.byref(badge_visible),
+    )
+    if not ok:
+        return None
+    return {
+        "checked": bool(checked.value),
+        "hovered": bool(hovered.value),
+        "pressed": bool(pressed.value),
+        "badge_visible": bool(badge_visible.value),
+    }
+
+def create_omnibox(hwnd, parent_id, value="", placeholder="搜索或输入网址 🔍",
+                   x=0, y=0, w=520, h=36):
+    value_data = make_utf8(value)
+    placeholder_data = make_utf8(placeholder)
+    return dll.EU_CreateOmnibox(
+        hwnd, parent_id,
+        bytes_arg(value_data), len(value_data),
+        bytes_arg(placeholder_data), len(placeholder_data),
+        x, y, w, h,
+    )
+
+def set_omnibox_value(hwnd, element_id, value):
+    data = make_utf8(value)
+    dll.EU_SetOmniboxValue(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_omnibox_value(hwnd, element_id, buffer_size=4096):
+    needed = dll.EU_GetOmniboxValue(hwnd, element_id, None, 0)
+    size = max(buffer_size, needed + 1)
+    buf = (ctypes.c_ubyte * size)()
+    n = dll.EU_GetOmniboxValue(hwnd, element_id, buf, size)
+    return bytes(buf[:max(0, n)]).decode("utf-8", errors="replace")
+
+def set_omnibox_placeholder(hwnd, element_id, placeholder):
+    data = make_utf8(placeholder)
+    dll.EU_SetOmniboxPlaceholder(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_omnibox_security_state(hwnd, element_id, state=0, label=""):
+    data = make_utf8(label)
+    dll.EU_SetOmniboxSecurityState(hwnd, element_id, state, bytes_arg(data), len(data))
+
+def set_omnibox_prefix_chip(hwnd, element_id, icon="🔒", text="安全",
+                            bg_color=0xFFE6F4EA, fg_color=0xFF137333):
+    icon_data = make_utf8(icon)
+    text_data = make_utf8(text)
+    dll.EU_SetOmniboxPrefixChip(
+        hwnd, element_id,
+        bytes_arg(icon_data), len(icon_data),
+        bytes_arg(text_data), len(text_data),
+        bg_color, fg_color,
+    )
+
+def set_omnibox_action_icons(hwnd, element_id, items=None):
+    if items is None:
+        items = [("☆", "收藏"), ("↗", "分享")]
+    data = make_utf8("|".join(f"{icon}\t{name}" for icon, name in items))
+    dll.EU_SetOmniboxActionIcons(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_omnibox_suggestion_items(hwnd, element_id, items=None):
+    if items is None:
+        items = [
+            ("搜索", "🔍", "搜索 new_emoji", "来自默认搜索", "new_emoji"),
+            ("历史", "🕘", "项目文档", "本地示例", "docs"),
+        ]
+    data = make_utf8("\n".join("\t".join(str(v) for v in row) for row in items))
+    dll.EU_SetOmniboxSuggestionItems(hwnd, element_id, bytes_arg(data), len(data))
+
+def set_omnibox_suggestion_open(hwnd, element_id, open=True):
+    dll.EU_SetOmniboxSuggestionOpen(hwnd, element_id, 1 if open else 0)
+
+def set_omnibox_suggestion_selected(hwnd, element_id, index=0):
+    dll.EU_SetOmniboxSuggestionSelected(hwnd, element_id, index)
+
+def get_omnibox_suggestion_state(hwnd, element_id):
+    open_v = ctypes.c_int()
+    selected = ctypes.c_int()
+    count = ctypes.c_int()
+    ok = dll.EU_GetOmniboxSuggestionState(
+        hwnd, element_id, ctypes.byref(open_v), ctypes.byref(selected), ctypes.byref(count)
+    )
+    if not ok:
+        return None
+    return {"open": bool(open_v.value), "selected": selected.value, "count": count.value}
+
+def set_omnibox_commit_callback(hwnd, element_id, callback):
+    dll.EU_SetOmniboxCommitCallback(hwnd, element_id, callback)
+
+def set_omnibox_icon_button_callback(hwnd, element_id, callback):
+    dll.EU_SetOmniboxIconButtonCallback(hwnd, element_id, callback)
+
+def create_browser_viewport(hwnd, parent_id, x=0, y=0, w=900, h=520):
+    return dll.EU_CreateBrowserViewport(hwnd, parent_id, x, y, w, h)
+
+def set_browser_viewport_state(hwnd, element_id, state=0):
+    dll.EU_SetBrowserViewportState(hwnd, element_id, state)
+
+def set_browser_viewport_placeholder(hwnd, element_id, title="新标签页 🌐",
+                                     desc="这里是浏览器内容区占位，可在未来接入 WebView2。",
+                                     icon="🌐"):
+    title_data = make_utf8(title)
+    desc_data = make_utf8(desc)
+    icon_data = make_utf8(icon)
+    dll.EU_SetBrowserViewportPlaceholder(
+        hwnd, element_id,
+        bytes_arg(title_data), len(title_data),
+        bytes_arg(desc_data), len(desc_data),
+        bytes_arg(icon_data), len(icon_data),
+    )
+
+def set_browser_viewport_loading(hwnd, element_id, loading=True, progress=0):
+    dll.EU_SetBrowserViewportLoading(hwnd, element_id, 1 if loading else 0, progress)
+
+def set_browser_viewport_screenshot(hwnd, element_id, image_source=""):
+    data = make_utf8(image_source)
+    dll.EU_SetBrowserViewportScreenshot(hwnd, element_id, bytes_arg(data), len(data))
+
+def get_browser_viewport_state(hwnd, element_id):
+    state = ctypes.c_int()
+    loading = ctypes.c_int()
+    progress = ctypes.c_int()
+    ok = dll.EU_GetBrowserViewportState(
+        hwnd, element_id, ctypes.byref(state), ctypes.byref(loading), ctypes.byref(progress)
+    )
+    if not ok:
+        return None
+    return {"state": state.value, "loading": bool(loading.value), "progress": progress.value}
 
 def set_text_options(hwnd, element_id, align=0, valign=0, wrap=True, ellipsis=False):
     dll.EU_SetTextOptions(hwnd, element_id, align, valign, 1 if wrap else 0, 1 if ellipsis else 0)
@@ -3615,6 +4079,21 @@ def get_space_size(hwnd, element_id):
 
 def create_container(hwnd, parent_id, x=0, y=0, w=800, h=600):
     return dll.EU_CreateContainer(hwnd, parent_id, x, y, w, h)
+
+def set_container_flex_layout(hwnd, element_id, direction=1, gap=0, align_items=0, justify_content=0):
+    dll.EU_SetContainerFlexLayout(hwnd, element_id, direction, gap, align_items, justify_content)
+
+def set_element_flex_grow(hwnd, element_id, grow=1):
+    dll.EU_SetElementFlexGrow(hwnd, element_id, grow)
+
+def set_element_min_max_size(hwnd, element_id, min_w=0, min_h=0, max_w=0, max_h=0):
+    dll.EU_SetElementMinMaxSize(hwnd, element_id, min_w, min_h, max_w, max_h)
+
+def set_element_margin(hwnd, element_id, left=0, top=0, right=0, bottom=0):
+    dll.EU_SetElementMargin(hwnd, element_id, left, top, right, bottom)
+
+def set_element_align_self(hwnd, element_id, align_self=0):
+    dll.EU_SetElementAlignSelf(hwnd, element_id, align_self)
 
 def _create_container_region(fn, hwnd, parent_id, text="", x=0, y=0, w=0, h=0):
     data = make_utf8(text)
@@ -8369,6 +8848,29 @@ def get_menu_item_meta(hwnd, element_id, item_index):
 def set_menu_select_callback(hwnd, element_id, callback):
     dll.EU_SetMenuSelectCallback(hwnd, element_id, callback)
 
+def set_menu_item_icon(hwnd, element_id, index, icon):
+    data = make_utf8(icon)
+    dll.EU_SetMenuItemIcon(hwnd, element_id, index, bytes_arg(data), len(data))
+
+def set_menu_item_shortcut(hwnd, element_id, index, shortcut):
+    data = make_utf8(shortcut)
+    dll.EU_SetMenuItemShortcut(hwnd, element_id, index, bytes_arg(data), len(data))
+
+def set_menu_item_checked(hwnd, element_id, index, checked=True):
+    dll.EU_SetMenuItemChecked(hwnd, element_id, index, 1 if checked else 0)
+
+def set_menu_item_separator(hwnd, element_id, index, separator=True):
+    dll.EU_SetMenuItemSeparator(hwnd, element_id, index, 1 if separator else 0)
+
+def set_menu_item_submenu(hwnd, element_id, index, submenu_element_id):
+    dll.EU_SetMenuItemSubmenu(hwnd, element_id, index, submenu_element_id)
+
+def set_menu_popup_position(hwnd, element_id, anchor_element_id, placement=3, offset=8):
+    dll.EU_SetMenuPopupPosition(hwnd, element_id, anchor_element_id, placement, offset)
+
+def set_context_menu_callback(hwnd, element_id, callback):
+    dll.EU_SetContextMenuCallback(hwnd, element_id, callback)
+
 def create_anchor(hwnd, parent_id, items=None, active=0,
                   x=0, y=0, w=220, h=180):
     if items is None:
@@ -9805,6 +10307,68 @@ def create_tabs(hwnd, parent_id, items=None, active=0, tab_type=0,
         active, tab_type, x, y, w, h
     )
 
+def set_tabs_chrome_mode(hwnd, element_id, enabled=True):
+    dll.EU_SetTabsChromeMode(hwnd, element_id, 1 if enabled else 0)
+
+def get_tabs_chrome_mode(hwnd, element_id):
+    return bool(dll.EU_GetTabsChromeMode(hwnd, element_id))
+
+def set_tabs_item_icon(hwnd, element_id, index, icon):
+    data = make_utf8(icon)
+    dll.EU_SetTabsItemIcon(hwnd, element_id, index, bytes_arg(data), len(data))
+
+def set_tabs_item_loading(hwnd, element_id, index, loading=True):
+    dll.EU_SetTabsItemLoading(hwnd, element_id, index, 1 if loading else 0)
+
+def set_tabs_item_pinned(hwnd, element_id, index, pinned=True):
+    dll.EU_SetTabsItemPinned(hwnd, element_id, index, 1 if pinned else 0)
+
+def set_tabs_item_muted(hwnd, element_id, index, muted=True):
+    dll.EU_SetTabsItemMuted(hwnd, element_id, index, 1 if muted else 0)
+
+def set_tabs_item_closable(hwnd, element_id, index, closable=True):
+    dll.EU_SetTabsItemClosable(hwnd, element_id, index, 1 if closable else 0)
+
+def set_tabs_item_chrome_state(hwnd, element_id, index, loading=False, pinned=False,
+                               muted=False, alerting=False):
+    dll.EU_SetTabsItemChromeState(
+        hwnd, element_id, index,
+        1 if loading else 0, 1 if pinned else 0,
+        1 if muted else 0, 1 if alerting else 0,
+    )
+
+def get_tabs_item_chrome_state(hwnd, element_id, index):
+    loading = ctypes.c_int()
+    pinned = ctypes.c_int()
+    muted = ctypes.c_int()
+    alerting = ctypes.c_int()
+    ok = dll.EU_GetTabsItemChromeState(
+        hwnd, element_id, index,
+        ctypes.byref(loading), ctypes.byref(pinned),
+        ctypes.byref(muted), ctypes.byref(alerting),
+    )
+    if not ok:
+        return None
+    return {
+        "loading": bool(loading.value),
+        "pinned": bool(pinned.value),
+        "muted": bool(muted.value),
+        "alerting": bool(alerting.value),
+    }
+
+def set_tabs_chrome_metrics(hwnd, element_id, min_width=96, max_width=220,
+                            pinned_width=48, height=36, overlap=12):
+    dll.EU_SetTabsChromeMetrics(hwnd, element_id, min_width, max_width, pinned_width, height, overlap)
+
+def set_tabs_new_button_visible(hwnd, element_id, visible=True):
+    dll.EU_SetTabsNewButtonVisible(hwnd, element_id, 1 if visible else 0)
+
+def set_tabs_drag_options(hwnd, element_id, reorder_enabled=True, detach_enabled=False):
+    dll.EU_SetTabsDragOptions(hwnd, element_id, 1 if reorder_enabled else 0, 1 if detach_enabled else 0)
+
+def set_tabs_reorder_callback(hwnd, element_id, callback):
+    dll.EU_SetTabsReorderCallback(hwnd, element_id, callback)
+
 def _tabs_item_to_line(item):
     if isinstance(item, dict):
         label = item.get("label", "")
@@ -11185,6 +11749,64 @@ def get_popover_full_state(hwnd, element_id):
 
 def set_popover_action_callback(hwnd, element_id, callback):
     dll.EU_SetPopoverActionCallback(hwnd, element_id, callback)
+
+def set_popover_anchor_element(hwnd, element_id, anchor_element_id):
+    dll.EU_SetPopoverAnchorElement(hwnd, element_id, anchor_element_id)
+
+def set_popover_arrow(hwnd, element_id, visible=True, size=10):
+    dll.EU_SetPopoverArrow(hwnd, element_id, 1 if visible else 0, size)
+
+def set_popover_elevation(hwnd, element_id, level=2):
+    dll.EU_SetPopoverElevation(hwnd, element_id, level)
+
+def set_popover_auto_placement(hwnd, element_id, enabled=True):
+    dll.EU_SetPopoverAutoPlacement(hwnd, element_id, 1 if enabled else 0)
+
+def set_popover_dismiss_behavior(hwnd, element_id, close_on_outside=True, close_on_escape=True):
+    dll.EU_SetPopoverDismissBehavior(hwnd, element_id, 1 if close_on_outside else 0, 1 if close_on_escape else 0)
+
+def set_popup_anchor_element(hwnd, popup_id, anchor_element_id):
+    dll.EU_SetPopupAnchorElement(hwnd, popup_id, anchor_element_id)
+
+def set_popup_placement(hwnd, popup_id, placement=4, offset_x=0, offset_y=0):
+    dll.EU_SetPopupPlacement(hwnd, popup_id, placement, offset_x, offset_y)
+
+def set_popup_open(hwnd, popup_id, open=True):
+    dll.EU_SetPopupOpen(hwnd, popup_id, 1 if open else 0)
+
+def get_popup_open(hwnd, popup_id):
+    return bool(dll.EU_GetPopupOpen(hwnd, popup_id))
+
+def set_popup_dismiss_behavior(hwnd, popup_id, close_on_outside=True, close_on_escape=True):
+    dll.EU_SetPopupDismissBehavior(hwnd, popup_id, 1 if close_on_outside else 0, 1 if close_on_escape else 0)
+
+def _popup_trigger_value(trigger):
+    if isinstance(trigger, str):
+        return {
+            "click": 0,
+            "left": 0,
+            "left_click": 0,
+            "right": 1,
+            "right_click": 1,
+            "context": 1,
+            "hover": 2,
+            "focus": 3,
+            "manual": 4,
+        }.get(trigger, 0)
+    try:
+        value = int(trigger)
+    except (TypeError, ValueError):
+        value = 0
+    return max(0, min(4, value))
+
+def set_element_popup(hwnd, element_id, popup_id, trigger="click"):
+    dll.EU_SetElementPopup(hwnd, element_id, popup_id, _popup_trigger_value(trigger))
+
+def clear_element_popup(hwnd, element_id, trigger="click"):
+    dll.EU_ClearElementPopup(hwnd, element_id, _popup_trigger_value(trigger))
+
+def get_element_popup(hwnd, element_id, trigger="click"):
+    return dll.EU_GetElementPopup(hwnd, element_id, _popup_trigger_value(trigger))
 
 def create_popconfirm(hwnd, parent_id, label="气泡确认", title="确认操作",
                       content="", confirm="确定", cancel="取消", placement=3,

@@ -878,5 +878,35 @@
         "summary":  "已补确认/取消按钮、结果读取/重置、定位和内容更新、键盘确认/取消、程序触发结果、结果回调、文本/完整状态读回、Python 封装、易语言命令文档和独立中文 emoji 验证",
         "category":  "反馈/浮层",
         "slug":  "popconfirm"
+    },
+    {
+        "index":  "89",
+        "name":  "IconButton",
+        "zh":  "工具栏图标按钮",
+        "create":  "EU_CreateIconButton",
+        "status":  "已完成",
+        "summary":  "已补透明默认态、hover/press/checked 背景、徽标、tooltip、dropdown 绑定、形状、内边距、图标尺寸、状态读回、Python 封装和 Chrome 外壳专项验证",
+        "category":  "Chrome 外壳",
+        "slug":  "icon-button"
+    },
+    {
+        "index":  "90",
+        "name":  "Omnibox",
+        "zh":  "地址栏",
+        "create":  "EU_CreateOmnibox",
+        "status":  "已完成",
+        "summary":  "已补安全状态、前缀 chip、动作图标、建议列表、键盘提交、按钮回调、值/建议状态读回、Python 封装和 Chrome 外壳专项验证",
+        "category":  "Chrome 外壳",
+        "slug":  "omnibox"
+    },
+    {
+        "index":  "91",
+        "name":  "BrowserViewport",
+        "zh":  "浏览内容占位区",
+        "create":  "EU_CreateBrowserViewport",
+        "status":  "已完成",
+        "summary":  "已补空白页、加载中、截图占位、错误页、新标签页状态、占位文案、进度读回、Python 封装和 Chrome 外壳专项验证",
+        "category":  "Chrome 外壳",
+        "slug":  "browser-viewport"
     }
 ]
