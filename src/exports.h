@@ -14,6 +14,7 @@ HWND __stdcall EU_CreateWindowDark(const unsigned char* title_bytes, int title_l
                                    int x, int y, int w, int h, Color titlebar_color);
 void __stdcall EU_DestroyWindow(HWND hwnd);
 void __stdcall EU_ShowWindow(HWND hwnd, int visible);
+int  __stdcall EU_RunMessageLoop();
 void __stdcall EU_SetWindowTitle(HWND hwnd, const unsigned char* bytes, int len);
 void __stdcall EU_SetWindowBounds(HWND hwnd, int x, int y, int w, int h);
 int  __stdcall EU_GetWindowBounds(HWND hwnd, int* x, int* y, int* w, int* h);

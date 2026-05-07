@@ -1,7 +1,7 @@
 # new_emoji.dll C# DLL 命令
 
 本文件记录 `new_emoji.dll` 的 C# P/Invoke 声明，按 `src/new_emoji.def` 和 `src/exports.h` 生成。
-当前导出命令数量：1152。
+当前导出命令数量：1153。
 
 通用约定：
 - x86 应用加载 `bin/Win32/Release/new_emoji.dll`，x64 应用加载 `bin/x64/Release/new_emoji.dll`。
@@ -83,6 +83,12 @@ public static extern void EU_DestroyWindow(IntPtr hwnd);
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_ShowWindow(IntPtr hwnd, int visible);
+```
+## EU_RunMessageLoop
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_RunMessageLoop();
 ```
 ## EU_SetWindowTitle
 

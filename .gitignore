@@ -19,6 +19,8 @@ build/
 dist/
 bin/
 obj/
+examples/Csharp/bin/
+examples/火山/_int/
 Debug/
 Release/
 x64/

@@ -8,6 +8,7 @@
 | `EU_CreateWindowDark` | |
 | `EU_DestroyWindow` | |
 | `EU_ShowWindow` | |
+| `EU_RunMessageLoop` | 运行 Win32 消息循环，适用于无宿主窗体的 DLL 窗口程序 |
 | `EU_SetWindowTitle` | |
 | `EU_SetWindowBounds` | |
 | `EU_GetWindowBounds` | |

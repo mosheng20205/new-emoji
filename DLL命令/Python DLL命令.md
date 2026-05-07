@@ -1,7 +1,7 @@
 # new_emoji.dll Python DLL 命令
 
 本文件记录 `new_emoji.dll` 的 Python `ctypes` 声明，按 `src/new_emoji.def` 和 `src/exports.h` 生成。
-当前导出命令数量：1152。
+当前导出命令数量：1153。
 
 通用约定：
 - 32 位 Python 加载 `bin/Win32/Release/new_emoji.dll`，64 位 Python 加载 `bin/x64/Release/new_emoji.dll`。
@@ -67,6 +67,12 @@ dll.EU_DestroyWindow.restype = None
 ```python
 dll.EU_ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_ShowWindow.restype = None
+```
+## EU_RunMessageLoop
+
+```python
+dll.EU_RunMessageLoop.argtypes = []
+dll.EU_RunMessageLoop.restype = ctypes.c_int
 ```
 ## EU_SetWindowTitle
 

@@ -186,6 +186,16 @@ void __stdcall EU_ShowWindow(HWND hwnd, int visible) {
     ShowWindow(hwnd, visible ? SW_SHOW : SW_HIDE);
 }
 
+int __stdcall EU_RunMessageLoop() {
+    MSG msg;
+    BOOL ret;
+    while ((ret = GetMessageW(&msg, nullptr, 0, 0)) > 0) {
+        TranslateMessage(&msg);
+        DispatchMessageW(&msg);
+    }
+    return ret < 0 ? -1 : (int)msg.wParam;
+}
+
 void __stdcall EU_SetWindowTitle(HWND hwnd, const unsigned char* bytes, int len) {
     std::wstring title = utf8_to_wide(bytes, len);
     SetWindowTextW(hwnd, title.c_str());

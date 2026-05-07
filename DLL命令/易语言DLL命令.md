@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：1152。
+当前导出命令数量：1153。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -39,6 +39,8 @@
 .DLL命令 显示窗口, , "new_emoji.dll", "EU_ShowWindow", , 对应 C++ 导出命令 EU_ShowWindow
     .参数 窗口句柄, 整数型
     .参数 是否可见, 整数型
+
+.DLL命令 运行消息循环, 整数型, "new_emoji.dll", "EU_RunMessageLoop", , 对应 C++ 导出命令 EU_RunMessageLoop；无宿主窗体时阻塞运行 Win32 消息循环，窗口关闭后返回退出码
 
 .DLL命令 设置窗口标题, , "new_emoji.dll", "EU_SetWindowTitle", , 对应 C++ 导出命令 EU_SetWindowTitle
     .参数 窗口句柄, 整数型

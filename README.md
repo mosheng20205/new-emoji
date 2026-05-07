@@ -20,6 +20,11 @@
 - [API 约定](docs/api-conventions.md)
 - [组件文档导航](docs/components/README.md)
 - [Python 示例说明](docs/examples/python.md)
+- [项目定位](#项目定位)
+- [适合谁使用](#适合谁使用)
+- [商业支持与付费定制](#商业支持与付费定制)
+- [联系作者](#联系作者)
+- [火山视窗简单示例](examples/火山/README.md)
 - [易语言 DLL 命令](DLL命令/易语言DLL命令.md)
 - [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)
 - [Python DLL 命令](DLL命令/Python%20DLL命令.md)
@@ -27,6 +32,46 @@
 - [更新日志](CHANGELOG.md)
 - [图片预览](#图片预览)
 - [许可证](LICENSE)
+
+## 项目定位
+
+`new_emoji` 是一个面向 Windows 桌面软件的原生 Emoji UI DLL，采用单一 HWND + Direct2D / DirectWrite 渲染架构，目标是解决传统 GDI 子窗口控件在拖拽、缩放和高 DPI 场景下容易闪烁的问题。
+
+项目重点支持中文软件开发场景，适合用于易语言、C++、C#、Python 等程序调用，帮助开发者快速构建支持彩色 emoji、无闪烁、自绘标题栏和现代化控件的桌面界面。
+
+## 适合谁使用
+
+`new_emoji` 适合以下开发者或项目：
+
+- 正在开发 Windows 桌面软件，希望界面支持彩色 emoji。
+- 使用易语言 / 火山 / C++ / C# / Python 调用 DLL 构建界面。
+- 遇到 GDI 子窗口控件拖拽、缩放时白底闪烁问题。
+- 希望实现自绘标题栏、无边框窗口、现代化按钮和输入框。
+- 想把旧版 Win32 / GDI 界面逐步迁移到 Direct2D 渲染架构。
+
+## 商业支持与付费定制
+
+本项目保持开源，欢迎个人学习、研究和项目集成使用。
+
+如果你希望将 `new_emoji` 用于商业软件，或者需要更深入的功能支持，可以联系作者提供付费服务，包括但不限于：
+
+- 易语言 / 火山 / C++ / C# / Python 项目接入指导。
+- 自定义无边框窗口、标题栏、主题皮肤。
+- 聊天窗口、客服窗口、emoji 输入框等界面定制。
+- 旧版 GDI / Win32 界面迁移到 Direct2D 架构。
+- 高 DPI 适配、闪烁问题排查、输入法与剪贴板问题处理。
+- 企业项目私有组件开发与长期技术支持。
+
+如果你的需求超出了开源版本的范围，欢迎通过 Issue 或作者联系方式沟通商业合作。
+
+## 联系作者
+
+如果你需要商业定制、技术支持、项目合作，或者想交流 `new_emoji` 的使用方式，可以通过以下方式联系作者：
+
+- GitHub Issues：适合提交 bug、建议和公开讨论。
+- 邮箱：`1098901025@qq.com`
+- QQ：`1098901025`（添加注明来意）
+- 微信：`zhx_ms`（添加注明来意）
 
 ## 组件总览 Demo
 
@@ -130,7 +175,17 @@ class Program
 }
 ```
 
+仓库已提供可直接运行的最短 C# 示例：[MinimalExample.cs](examples/Csharp/MinimalExample.cs) 和 [MinimalExample.csproj](examples/Csharp/MinimalExample.csproj)。已验证 `dotnet build examples\Csharp\MinimalExample.csproj -c Release` 可成功构建；运行方式：
+
+```powershell
+dotnet run -c Release --project examples\Csharp\MinimalExample.csproj
+```
+
 > C# 进程位数必须和 DLL 位数一致：x86 应用加载 Win32 DLL，x64 应用加载 x64 DLL。完整声明见 [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)。
+
+## 火山视窗示例入口
+
+仓库已提供火山视窗 x64 简单窗口 demo：[examples/火山](examples/火山)。打开 [NewEmojiSimpleDemo_x64.vsln](examples/火山/NewEmojiSimpleDemo_x64.vsln) 即可查看源码；示例通过 `@视窗.输入 = "new_emoji.dll"` 和 `@输出名 = "EU_..."` 直接导入 DLL，演示窗口、面板、文本、编辑框、按钮与点击回调，界面文案均为中文并包含 emoji。
 
 ## 最短易语言示例 / DLL 命令入口说明
 
@@ -179,10 +234,12 @@ class Program
 .DLL命令 显示窗口, , "new_emoji.dll", "EU_ShowWindow"
     .参数 窗口句柄, 整数型
     .参数 是否显示, 整数型
+
+.DLL命令 运行消息循环, 整数型, "new_emoji.dll", "EU_RunMessageLoop"
 ```
 
 ```text
-'. 把下面代码放到易语言窗口程序的启动事件中；窗口程序自身会提供消息循环。
+'. 无易语言窗体时可直接放到 _启动子程序 中；运行消息循环会阻塞到 new_emoji 窗口关闭。
 .局部变量 窗口句柄, 整数型
 .局部变量 根容器, 整数型
 .局部变量 标题, 字节集
@@ -204,6 +261,7 @@ class Program
 创建文本 (窗口句柄, 根容器, 取变量数据地址 (正文), 取字节集长度 (正文), 32, 32, 360, 40)
 创建按钮 (窗口句柄, 根容器, 取变量数据地址 (按钮Emoji), 取字节集长度 (按钮Emoji), 取变量数据地址 (按钮文字), 取字节集长度 (按钮文字), 32, 96, 160, 42)
 显示窗口 (窗口句柄, 1)
+运行消息循环 ()
 ```
 
 ## 构建

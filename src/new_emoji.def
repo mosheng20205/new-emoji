@@ -5,6 +5,7 @@ EXPORTS
     EU_CreateWindowDark
     EU_DestroyWindow
     EU_ShowWindow
+    EU_RunMessageLoop
     EU_SetWindowTitle
     EU_SetWindowBounds
     EU_GetWindowBounds
