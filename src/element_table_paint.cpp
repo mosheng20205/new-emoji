@@ -410,6 +410,11 @@ void Table::paint(RenderContext& ctx) {
     float body_top = top + (float)header_h;
     float body_h = table_h - top - style.pad_bottom - header_h - sum_h;
     if (needs_horizontal_scrollbar()) body_h -= kScrollbarSize;
+    int max_slots = row_h > 0 ? (int)(body_h / row_h) : 0;
+    float table_bottom = table_h - (float)style.pad_bottom;
+    float column_grid_bottom = body_top + (float)max_slots * (float)row_h;
+    if (show_summary) column_grid_bottom = table_h - (float)style.pad_bottom - (float)sum_h;
+    column_grid_bottom = (std::min)(table_bottom, (std::max)(body_top, column_grid_bottom));
     std::vector<int> visible;
     if (!virtual_mode) visible = visible_row_indices();
     int col_count = (int)adv_columns.size();
@@ -462,7 +467,7 @@ void Table::paint(RenderContext& ctx) {
             float x = column_x(c, left, table_w);
             float cw = column_width_at(c, table_w);
             if (x + cw < layer_clip.left || x > layer_clip.right) continue;
-            if (bordered && c > 0) ctx.rt->DrawLine(D2D1::Point2F(x, top), D2D1::Point2F(x, table_h - style.pad_bottom), ctx.get_brush(border), 1.0f);
+            if (bordered && c > 0) ctx.rt->DrawLine(D2D1::Point2F(x, top), D2D1::Point2F(x, column_grid_bottom), ctx.get_brush(border), 1.0f);
             std::wstring name = adv_columns[c].title;
             if (c == sort_column) name += sort_desc ? L" ↓" : L" ↑";
             if (adv_columns[c].filterable && filters.find(c) != filters.end()) name += L" 🔎";
@@ -495,7 +500,6 @@ void Table::paint(RenderContext& ctx) {
     if (total_rows <= 0 || (!virtual_mode && visible.empty())) {
         draw_text_ex(ctx, empty_text, style, t->text_secondary, left, body_top, table_w, body_h, 1);
     }
-    int max_slots = row_h > 0 ? (int)(body_h / row_h) : 0;
     for (int slot = 0; slot < max_slots; ++slot) {
         int r = virtual_mode ? (scroll_row + slot) : (scroll_row + slot);
         if (virtual_mode) {
