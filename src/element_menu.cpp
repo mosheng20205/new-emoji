@@ -731,15 +731,16 @@ void Menu::paint(RenderContext& ctx) {
                 draw_text(ctx, icon, style, item_color, x, (float)r.y, 22.0f, (float)r.h);
                 x += 24.0f;
             }
+            float trailing_reserve = orientation == 1 ? 78.0f : 8.0f;
             draw_text(ctx, i < (int)display_items.size() ? display_items[i] : items[i], style, item_color,
-                      x, (float)r.y, (float)(r.x + r.w) - x - 78.0f, (float)r.h,
-                      orientation == 1 ? DWRITE_TEXT_ALIGNMENT_LEADING : DWRITE_TEXT_ALIGNMENT_CENTER);
-            if (i < (int)item_shortcuts.size() && !item_shortcuts[(size_t)i].empty()) {
+                      x, (float)r.y, (float)(r.x + r.w) - x - trailing_reserve, (float)r.h,
+                      DWRITE_TEXT_ALIGNMENT_LEADING);
+            if (orientation == 1 && i < (int)item_shortcuts.size() && !item_shortcuts[(size_t)i].empty()) {
                 draw_text(ctx, item_shortcuts[(size_t)i], style, t->chrome_menu_secondary_fg,
                           (float)(r.x + r.w) - 76.0f, (float)r.y, 48.0f, (float)r.h,
                           DWRITE_TEXT_ALIGNMENT_TRAILING);
             }
-            if (i < (int)submenu_ids.size() && submenu_ids[(size_t)i] != 0) {
+            if (orientation == 1 && i < (int)submenu_ids.size() && submenu_ids[(size_t)i] != 0) {
                 draw_text(ctx, L">", style, item_color, (float)(r.x + r.w) - 24.0f,
                           (float)r.y, 16.0f, (float)r.h);
             }
