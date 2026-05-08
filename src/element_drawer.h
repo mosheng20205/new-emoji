@@ -76,6 +76,7 @@ private:
     Part m_hover_part = PartNone;
     Part m_press_part = PartNone;
     UINT_PTR m_timer_id = 0;
+    ULONGLONG m_last_tick_ms = 0;
 
     float scale() const;
     void update_layout();

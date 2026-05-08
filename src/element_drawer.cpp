@@ -206,6 +206,14 @@ void Drawer::tick(int elapsed_ms) {
         stop_timer();
         return;
     }
+    ULONGLONG now = GetTickCount64();
+    if (m_last_tick_ms != 0) {
+        ULONGLONG actual_elapsed = now - m_last_tick_ms;
+        if (actual_elapsed > 0) {
+            elapsed_ms = (int)(std::min<ULONGLONG>)(actual_elapsed, 64ULL);
+        }
+    }
+    m_last_tick_ms = now;
     if (animation_ms <= 0) animation_progress = 100;
     else animation_progress += (std::max)(1, elapsed_ms) * 100 / animation_ms;
     if (animation_progress >= 100) {
@@ -220,7 +228,8 @@ void Drawer::tick(int elapsed_ms) {
 void Drawer::ensure_timer() {
     if (m_timer_id || !owner_hwnd || !visible || animation_progress >= 100) return;
     m_timer_id = 0xE800 + (UINT_PTR)id;
-    SetTimer(owner_hwnd, m_timer_id, 33, nullptr);
+    m_last_tick_ms = GetTickCount64();
+    SetTimer(owner_hwnd, m_timer_id, 16, nullptr);
     if (m_timer_id) g_drawer_timer_map[m_timer_id] = this;
 }
 
@@ -228,6 +237,7 @@ void Drawer::stop_timer() {
     if (m_timer_id && owner_hwnd) KillTimer(owner_hwnd, m_timer_id);
     if (m_timer_id) g_drawer_timer_map.erase(m_timer_id);
     m_timer_id = 0;
+    m_last_tick_ms = 0;
 }
 
 void Drawer::layout(const Rect& available) {
@@ -358,19 +368,22 @@ void Drawer::paint(RenderContext& ctx) {
         ctx.rt->FillRectangle(overlay, ctx.get_brush(dark ? 0x99000000 : 0x66000000));
     }
 
-    Rect panel_rect = m_panel_rect;
     float p = (float)animation_progress / 100.0f;
     if (p < 0.0f) p = 0.0f;
     if (p > 1.0f) p = 1.0f;
-    if (placement == 0) panel_rect.x -= (int)((1.0f - p) * panel_rect.w);
-    else if (placement == 1) panel_rect.x += (int)((1.0f - p) * panel_rect.w);
-    else if (placement == 2) panel_rect.y -= (int)((1.0f - p) * panel_rect.h);
-    else panel_rect.y += (int)((1.0f - p) * panel_rect.h);
+    int dx = 0;
+    int dy = 0;
+    if (placement == 0) dx = -(int)((1.0f - p) * m_panel_rect.w);
+    else if (placement == 1) dx = (int)((1.0f - p) * m_panel_rect.w);
+    else if (placement == 2) dy = -(int)((1.0f - p) * m_panel_rect.h);
+    else dy = (int)((1.0f - p) * m_panel_rect.h);
+    ctx.rt->SetTransform(saved * D2D1::Matrix3x2F::Translation(
+        (float)(bounds.x + dx), (float)(bounds.y + dy)));
     D2D1_RECT_F panel = {
-        (float)panel_rect.x,
-        (float)panel_rect.y,
-        (float)(panel_rect.x + panel_rect.w),
-        (float)(panel_rect.y + panel_rect.h)
+        (float)m_panel_rect.x,
+        (float)m_panel_rect.y,
+        (float)(m_panel_rect.x + m_panel_rect.w),
+        (float)(m_panel_rect.y + m_panel_rect.h)
     };
     Color bg = style.bg_color ? style.bg_color : (dark ? 0xFF242637 : 0xFFFFFFFF);
     Color border = style.border_color ? style.border_color : t->border_default;
@@ -383,20 +396,6 @@ void Drawer::paint(RenderContext& ctx) {
 
     float pad = (float)content_padding * s;
     float header_h = 54.0f * s;
-    int dx = panel_rect.x - m_panel_rect.x;
-    int dy = panel_rect.y - m_panel_rect.y;
-    Rect old_panel = m_panel_rect;
-    Rect old_close = m_close_rect;
-    m_panel_rect = panel_rect;
-    m_close_rect.x += dx;
-    m_close_rect.y += dy;
-    if (Element* content_el = child_by_id(*this, content_parent_id)) {
-        if (content_el->visible) content_el->layout(content_rect_in_drawer());
-    }
-    if (Element* footer_el = child_by_id(*this, footer_parent_id)) {
-        if (footer_el->visible) footer_el->layout(footer_rect_in_drawer());
-    }
-
     if (show_header) {
         draw_text(ctx, title.empty() ? L"抽屉" : title, style, title_fg,
                   panel.left + pad, panel.top + 14.0f * s,
@@ -446,8 +445,6 @@ void Drawer::paint(RenderContext& ctx) {
     }
 
     ctx.rt->SetTransform(saved);
-    m_panel_rect = old_panel;
-    m_close_rect = old_close;
 }
 
 void Drawer::on_mouse_move(int x, int y) {

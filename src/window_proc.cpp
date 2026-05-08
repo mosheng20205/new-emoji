@@ -480,7 +480,7 @@ void register_window_class() {
                 return 0;
             }
             if (auto it = g_drawer_timer_map.find((UINT_PTR)wp); it != g_drawer_timer_map.end()) {
-                if (it->second) it->second->tick(33);
+                if (it->second) it->second->tick(16);
                 return 0;
             }
             if (auto it = g_tooltip_timer_map.find((UINT_PTR)wp); it != g_tooltip_timer_map.end()) {

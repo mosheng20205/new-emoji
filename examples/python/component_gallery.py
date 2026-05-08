@@ -701,7 +701,8 @@ def showcase_main(hwnd, stage, w, h):
     workspace = add_demo_panel(hwnd, stage, "📄 Main：主要内容工作区", 28, 30, w - 56, 430)
     add_text(hwnd, workspace, "Main 用于承载表格、表单、图表、详情页等核心内容，通常占据布局里的剩余空间。", 30, 58, w - 110, 28, MUTED)
     main = ui.create_main(hwnd, workspace, "", 30, 102, w - 116, 270)
-    ui.set_panel_style(hwnd, main, 0xFF27314D, 0xFF5C86D6, 1.0, 8.0, 16)
+    ui.set_panel_style(hwnd, main, palette()["panel_blue"], palette()["panel_blue_border"], 1.0, 8.0, 16)
+    register_panel(main, "panel_blue", "panel_blue_border", 1.0, 8.0, 16)
     add_text(hwnd, main, "📄 当前任务", 24, 22, 180, 28, TEXT)
     ui.create_progress(hwnd, main, "构建进度", 68, 1, 24, 72, min(520, w - 190), 36)
     columns = ["模块", "状态", "负责人"]
@@ -718,9 +719,11 @@ def showcase_footer(hwnd, stage, w, h):
     page = add_demo_panel(hwnd, stage, "✅ Footer：底部状态与操作区", 28, 30, w - 56, 300)
     add_text(hwnd, page, "Footer 适合放版权、状态提示、分页、确认操作或向导按钮，通常贴在内容底部。", 30, 58, w - 110, 28, MUTED)
     content = ui.create_main(hwnd, page, "📄 表单内容区域", 30, 104, w - 116, 90)
-    ui.set_panel_style(hwnd, content, 0xFF27314D, 0xFF465473, 1.0, 8.0, 10)
+    ui.set_panel_style(hwnd, content, palette()["panel_neutral"], palette()["panel_neutral_border"], 1.0, 8.0, 10)
+    register_panel(content, "panel_neutral", "panel_neutral_border", 1.0, 8.0, 10)
     footer = ui.create_footer(hwnd, page, "", 30, 206, w - 116, 58)
-    ui.set_panel_style(hwnd, footer, 0xFF263552, 0xFF5C86D6, 1.0, 8.0, 10)
+    ui.set_panel_style(hwnd, footer, palette()["panel_blue"], palette()["panel_blue_border"], 1.0, 8.0, 10)
+    register_panel(footer, "panel_blue", "panel_blue_border", 1.0, 8.0, 10)
     add_text(hwnd, footer, "✅ 已自动保存草稿", 18, 18, 240, 24, TEXT)
     ui.create_button(hwnd, footer, "", "取消", w - 350, 12, 112, 36, variant=0)
     ui.create_button(hwnd, footer, "✅", "提交", w - 220, 12, 112, 36, variant=1)
@@ -917,7 +920,8 @@ def showcase_divider(hwnd, stage, w, h):
 def showcase_watermark(hwnd, stage, w, h):
     card = add_demo_panel(hwnd, stage, "💧 水印背景", 28, 30, w - 56, 330)
     sample = ui.create_panel(hwnd, card, 36, 92, w - 128, 176)
-    ui.set_panel_style(hwnd, sample, 0xFF25324C, 0xFF5C769F, 1.0, 8.0, 10)
+    ui.set_panel_style(hwnd, sample, palette()["panel_blue"], palette()["panel_blue_border"], 1.0, 8.0, 10)
+    register_panel(sample, "panel_blue", "panel_blue_border", 1.0, 8.0, 10)
     wm = ui.create_watermark(hwnd, card, "new_emoji 💧 Demo", 120, 76, 18, 66, w - 92, 220)
     ui.set_watermark_options(hwnd, wm, 120, 76, -18, 96)
     add_text(hwnd, card, "文档抄送 / 内部预览 / 仅供展示", 56, 126, 260, 24, TEXT)
@@ -5188,8 +5192,11 @@ def showcase_drawer(hwnd, stage, w, h):
         ui.set_drawer_options(hwnd, drawer, placement=placement, open=True, modal=True, closable=True, close_on_mask=True, size=size_value if size_mode == 0 else 420)
         ui.set_drawer_advanced_options(hwnd, drawer, show_header=True, show_close=True, close_on_escape=True, content_padding=22, footer_height=58, size_mode=size_mode, size_value=size_value)
         content = ui.get_drawer_content_parent(hwnd, drawer)
-        add_text(hwnd, content, f"{label}\n尺寸模式：{'百分比 50%' if size_mode == 1 else str(size_value) + 'px'}", 0, 0, 320, 58, TEXT)
-        ui.create_table(hwnd, content, ["项目", "状态"], [["中文标题", "✅"], ["emoji 渲染", "🌈"], ["遮罩关闭", "✅"]], True, True, 0, 76, 330, 122)
+        table_w = 520 if size_mode == 1 or placement in (2, 3) else 316
+        column_w = 220 if table_w >= 440 else 150
+        add_text(hwnd, content, f"{label}\n尺寸模式：{'百分比 50%' if size_mode == 1 else str(size_value) + 'px'}", 0, 0, max(320, table_w), 58, TEXT)
+        direction_table = ui.create_table(hwnd, content, ["项目", "状态"], [["中文标题", "✅"], ["emoji 渲染", "🌈"], ["遮罩关闭", "✅"]], True, True, 0, 76, table_w, 142)
+        ui.set_table_column_width(hwnd, direction_table, column_w)
         add_footer_buttons(drawer)
         ui.set_element_text(hwnd, status, f"🧭 已打开：{label}")
         return drawer
@@ -5294,7 +5301,7 @@ def showcase_drawer(hwnd, stage, w, h):
         ("⬅️", "从左打开", lambda _id: open_direction(0, 0, 360, "从左往右开")),
         ("➡️", "从右打开 50%", lambda _id: open_direction(1, 1, 50, "从右往左开")),
         ("⬇️", "从上打开 50%", lambda _id: open_direction(2, 1, 50, "从上往下开")),
-        ("⬆️", "从下打开", lambda _id: open_direction(3, 0, 300, "从下往上开")),
+        ("⬆️", "从下打开", lambda _id: open_direction(3, 0, 380, "从下往上开")),
     ]
     for i, (emoji, label, handler) in enumerate(direction_buttons):
         btn = ui.create_button(hwnd, directions, emoji, label, 30 + (i % 2) * 210, 76 + (i // 2) * 62, 180, 40)
@@ -5307,7 +5314,8 @@ def showcase_drawer(hwnd, stage, w, h):
     form_btn = ui.create_button(hwnd, slots, "🧾", "打开表单抽屉", 220, 78, 170, 40)
     set_click(hwnd, table_btn, open_table_drawer)
     set_click(hwnd, form_btn, open_form_drawer)
-    ui.create_table(hwnd, slots, ["内容", "挂载位置"], [["Table", "content slot"], ["Input", "content slot"], ["Button", "footer slot"]], True, True, 30, 150, min(w - 980, 560), 116)
+    slot_table = ui.create_table(hwnd, slots, ["内容", "挂载位置"], [["Table", "content slot"], ["Input", "content slot"], ["Button", "footer slot"]], True, True, 30, 150, min(w - 980, 560), 116)
+    ui.set_table_column_width(hwnd, slot_table, 220)
 
     confirm_btn = ui.create_button(hwnd, closing, "🛡️", "关闭确认", 30, 78, 150, 40)
     nested_btn = ui.create_button(hwnd, closing, "🧳", "外层/内层抽屉", 206, 78, 180, 40)
@@ -5322,7 +5330,7 @@ def showcase_drawer(hwnd, stage, w, h):
     ui.create_slider(hwnd, style_panel, "面板宽度", 300, 520, 380, 30, 202, min(w - 1000, 360), 36)
     add_text(hwnd, style_panel, "使用现有颜色/字体/表单组件组合出桌面端属性面板，不引入 CSS class。", 30, 242, max(300, w - 1010), 28, MUTED)
 
-    ui.create_table(
+    api_table = ui.create_table(
         hwnd, api_panel,
         ["样式", "API/能力", "状态"],
         [
@@ -5336,6 +5344,7 @@ def showcase_drawer(hwnd, stage, w, h):
         ],
         True, True, 28, 72, min(w - 112, 980), 224,
     )
+    ui.set_table_column_width(hwnd, api_table, 300)
     add_text(hwnd, api_panel, "📚 所有示例均为中文文案并带 emoji；首次窗口尺寸已覆盖首屏按钮和状态区。", 1040, 86, max(260, w - 1130), 70, TEXT)
     add_text(hwnd, api_panel, f"关闭回调计数：{close_stats['count']}", 1040, 176, max(260, w - 1130), 28, MUTED)
 
