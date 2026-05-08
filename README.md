@@ -8,7 +8,7 @@
 - 统一 `EU_` C API 导出，适合 DLL 方式集成。
 - 文本参数统一使用 UTF-8 字节数组 + 长度，方便易语言传递 emoji 和 Unicode 文本。
 - 支持 Win32 与 x64 Release 构建，其中 Win32 是易语言交付优先目标。
-- 组件完成度：88 / 88，计划内组件均已完成独立中文 emoji 验证。
+- 组件完成度：91 / 91，计划内组件均已完成独立中文 emoji 验证。
 - 内置主题、DPI、键鼠交互、Set/Get 状态读回和 Python ctypes helper。
 
 ## 快速入口
@@ -19,19 +19,31 @@
 - [构建说明](docs/build.md)
 - [API 约定](docs/api-conventions.md)
 - [组件文档导航](docs/components/README.md)
+- [AI 客户端使用指南](AI_USAGE.md)
+- [AI 技能入口](SKILL.md)
+- [AI SDK 文档](docs/ai/README.md)
+- [多语言接入矩阵](docs/ai/language-matrix.md)
+- [AI 完整 API manifest](docs/ai/api_manifest.full.json)
+- [多语言模板示例](examples/templates/)
 - [Python 示例说明](docs/examples/python.md)
 - [项目定位](#项目定位)
 - [适合谁使用](#适合谁使用)
 - [商业支持与付费定制](#商业支持与付费定制)
 - [联系作者](#联系作者)
 - [火山视窗简单示例](examples/火山/README.md)
-- [易语言 DLL 命令](DLL命令/易语言DLL命令.md)
+- [易语言 DLL 命令](DLL命令/易语言DLL命令.md)（易语言源码中不要直接写 emoji，应使用 UTF-8 字节集）
 - [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)
 - [Python DLL 命令](DLL命令/Python%20DLL命令.md)
 - [贡献指南](CONTRIBUTING.md)
 - [更新日志](CHANGELOG.md)
 - [图片预览](#图片预览)
 - [许可证](LICENSE)
+
+## AI 客户端接入
+
+本项目提供面向 AI 客户端的多语言 SDK 入口，覆盖易语言、火山、C# 和 Python。让 AI 写 UI 时，建议先阅读 [AI 客户端使用指南](AI_USAGE.md)、[AI SDK 文档](docs/ai/README.md)、[多语言接入矩阵](docs/ai/language-matrix.md) 和 [完整 API manifest](docs/ai/api_manifest.full.json)，再从 [多语言模板示例](examples/templates/) 复制同语言模板开始改。
+
+易语言有额外编码约束：易语言 IDE 源码中不要直接写 emoji 或特殊 Unicode 字符，否则可能变成问号；应使用 UTF-8 字节集 + 长度传给 DLL。详见 [易语言 UTF-8 字节集规则](docs/ai/e-language-encoding.md)。
 
 ## 项目定位
 
@@ -83,7 +95,7 @@
 python examples/python/component_gallery.py
 ```
 
-该 Demo 展示当前 87 个推荐组件；`EditBox` 作为兼容编辑内核保留 API 和文档，不再放入基础布局总览。Demo 包含中文界面、emoji 渲染、主题切换、分类分页、常见交互和复杂组件预览。默认窗口保持 180 秒，便于检查首屏尺寸、DPI 和交互效果。
+该 Demo 展示当前 90 个推荐组件；`EditBox` 作为兼容编辑内核保留 API 和文档，不再放入基础布局总览。Demo 包含中文界面、emoji 渲染、主题切换、分类分页、常见交互和复杂组件预览。默认窗口保持 180 秒，便于检查首屏尺寸、DPI 和交互效果。
 
 如果只想短时间冒烟验证：
 

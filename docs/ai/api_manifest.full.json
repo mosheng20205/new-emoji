@@ -1,0 +1,3005 @@
+[
+  {
+    "component": "Panel",
+    "zh": "面板",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreatePanel",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/panel.md",
+    "bindings": {
+      "python": {
+        "helper": "create_panel",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreatePanel",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建面板",
+        "entry": "EU_CreatePanel",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreatePanel",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 面板 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Button",
+    "zh": "按钮",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateButton",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/button.md",
+    "bindings": {
+      "python": {
+        "helper": "create_button",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateButton",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建按钮",
+        "entry": "EU_CreateButton",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateButton",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于普通文本按钮和主要操作按钮；图标工具按钮优先使用 IconButton。"
+  },
+  {
+    "component": "EditBox",
+    "zh": "兼容编辑内核",
+    "category": "兼容内核",
+    "status": "已完成",
+    "create_export": "EU_CreateEditBox",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/edit-box.md",
+    "bindings": {
+      "python": {
+        "helper": "create_editbox",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateEditBox",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建兼容编辑内核",
+        "entry": "EU_CreateEditBox",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateEditBox",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "兼容早期 MVP 的底层编辑内核；新表单输入优先使用 Input。"
+  },
+  {
+    "component": "InfoBox",
+    "zh": "信息框",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateInfoBox",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/info-box.md",
+    "bindings": {
+      "python": {
+        "helper": "create_infobox",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateInfoBox",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建信息框",
+        "entry": "EU_CreateInfoBox",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateInfoBox",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 信息框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Text",
+    "zh": "文本",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateText",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/text.md",
+    "bindings": {
+      "python": {
+        "helper": "create_text",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateText",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建文本",
+        "entry": "EU_CreateText",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateText",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 文本 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Link",
+    "zh": "链接",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateLink",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/link.md",
+    "bindings": {
+      "python": {
+        "helper": "create_link",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateLink",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建链接",
+        "entry": "EU_CreateLink",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateLink",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 链接 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Icon",
+    "zh": "图标",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateIcon",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/icon.md",
+    "bindings": {
+      "python": {
+        "helper": "create_icon",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateIcon",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建图标",
+        "entry": "EU_CreateIcon",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateIcon",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 图标 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Space",
+    "zh": "间距",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateSpace",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/space.md",
+    "bindings": {
+      "python": {
+        "helper": "create_space",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSpace",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建间距",
+        "entry": "EU_CreateSpace",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSpace",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 间距 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Container",
+    "zh": "容器套件",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateContainer",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/container.md",
+    "bindings": {
+      "python": {
+        "helper": "create_container",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateContainer",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建容器套件",
+        "entry": "EU_CreateContainer",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateContainer",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 容器套件 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Header",
+    "zh": "顶栏",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateHeader",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/header.md",
+    "bindings": {
+      "python": {
+        "helper": "create_header",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateHeader",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建顶栏",
+        "entry": "EU_CreateHeader",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateHeader",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 顶栏 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Aside",
+    "zh": "侧边栏",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateAside",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/aside.md",
+    "bindings": {
+      "python": {
+        "helper": "create_aside",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateAside",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建侧边栏",
+        "entry": "EU_CreateAside",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateAside",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 侧边栏 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Main",
+    "zh": "主要区域",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateMain",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/main.md",
+    "bindings": {
+      "python": {
+        "helper": "create_main",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateMain",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建主要区域",
+        "entry": "EU_CreateMain",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateMain",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 主要区域 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Footer",
+    "zh": "底栏",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateFooter",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/footer.md",
+    "bindings": {
+      "python": {
+        "helper": "create_footer",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateFooter",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建底栏",
+        "entry": "EU_CreateFooter",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateFooter",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 底栏 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Layout",
+    "zh": "布局",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateLayout",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/layout.md",
+    "bindings": {
+      "python": {
+        "helper": "create_layout",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateLayout",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建布局",
+        "entry": "EU_CreateLayout",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateLayout",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 布局 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Border",
+    "zh": "边框",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateBorder",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/border.md",
+    "bindings": {
+      "python": {
+        "helper": "create_border",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBorder",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建边框",
+        "entry": "EU_CreateBorder",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBorder",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 边框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Checkbox",
+    "zh": "复选框",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateCheckbox",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/checkbox.md",
+    "bindings": {
+      "python": {
+        "helper": "create_checkbox",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateCheckbox",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建复选框",
+        "entry": "EU_CreateCheckbox",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateCheckbox",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 复选框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Radio",
+    "zh": "单选框",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateRadio",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/radio.md",
+    "bindings": {
+      "python": {
+        "helper": "create_radio",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateRadio",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建单选框",
+        "entry": "EU_CreateRadio",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateRadio",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 单选框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Switch",
+    "zh": "开关",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateSwitch",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/switch.md",
+    "bindings": {
+      "python": {
+        "helper": "create_switch",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSwitch",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建开关",
+        "entry": "EU_CreateSwitch",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSwitch",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 开关 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Slider",
+    "zh": "滑块",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateSlider",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/slider.md",
+    "bindings": {
+      "python": {
+        "helper": "create_slider",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSlider",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建滑块",
+        "entry": "EU_CreateSlider",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSlider",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 滑块 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "InputNumber",
+    "zh": "数字输入框",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateInputNumber",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/input-number.md",
+    "bindings": {
+      "python": {
+        "helper": "create_input_number",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateInputNumber",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建数字输入框",
+        "entry": "EU_CreateInputNumber",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateInputNumber",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 数字输入框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Input",
+    "zh": "输入框",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateInput",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/input.md",
+    "bindings": {
+      "python": {
+        "helper": "create_input",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateInput",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建输入框",
+        "entry": "EU_CreateInput",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateInput",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "推荐用于新表单输入；兼容编辑内核请使用 EditBox。"
+  },
+  {
+    "component": "InputGroup",
+    "zh": "组合输入",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateInputGroup",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/input-group.md",
+    "bindings": {
+      "python": {
+        "helper": "create_input_group",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateInputGroup",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建组合输入",
+        "entry": "EU_CreateInputGroup",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateInputGroup",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 组合输入 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "InputTag",
+    "zh": "标签输入",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateInputTag",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/input-tag.md",
+    "bindings": {
+      "python": {
+        "helper": "create_input_tag",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateInputTag",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建标签输入",
+        "entry": "EU_CreateInputTag",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateInputTag",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 标签输入 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Select",
+    "zh": "选择器",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateSelect",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/select.md",
+    "bindings": {
+      "python": {
+        "helper": "create_select",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSelect",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建选择器",
+        "entry": "EU_CreateSelect",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSelect",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 选择器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "SelectV2",
+    "zh": "虚拟选择器",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateSelectV2",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/selectv2.md",
+    "bindings": {
+      "python": {
+        "helper": "create_select_v2",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSelectV2",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建虚拟选择器",
+        "entry": "EU_CreateSelectV2",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSelectV2",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 虚拟选择器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Rate",
+    "zh": "评分",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateRate",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/rate.md",
+    "bindings": {
+      "python": {
+        "helper": "create_rate",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateRate",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建评分",
+        "entry": "EU_CreateRate",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateRate",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 评分 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "ColorPicker",
+    "zh": "颜色选择器",
+    "category": "表单/选择",
+    "status": "已完成",
+    "create_export": "EU_CreateColorPicker",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/color-picker.md",
+    "bindings": {
+      "python": {
+        "helper": "create_colorpicker",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateColorPicker",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建颜色选择器",
+        "entry": "EU_CreateColorPicker",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateColorPicker",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 颜色选择器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Tag",
+    "zh": "标签",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateTag",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/tag.md",
+    "bindings": {
+      "python": {
+        "helper": "create_tag",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTag",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建标签",
+        "entry": "EU_CreateTag",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTag",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 标签 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Badge",
+    "zh": "徽标",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateBadge",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/badge.md",
+    "bindings": {
+      "python": {
+        "helper": "create_badge",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBadge",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建徽标",
+        "entry": "EU_CreateBadge",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBadge",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 徽标 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Progress",
+    "zh": "进度条",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateProgress",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/progress.md",
+    "bindings": {
+      "python": {
+        "helper": "create_progress",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateProgress",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建进度条",
+        "entry": "EU_CreateProgress",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateProgress",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 进度条 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Avatar",
+    "zh": "头像",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateAvatar",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/avatar.md",
+    "bindings": {
+      "python": {
+        "helper": "create_avatar",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateAvatar",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建头像",
+        "entry": "EU_CreateAvatar",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateAvatar",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 头像 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Empty",
+    "zh": "空状态",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateEmpty",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/empty.md",
+    "bindings": {
+      "python": {
+        "helper": "create_empty",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateEmpty",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建空状态",
+        "entry": "EU_CreateEmpty",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateEmpty",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 空状态 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Skeleton",
+    "zh": "骨架屏",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateSkeleton",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/skeleton.md",
+    "bindings": {
+      "python": {
+        "helper": "create_skeleton",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSkeleton",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建骨架屏",
+        "entry": "EU_CreateSkeleton",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSkeleton",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 骨架屏 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Descriptions",
+    "zh": "描述列表",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateDescriptions",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/descriptions.md",
+    "bindings": {
+      "python": {
+        "helper": "create_descriptions",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDescriptions",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建描述列表",
+        "entry": "EU_CreateDescriptions",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDescriptions",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 描述列表 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Table",
+    "zh": "表格",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateTable",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/table.md",
+    "bindings": {
+      "python": {
+        "helper": "create_table",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTable",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建表格",
+        "entry": "EU_CreateTable",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTable",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于数据列表、筛选、树形、虚表和增删改查类界面。"
+  },
+  {
+    "component": "Card",
+    "zh": "卡片",
+    "category": "数据展示",
+    "status": "全样式已完成",
+    "create_export": "EU_CreateCard",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/card.md",
+    "bindings": {
+      "python": {
+        "helper": "create_card",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateCard",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建卡片",
+        "entry": "EU_CreateCard",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateCard",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 卡片 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Collapse",
+    "zh": "折叠面板",
+    "category": "数据展示",
+    "status": "全样式已完成",
+    "create_export": "EU_CreateCollapse",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/collapse.md",
+    "bindings": {
+      "python": {
+        "helper": "create_collapse",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateCollapse",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建折叠面板",
+        "entry": "EU_CreateCollapse",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateCollapse",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 折叠面板 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Timeline",
+    "zh": "时间线",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateTimeline",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/timeline.md",
+    "bindings": {
+      "python": {
+        "helper": "create_timeline",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTimeline",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建时间线",
+        "entry": "EU_CreateTimeline",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTimeline",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 时间线 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Statistic",
+    "zh": "统计数值",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateStatistic",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/statistic.md",
+    "bindings": {
+      "python": {
+        "helper": "create_statistic",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateStatistic",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建统计数值",
+        "entry": "EU_CreateStatistic",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateStatistic",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 统计数值 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "KpiCard",
+    "zh": "指标卡",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateKpiCard",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/kpi-card.md",
+    "bindings": {
+      "python": {
+        "helper": "create_kpi_card",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateKpiCard",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建指标卡",
+        "entry": "EU_CreateKpiCard",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateKpiCard",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 指标卡 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Trend",
+    "zh": "趋势",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateTrend",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/trend.md",
+    "bindings": {
+      "python": {
+        "helper": "create_trend",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTrend",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建趋势",
+        "entry": "EU_CreateTrend",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTrend",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 趋势 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "StatusDot",
+    "zh": "状态点",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateStatusDot",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/status-dot.md",
+    "bindings": {
+      "python": {
+        "helper": "create_status_dot",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateStatusDot",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建状态点",
+        "entry": "EU_CreateStatusDot",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateStatusDot",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 状态点 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Gauge",
+    "zh": "仪表盘",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateGauge",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/gauge.md",
+    "bindings": {
+      "python": {
+        "helper": "create_gauge",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateGauge",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建仪表盘",
+        "entry": "EU_CreateGauge",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateGauge",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 仪表盘 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "RingProgress",
+    "zh": "环形进度",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateRingProgress",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/ring-progress.md",
+    "bindings": {
+      "python": {
+        "helper": "create_ring_progress",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateRingProgress",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建环形进度",
+        "entry": "EU_CreateRingProgress",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateRingProgress",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 环形进度 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "BulletProgress",
+    "zh": "子弹进度",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateBulletProgress",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/bullet-progress.md",
+    "bindings": {
+      "python": {
+        "helper": "create_bullet_progress",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBulletProgress",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建子弹进度",
+        "entry": "EU_CreateBulletProgress",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBulletProgress",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 子弹进度 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "LineChart",
+    "zh": "折线图",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateLineChart",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/line-chart.md",
+    "bindings": {
+      "python": {
+        "helper": "create_line_chart",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateLineChart",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建折线图",
+        "entry": "EU_CreateLineChart",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateLineChart",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 折线图 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "BarChart",
+    "zh": "柱状图",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateBarChart",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/bar-chart.md",
+    "bindings": {
+      "python": {
+        "helper": "create_bar_chart",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBarChart",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建柱状图",
+        "entry": "EU_CreateBarChart",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBarChart",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 柱状图 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "DonutChart",
+    "zh": "环形图",
+    "category": "指标/图表",
+    "status": "已完成",
+    "create_export": "EU_CreateDonutChart",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/donut-chart.md",
+    "bindings": {
+      "python": {
+        "helper": "create_donut_chart",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDonutChart",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建环形图",
+        "entry": "EU_CreateDonutChart",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDonutChart",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 环形图 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Divider",
+    "zh": "分割线",
+    "category": "基础/布局",
+    "status": "已完成",
+    "create_export": "EU_CreateDivider",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/divider.md",
+    "bindings": {
+      "python": {
+        "helper": "create_divider",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDivider",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建分割线",
+        "entry": "EU_CreateDivider",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDivider",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 分割线 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Calendar",
+    "zh": "日历",
+    "category": "日期时间",
+    "status": "已完成",
+    "create_export": "EU_CreateCalendar",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/calendar.md",
+    "bindings": {
+      "python": {
+        "helper": "create_calendar",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateCalendar",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建日历",
+        "entry": "EU_CreateCalendar",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateCalendar",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 日历 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Tree",
+    "zh": "树",
+    "category": "复杂选择",
+    "status": "已完成",
+    "create_export": "EU_CreateTree",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/tree.md",
+    "bindings": {
+      "python": {
+        "helper": "create_tree",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTree",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建树",
+        "entry": "EU_CreateTree",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTree",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 树 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "TreeSelect",
+    "zh": "树选择",
+    "category": "复杂选择",
+    "status": "已完成",
+    "create_export": "EU_CreateTreeSelect",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/tree-select.md",
+    "bindings": {
+      "python": {
+        "helper": "create_tree_select",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTreeSelect",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建树选择",
+        "entry": "EU_CreateTreeSelect",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTreeSelect",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 树选择 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Transfer",
+    "zh": "穿梭框",
+    "category": "复杂选择",
+    "status": "已完成",
+    "create_export": "EU_CreateTransfer",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/transfer.md",
+    "bindings": {
+      "python": {
+        "helper": "create_transfer",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTransfer",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建穿梭框",
+        "entry": "EU_CreateTransfer",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTransfer",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 穿梭框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Autocomplete",
+    "zh": "自动补全",
+    "category": "复杂选择",
+    "status": "已完成",
+    "create_export": "EU_CreateAutocomplete",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/autocomplete.md",
+    "bindings": {
+      "python": {
+        "helper": "create_autocomplete",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateAutocomplete",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建自动补全",
+        "entry": "EU_CreateAutocomplete",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateAutocomplete",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 自动补全 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Mentions",
+    "zh": "提及",
+    "category": "复杂选择",
+    "status": "已完成",
+    "create_export": "EU_CreateMentions",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/mentions.md",
+    "bindings": {
+      "python": {
+        "helper": "create_mentions",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateMentions",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建提及",
+        "entry": "EU_CreateMentions",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateMentions",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 提及 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Cascader",
+    "zh": "级联选择",
+    "category": "复杂选择",
+    "status": "已完成",
+    "create_export": "EU_CreateCascader",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/cascader.md",
+    "bindings": {
+      "python": {
+        "helper": "create_cascader",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateCascader",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建级联选择",
+        "entry": "EU_CreateCascader",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateCascader",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 级联选择 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "DatePicker",
+    "zh": "日期选择器",
+    "category": "日期时间",
+    "status": "已完成",
+    "create_export": "EU_CreateDatePicker",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/date-picker.md",
+    "bindings": {
+      "python": {
+        "helper": "create_datepicker",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDatePicker",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建日期选择器",
+        "entry": "EU_CreateDatePicker",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDatePicker",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 日期选择器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "TimePicker",
+    "zh": "时间选择器",
+    "category": "日期时间",
+    "status": "已完成",
+    "create_export": "EU_CreateTimePicker",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/time-picker.md",
+    "bindings": {
+      "python": {
+        "helper": "create_timepicker",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTimePicker",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建时间选择器",
+        "entry": "EU_CreateTimePicker",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTimePicker",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 时间选择器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "DateTimePicker",
+    "zh": "日期时间选择器",
+    "category": "日期时间",
+    "status": "已完成",
+    "create_export": "EU_CreateDateTimePicker",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/date-time-picker.md",
+    "bindings": {
+      "python": {
+        "helper": "create_datetimepicker",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDateTimePicker",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建日期时间选择器",
+        "entry": "EU_CreateDateTimePicker",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDateTimePicker",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 日期时间选择器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "TimeSelect",
+    "zh": "时间选择",
+    "category": "日期时间",
+    "status": "已完成",
+    "create_export": "EU_CreateTimeSelect",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/time-select.md",
+    "bindings": {
+      "python": {
+        "helper": "create_time_select",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTimeSelect",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建时间选择",
+        "entry": "EU_CreateTimeSelect",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTimeSelect",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 时间选择 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Dropdown",
+    "zh": "下拉菜单",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateDropdown",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/dropdown.md",
+    "bindings": {
+      "python": {
+        "helper": "create_dropdown",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDropdown",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建下拉菜单",
+        "entry": "EU_CreateDropdown",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDropdown",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 下拉菜单 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Menu",
+    "zh": "菜单",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateMenu",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/menu.md",
+    "bindings": {
+      "python": {
+        "helper": "create_menu",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateMenu",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建菜单",
+        "entry": "EU_CreateMenu",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateMenu",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 菜单 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Anchor",
+    "zh": "锚点",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateAnchor",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/anchor.md",
+    "bindings": {
+      "python": {
+        "helper": "create_anchor",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateAnchor",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建锚点",
+        "entry": "EU_CreateAnchor",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateAnchor",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 锚点 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Backtop",
+    "zh": "回到顶部",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateBacktop",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/backtop.md",
+    "bindings": {
+      "python": {
+        "helper": "create_backtop",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBacktop",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建回到顶部",
+        "entry": "EU_CreateBacktop",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBacktop",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 回到顶部 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Segmented",
+    "zh": "分段控制器",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateSegmented",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/segmented.md",
+    "bindings": {
+      "python": {
+        "helper": "create_segmented",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSegmented",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建分段控制器",
+        "entry": "EU_CreateSegmented",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSegmented",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 分段控制器 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "PageHeader",
+    "zh": "页头",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreatePageHeader",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/page-header.md",
+    "bindings": {
+      "python": {
+        "helper": "create_pageheader",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreatePageHeader",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建页头",
+        "entry": "EU_CreatePageHeader",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreatePageHeader",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 页头 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Affix",
+    "zh": "固钉",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateAffix",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/affix.md",
+    "bindings": {
+      "python": {
+        "helper": "create_affix",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateAffix",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建固钉",
+        "entry": "EU_CreateAffix",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateAffix",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 固钉 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Watermark",
+    "zh": "水印",
+    "category": "媒体/工具",
+    "status": "已完成",
+    "create_export": "EU_CreateWatermark",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/watermark.md",
+    "bindings": {
+      "python": {
+        "helper": "create_watermark",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateWatermark",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建水印",
+        "entry": "EU_CreateWatermark",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateWatermark",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 水印 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Tour",
+    "zh": "漫游引导",
+    "category": "媒体/工具",
+    "status": "已完成",
+    "create_export": "EU_CreateTour",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/tour.md",
+    "bindings": {
+      "python": {
+        "helper": "create_tour",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTour",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建漫游引导",
+        "entry": "EU_CreateTour",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTour",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 漫游引导 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Image",
+    "zh": "图片",
+    "category": "媒体/工具",
+    "status": "已完成",
+    "create_export": "EU_CreateImage",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/image.md",
+    "bindings": {
+      "python": {
+        "helper": "create_image",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateImage",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建图片",
+        "entry": "EU_CreateImage",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateImage",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 图片 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Carousel",
+    "zh": "轮播",
+    "category": "媒体/工具",
+    "status": "已完成",
+    "create_export": "EU_CreateCarousel",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/carousel.md",
+    "bindings": {
+      "python": {
+        "helper": "create_carousel",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateCarousel",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建轮播",
+        "entry": "EU_CreateCarousel",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateCarousel",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 轮播 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Upload",
+    "zh": "上传",
+    "category": "媒体/工具",
+    "status": "已完成",
+    "create_export": "EU_CreateUpload",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/upload.md",
+    "bindings": {
+      "python": {
+        "helper": "create_upload",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateUpload",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建上传",
+        "entry": "EU_CreateUpload",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateUpload",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 上传 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "InfiniteScroll",
+    "zh": "无限滚动",
+    "category": "数据展示",
+    "status": "已完成",
+    "create_export": "EU_CreateInfiniteScroll",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/infinite-scroll.md",
+    "bindings": {
+      "python": {
+        "helper": "create_infinite_scroll",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateInfiniteScroll",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建无限滚动",
+        "entry": "EU_CreateInfiniteScroll",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateInfiniteScroll",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 无限滚动 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Breadcrumb",
+    "zh": "面包屑",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateBreadcrumb",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/breadcrumb.md",
+    "bindings": {
+      "python": {
+        "helper": "create_breadcrumb",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBreadcrumb",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建面包屑",
+        "entry": "EU_CreateBreadcrumb",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBreadcrumb",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 面包屑 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Tabs",
+    "zh": "标签页",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateTabs",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/tabs.md",
+    "bindings": {
+      "python": {
+        "helper": "create_tabs",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTabs",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建标签页",
+        "entry": "EU_CreateTabs",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTabs",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 标签页 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Pagination",
+    "zh": "分页",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreatePagination",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/pagination.md",
+    "bindings": {
+      "python": {
+        "helper": "create_pagination",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreatePagination",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建分页",
+        "entry": "EU_CreatePagination",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreatePagination",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 分页 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Steps",
+    "zh": "步骤条",
+    "category": "导航",
+    "status": "已完成",
+    "create_export": "EU_CreateSteps",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/steps.md",
+    "bindings": {
+      "python": {
+        "helper": "create_steps",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateSteps",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建步骤条",
+        "entry": "EU_CreateSteps",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateSteps",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 步骤条 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Alert",
+    "zh": "警告提示",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateAlert",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/alert.md",
+    "bindings": {
+      "python": {
+        "helper": "create_alert",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateAlert",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建警告提示",
+        "entry": "EU_CreateAlert",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateAlert",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 警告提示 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Result",
+    "zh": "结果页",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateResult",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/result.md",
+    "bindings": {
+      "python": {
+        "helper": "create_result",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateResult",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建结果页",
+        "entry": "EU_CreateResult",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateResult",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 结果页 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Message",
+    "zh": "消息提示",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_ShowMessage",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/message.md",
+    "bindings": {
+      "python": {
+        "helper": "show_message",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_ShowMessage",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "显示消息提示",
+        "entry": "EU_ShowMessage",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_ShowMessage",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 消息提示 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "MessageBox",
+    "zh": "消息框",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_ShowMessageBoxEx",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/message-box.md",
+    "bindings": {
+      "python": {
+        "helper": "show_messagebox",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_ShowMessageBoxEx",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "显示消息框",
+        "entry": "EU_ShowMessageBoxEx",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_ShowMessageBoxEx",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 消息框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Notification",
+    "zh": "通知",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateNotification",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/notification.md",
+    "bindings": {
+      "python": {
+        "helper": "create_notification",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateNotification",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建通知",
+        "entry": "EU_CreateNotification",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateNotification",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 通知 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Loading",
+    "zh": "加载",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateLoading",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/loading.md",
+    "bindings": {
+      "python": {
+        "helper": "create_loading",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateLoading",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建加载",
+        "entry": "EU_CreateLoading",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateLoading",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 加载 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Dialog",
+    "zh": "对话框",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateDialog",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/dialog.md",
+    "bindings": {
+      "python": {
+        "helper": "create_dialog",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDialog",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建对话框",
+        "entry": "EU_CreateDialog",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDialog",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于窗口内弹窗、表单编辑和确认流程。"
+  },
+  {
+    "component": "Drawer",
+    "zh": "抽屉",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateDrawer",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/drawer.md",
+    "bindings": {
+      "python": {
+        "helper": "create_drawer",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateDrawer",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建抽屉",
+        "entry": "EU_CreateDrawer",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateDrawer",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 抽屉 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Tooltip",
+    "zh": "文字提示",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreateTooltip",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/tooltip.md",
+    "bindings": {
+      "python": {
+        "helper": "create_tooltip",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateTooltip",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建文字提示",
+        "entry": "EU_CreateTooltip",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateTooltip",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 文字提示 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Popover",
+    "zh": "弹出框",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreatePopover",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/popover.md",
+    "bindings": {
+      "python": {
+        "helper": "create_popover",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreatePopover",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建弹出框",
+        "entry": "EU_CreatePopover",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreatePopover",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 弹出框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "Popconfirm",
+    "zh": "气泡确认框",
+    "category": "反馈/浮层",
+    "status": "已完成",
+    "create_export": "EU_CreatePopconfirm",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/popconfirm.md",
+    "bindings": {
+      "python": {
+        "helper": "create_popconfirm",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreatePopconfirm",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建气泡确认框",
+        "entry": "EU_CreatePopconfirm",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreatePopconfirm",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 气泡确认框 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "IconButton",
+    "zh": "工具栏图标按钮",
+    "category": "Chrome 外壳",
+    "status": "已完成",
+    "create_export": "EU_CreateIconButton",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/icon-button.md",
+    "bindings": {
+      "python": {
+        "helper": "create_icon_button",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateIconButton",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建工具栏图标按钮",
+        "entry": "EU_CreateIconButton",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateIconButton",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于工具栏、标题栏和浏览器外壳中的图标按钮。"
+  },
+  {
+    "component": "Omnibox",
+    "zh": "地址栏",
+    "category": "Chrome 外壳",
+    "status": "已完成",
+    "create_export": "EU_CreateOmnibox",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/omnibox.md",
+    "bindings": {
+      "python": {
+        "helper": "create_omnibox",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateOmnibox",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建地址栏",
+        "entry": "EU_CreateOmnibox",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateOmnibox",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于创建和配置 地址栏 组件；详细参数和行为见组件文档。"
+  },
+  {
+    "component": "BrowserViewport",
+    "zh": "浏览内容占位区",
+    "category": "Chrome 外壳",
+    "status": "已完成",
+    "create_export": "EU_CreateBrowserViewport",
+    "calling_convention": "__stdcall",
+    "text_encoding": "utf8_bytes_with_length",
+    "doc": "docs/components/browser-viewport.md",
+    "bindings": {
+      "python": {
+        "helper": "create_browser_viewport",
+        "file": "examples/python/new_emoji_ui.py"
+      },
+      "csharp": {
+        "entry": "EU_CreateBrowserViewport",
+        "file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "Encoding.UTF8.GetBytes(text)"
+      },
+      "e_language": {
+        "command_name": "创建浏览内容占位区",
+        "entry": "EU_CreateBrowserViewport",
+        "file": "DLL命令/易语言DLL命令.md",
+        "text_rule": "不要在源码中直接写 emoji；使用 UTF-8 字节集 + 长度",
+        "source_unicode_safe": false
+      },
+      "volcano": {
+        "entry": "EU_CreateBrowserViewport",
+        "file": "examples/火山/src/new_emoji_接口.wsv"
+      }
+    },
+    "usage_notes": "用于浏览器式外壳的内容占位区域。"
+  }
+]
