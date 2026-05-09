@@ -18,6 +18,7 @@
 #include "element_carousel.h"
 #include "element_notification.h"
 #include "element_loading.h"
+#include "element_skeleton.h"
 #include "element_drawer.h"
 #include "element_tooltip.h"
 #include "element_statistic.h"
@@ -41,6 +42,7 @@ extern std::map<UINT_PTR, Message*> g_message_timer_map;
 extern std::map<UINT_PTR, MessageBoxElement*> g_messagebox_timer_map;
 extern std::map<UINT_PTR, Notification*> g_notification_timer_map;
 extern std::map<UINT_PTR, Loading*> g_loading_timer_map;
+extern std::map<UINT_PTR, Skeleton*> g_skeleton_timer_map;
 extern std::map<UINT_PTR, Drawer*> g_drawer_timer_map;
 extern std::map<UINT_PTR, Tooltip*> g_tooltip_timer_map;
 
@@ -469,6 +471,10 @@ void register_window_class() {
             }
             if (auto it = g_loading_timer_map.find((UINT_PTR)wp); it != g_loading_timer_map.end()) {
                 if (it->second) it->second->tick(33);
+                return 0;
+            }
+            if (auto it = g_skeleton_timer_map.find((UINT_PTR)wp); it != g_skeleton_timer_map.end()) {
+                if (it->second) it->second->tick(16);
                 return 0;
             }
             if (auto it = g_button_timer_map.find((UINT_PTR)wp); it != g_button_timer_map.end()) {
