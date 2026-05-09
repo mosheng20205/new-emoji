@@ -676,6 +676,11 @@ void Input::insert_text(const std::wstring& s) {
     notify_text_changed();
 }
 
+void Input::commit_text(const std::wstring& text) {
+    if (!enabled || readonly) return;
+    insert_text(text);
+}
+
 void Input::delete_char_before() {
     if (has_selection()) {
         delete_selection();

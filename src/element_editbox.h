@@ -54,7 +54,9 @@ private:
     void delete_char_before();
     void delete_char_after();
     int  xpos_to_char(int x);
+    int  point_to_char(int x, int y);
     int  char_to_xpos(int idx);
+    void move_cursor_vertical(int direction, bool extend);
     int  max_scroll_y() const;
     int  estimate_content_height() const;
     int  estimate_view_height() const;

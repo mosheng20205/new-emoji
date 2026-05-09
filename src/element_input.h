@@ -52,6 +52,7 @@ public:
     void get_state(int& cursor, int& length) const;
     void set_scroll_y(int value);
     void get_scroll_state(int& scroll_y, int& max_scroll_y, int& content_height, int& viewport_height) const;
+    void commit_text(const std::wstring& text);
 
 private:
     int m_cursor_pos = 0;

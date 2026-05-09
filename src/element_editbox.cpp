@@ -1,4 +1,6 @@
 #include "element_editbox.h"
+#include "emoji_fallback.h"
+#include "factory.h"
 #include "render_context.h"
 #include "theme.h"
 #include "utf8_helpers.h"
@@ -7,6 +9,48 @@
 
 // Global blink timer → EditBox* mapping
 std::map<UINT_PTR, EditBox*> g_blink_map;
+
+static bool editbox_has_selection(int start, int end) {
+    return start >= 0 && end >= 0 && start != end;
+}
+
+static std::wstring editbox_hit_text(const EditBox& edit) {
+    if (edit.password && !edit.text.empty()) return std::wstring(edit.text.size(), L'*');
+    return edit.text;
+}
+
+static IDWriteTextLayout* create_editbox_hit_layout(const EditBox& edit) {
+    if (!g_dwrite_factory) return nullptr;
+    std::wstring value = editbox_hit_text(edit);
+    if (value.empty()) value = L" ";
+
+    float max_w = (float)edit.bounds.w - (float)edit.style.pad_left - (float)edit.style.pad_right
+        - (edit.multiline ? 14.0f : 0.0f);
+    float max_h = edit.multiline
+        ? 8192.0f
+        : (float)edit.bounds.h - (float)edit.style.pad_top - (float)edit.style.pad_bottom;
+    if (max_w < 1.0f) max_w = 1.0f;
+    if (max_h < 1.0f) max_h = 1.0f;
+
+    IDWriteTextFormat* fmt = nullptr;
+    HRESULT hr = g_dwrite_factory->CreateTextFormat(
+        edit.style.font_name.c_str(), nullptr,
+        DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL, DWRITE_FONT_STRETCH_NORMAL,
+        edit.style.font_size, L"", &fmt);
+    if (FAILED(hr) || !fmt) return nullptr;
+
+    IDWriteTextLayout* layout = nullptr;
+    hr = g_dwrite_factory->CreateTextLayout(value.c_str(), (UINT32)value.size(), fmt, max_w, max_h, &layout);
+    fmt->Release();
+    if (FAILED(hr) || !layout) return nullptr;
+
+    apply_emoji_font_fallback(layout, value);
+    layout->SetParagraphAlignment(edit.multiline
+        ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR
+        : DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+    layout->SetWordWrapping(edit.multiline ? DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING_NO_WRAP);
+    return layout;
+}
 
 // ── Blink timer ──────────────────────────────────────────────────────
 
@@ -108,7 +152,7 @@ void EditBox::paint(RenderContext& ctx) {
             clamp_scroll_y();
 
             // Selection highlight
-            if (m_sel_start >= 0 && m_sel_end > m_sel_start) {
+            if (editbox_has_selection(m_sel_start, m_sel_end)) {
                 int s = m_sel_start, e = m_sel_end;
                 if (s > e) std::swap(s, e);
 
@@ -205,7 +249,7 @@ void EditBox::on_mouse_down(int x, int y, MouseButton) {
         }
     }
     if (readonly) return;
-    m_cursor_pos = xpos_to_char(x - style.pad_left);
+    m_cursor_pos = point_to_char(x, y);
     m_sel_start = -1;
     m_sel_end   = -1;
     start_blink();
@@ -240,6 +284,12 @@ void EditBox::on_key_down(int vk, int mods) {
     switch (vk) {
     case VK_LEFT:  move_cursor(-1, shift); break;
     case VK_RIGHT: move_cursor(1, shift); break;
+    case VK_UP:
+        if (multiline) move_cursor_vertical(-1, shift);
+        break;
+    case VK_DOWN:
+        if (multiline) move_cursor_vertical(1, shift);
+        break;
     case VK_HOME:
         if (!shift) { m_sel_start = -1; m_sel_end = -1; }
         if (shift && m_sel_start < 0) m_sel_start = m_cursor_pos;
@@ -253,18 +303,18 @@ void EditBox::on_key_down(int vk, int mods) {
         if (shift) m_sel_end = m_cursor_pos;
         break;
     case VK_BACK:
-        if (m_sel_start >= 0 && m_sel_end > m_sel_start) delete_selection();
+        if (editbox_has_selection(m_sel_start, m_sel_end)) delete_selection();
         else delete_char_before();
         break;
     case VK_DELETE:
-        if (m_sel_start >= 0 && m_sel_end > m_sel_start) delete_selection();
+        if (editbox_has_selection(m_sel_start, m_sel_end)) delete_selection();
         else delete_char_after();
         break;
     case 'A':
         if (ctrl) { m_sel_start = 0; m_sel_end = (int)text.size(); m_cursor_pos = m_sel_end; }
         break;
     case 'C':
-        if (ctrl && m_sel_start >= 0 && m_sel_end > m_sel_start && !password) {
+        if (ctrl && editbox_has_selection(m_sel_start, m_sel_end) && !password) {
             int s = m_sel_start, e = m_sel_end;
             if (s > e) std::swap(s, e);
             std::wstring sel = text.substr(s, e - s);
@@ -295,7 +345,7 @@ void EditBox::on_key_down(int vk, int mods) {
         }
         break;
     case 'X':
-        if (ctrl && !readonly && !password && m_sel_start >= 0 && m_sel_end > m_sel_start) {
+        if (ctrl && !readonly && !password && editbox_has_selection(m_sel_start, m_sel_end)) {
             int s = m_sel_start, e = m_sel_end;
             if (s > e) std::swap(s, e);
             std::wstring sel = text.substr(s, e - s);
@@ -415,9 +465,10 @@ void EditBox::insert_text(const std::wstring& s) {
 }
 
 void EditBox::delete_selection() {
-    if (m_sel_start < 0 || m_sel_end <= m_sel_start) return;
+    if (!editbox_has_selection(m_sel_start, m_sel_end)) return;
     int s = m_sel_start, e = m_sel_end;
     if (s > e) std::swap(s, e);
+    if (e <= s) return;
     text.erase(s, e - s);
     m_cached_content_h = 0;
     m_cursor_pos = s;
@@ -479,6 +530,32 @@ int EditBox::xpos_to_char(int x) {
     return idx;
 }
 
+int EditBox::point_to_char(int x, int y) {
+    int total = (int)text.size();
+    if (total == 0) return 0;
+
+    IDWriteTextLayout* layout = create_editbox_hit_layout(*this);
+    if (layout) {
+        float hit_x = (float)x - (float)style.pad_left + (float)m_scroll_x;
+        float hit_y = multiline
+            ? (float)y - (float)style.pad_top + (float)m_scroll_y
+            : (float)y - (float)style.pad_top;
+        BOOL trailing = FALSE;
+        BOOL inside = FALSE;
+        DWRITE_HIT_TEST_METRICS metrics{};
+        HRESULT hr = layout->HitTestPoint(hit_x, hit_y, &trailing, &inside, &metrics);
+        layout->Release();
+        if (SUCCEEDED(hr)) {
+            int pos = (int)metrics.textPosition + (trailing ? 1 : 0);
+            if (pos < 0) pos = 0;
+            if (pos > total) pos = total;
+            return pos;
+        }
+    }
+
+    return xpos_to_char(x - style.pad_left);
+}
+
 int EditBox::char_to_xpos(int idx) {
     int total = (int)text.size();
     if (total == 0) return 0;
@@ -488,6 +565,44 @@ int EditBox::char_to_xpos(int idx) {
     float cw = style.font_size * 0.6f;
     if (cw <= 0) cw = 8.0f;
     return (int)(idx * cw);
+}
+
+void EditBox::move_cursor_vertical(int direction, bool extend) {
+    if (!multiline || direction == 0) return;
+    int total = (int)text.size();
+    if (total == 0) return;
+
+    IDWriteTextLayout* layout = create_editbox_hit_layout(*this);
+    if (!layout) return;
+
+    int cursor = (std::max)(0, (std::min)(m_cursor_pos, total));
+    float hit_x = 0.0f;
+    float hit_y = 0.0f;
+    DWRITE_HIT_TEST_METRICS current{};
+    HRESULT hr = layout->HitTestTextPosition((UINT32)cursor, FALSE, &hit_x, &hit_y, &current);
+    if (SUCCEEDED(hr)) {
+        float line_h = current.height > 1.0f ? current.height : style.font_size * 1.35f;
+        if (line_h < 18.0f) line_h = 18.0f;
+        float target_y = hit_y + (direction < 0 ? -line_h : current.height + 1.0f);
+        if (target_y < 0.0f) target_y = 0.0f;
+
+        BOOL trailing = FALSE;
+        BOOL inside = FALSE;
+        DWRITE_HIT_TEST_METRICS target{};
+        hr = layout->HitTestPoint(hit_x, target_y, &trailing, &inside, &target);
+        if (SUCCEEDED(hr)) {
+            int pos = (int)target.textPosition + (trailing ? 1 : 0);
+            if (pos < 0) pos = 0;
+            if (pos > total) pos = total;
+            if (!extend) { m_sel_start = -1; m_sel_end = -1; }
+            if (extend && m_sel_start < 0) m_sel_start = m_cursor_pos;
+            m_cursor_pos = pos;
+            if (extend) m_sel_end = m_cursor_pos;
+            scroll_to_cursor();
+        }
+    }
+
+    layout->Release();
 }
 
 int EditBox::estimate_view_height() const {
