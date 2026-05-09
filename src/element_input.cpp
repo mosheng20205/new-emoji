@@ -74,6 +74,7 @@ void Input::set_value(const std::wstring& next_value) {
     clear_selection();
     text = value;
     update_autosize_height();
+    scroll_to_cursor();
     invalidate();
     notify_text_changed();
 }
@@ -106,6 +107,7 @@ void Input::set_options(bool next_readonly, bool next_password, bool next_multil
     password = next_password;
     multiline = next_multiline;
     validate_state = (std::max)(0, (std::min)(3, next_validate_state));
+    if (!multiline) m_scroll_y = 0;
     if (!password) {
         m_password_visible = false;
         m_press_password_toggle = false;
@@ -128,6 +130,7 @@ void Input::set_visual_options(int next_size, bool next_show_password_toggle,
     if (max_rows > 0 && min_rows > max_rows) min_rows = max_rows;
     apply_size_preset();
     update_autosize_height();
+    clamp_scroll_y();
     invalidate();
 }
 
@@ -139,6 +142,7 @@ void Input::set_max_length(int next_max_length) {
         if (m_sel_start > (int)value.size()) m_sel_start = (int)value.size();
         if (m_sel_end > (int)value.size()) m_sel_end = (int)value.size();
         text = value;
+        scroll_to_cursor();
         notify_text_changed();
     }
     invalidate();
@@ -163,6 +167,7 @@ void Input::set_selection(int start, int end) {
         m_sel_end = end;
         m_select_anchor = start;
     }
+    scroll_to_cursor();
     invalidate();
 }
 
@@ -248,6 +253,111 @@ int Input::autosize_height_for_width(int) const {
     return result;
 }
 
+int Input::viewport_height_estimate() const {
+    LayoutMetrics metrics = compute_metrics();
+    return (std::max)(1, (int)std::lround(metrics.text_h));
+}
+
+int Input::content_height_estimate() const {
+    if (!multiline) return viewport_height_estimate();
+    if (m_cached_content_h > 1) return m_cached_content_h;
+    int rows = effective_rows();
+    if (!autosize || max_rows > 0) {
+        rows = 1;
+        int current_len = 0;
+        int available_width = bounds.w - style.pad_left - style.pad_right - 14;
+        int approx_chars_per_line = (std::max)(1, available_width / (std::max)(6, char_width()));
+        for (wchar_t ch : (value.empty() ? placeholder : value)) {
+            if (ch == L'\n') {
+                rows += (std::max)(1, (current_len + approx_chars_per_line - 1) / approx_chars_per_line);
+                current_len = 0;
+            } else {
+                ++current_len;
+            }
+        }
+        rows += (std::max)(0, (current_len + approx_chars_per_line - 1) / approx_chars_per_line);
+    }
+    float line_h = style.font_size * 1.45f;
+    return (std::max)(1, (int)std::lround(line_h * rows));
+}
+
+int Input::max_scroll_y() const {
+    return (std::max)(0, content_height_estimate() - viewport_height_estimate());
+}
+
+bool Input::needs_vscroll() const {
+    return multiline && max_scroll_y() > 0;
+}
+
+void Input::clamp_scroll_y() {
+    int max_value = max_scroll_y();
+    if (m_scroll_y < 0) m_scroll_y = 0;
+    if (m_scroll_y > max_value) m_scroll_y = max_value;
+}
+
+Rect Input::scrollbar_track_rect() const {
+    int w = (std::min)(10, (std::max)(6, bounds.w / 24));
+    return { bounds.w - style.pad_right - w, style.pad_top + 2,
+             w, (std::max)(1, bounds.h - style.pad_top - style.pad_bottom - 4) };
+}
+
+Rect Input::scrollbar_thumb_rect() const {
+    Rect track = scrollbar_track_rect();
+    int max_value = max_scroll_y();
+    if (max_value <= 0) return track;
+    int view = viewport_height_estimate();
+    int content = content_height_estimate();
+    int thumb_h = (int)((double)track.h * view / (std::max)(1, content));
+    thumb_h = (std::max)(24, (std::min)(track.h, thumb_h));
+    int travel = (std::max)(0, track.h - thumb_h);
+    int y = track.y + (int)((double)travel * m_scroll_y / max_value + 0.5);
+    return { track.x, y, track.w, thumb_h };
+}
+
+void Input::update_scroll_from_thumb(int y) {
+    Rect track = scrollbar_track_rect();
+    Rect thumb = scrollbar_thumb_rect();
+    int travel = track.h - thumb.h;
+    if (travel <= 0) {
+        set_scroll_y(0);
+        return;
+    }
+    int pos = y - track.y - m_drag_scroll_offset;
+    if (pos < 0) pos = 0;
+    if (pos > travel) pos = travel;
+    m_scroll_y = (int)((double)max_scroll_y() * pos / travel + 0.5);
+    clamp_scroll_y();
+    invalidate();
+}
+
+void Input::scroll_to_cursor() {
+    if (!multiline) return;
+    int line = 0;
+    for (int i = 0; i < m_cursor_pos && i < (int)value.size(); ++i) {
+        if (value[i] == L'\n') ++line;
+    }
+    int line_h = (int)std::lround(style.font_size * 1.45f);
+    if (line_h < 18) line_h = 18;
+    int cy = line * line_h;
+    int view = viewport_height_estimate();
+    if (cy < m_scroll_y) m_scroll_y = cy;
+    else if (cy + line_h > m_scroll_y + view) m_scroll_y = cy + line_h - view;
+    clamp_scroll_y();
+}
+
+void Input::set_scroll_y(int value) {
+    m_scroll_y = value;
+    clamp_scroll_y();
+    invalidate();
+}
+
+void Input::get_scroll_state(int& scroll_y, int& max_value, int& content_height, int& viewport_height) const {
+    content_height = content_height_estimate();
+    viewport_height = viewport_height_estimate();
+    max_value = (std::max)(0, content_height - viewport_height);
+    scroll_y = (std::max)(0, (std::min)(m_scroll_y, max_value));
+}
+
 void Input::apply_size_preset() {
     if (!has_logical_style) return;
     ElementStyle preset = logical_style;
@@ -302,6 +412,7 @@ void Input::layout(const Rect& available) {
     if (autosize && multiline) {
         bounds.h = autosize_height_for_width(bounds.w);
     }
+    clamp_scroll_y();
 }
 
 Input::LayoutMetrics Input::compute_metrics() const {
@@ -430,6 +541,7 @@ void Input::delete_selection() {
     clear_selection();
     text = value;
     update_autosize_height();
+    scroll_to_cursor();
     invalidate();
     notify_text_changed();
 }
@@ -461,6 +573,7 @@ void Input::move_cursor_to(int pos, bool extend) {
         clear_selection();
         m_select_anchor = m_cursor_pos;
     }
+    scroll_to_cursor();
 }
 
 std::wstring Input::selected_text() const {
@@ -558,6 +671,7 @@ void Input::insert_text(const std::wstring& s) {
     m_cursor_pos += (int)next.size();
     text = value;
     update_autosize_height();
+    scroll_to_cursor();
     invalidate();
     notify_text_changed();
 }
@@ -572,6 +686,7 @@ void Input::delete_char_before() {
     --m_cursor_pos;
     text = value;
     update_autosize_height();
+    scroll_to_cursor();
     invalidate();
     notify_text_changed();
 }
@@ -585,6 +700,7 @@ void Input::delete_char_after() {
     value.erase(m_cursor_pos, 1);
     text = value;
     update_autosize_height();
+    scroll_to_cursor();
     invalidate();
     notify_text_changed();
 }
@@ -636,7 +752,7 @@ void Input::paint(RenderContext& ctx) {
     bool showing_placeholder = value.empty();
     if (!shown.empty() && metrics.text_w > 0.0f && metrics.text_h > 0.0f) {
         auto* layout = ctx.create_text_layout(shown, style.font_name, style.font_size,
-                                              metrics.text_w, metrics.text_h);
+                                              metrics.text_w, multiline ? 8192.0f : metrics.text_h);
         if (layout) {
             apply_emoji_font_fallback(layout, shown);
             layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
@@ -644,6 +760,12 @@ void Input::paint(RenderContext& ctx) {
                 ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR
                 : DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
             layout->SetWordWrapping(multiline ? DWRITE_WORD_WRAPPING_WRAP : DWRITE_WORD_WRAPPING_NO_WRAP);
+            DWRITE_TEXT_METRICS text_metrics{};
+            if (SUCCEEDED(layout->GetMetrics(&text_metrics))) {
+                m_cached_content_h = (std::max)(1, (int)std::ceil(text_metrics.height));
+                m_cached_view_h = viewport_height_estimate();
+                clamp_scroll_y();
+            }
 
             if (!showing_placeholder && has_selection()) {
                 int sel_start = 0;
@@ -668,9 +790,9 @@ void Input::paint(RenderContext& ctx) {
                             const auto& hm = hit_metrics[i];
                             D2D1_RECT_F sel_rect = {
                                 metrics.text_x + hm.left,
-                                metrics.text_y + hm.top,
+                                metrics.text_y + hm.top - (multiline ? (float)m_scroll_y : 0.0f),
                                 metrics.text_x + hm.left + hm.width,
-                                metrics.text_y + hm.top + hm.height
+                                metrics.text_y + hm.top + hm.height - (multiline ? (float)m_scroll_y : 0.0f)
                             };
                             ctx.rt->FillRectangle(sel_rect, ctx.get_brush(sel_color));
                         }
@@ -678,9 +800,14 @@ void Input::paint(RenderContext& ctx) {
                 }
             }
 
-            ctx.rt->DrawTextLayout(D2D1::Point2F(metrics.text_x, metrics.text_y), layout,
+            if (multiline) {
+                ctx.push_clip(D2D1::RectF(metrics.text_x, metrics.text_y,
+                    metrics.text_x + metrics.text_w, metrics.text_y + metrics.text_h));
+            }
+            ctx.rt->DrawTextLayout(D2D1::Point2F(metrics.text_x, metrics.text_y - (multiline ? (float)m_scroll_y : 0.0f)), layout,
                 ctx.get_brush(showing_placeholder ? hint : fg),
                 D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+            if (multiline) ctx.pop_clip();
             layout->Release();
         }
     }
@@ -698,6 +825,28 @@ void Input::paint(RenderContext& ctx) {
         ctx.rt->DrawLine(D2D1::Point2F(caret_x, 8.0f),
                          D2D1::Point2F(caret_x, (float)bounds.h - 8.0f),
                          ctx.get_brush(fg), 1.4f);
+    }
+    if (has_focus && !disabled && multiline && !showing_placeholder) {
+        std::wstring shown_for_caret = display_text();
+        auto* layout = ctx.create_text_layout(shown_for_caret, style.font_name, style.font_size,
+                                              metrics.text_w, 8192.0f);
+        if (layout) {
+            apply_emoji_font_fallback(layout, shown_for_caret);
+            layout->SetWordWrapping(DWRITE_WORD_WRAPPING_WRAP);
+            DWRITE_HIT_TEST_METRICS hit{};
+            float hit_x = 0.0f;
+            float hit_y = 0.0f;
+            layout->HitTestTextPosition((UINT32)(std::max)(0, (std::min)(m_cursor_pos, (int)shown_for_caret.size())),
+                                        FALSE, &hit_x, &hit_y, &hit);
+            float cx = metrics.text_x + hit_x;
+            float cy = metrics.text_y + hit_y - (float)m_scroll_y;
+            if (cy + hit.height >= metrics.text_y && cy <= metrics.text_y + metrics.text_h) {
+                ctx.rt->DrawLine(D2D1::Point2F(cx, cy),
+                                 D2D1::Point2F(cx, cy + hit.height),
+                                 ctx.get_brush(fg), 1.4f);
+            }
+            layout->Release();
+        }
     }
 
     if (!suffix.empty()) {
@@ -734,6 +883,17 @@ void Input::paint(RenderContext& ctx) {
                   DWRITE_TEXT_ALIGNMENT_TRAILING,
                   multiline ? DWRITE_PARAGRAPH_ALIGNMENT_NEAR : DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
     }
+    if (needs_vscroll()) {
+        Rect tr = scrollbar_track_rect();
+        Rect th = scrollbar_thumb_rect();
+        float sr = (float)tr.w * 0.5f;
+        ctx.rt->FillRoundedRectangle(ROUNDED(D2D1::RectF((float)tr.x, (float)tr.y,
+            (float)(tr.x + tr.w), (float)(tr.y + tr.h)), sr, sr),
+            ctx.get_brush(with_alpha(t->text_secondary, 0x22)));
+        ctx.rt->FillRoundedRectangle(ROUNDED(D2D1::RectF((float)th.x, (float)th.y,
+            (float)(th.x + th.w), (float)(th.y + th.h)), sr, sr),
+            ctx.get_brush(with_alpha(t->text_secondary, has_focus ? 0x88 : 0x66)));
+    }
 
     ctx.rt->SetTransform(saved);
 }
@@ -742,6 +902,21 @@ void Input::on_mouse_down(int x, int y, MouseButton btn) {
     if (!enabled) return;
     if (btn != MouseButton::Left) return;
     LayoutMetrics metrics = compute_metrics();
+    if (multiline && needs_vscroll()) {
+        Rect thumb = scrollbar_thumb_rect();
+        Rect track = scrollbar_track_rect();
+        if (thumb.contains(x, y)) {
+            m_drag_scrollbar = true;
+            m_drag_scroll_offset = y - thumb.y;
+            pressed = true;
+            invalidate();
+            return;
+        }
+        if (track.contains(x, y)) {
+            set_scroll_y(m_scroll_y + (y < thumb.y ? -viewport_height_estimate() : viewport_height_estimate()));
+            return;
+        }
+    }
     m_press_clear = !readonly && metrics.show_clear && metrics.clear_rect.contains(x, y);
     m_press_password_toggle = metrics.show_password_toggle && metrics.password_rect.contains(x, y);
     pressed = true;
@@ -776,11 +951,16 @@ void Input::on_mouse_up(int x, int y, MouseButton btn) {
     m_press_clear = false;
     m_press_password_toggle = false;
     m_drag_selecting = false;
+    m_drag_scrollbar = false;
     pressed = false;
     invalidate();
 }
 
-void Input::on_mouse_move(int x, int) {
+void Input::on_mouse_move(int x, int y) {
+    if (m_drag_scrollbar) {
+        update_scroll_from_thumb(y);
+        return;
+    }
     if (!enabled || !m_drag_selecting) return;
     int pos = xpos_to_char(x);
     m_cursor_pos = pos;
@@ -788,6 +968,15 @@ void Input::on_mouse_move(int x, int) {
     m_sel_end = pos;
     if (m_sel_start == m_sel_end) clear_selection();
     invalidate();
+}
+
+void Input::on_mouse_wheel(int, int, int delta) {
+    if (!multiline || max_scroll_y() <= 0) return;
+    int steps = delta / WHEEL_DELTA;
+    if (steps == 0) steps = delta > 0 ? 1 : -1;
+    int line = (int)std::lround(style.font_size * 1.45f);
+    if (line < 16) line = 16;
+    set_scroll_y(m_scroll_y - steps * line * 3);
 }
 
 void Input::on_key_down(int vk, int mods) {
@@ -865,5 +1054,6 @@ void Input::on_blur() {
     m_press_clear = false;
     m_press_password_toggle = false;
     m_drag_selecting = false;
+    m_drag_scrollbar = false;
     invalidate();
 }

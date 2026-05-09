@@ -919,6 +919,11 @@ dll.EU_ResetTheme.restype = None
 dll.EU_GetEditBoxText.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetEditBoxText.restype = ctypes.c_int
+dll.EU_SetEditBoxScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetEditBoxScroll.argtypes = [wintypes.HWND, ctypes.c_int,
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                    ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetEditBoxScroll.restype = ctypes.c_int
 dll.EU_SetEditBoxTextCallback.argtypes = [wintypes.HWND, ctypes.c_int, TextCallback]
 dll.EU_SetElementFocus.argtypes = [wintypes.HWND, ctypes.c_int]
 
@@ -1094,6 +1099,11 @@ dll.EU_GetInputState.argtypes = [wintypes.HWND, ctypes.c_int,
                                  ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
                                  ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetInputState.restype = ctypes.c_int
+dll.EU_SetInputScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_GetInputScroll.argtypes = [wintypes.HWND, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int),
+                                  ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputScroll.restype = ctypes.c_int
 dll.EU_SetInputMaxLength.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetInputMaxLength.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetInputMaxLength.restype = ctypes.c_int
@@ -3413,6 +3423,28 @@ def get_editbox_text(hwnd, element_id, buffer_size=2048):
         return ""
     return bytes(buf[:written]).decode("utf-8", errors="replace")
 
+def set_editbox_scroll(hwnd, element_id, scroll_y=0):
+    dll.EU_SetEditBoxScroll(hwnd, element_id, scroll_y)
+
+def get_editbox_scroll(hwnd, element_id):
+    scroll_y = ctypes.c_int()
+    max_scroll_y = ctypes.c_int()
+    content_height = ctypes.c_int()
+    viewport_height = ctypes.c_int()
+    ok = dll.EU_GetEditBoxScroll(
+        hwnd, element_id,
+        ctypes.byref(scroll_y), ctypes.byref(max_scroll_y),
+        ctypes.byref(content_height), ctypes.byref(viewport_height),
+    )
+    if not ok:
+        return None
+    return {
+        "scroll_y": scroll_y.value,
+        "max_scroll_y": max_scroll_y.value,
+        "content_height": content_height.value,
+        "viewport_height": viewport_height.value,
+    }
+
 def get_element_visible(hwnd, element_id):
     return bool(dll.EU_GetElementVisible(hwnd, element_id))
 
@@ -4403,6 +4435,28 @@ def get_input_state(hwnd, element_id):
         cursor.value, length.value, bool(clearable.value), bool(readonly.value),
         bool(password.value), bool(multiline.value), validate_state.value,
     )
+
+def set_input_scroll(hwnd, element_id, scroll_y=0):
+    dll.EU_SetInputScroll(hwnd, element_id, scroll_y)
+
+def get_input_scroll(hwnd, element_id):
+    scroll_y = ctypes.c_int()
+    max_scroll_y = ctypes.c_int()
+    content_height = ctypes.c_int()
+    viewport_height = ctypes.c_int()
+    ok = dll.EU_GetInputScroll(
+        hwnd, element_id,
+        ctypes.byref(scroll_y), ctypes.byref(max_scroll_y),
+        ctypes.byref(content_height), ctypes.byref(viewport_height),
+    )
+    if not ok:
+        return None
+    return {
+        "scroll_y": scroll_y.value,
+        "max_scroll_y": max_scroll_y.value,
+        "content_height": content_height.value,
+        "viewport_height": viewport_height.value,
+    }
 
 def set_input_icons(hwnd, element_id, prefix_icon="", suffix_icon=""):
     prefix_data = make_utf8(prefix_icon)

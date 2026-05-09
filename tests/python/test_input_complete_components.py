@@ -155,6 +155,26 @@ def main():
         min_rows=2, max_rows=4, max_length=30,
         x=44, y=336, w=668, h=64,
     )
+    fixed_scroll_input = ui.create_input(
+        hwnd, content,
+        value="\n".join([f"第 {i:02d} 行：多行滚动测试 🚀" for i in range(1, 25)]),
+        placeholder="固定高度多行输入",
+        prefix="📜", suffix="滚动",
+        clearable=False, multiline=True,
+        show_word_limit=True, autosize=False,
+        max_length=800,
+        x=44, y=650, w=520, h=104,
+    )
+    capped_scroll_input = ui.create_input(
+        hwnd, content,
+        value="\n".join([f"限制行数 {i:02d}：内容超过 max_rows 后滚动 ✨" for i in range(1, 18)]),
+        placeholder="限制行数滚动",
+        prefix="📌", suffix="max_rows",
+        clearable=False, multiline=True,
+        show_word_limit=True, autosize=True,
+        min_rows=2, max_rows=3, max_length=800,
+        x=584, y=650, w=520, h=96,
+    )
 
     ui.create_text(hwnd, content, "📏 四尺寸", 44, 448, 180, 28)
     size_default = ui.create_input(
@@ -207,6 +227,16 @@ def main():
     require_dict("medium 尺寸", ui.get_input_visual_options(hwnd, size_medium), {"size": 1})
     require_dict("small 尺寸", ui.get_input_visual_options(hwnd, size_small), {"size": 2})
     require_dict("mini 尺寸", ui.get_input_visual_options(hwnd, size_mini), {"size": 3})
+    fixed_initial_scroll = ui.get_input_scroll(hwnd, fixed_scroll_input)
+    require_true("fixed multiline max scroll", fixed_initial_scroll is not None and fixed_initial_scroll["max_scroll_y"] > 0)
+    require_true("fixed multiline content overflow", fixed_initial_scroll["content_height"] > fixed_initial_scroll["viewport_height"])
+    ui.set_input_scroll(hwnd, fixed_scroll_input, 99999)
+    fixed_bottom_scroll = ui.get_input_scroll(hwnd, fixed_scroll_input)
+    require_equal("fixed multiline scroll clamp", fixed_bottom_scroll["scroll_y"], fixed_bottom_scroll["max_scroll_y"])
+    ui.set_input_scroll(hwnd, fixed_scroll_input, 0)
+    require_equal("fixed multiline scroll top", ui.get_input_scroll(hwnd, fixed_scroll_input)["scroll_y"], 0)
+    capped_scroll = ui.get_input_scroll(hwnd, capped_scroll_input)
+    require_true("autosize max_rows scroll", capped_scroll is not None and capped_scroll["max_scroll_y"] > 0)
 
     ui.dll.EU_ShowWindow(hwnd, 1)
     user32 = ctypes.windll.user32

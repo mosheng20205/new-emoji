@@ -12,6 +12,7 @@
 - `password` + 密码显隐按钮
 - `show_word_limit`
 - `maxlength`
+- 多行内容溢出时自动显示垂直滚动条，支持滚轮、拖动滑块、点击轨道和 Set/Get 滚动位置
 - `Ctrl+A` 全选、鼠标拖动选中文字
 - 右键菜单，可通过 `EU_SetInputContextMenuEnabled` 开关
 - `size`：`0默认 / 1中等 / 2小型 / 3超小`
@@ -48,6 +49,8 @@
 - `EU_GetInputSelection`
 - `EU_SetInputContextMenuEnabled`
 - `EU_GetInputContextMenuEnabled`
+- `EU_SetInputScroll`
+- `EU_GetInputScroll`
 
 ### 前后缀与视觉扩展
 
@@ -74,6 +77,14 @@
   - 仅对 `multiline=1` 生效
 - `min_rows` / `max_rows`
   - 仅对 `multiline=1` + `autosize=1` 生效
+
+## 多行滚动
+
+`Input` 在 `multiline=1` 时会按自动换行和换行符计算内容高度。内容高度超过可视高度时自动显示右侧垂直滚动条；`autosize=true` 且内容仍能展开时不显示滚动条，设置 `max_rows` 后如果内容超过限制行数则显示滚动条。
+
+- `EU_SetInputScroll(hwnd, id, scroll_y)`：设置滚动位置，超出范围会自动夹取。
+- `EU_GetInputScroll(hwnd, id, &scroll_y, &max_scroll_y, &content_height, &viewport_height)`：读取当前滚动状态，用于同步 Backtop、恢复位置或测试溢出状态。
+- 输入、粘贴、删除、选区变化和键盘移动后会自动滚入光标，避免光标被裁切。
 
 ## Python 示例
 

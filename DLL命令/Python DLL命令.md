@@ -1118,6 +1118,18 @@ dll.EU_GetEditBoxState.restype = ctypes.c_int
 dll.EU_GetEditBoxText.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetEditBoxText.restype = ctypes.c_int
 ```
+## EU_SetEditBoxScroll
+
+```python
+dll.EU_SetEditBoxScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetEditBoxScroll.restype = None
+```
+## EU_GetEditBoxScroll
+
+```python
+dll.EU_GetEditBoxScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetEditBoxScroll.restype = ctypes.c_int
+```
 ## EU_SetEditBoxTextCallback
 
 ```python
@@ -1627,6 +1639,18 @@ dll.EU_GetInputContextMenuEnabled.restype = ctypes.c_int
 ```python
 dll.EU_GetInputState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetInputState.restype = ctypes.c_int
+```
+## EU_SetInputScroll
+
+```python
+dll.EU_SetInputScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetInputScroll.restype = None
+```
+## EU_GetInputScroll
+
+```python
+dll.EU_GetInputScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetInputScroll.restype = ctypes.c_int
 ```
 ## EU_SetInputMaxLength
 

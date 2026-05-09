@@ -183,6 +183,8 @@ EXPORTS
     EU_GetEditBoxOptions
     EU_GetEditBoxState
     EU_GetEditBoxText
+    EU_SetEditBoxScroll
+    EU_GetEditBoxScroll
     EU_SetEditBoxTextCallback
     EU_SetElementFocus
     EU_SetCheckboxChecked
@@ -268,6 +270,8 @@ EXPORTS
     EU_SetInputContextMenuEnabled
     EU_GetInputContextMenuEnabled
     EU_GetInputState
+    EU_SetInputScroll
+    EU_GetInputScroll
     EU_SetInputMaxLength
     EU_GetInputMaxLength
     EU_SetInputTextCallback

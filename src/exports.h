@@ -518,6 +518,9 @@ int  __stdcall EU_GetEditBoxOptions(HWND hwnd, int element_id, int* readonly, in
                                    Color* focus_border);
 int  __stdcall EU_GetEditBoxState(HWND hwnd, int element_id, int* cursor, int* sel_start, int* sel_end, int* text_length);
 int  __stdcall EU_GetEditBoxText(HWND hwnd, int element_id, unsigned char* buffer, int buffer_size);
+void __stdcall EU_SetEditBoxScroll(HWND hwnd, int element_id, int scroll_y);
+int  __stdcall EU_GetEditBoxScroll(HWND hwnd, int element_id, int* scroll_y, int* max_scroll_y,
+                                   int* content_height, int* viewport_height);
 void __stdcall EU_SetEditBoxTextCallback(HWND hwnd, int element_id, ElementTextCallback cb);
 void __stdcall EU_SetElementFocus(HWND hwnd, int element_id);
 void __stdcall EU_InvalidateElement(HWND hwnd, int element_id);
@@ -649,6 +652,9 @@ int  __stdcall EU_GetInputSelection(HWND hwnd, int element_id, int* start, int* 
 void __stdcall EU_SetInputContextMenuEnabled(HWND hwnd, int element_id, int enabled);
 int  __stdcall EU_GetInputContextMenuEnabled(HWND hwnd, int element_id);
 int  __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* length, int* clearable, int* readonly, int* password, int* multiline, int* validate_state);
+void __stdcall EU_SetInputScroll(HWND hwnd, int element_id, int scroll_y);
+int  __stdcall EU_GetInputScroll(HWND hwnd, int element_id, int* scroll_y, int* max_scroll_y,
+                                 int* content_height, int* viewport_height);
 void __stdcall EU_SetInputMaxLength(HWND hwnd, int element_id, int max_length);
 int  __stdcall EU_GetInputMaxLength(HWND hwnd, int element_id);
 void __stdcall EU_SetInputTextCallback(HWND hwnd, int element_id, ElementTextCallback cb);

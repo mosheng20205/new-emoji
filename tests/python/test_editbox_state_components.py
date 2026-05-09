@@ -71,7 +71,11 @@ def main():
 
     ui.create_text(hwnd, content_id, "📚 多行编辑框", 28, 350, 180, 28)
     g_multiline_id = ui.create_editbox(hwnd, content_id, 28, 384, 500, 86)
-    ui.set_editbox_text(hwnd, g_multiline_id, "第一行：中文\n第二行：emoji 🌈")
+    ui.set_editbox_text(
+        hwnd,
+        g_multiline_id,
+        "\n".join([f"第 {i:02d} 行：EditBox 多行滚动验证 🌈" for i in range(1, 22)]),
+    )
     ui.set_editbox_options(hwnd, g_multiline_id, False, False, True, 0xFF16A34A, "请输入多行内容")
 
     status_panel = ui.create_panel(hwnd, content_id, 574, 170, 260, 230)
@@ -94,6 +98,20 @@ def main():
         print(f"[初始读取] {name}选项:", ui.get_editbox_options(hwnd, eid))
         print(f"[初始读取] {name}状态:", ui.get_editbox_state(hwnd, eid))
         print(f"[初始读取] {name}文本:", ui.get_editbox_text(hwnd, eid))
+
+    scroll_state = ui.get_editbox_scroll(hwnd, g_multiline_id)
+    if not scroll_state or scroll_state["max_scroll_y"] <= 0:
+        raise RuntimeError(f"多行 EditBox 应产生垂直滚动范围，实际为 {scroll_state!r}")
+    if scroll_state["content_height"] <= scroll_state["viewport_height"]:
+        raise RuntimeError(f"多行 EditBox 内容高度应大于视口高度，实际为 {scroll_state!r}")
+    ui.set_editbox_scroll(hwnd, g_multiline_id, 99999)
+    bottom_state = ui.get_editbox_scroll(hwnd, g_multiline_id)
+    if bottom_state["scroll_y"] != bottom_state["max_scroll_y"]:
+        raise RuntimeError(f"EditBox 滚动夹取失败，实际为 {bottom_state!r}")
+    ui.set_editbox_scroll(hwnd, g_multiline_id, 0)
+    top_state = ui.get_editbox_scroll(hwnd, g_multiline_id)
+    if top_state["scroll_y"] != 0:
+        raise RuntimeError(f"EditBox 回顶失败，实际为 {top_state!r}")
 
     msg = wintypes.MSG()
     user32 = ctypes.windll.user32

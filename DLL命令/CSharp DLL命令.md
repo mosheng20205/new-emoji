@@ -1134,6 +1134,18 @@ public static extern int EU_GetEditBoxState(IntPtr hwnd, int element_id, IntPtr 
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern int EU_GetEditBoxText(IntPtr hwnd, int element_id, byte[] buffer, int buffer_size);
 ```
+## EU_SetEditBoxScroll
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetEditBoxScroll(IntPtr hwnd, int element_id, int scroll_y);
+```
+## EU_GetEditBoxScroll
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetEditBoxScroll(IntPtr hwnd, int element_id, IntPtr scroll_y, IntPtr max_scroll_y, IntPtr content_height, IntPtr viewport_height);
+```
 ## EU_SetEditBoxTextCallback
 
 ```csharp
@@ -1643,6 +1655,18 @@ public static extern int EU_GetInputContextMenuEnabled(IntPtr hwnd, int element_
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern int EU_GetInputState(IntPtr hwnd, int element_id, IntPtr cursor, IntPtr length, IntPtr clearable, IntPtr @readonly, IntPtr password, IntPtr multiline, IntPtr validate_state);
+```
+## EU_SetInputScroll
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetInputScroll(IntPtr hwnd, int element_id, int scroll_y);
+```
+## EU_GetInputScroll
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetInputScroll(IntPtr hwnd, int element_id, IntPtr scroll_y, IntPtr max_scroll_y, IntPtr content_height, IntPtr viewport_height);
 ```
 ## EU_SetInputMaxLength
 

@@ -30,6 +30,7 @@ public:
     void on_mouse_down(int x, int y, MouseButton btn) override;
     void on_mouse_up(int x, int y, MouseButton btn) override;
     void on_mouse_move(int x, int y) override;
+    void on_mouse_wheel(int x, int y, int delta) override;
     void on_key_down(int vk, int mods) override;
     void on_char(wchar_t ch) override;
     void on_focus() override;
@@ -49,6 +50,8 @@ public:
     void get_selection(int& start, int& end) const;
     void set_max_length(int next_max_length);
     void get_state(int& cursor, int& length) const;
+    void set_scroll_y(int value);
+    void get_scroll_state(int& scroll_y, int& max_scroll_y, int& content_height, int& viewport_height) const;
 
 private:
     int m_cursor_pos = 0;
@@ -59,6 +62,11 @@ private:
     bool m_press_clear = false;
     bool m_press_password_toggle = false;
     bool m_password_visible = false;
+    int m_scroll_y = 0;
+    int m_cached_content_h = 0;
+    int m_cached_view_h = 0;
+    bool m_drag_scrollbar = false;
+    int m_drag_scroll_offset = 0;
 
     struct LayoutMetrics {
         float text_x = 0.0f;
@@ -89,6 +97,15 @@ private:
     std::wstring word_limit_text() const;
     int effective_rows() const;
     int autosize_height_for_width(int width) const;
+    int content_height_estimate() const;
+    int viewport_height_estimate() const;
+    int max_scroll_y() const;
+    bool needs_vscroll() const;
+    Rect scrollbar_track_rect() const;
+    Rect scrollbar_thumb_rect() const;
+    void clamp_scroll_y();
+    void update_scroll_from_thumb(int y);
+    void scroll_to_cursor();
     void apply_size_preset();
     void update_autosize_height();
     int char_width() const;

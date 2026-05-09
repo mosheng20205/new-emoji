@@ -189,6 +189,8 @@
 | `EU_GetEditBoxOptions` | 读取兼容编辑内核选项 |
 | `EU_GetEditBoxState` | 读取兼容编辑内核光标、选区和文本长度 |
 | `EU_GetEditBoxText` | 读取兼容编辑内核文本 |
+| `EU_SetEditBoxScroll` | 设置多行 EditBox 垂直滚动位置 |
+| `EU_GetEditBoxScroll` | 读取多行 EditBox 滚动位置、最大滚动、内容高度和视口高度 |
 | `EU_SetEditBoxTextCallback` | 设置兼容编辑内核文本变化回调 |
 | `EU_SetElementFocus` | |
 | `EU_SetCheckboxChecked` | |
@@ -264,6 +266,8 @@
 | `EU_SetInputContextMenuEnabled` | 设置 Input 右键菜单是否启用 |
 | `EU_GetInputContextMenuEnabled` | 读取 Input 右键菜单是否启用 |
 | `EU_GetInputState` | |
+| `EU_SetInputScroll` | 设置多行 Input 垂直滚动位置 |
+| `EU_GetInputScroll` | 读取多行 Input 滚动位置、最大滚动、内容高度和视口高度 |
 | `EU_SetInputMaxLength` | |
 | `EU_GetInputMaxLength` | |
 | `EU_SetInputTextCallback` | |

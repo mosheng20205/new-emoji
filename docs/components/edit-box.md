@@ -23,6 +23,8 @@
 | `EU_GetEditBoxOptions` | 当前组件相关导出 |
 | `EU_GetEditBoxState` | 当前组件相关导出 |
 | `EU_GetEditBoxText` | 当前组件相关导出 |
+| `EU_SetEditBoxScroll` | 多行模式下设置垂直滚动位置，单行模式保持原有横向滚动行为 |
+| `EU_GetEditBoxScroll` | 读取 `scroll_y`、`max_scroll_y`、内容高度和视口高度 |
 | `EU_SetEditBoxOptions` | 当前组件相关导出 |
 | `EU_SetEditBoxText` | 当前组件相关导出 |
 | `EU_SetEditBoxTextCallback` | 当前组件相关导出 |
@@ -49,6 +51,7 @@ ui.dll.EU_ShowWindow(hwnd, 1)
 ## 状态与交互
 
 - 组件已按封装计划补齐创建、绘制、主题、DPI、交互、Set/Get、Python 封装和独立中文 emoji 验证。
+- 多行内容超过可视区域时会自动显示右侧垂直滚动条，支持鼠标滚轮、拖动滑块、点击轨道翻页，以及通过滚动 API 回顶或跳转。
 - 修改组件行为时，需要同步检查 hover、pressed、focus、keyboard、disabled、selected、popup、scroll 等相关状态。
 - 涉及回调、状态读回或数据模型变化时，应更新对应独立测试文件。
 

@@ -4549,6 +4549,28 @@ int __stdcall EU_GetEditBoxText(HWND hwnd, int element_id, unsigned char* buffer
     return needed;
 }
 
+void __stdcall EU_SetEditBoxScroll(HWND hwnd, int element_id, int scroll_y) {
+    if (auto* el = find_typed_element<EditBox>(hwnd, element_id)) {
+        el->set_scroll_y(scroll_y);
+    }
+}
+
+int __stdcall EU_GetEditBoxScroll(HWND hwnd, int element_id, int* scroll_y, int* max_scroll_y,
+                                  int* content_height, int* viewport_height) {
+    auto* el = find_typed_element<EditBox>(hwnd, element_id);
+    if (!el) return 0;
+    int sy = 0;
+    int max_sy = 0;
+    int content_h = 0;
+    int viewport_h = 0;
+    el->get_scroll_state(sy, max_sy, content_h, viewport_h);
+    if (scroll_y) *scroll_y = sy;
+    if (max_scroll_y) *max_scroll_y = max_sy;
+    if (content_height) *content_height = content_h;
+    if (viewport_height) *viewport_height = viewport_h;
+    return 1;
+}
+
 void __stdcall EU_SetEditBoxTextCallback(HWND hwnd, int element_id, ElementTextCallback cb) {
     if (auto* el = find_typed_element<EditBox>(hwnd, element_id)) {
         el->text_cb = cb;
@@ -5221,6 +5243,28 @@ int __stdcall EU_GetInputState(HWND hwnd, int element_id, int* cursor, int* leng
     if (password) *password = el->password ? 1 : 0;
     if (multiline) *multiline = el->multiline ? 1 : 0;
     if (validate_state) *validate_state = el->validate_state;
+    return 1;
+}
+
+void __stdcall EU_SetInputScroll(HWND hwnd, int element_id, int scroll_y) {
+    if (auto* el = find_typed_element<Input>(hwnd, element_id)) {
+        el->set_scroll_y(scroll_y);
+    }
+}
+
+int __stdcall EU_GetInputScroll(HWND hwnd, int element_id, int* scroll_y, int* max_scroll_y,
+                                int* content_height, int* viewport_height) {
+    auto* el = find_typed_element<Input>(hwnd, element_id);
+    if (!el) return 0;
+    int sy = 0;
+    int max_sy = 0;
+    int content_h = 0;
+    int viewport_h = 0;
+    el->get_scroll_state(sy, max_sy, content_h, viewport_h);
+    if (scroll_y) *scroll_y = sy;
+    if (max_scroll_y) *max_scroll_y = max_sy;
+    if (content_height) *content_height = content_h;
+    if (viewport_height) *viewport_height = viewport_h;
     return 1;
 }
 

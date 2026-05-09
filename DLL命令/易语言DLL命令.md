@@ -1682,6 +1682,19 @@
     .参数 输出缓冲区指针, 整数型, , UTF-8 output buffer
     .参数 输出缓冲区大小, 整数型, , bytes
 
+.DLL命令 设置编辑框滚动位置, , "new_emoji.dll", "EU_SetEditBoxScroll", , 对应 C++ 导出命令 EU_SetEditBoxScroll；多行编辑框垂直滚动
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 滚动位置, 整数型
+
+.DLL命令 取编辑框滚动位置, 整数型, "new_emoji.dll", "EU_GetEditBoxScroll", , 对应 C++ 导出命令 EU_GetEditBoxScroll；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 滚动位置指针, 整数型, , 输出整数指针
+    .参数 最大滚动位置指针, 整数型, , 输出整数指针
+    .参数 内容高度指针, 整数型, , 输出整数指针
+    .参数 视口高度指针, 整数型, , 输出整数指针
+
 .DLL命令 设置编辑框文本回调, , "new_emoji.dll", "EU_SetEditBoxTextCallback", , 对应 C++ 导出命令 EU_SetEditBoxTextCallback；文本变化后回调 UTF-8 字节
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -2196,6 +2209,19 @@
     .参数 是否密码指针, 整数型, , 输出整数指针
     .参数 是否多行指针, 整数型, , 输出整数指针
     .参数 校验状态指针, 整数型, , 输出整数指针
+
+.DLL命令 设置输入框滚动位置, , "new_emoji.dll", "EU_SetInputScroll", , 对应 C++ 导出命令 EU_SetInputScroll；多行输入框垂直滚动
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 滚动位置, 整数型
+
+.DLL命令 取输入框滚动位置, 整数型, "new_emoji.dll", "EU_GetInputScroll", , 对应 C++ 导出命令 EU_GetInputScroll；返回 1 表示成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 滚动位置指针, 整数型, , 输出整数指针
+    .参数 最大滚动位置指针, 整数型, , 输出整数指针
+    .参数 内容高度指针, 整数型, , 输出整数指针
+    .参数 视口高度指针, 整数型, , 输出整数指针
 
 .DLL命令 设置输入框最大长度, , "new_emoji.dll", "EU_SetInputMaxLength", , 对应 C++ 导出命令 EU_SetInputMaxLength；0 表示不限
     .参数 窗口句柄, 整数型
