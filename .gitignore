@@ -17,7 +17,6 @@ AGENTS.md
 # Build outputs
 build/
 dist/
-bin/
 obj/
 examples/Csharp/bin/
 examples/火山/_int/
@@ -45,3 +44,7 @@ __pycache__/
 *.~*
 Thumbs.db
 desktop.ini
+
+# Track release binaries for distribution
+!bin/
+!bin/**

@@ -486,6 +486,31 @@ int Dropdown::item_at(int x, int y) const {
     return (idx >= 0 && idx < (int)items.size()) ? idx : -1;
 }
 
+bool Dropdown::hover_bridge_contains(int x, int y) const {
+    if (!open || trigger_mode != 1 || items.empty()) return false;
+
+    Rect trigger = { 0, 0, bounds.w, bounds.h };
+    Rect menu = popup_rect();
+    int left = (std::min)(trigger.x, menu.x);
+    int top = (std::min)(trigger.y, menu.y);
+    int right = (std::max)(trigger.right(), menu.right());
+    int bottom = (std::max)(trigger.bottom(), menu.bottom());
+
+    Rect bridge;
+    if (trigger.bottom() <= menu.y) {
+        bridge = { left, trigger.bottom(), right - left, menu.y - trigger.bottom() };
+    } else if (menu.bottom() <= trigger.y) {
+        bridge = { left, menu.bottom(), right - left, trigger.y - menu.bottom() };
+    } else if (trigger.right() <= menu.x) {
+        bridge = { trigger.right(), top, menu.x - trigger.right(), bottom - top };
+    } else if (menu.right() <= trigger.x) {
+        bridge = { menu.right(), top, trigger.x - menu.right(), bottom - top };
+    } else {
+        return false;
+    }
+    return bridge.w > 0 && bridge.h > 0 && bridge.contains(x, y);
+}
+
 Dropdown::Part Dropdown::part_at(int x, int y, int* item_index) const {
     int idx = item_at(x, y);
     if (item_index) *item_index = idx;
@@ -510,7 +535,7 @@ Element* Dropdown::hit_test_overlay(int x, int y) {
     if (!visible || !enabled || !open) return nullptr;
     int lx = x - bounds.x;
     int ly = y - bounds.y;
-    return item_at(lx, ly) >= 0 ? this : nullptr;
+    return (item_at(lx, ly) >= 0 || hover_bridge_contains(lx, ly)) ? this : nullptr;
 }
 
 void Dropdown::paint(RenderContext& ctx) {

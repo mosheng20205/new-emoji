@@ -93,6 +93,7 @@ private:
     int menu_x() const;
     int menu_y() const;
     int item_at(int x, int y) const;
+    bool hover_bridge_contains(int x, int y) const;
     bool is_disabled(int index) const;
     bool has_child(int index) const;
     void clamp_scroll();
