@@ -55,6 +55,7 @@ TreeNodeAllowDropCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int,
                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                                ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                                ctypes.c_int)
+DateDisabledCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
 
 EXTENDED_PLACEMENTS = {
     "top-start": 0, "top": 1, "top-end": 2,
@@ -2188,7 +2189,7 @@ dll.EU_SetDatePickerMultiSelect.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.
 dll.EU_GetDatePickerSelectedDates.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_GetDatePickerSelectedDates.restype = ctypes.c_int
 dll.EU_SetDatePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
-dll.EU_SetDatePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_SetDatePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, DateDisabledCallback]
 dll.EU_CreateDateRangePicker.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateDateRangePicker.restype = ctypes.c_int
 dll.EU_SetDateRangePickerValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -2200,7 +2201,7 @@ dll.EU_SetDateRangePickerSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctyp
 dll.EU_SetDateRangePickerFormat.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetDateRangePickerAlign.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetDateRangePickerShortcuts.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
-dll.EU_SetDateRangePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_SetDateRangePickerDisabledDateCallback.argtypes = [wintypes.HWND, ctypes.c_int, DateDisabledCallback]
 dll.EU_SetDateRangePickerOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetDateRangePickerOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetDateRangePickerOpen.restype = ctypes.c_int

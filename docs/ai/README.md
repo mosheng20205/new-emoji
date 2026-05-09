@@ -18,8 +18,9 @@
 2. 阅读对应 prompt。
 3. 查 `api_manifest.full.json` 选择组件和 DLL 导出。
 4. 查 `docs/components/` 中的组件文档补充参数和交互细节。
-5. 从 `examples/templates/` 复制同语言模板开始改。
-6. 运行 `python tools/validate_ai_sdk.py` 检查 AI SDK 文档一致性。
+5. 生成交互回调前核对对应 DLL 命令或 typedef 的真实参数，尤其易语言按钮点击回调不要套用错误的多参数模板。
+6. 从 `examples/templates/` 复制同语言模板开始改。
+7. 运行 `python tools/validate_ai_sdk.py` 检查 AI SDK 文档一致性。
 
 ## Table 行级增删
 

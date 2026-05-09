@@ -5135,7 +5135,7 @@ JSON 示例：
     .参数 快捷选项字节集指针, 整数型, , UTF-8
     .参数 快捷选项长度, 整数型
 
-.DLL命令 设置日期选择器禁用日期回调, , "new_emoji.dll", "EU_SetDatePickerDisabledDateCallback", , 对应 C++ 导出命令 EU_SetDatePickerDisabledDateCallback；回调签名：整数型 回调(元素ID, YYYYMMDD)
+.DLL命令 设置日期选择器禁用日期回调, , "new_emoji.dll", "EU_SetDatePickerDisabledDateCallback", , 对应 C++ 导出命令 EU_SetDatePickerDisabledDateCallback；回调签名：整数型 回调(元素ID, YYYYMMDD)，Win32 按 __stdcall 调用
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数, 整数型
@@ -5198,7 +5198,7 @@ JSON 示例：
     .参数 快捷选项指针, 整数型, , UTF-8
     .参数 快捷选项长度, 整数型
 
-.DLL命令 设置日期范围选择器禁用日期回调, , "new_emoji.dll", "EU_SetDateRangePickerDisabledDateCallback", , 对应 C++ 导出命令 EU_SetDateRangePickerDisabledDateCallback
+.DLL命令 设置日期范围选择器禁用日期回调, , "new_emoji.dll", "EU_SetDateRangePickerDisabledDateCallback", , 对应 C++ 导出命令 EU_SetDateRangePickerDisabledDateCallback；回调签名：整数型 回调(元素ID, YYYYMMDD)，Win32 按 __stdcall 调用
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数, 整数型

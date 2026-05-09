@@ -1486,7 +1486,7 @@ int  __stdcall EU_GetDatePickerSelectedDates(HWND hwnd, int element_id, unsigned
 void __stdcall EU_SetDatePickerShortcuts(HWND hwnd, int element_id,
                                           const unsigned char* shortcuts_bytes, int shortcuts_len);
 void __stdcall EU_SetDatePickerDisabledDateCallback(HWND hwnd, int element_id,
-                                                     int (*cb)(int id, int yyyymmdd));
+                                                     DateDisabledCallback cb);
 int  __stdcall EU_CreateDateRangePicker(HWND hwnd, int parent_id,
                                          int start_yyyymmdd, int end_yyyymmdd,
                                          int x, int y, int w, int h);
@@ -1503,7 +1503,7 @@ void __stdcall EU_SetDateRangePickerAlign(HWND hwnd, int element_id, int align);
 void __stdcall EU_SetDateRangePickerShortcuts(HWND hwnd, int element_id,
                                                const unsigned char* sc_bytes, int sc_len);
 void __stdcall EU_SetDateRangePickerDisabledDateCallback(HWND hwnd, int element_id,
-                                                          int (*cb)(int id, int yyyymmdd));
+                                                          DateDisabledCallback cb);
 void __stdcall EU_SetDateRangePickerOpen(HWND hwnd, int element_id, int open);
 int  __stdcall EU_GetDateRangePickerOpen(HWND hwnd, int element_id);
 void __stdcall EU_DateRangePickerClear(HWND hwnd, int element_id);

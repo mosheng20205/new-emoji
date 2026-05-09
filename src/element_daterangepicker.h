@@ -17,7 +17,7 @@ public:
 
     struct Shortcut { std::wstring text; int yyyymmdd; int yyyymmdd_end; };
     std::vector<Shortcut> shortcuts;
-    int (*disabled_date_cb)(int id, int yyyymmdd) = nullptr;
+    DateDisabledCallback disabled_date_cb = nullptr;
 
     const wchar_t* type_name() const override { return L"DateRangePicker"; }
     void paint(RenderContext& ctx) override;

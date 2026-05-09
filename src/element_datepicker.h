@@ -36,7 +36,7 @@ public:
     };
     std::vector<DateShortcut> shortcuts;
     // disabled date callback: returns true = disabled
-    int (*disabled_date_cb)(int id, int yyyymmdd) = nullptr;
+    DateDisabledCallback disabled_date_cb = nullptr;
 
     const wchar_t* type_name() const override { return L"DatePicker"; }
     void paint(RenderContext& ctx) override;

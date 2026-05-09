@@ -8869,7 +8869,7 @@ void __stdcall EU_SetDatePickerShortcuts(HWND hwnd, int element_id,
     }
 }
 void __stdcall EU_SetDatePickerDisabledDateCallback(HWND hwnd, int element_id,
-                                                     int (*cb)(int id, int yyyymmdd)) {
+                                                     DateDisabledCallback cb) {
     if (auto* el = find_typed_element<DatePicker>(hwnd, element_id)) el->disabled_date_cb = cb;
 }
 
@@ -8946,7 +8946,7 @@ void __stdcall EU_SetDateRangePickerShortcuts(HWND hwnd, int element_id,
     }
 }
 void __stdcall EU_SetDateRangePickerDisabledDateCallback(HWND hwnd, int element_id,
-                                                          int (*cb)(int id, int yyyymmdd)) {
+                                                          DateDisabledCallback cb) {
     if (auto* el = find_typed_element<DateRangePicker>(hwnd, element_id)) el->disabled_date_cb = cb;
 }
 void __stdcall EU_SetDateRangePickerOpen(HWND hwnd, int element_id, int open) {
