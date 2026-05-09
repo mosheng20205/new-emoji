@@ -34,6 +34,26 @@ python -c "import struct; print(struct.calcsize('P') * 8, 'bit')"
 
 32 位 Python 对应 Win32 DLL，64 位 Python 对应 x64 DLL。
 
+## 窗口图标示例
+
+运行窗口图标示例，窗口会保持打开直到手动关闭：
+
+```powershell
+python examples/python/window_icon_demo.py
+```
+
+示例同时演示 `EU_SetWindowIcon` 的 `.ico` 文件路径方式，以及 `EU_SetWindowIconFromBytes` 的 `.ico` 文件字节集方式。
+
+## 窗口圆角示例
+
+运行窗口圆角示例，窗口会保持打开直到手动关闭：
+
+```powershell
+python examples/python/window_rounded_corners_demo.py
+```
+
+示例演示 `EU_SetWindowRoundedCorners` 的 Windows 窗口外形圆角，并提供小圆角、中圆角、大圆角和关闭圆角按钮；支持 DWM 的系统会使用平滑圆角，Win10 会优先使用 per-pixel alpha 分层窗口圆角。
+
 ## 最小示例
 
 ```python

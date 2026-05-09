@@ -10,6 +10,8 @@
 | `EU_ShowWindow` | |
 | `EU_RunMessageLoop` | 运行 Win32 消息循环，适用于无宿主窗体的 DLL 窗口程序 |
 | `EU_SetWindowTitle` | |
+| `EU_SetWindowIcon` | 从 UTF-8 .ico 文件路径设置窗口标题栏/任务栏图标 |
+| `EU_SetWindowIconFromBytes` | 从 .ico 文件完整字节集设置窗口标题栏/任务栏图标 |
 | `EU_SetWindowBounds` | |
 | `EU_GetWindowBounds` | |
 | `EU_CreatePanel` | |
@@ -1182,8 +1184,11 @@
 | 导出 | 说明 |
 |---|---|
 | `EU_CreateWindowEx` | 创建扩展窗口，使用 `frame_flags` 开启无标题栏、自绘按钮、缩放边框等通用窗口外壳能力。 |
+| `EU_SetWindowIcon` | 从 UTF-8 .ico 文件路径设置当前窗口的标题栏/任务栏图标。 |
+| `EU_SetWindowIconFromBytes` | 从 .ico 文件完整字节集设置当前窗口的标题栏/任务栏图标。 |
 | `EU_GetWindowFrameFlags` | 读取窗口框架 flags。 |
-| `EU_SetWindowFrameFlags` | 设置窗口框架 flags，v1 主要更新内部状态、布局和重绘。 |
+| `EU_SetWindowFrameFlags` | 设置窗口框架 flags，其中 `EU_WINDOW_FRAME_ROUNDED` 会应用真实 Windows 窗口圆角。 |
+| `EU_SetWindowRoundedCorners` | 设置或关闭 Windows 窗口外形圆角，优先使用 DWM 抗锯齿圆角，Win10 主路径回退为 per-pixel alpha 分层窗口，layered 连续失败时退到真实区域圆角。 |
 | `EU_SetWindowResizeBorder` | 设置四边自定义缩放命中宽度。 |
 | `EU_GetWindowResizeBorder` | 读取四边自定义缩放命中宽度。 |
 | `EU_SetWindowNoDragRegion` | 设置非拖拽区域，避免按钮、地址栏、标签项被拖拽区覆盖。 |

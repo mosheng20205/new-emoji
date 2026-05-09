@@ -26,14 +26,17 @@
 #include "theme.h"
 #include "dpi_context.h"
 #include "utf8_helpers.h"
+#include <algorithm>
 #include <map>
 #include <vector>
 #include <cmath>
+#include <cstring>
 
 extern HMODULE g_module;
 
 std::map<HWND, WindowState*> g_windows;
 thread_local WindowCreateParams* g_pending_create_params = nullptr;
+constexpr UINT WM_NEWEMOJI_RENDER_LAYERED = WM_APP + 0x4E1;
 static const wchar_t* kWindowClass = L"NewEmojiWindow";
 extern std::map<UINT_PTR, EditBox*> g_blink_map;
 extern std::map<UINT_PTR, Button*> g_button_timer_map;
@@ -50,6 +53,328 @@ extern std::map<UINT_PTR, Tooltip*> g_tooltip_timer_map;
 WindowState* window_state(HWND hwnd) {
     auto it = g_windows.find(hwnd);
     return it != g_windows.end() ? it->second : nullptr;
+}
+
+static bool apply_dwm_corner_preference(HWND hwnd, bool rounded, int radius) {
+    static int is_win11_or_later = -1;
+    if (is_win11_or_later < 0) {
+        is_win11_or_later = 0;
+        HMODULE ntdll = GetModuleHandleW(L"ntdll.dll");
+        using RtlGetVersionFn = LONG(WINAPI*)(OSVERSIONINFOW*);
+        auto rtl_get_version = ntdll
+            ? reinterpret_cast<RtlGetVersionFn>(GetProcAddress(ntdll, "RtlGetVersion"))
+            : nullptr;
+        OSVERSIONINFOW version = {};
+        version.dwOSVersionInfoSize = sizeof(version);
+        if (rtl_get_version && rtl_get_version(&version) == 0) {
+            is_win11_or_later =
+                (version.dwMajorVersion > 10 ||
+                 (version.dwMajorVersion == 10 && version.dwBuildNumber >= 22000))
+                ? 1 : 0;
+        }
+    }
+    if (!is_win11_or_later) return false;
+
+    using DwmSetWindowAttributeFn = HRESULT(WINAPI*)(HWND, DWORD, LPCVOID, DWORD);
+    static HMODULE dwm = LoadLibraryW(L"dwmapi.dll");
+    static auto fn = dwm ? reinterpret_cast<DwmSetWindowAttributeFn>(
+        GetProcAddress(dwm, "DwmSetWindowAttribute")) : nullptr;
+    if (!fn) return false;
+
+    constexpr DWORD kDwmWindowCornerPreference = 33;
+    constexpr DWORD kDwmCornerDoNotRound = 1;
+    constexpr DWORD kDwmCornerRound = 2;
+    constexpr DWORD kDwmCornerRoundSmall = 3;
+    DWORD preference = rounded
+        ? (radius > 0 && radius <= 12 ? kDwmCornerRoundSmall : kDwmCornerRound)
+        : kDwmCornerDoNotRound;
+    return SUCCEEDED(fn(hwnd, kDwmWindowCornerPreference, &preference, sizeof(preference)));
+}
+
+static void clear_window_region(HWND hwnd, bool redraw) {
+    SetWindowRgn(hwnd, nullptr, redraw ? TRUE : FALSE);
+}
+
+static bool apply_rounded_window_region(WindowState* st) {
+    if (!st || !st->hwnd || st->rounded_layered_radius_px <= 0) return false;
+    RECT wr{};
+    if (!GetWindowRect(st->hwnd, &wr)) return false;
+    int w = wr.right - wr.left;
+    int h = wr.bottom - wr.top;
+    if (w <= 0 || h <= 0) return false;
+
+    int radius = (std::max)(1, (std::min)(st->rounded_layered_radius_px,
+                                          (std::min)(w, h) / 2));
+    HRGN region = CreateRoundRectRgn(0, 0, w + 1, h + 1, radius * 2, radius * 2);
+    if (!region) return false;
+    SetWindowRgn(st->hwnd, region, TRUE);
+    st->rounded_region_active = true;
+    st->rounded_region_radius_px = radius;
+    st->rounded_layered_active = false;
+    st->rounded_layered_radius_px = 0;
+    st->rounded_layered_failures = 0;
+    return true;
+}
+
+static void set_layered_window(HWND hwnd, bool enabled) {
+    LONG_PTR ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+    LONG_PTR next = enabled ? (ex | WS_EX_LAYERED) : (ex & ~WS_EX_LAYERED);
+    if (next == ex) return;
+    SetWindowLongPtrW(hwnd, GWL_EXSTYLE, next);
+    SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
+                 SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                 SWP_NOACTIVATE | SWP_FRAMECHANGED);
+}
+
+static int scaled_window_radius(WindowState* st, int width, int height) {
+    if (!st || st->rounded_corner_radius <= 0 || width <= 0 || height <= 0) return 0;
+    int radius = (int)std::lround((float)st->rounded_corner_radius * st->dpi_scale);
+    int max_radius = (std::max)(1, (std::min)(width, height) / 2);
+    return (std::max)(1, (std::min)(radius, max_radius));
+}
+
+static bool point_inside_rounded_rect(int x, int y, int w, int h, int radius) {
+    if (x < 0 || y < 0 || x >= w || y >= h) return false;
+    if (radius <= 0) return true;
+    radius = (std::min)(radius, (std::min)(w, h) / 2);
+    auto inside_corner = [radius](int dx, int dy) {
+        long long xx = (long long)dx;
+        long long yy = (long long)dy;
+        long long rr = (long long)radius;
+        return xx * xx + yy * yy <= rr * rr;
+    };
+    if (x < radius && y < radius) return inside_corner(x - radius, y - radius);
+    if (x >= w - radius && y < radius) return inside_corner(x - (w - radius - 1), y - radius);
+    if (x < radius && y >= h - radius) return inside_corner(x - radius, y - (h - radius - 1));
+    if (x >= w - radius && y >= h - radius) return inside_corner(x - (w - radius - 1), y - (h - radius - 1));
+    return true;
+}
+
+static bool point_inside_window_shape(WindowState* st, int x, int y) {
+    if (!st || !st->rounded_layered_active) return true;
+    RECT rc{};
+    GetClientRectForWindowDpi(st->hwnd, &rc);
+    return point_inside_rounded_rect(x, y, rc.right - rc.left, rc.bottom - rc.top,
+                                     st->rounded_layered_radius_px);
+}
+
+static float rounded_rect_coverage(int x, int y, int w, int h, float radius) {
+    if (radius <= 0.0f || w <= 0 || h <= 0) return 1.0f;
+    radius = (std::min)(radius, (float)(std::min)(w, h) * 0.5f);
+
+    float px = (float)x + 0.5f;
+    float py = (float)y + 0.5f;
+    float left = radius;
+    float top = radius;
+    float right = (float)w - radius;
+    float bottom = (float)h - radius;
+
+    float dx = 0.0f;
+    if (px < left) dx = left - px;
+    else if (px > right) dx = px - right;
+
+    float dy = 0.0f;
+    if (py < top) dy = top - py;
+    else if (py > bottom) dy = py - bottom;
+
+    if (dx <= 0.0f && dy <= 0.0f) return 1.0f;
+    float dist = std::sqrt(dx * dx + dy * dy);
+    float edge = radius - dist;
+    if (edge >= 0.5f) return 1.0f;
+    if (edge <= -0.5f) return 0.0f;
+    return edge + 0.5f;
+}
+
+static void apply_rounded_alpha_mask(BYTE* bits, int w, int h, int stride, int radius) {
+    if (!bits || w <= 0 || h <= 0 || stride <= 0 || radius <= 0) return;
+    for (int y = 0; y < h; ++y) {
+        BYTE* row = bits + y * stride;
+        for (int x = 0; x < w; ++x) {
+            if (x >= radius && x < w - radius && y >= radius && y < h - radius) continue;
+            float coverage = rounded_rect_coverage(x, y, w, h, (float)radius);
+            if (coverage >= 0.999f) continue;
+            BYTE* p = row + x * 4;
+            p[0] = (BYTE)std::lround((float)p[0] * coverage);
+            p[1] = (BYTE)std::lround((float)p[1] * coverage);
+            p[2] = (BYTE)std::lround((float)p[2] * coverage);
+            p[3] = (BYTE)std::lround((float)p[3] * coverage);
+        }
+    }
+}
+
+static bool render_layered_window(WindowState* st) {
+    if (!st || !st->hwnd || !st->rounded_layered_active || !g_d2d_factory ||
+        !g_dwrite_factory || !g_wic_factory || !st->element_tree) {
+        return false;
+    }
+
+    RECT rc{};
+    GetClientRectForWindowDpi(st->hwnd, &rc);
+    int w = rc.right - rc.left;
+    int h = rc.bottom - rc.top;
+    if (w <= 0 || h <= 0) return false;
+
+    IWICBitmap* bitmap = nullptr;
+    HRESULT hr = g_wic_factory->CreateBitmap(
+        w, h, GUID_WICPixelFormat32bppPBGRA, WICBitmapCacheOnLoad, &bitmap);
+    if (FAILED(hr) || !bitmap) return false;
+
+    ID2D1RenderTarget* rt = nullptr;
+    D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
+        D2D1_RENDER_TARGET_TYPE_DEFAULT,
+        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+        96.0f, 96.0f);
+    hr = g_d2d_factory->CreateWicBitmapRenderTarget(bitmap, props, &rt);
+    if (FAILED(hr) || !rt) {
+        bitmap->Release();
+        return false;
+    }
+
+    int radius = (std::max)(1, (std::min)(st->rounded_layered_radius_px, (std::min)(w, h) / 2));
+
+    rt->BeginDraw();
+    rt->SetAntialiasMode(D2D1_ANTIALIAS_MODE_PER_PRIMITIVE);
+    rt->Clear(D2D1::ColorF(0.0f, 0.0f, 0.0f, 0.0f));
+
+    {
+        const Theme* t = theme_for_window(st->hwnd);
+        RenderContext ctx(rt, g_dwrite_factory);
+        rt->FillRectangle(D2D1::RectF(0.0f, 0.0f, (float)w, (float)h),
+                          ctx.get_brush(t->panel_bg));
+        st->element_tree->paint(ctx);
+        hr = rt->EndDraw();
+    }
+
+    rt->Release();
+    if (FAILED(hr)) {
+        bitmap->Release();
+        return false;
+    }
+
+    WICRect lock_rect = { 0, 0, w, h };
+    IWICBitmapLock* lock = nullptr;
+    hr = bitmap->Lock(&lock_rect, WICBitmapLockRead, &lock);
+    if (FAILED(hr) || !lock) {
+        bitmap->Release();
+        return false;
+    }
+
+    UINT src_stride = 0;
+    UINT src_size = 0;
+    BYTE* src_bits = nullptr;
+    lock->GetStride(&src_stride);
+    lock->GetDataPointer(&src_size, &src_bits);
+    if (!src_bits || src_stride == 0) {
+        lock->Release();
+        bitmap->Release();
+        return false;
+    }
+
+    HDC screen_dc = GetDC(nullptr);
+    HDC mem_dc = CreateCompatibleDC(screen_dc);
+    BITMAPINFO bmi = {};
+    bmi.bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
+    bmi.bmiHeader.biWidth = w;
+    bmi.bmiHeader.biHeight = -h;
+    bmi.bmiHeader.biPlanes = 1;
+    bmi.bmiHeader.biBitCount = 32;
+    bmi.bmiHeader.biCompression = BI_RGB;
+    void* dib_bits = nullptr;
+    HBITMAP dib = CreateDIBSection(screen_dc, &bmi, DIB_RGB_COLORS, &dib_bits, nullptr, 0);
+    bool ok = false;
+    if (mem_dc && dib && dib_bits) {
+        HGDIOBJ old = SelectObject(mem_dc, dib);
+        int dst_stride = w * 4;
+        int copy_stride = (std::min)(dst_stride, (int)src_stride);
+        BYTE* dst_bits = (BYTE*)dib_bits;
+        std::memset(dst_bits, 0, (size_t)dst_stride * (size_t)h);
+        for (int y = 0; y < h; ++y) {
+            std::memcpy(dst_bits + y * dst_stride, src_bits + y * src_stride, copy_stride);
+        }
+        apply_rounded_alpha_mask(dst_bits, w, h, dst_stride, radius);
+
+        RECT wr{};
+        GetWindowRect(st->hwnd, &wr);
+        POINT dst = { wr.left, wr.top };
+        POINT src = { 0, 0 };
+        SIZE size = { w, h };
+        BLENDFUNCTION blend = { AC_SRC_OVER, 0, 255, AC_SRC_ALPHA };
+        ok = UpdateLayeredWindow(st->hwnd, screen_dc, &dst, &size, mem_dc, &src,
+                                 0, &blend, ULW_ALPHA) != FALSE;
+        SelectObject(mem_dc, old);
+    }
+
+    if (dib) DeleteObject(dib);
+    if (mem_dc) DeleteDC(mem_dc);
+    if (screen_dc) ReleaseDC(nullptr, screen_dc);
+    lock->Release();
+    bitmap->Release();
+    return ok;
+}
+
+static bool render_layered_window_or_retry(WindowState* st, bool allow_region_fallback) {
+    if (!st || !st->rounded_layered_active) return false;
+    if (render_layered_window(st)) {
+        st->rounded_layered_failures = 0;
+        return true;
+    }
+
+    ++st->rounded_layered_failures;
+    if (allow_region_fallback && st->rounded_layered_failures >= 3) {
+        int radius = st->rounded_layered_radius_px;
+        set_layered_window(st->hwnd, false);
+        st->rounded_layered_radius_px = radius;
+        if (apply_rounded_window_region(st)) {
+            InvalidateRect(st->hwnd, nullptr, FALSE);
+        }
+        return false;
+    }
+
+    if (IsWindowVisible(st->hwnd)) {
+        PostMessageW(st->hwnd, WM_NEWEMOJI_RENDER_LAYERED, 0, 0);
+    }
+    return false;
+}
+
+void apply_window_rounded_corners(WindowState* st) {
+    if (!st || !st->hwnd || !IsWindow(st->hwnd)) return;
+
+    bool should_round = st->rounded_corners && st->rounded_corner_radius > 0 && !IsZoomed(st->hwnd);
+    st->rounded_region_active = false;
+    st->rounded_region_radius_px = 0;
+    st->rounded_layered_active = false;
+    st->rounded_layered_radius_px = 0;
+    st->rounded_layered_failures = 0;
+    if (should_round && apply_dwm_corner_preference(st->hwnd, true, st->rounded_corner_radius)) {
+        set_layered_window(st->hwnd, false);
+        clear_window_region(st->hwnd, true);
+        return;
+    }
+    if (!should_round) apply_dwm_corner_preference(st->hwnd, false, 0);
+    if (!should_round) {
+        set_layered_window(st->hwnd, false);
+        clear_window_region(st->hwnd, true);
+        return;
+    }
+
+    RECT wr{};
+    if (!GetWindowRect(st->hwnd, &wr)) return;
+    int width = wr.right - wr.left;
+    int height = wr.bottom - wr.top;
+    if (width <= 0 || height <= 0) return;
+
+    int radius = scaled_window_radius(st, width, height);
+    st->rounded_layered_active = radius > 0;
+    st->rounded_layered_radius_px = radius;
+    st->rounded_layered_failures = 0;
+    set_layered_window(st->hwnd, st->rounded_layered_active);
+    clear_window_region(st->hwnd, true);
+    if (st->rounded_layered_active && IsWindowVisible(st->hwnd)) {
+        render_layered_window_or_retry(st, true);
+    }
+    if (!st->rounded_layered_active) {
+        InvalidateRect(st->hwnd, nullptr, FALSE);
+    }
 }
 
 static std::wstring get_ime_string(HWND hwnd, HIMC imc, DWORD index) {
@@ -71,6 +396,7 @@ void apply_window_frame_flags(WindowState* st, int flags, bool explicit_flags) {
     if (st->rounded_corners) {
         if (st->rounded_corner_radius <= 0) st->rounded_corner_radius = 8;
     }
+    apply_window_rounded_corners(st);
     if (st->element_tree) st->element_tree->layout();
     if (st->hwnd) InvalidateRect(st->hwnd, nullptr, FALSE);
 }
@@ -256,11 +582,24 @@ void register_window_class() {
             ChangeWindowMessageFilterEx(hwnd, 0x0049, MSGFLT_ALLOW, nullptr);
             return 0;
         }
+        case WM_SHOWWINDOW:
+            if (wp && st && st->rounded_layered_active) {
+                PostMessageW(hwnd, WM_NEWEMOJI_RENDER_LAYERED, 0, 0);
+            }
+            return 0;
+
+        case WM_NEWEMOJI_RENDER_LAYERED:
+            if (st && st->rounded_layered_active) {
+                render_layered_window_or_retry(st, true);
+            }
+            return 0;
+
         case WM_SIZE: {
             UINT w = LOWORD(lp), h = HIWORD(lp);
             if (st && st->render_target && w > 0 && h > 0 && wp != SIZE_MINIMIZED) {
                 st->render_target->Resize(D2D1::SizeU(w, h));
                 if (st->element_tree) st->element_tree->layout();
+                apply_window_rounded_corners(st);
                 InvalidateRect(hwnd, nullptr, FALSE);
             }
             if (st && st->resize_cb && wp != SIZE_MINIMIZED) {
@@ -283,6 +622,7 @@ void register_window_class() {
                              SWP_NOZORDER | SWP_NOACTIVATE);
                 recreate_render_target(st);
                 if (st->element_tree) st->element_tree->layout();
+                apply_window_rounded_corners(st);
                 InvalidateRect(hwnd, nullptr, FALSE);
             }
             return 0;
@@ -298,6 +638,7 @@ void register_window_class() {
                     if (st->element_tree) st->element_tree->set_dpi_scale(st->dpi_scale);
                     recreate_render_target(st);
                     if (st->element_tree) st->element_tree->layout();
+                    apply_window_rounded_corners(st);
                     InvalidateRect(hwnd, nullptr, FALSE);
                 }
             }
@@ -349,6 +690,7 @@ void register_window_class() {
         case WM_NCHITTEST: {
             POINT pt = { GET_X_LPARAM(lp), GET_Y_LPARAM(lp) };
             ScreenToClient(hwnd, &pt);
+            if (!point_inside_window_shape(st, pt.x, pt.y)) return HTTRANSPARENT;
             if (is_modal_overlay_point(st, pt.x, pt.y)) return HTCLIENT;
             if (is_titlebar_button_point(st, pt.x, pt.y)) return HTCLIENT;
             if (is_no_drag_point(st, pt.x, pt.y)) return HTCLIENT;
@@ -361,6 +703,11 @@ void register_window_class() {
         case WM_PAINT: {
             PAINTSTRUCT ps;
             BeginPaint(hwnd, &ps);
+            if (st && st->rounded_layered_active) {
+                render_layered_window_or_retry(st, true);
+                EndPaint(hwnd, &ps);
+                return 0;
+            }
             if (st && st->render_target) {
                 st->render_target->BeginDraw();
                 const Theme* t = theme_for_window(hwnd);
@@ -392,6 +739,7 @@ void register_window_class() {
                 if (st->render_target) st->render_target->Resize(
                     D2D1::SizeU(rc.right - rc.left, rc.bottom - rc.top));
                 if (st->element_tree) st->element_tree->layout();
+                apply_window_rounded_corners(st);
                 InvalidateRect(hwnd, nullptr, FALSE);
             }
             return 0;
@@ -625,6 +973,8 @@ void register_window_class() {
                 DragAcceptFiles(hwnd, FALSE);
                 delete st->element_tree; st->element_tree = nullptr;
                 if (st->render_target) { st->render_target->Release(); st->render_target = nullptr; }
+                if (st->window_icon_big) DestroyIcon(st->window_icon_big);
+                if (st->window_icon_small && st->window_icon_small != st->window_icon_big) DestroyIcon(st->window_icon_small);
                 g_windows.erase(hwnd); delete st;
             }
             PostQuitMessage(0); return 0;

@@ -75,6 +75,10 @@ dll.EU_CreateWindow.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                  ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                  ctypes.c_uint32]
 dll.EU_CreateWindow.restype = wintypes.HWND
+dll.EU_SetWindowIcon.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetWindowIcon.restype = ctypes.c_int
+dll.EU_SetWindowIconFromBytes.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetWindowIconFromBytes.restype = ctypes.c_int
 
 dll.EU_DestroyWindow.argtypes = [wintypes.HWND]
 dll.EU_ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -3358,6 +3362,14 @@ def create_window(title="New Emoji Test", x=300, y=200, w=800, h=600):
         0xFF181825  # titlebar color
     )
     return hwnd
+
+def set_window_icon(hwnd, icon_path):
+    data = make_utf8(os.fspath(icon_path))
+    return bool(dll.EU_SetWindowIcon(hwnd, bytes_arg(data), len(data)))
+
+def set_window_icon_from_bytes(hwnd, icon_bytes):
+    data = bytes(icon_bytes or b"")
+    return bool(dll.EU_SetWindowIconFromBytes(hwnd, bytes_arg(data), len(data)))
 
 def create_panel(hwnd, parent_id=0, x=0, y=0, w=800, h=600, color=0):
     pid = dll.EU_CreatePanel(hwnd, parent_id, x, y, w, h)
@@ -11466,7 +11478,8 @@ def verify_chrome_shell_basics():
         "EU_CreateIconButton", "EU_CreateOmnibox", "EU_CreateBrowserViewport",
         "EU_SetTabsChromeMode", "EU_SetThemeToken", "EU_GetThemeToken",
         "EU_SetWindowDragRegion", "EU_SetContainerFlexLayout",
-        "EU_CreateWindowEx", "EU_GetWindowFrameFlags", "EU_SetWindowFrameFlags",
+        "EU_CreateWindowEx", "EU_SetWindowIcon", "EU_SetWindowIconFromBytes",
+        "EU_GetWindowFrameFlags", "EU_SetWindowFrameFlags",
         "EU_SetWindowResizeBorder", "EU_SetWindowNoDragRegion", "EU_SetElementWindowCommand",
         "EU_SetPopupAnchorElement", "EU_SetPopupPlacement", "EU_SetPopupOpen",
         "EU_GetPopupOpen", "EU_SetPopupDismissBehavior",

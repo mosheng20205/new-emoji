@@ -2,8 +2,21 @@
 #include "render_context.h"
 #include "theme.h"
 #include "window_state.h"
+#include <algorithm>
+#include <cmath>
 
 static const int kBtnCount = 3;
+
+int TitleBar::corner_safe_inset() const {
+    WindowState* st = window_state(owner_hwnd);
+    if (!st) return 0;
+    int radius = st->rounded_layered_active ? st->rounded_layered_radius_px :
+        (st->rounded_region_active ? st->rounded_region_radius_px : 0);
+    if (radius <= 0) return 0;
+    int inset = (int)std::ceil((float)radius * 0.55f);
+    int max_inset = (std::max)(0, bounds.h - (int)std::ceil(6.0f * dpi_scale));
+    return (std::min)(inset, max_inset);
+}
 
 void TitleBar::get_btn_rect(Btn b, int& x, int& y, int& w, int& h) const {
     WindowState* st = window_state(owner_hwnd);
@@ -20,7 +33,7 @@ void TitleBar::get_btn_rect(Btn b, int& x, int& y, int& w, int& h) const {
         x = base_x + idx * w;
         y = base_y;
     } else {
-        x = bounds.w - (kBtnCount - idx) * w;
+        x = bounds.w - corner_safe_inset() - (kBtnCount - idx) * w;
         y = (bounds.h - h) / 2;
     }
     if (y < 0) y = 0;
@@ -101,14 +114,17 @@ void TitleBar::paint(RenderContext& ctx) {
     if (wcslen(title) > 0) {
         const Theme* t = theme_for_window(owner_hwnd);
         float fs = 12.0f * dpi_scale;
-        float max_w = (float)bounds.w - (float)(kBtnCount * btn_w()) - 20.0f;
+        float title_x = 12.0f * dpi_scale + (float)corner_safe_inset();
+        int bx, by, bw, bh;
+        get_btn_rect(Close, bx, by, bw, bh);
+        float max_w = (float)bx - title_x - 8.0f * dpi_scale;
         if (max_w < 20.0f) max_w = 20.0f;
         auto* layout = ctx.create_text_layout(
             title, L"Microsoft YaHei UI", fs, max_w, (float)bounds.h);
         if (layout) {
             layout->SetTextAlignment(DWRITE_TEXT_ALIGNMENT_LEADING);
             layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
-            ctx.rt->DrawTextLayout(D2D1::Point2F(12.0f, 0), layout,
+            ctx.rt->DrawTextLayout(D2D1::Point2F(title_x, 0), layout,
                 ctx.get_brush(text_color ? text_color : t->titlebar_text),
                 D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
             layout->Release();

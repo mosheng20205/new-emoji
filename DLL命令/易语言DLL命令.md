@@ -1,7 +1,7 @@
 ﻿# new_emoji.dll 易语言 DLL 命令
 
 本文件记录 new_emoji 项目的完整易语言 DLL 命令声明，已按 new_emoji.def 和 exports.h 核对。
-当前导出命令数量：1153。
+当前导出命令数量：1253。
 
 通用约定：
 - 易语言命令名使用中文；DLL 入口名仍保留 C++ 导出名（如 "EU_CreateWindow"）以便正确绑定。
@@ -46,6 +46,16 @@
     .参数 窗口句柄, 整数型
     .参数 bytes, 整数型
     .参数 len, 整数型
+
+.DLL命令 设置窗口图标, 整数型, "new_emoji.dll", "EU_SetWindowIcon", , 对应 C++ 导出命令 EU_SetWindowIcon；从 UTF-8 图标文件路径加载 .ico 并设置标题栏/任务栏图标，返回1成功0失败
+    .参数 窗口句柄, 整数型
+    .参数 图标路径字节集指针, 整数型, , UTF-8，建议传 .ico 文件路径
+    .参数 图标路径长度, 整数型
+
+.DLL命令 从字节集设置窗口图标, 整数型, "new_emoji.dll", "EU_SetWindowIconFromBytes", , 对应 C++ 导出命令 EU_SetWindowIconFromBytes；传入 .ico 文件完整字节集，返回1成功0失败
+    .参数 窗口句柄, 整数型
+    .参数 图标文件字节集指针, 整数型, , .ico 文件完整字节
+    .参数 图标文件字节集长度, 整数型
 
 .DLL命令 设置窗口位置尺寸, , "new_emoji.dll", "EU_SetWindowBounds", , 对应 C++ 导出命令 EU_SetWindowBounds
     .参数 窗口句柄, 整数型
@@ -8140,6 +8150,7 @@ JSON 示例：
 创建扩展窗口 -> EU_CreateWindowEx
 读取窗口框架标记 -> EU_GetWindowFrameFlags
 设置窗口框架标记 -> EU_SetWindowFrameFlags
+设置窗口圆角 -> EU_SetWindowRoundedCorners
 设置窗口缩放边框 -> EU_SetWindowResizeBorder
 读取窗口缩放边框 -> EU_GetWindowResizeBorder
 设置窗口非拖拽区域 -> EU_SetWindowNoDragRegion
@@ -8148,4 +8159,15 @@ JSON 示例：
 读取元素窗口命令 -> EU_GetElementWindowCommand
 ```
 
+易语言绑定示例：
+
+```text
+.DLL命令 设置窗口圆角, , "new_emoji.dll", "EU_SetWindowRoundedCorners", , 对应 C++ 导出命令 EU_SetWindowRoundedCorners；设置 Windows 窗口外形圆角
+    .参数 窗口句柄, 整数型
+    .参数 是否启用, 整数型, , 0关闭 1启用
+    .参数 圆角半径, 整数型, , 逻辑像素，DLL 内部按 DPI/屏幕缩放换算
+```
+
 `frame_flags` 使用通用窗口框架语义，不使用 Chrome 专属命名：`0x0001=无边框`，`0x0002=自定义标题栏`，`0x0004=自绘窗口按钮`，`0x0008=可缩放`，`0x0010=圆角`，`0x0020=隐藏内置标题栏`。
+
+`设置窗口圆角` 绑定 `EU_SetWindowRoundedCorners(hwnd, enabled, radius)`，会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 主路径回退到 per-pixel alpha 分层窗口并按当前 DPI / 屏幕缩放换算逻辑半径，layered 连续提交失败时会退到真实窗口区域圆角。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。

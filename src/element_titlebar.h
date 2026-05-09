@@ -23,6 +23,7 @@ private:
 
     int  btn_w()  const { return (int)(46.0f * dpi_scale); }
     int  btn_h()  const { return bounds.h; }
+    int  corner_safe_inset() const;
     void get_btn_rect(Btn b, int& x, int& y, int& w, int& h) const;
     Btn  button_at(int x, int y) const;
     void draw_minimize(RenderContext& ctx, int x, int y, int w, int h, Color c);

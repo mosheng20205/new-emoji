@@ -12,7 +12,7 @@
 
 相关增强：`Tabs` 支持 Chrome 标签栏模式，`Menu` / `Popover` / `Dropdown` 支持通用 Popup 与 Element Popup 绑定，`Container` 支持显式 Flex，主题补齐 `chrome.*` token。
 
-窗口外壳能力已抽象为通用 [Window Frame 窗口框架](./window-frame.md)，用于无标题栏、自绘标题栏、拖拽区、缩放边框和元素绑定窗口命令。
+窗口外壳能力已抽象为通用 [Window Frame 窗口框架](./window-frame.md)，用于无标题栏、自绘标题栏、窗口图标、真实窗口圆角、拖拽区、缩放边框和元素绑定窗口命令。
 
 ---
 # 组件文档导航

@@ -54,6 +54,11 @@ struct WindowState {
     Color titlebar_close_hover_bg = 0;
     bool rounded_corners = false;
     int rounded_corner_radius = 0;
+    bool rounded_region_active = false;
+    int rounded_region_radius_px = 0;
+    bool rounded_layered_active = false;
+    int rounded_layered_radius_px = 0;
+    int rounded_layered_failures = 0;
     int frame_flags = EU_WINDOW_FRAME_DEFAULT;
     bool frame_flags_explicit = false;
     int resize_border_left = 6;
@@ -62,6 +67,8 @@ struct WindowState {
     int resize_border_bottom = 6;
     std::vector<Rect> drag_regions;
     std::vector<Rect> no_drag_regions;
+    HICON window_icon_big = nullptr;
+    HICON window_icon_small = nullptr;
 
     // Manual resize tracking (for WS_POPUP without WS_THICKFRAME)
     bool sizing = false;
@@ -79,4 +86,5 @@ extern thread_local WindowCreateParams* g_pending_create_params;
 WindowState* window_state(HWND hwnd);
 void register_window_class();
 void recreate_render_target(WindowState* st);
+void apply_window_rounded_corners(WindowState* st);
 void apply_window_frame_flags(WindowState* st, int flags, bool explicit_flags);

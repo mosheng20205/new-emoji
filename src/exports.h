@@ -16,6 +16,8 @@ void __stdcall EU_DestroyWindow(HWND hwnd);
 void __stdcall EU_ShowWindow(HWND hwnd, int visible);
 int  __stdcall EU_RunMessageLoop();
 void __stdcall EU_SetWindowTitle(HWND hwnd, const unsigned char* bytes, int len);
+int  __stdcall EU_SetWindowIcon(HWND hwnd, const unsigned char* path_bytes, int path_len);
+int  __stdcall EU_SetWindowIconFromBytes(HWND hwnd, const unsigned char* icon_bytes, int icon_len);
 void __stdcall EU_SetWindowBounds(HWND hwnd, int x, int y, int w, int h);
 int  __stdcall EU_GetWindowBounds(HWND hwnd, int* x, int* y, int* w, int* h);
 

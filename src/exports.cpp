@@ -97,6 +97,7 @@ extern HMODULE g_module;
 #include <map>
 #include <string>
 #include <vector>
+#include <cstdint>
 #include <cstring>
 #include <cmath>
 #include <cstdlib>
@@ -104,6 +105,184 @@ extern HMODULE g_module;
 
 static int scale_to_px(int v, float scale) {
     return (int)std::lround((float)v * scale);
+}
+
+struct WindowIconPair {
+    HICON big = nullptr;
+    HICON small_icon = nullptr;
+};
+
+#pragma pack(push, 1)
+struct IcoHeader {
+    uint16_t reserved;
+    uint16_t type;
+    uint16_t count;
+};
+
+struct IcoEntry {
+    uint8_t width;
+    uint8_t height;
+    uint8_t color_count;
+    uint8_t reserved;
+    uint16_t planes;
+    uint16_t bit_count;
+    uint32_t bytes_in_res;
+    uint32_t image_offset;
+};
+#pragma pack(pop)
+
+static void destroy_icon_pair(WindowIconPair& icons) {
+    if (icons.big) DestroyIcon(icons.big);
+    if (icons.small_icon && icons.small_icon != icons.big) DestroyIcon(icons.small_icon);
+    icons.big = nullptr;
+    icons.small_icon = nullptr;
+}
+
+static int icon_size_from_ico_byte(uint8_t value) {
+    return value == 0 ? 256 : (int)value;
+}
+
+static int icon_bit_depth(const IcoEntry& entry) {
+    if (entry.bit_count > 0) return entry.bit_count;
+    if (entry.planes > 0) return entry.planes;
+    return entry.color_count == 0 ? 32 : 8;
+}
+
+static void window_icon_metrics(HWND hwnd, int& big_w, int& big_h, int& small_w, int& small_h) {
+    UINT dpi = 96;
+    if (hwnd && IsWindow(hwnd)) {
+        UINT window_dpi = GetDpiForWindow(hwnd);
+        if (window_dpi > 0) dpi = window_dpi;
+    }
+    big_w = GetSystemMetricsForDpi(SM_CXICON, dpi);
+    big_h = GetSystemMetricsForDpi(SM_CYICON, dpi);
+    small_w = GetSystemMetricsForDpi(SM_CXSMICON, dpi);
+    small_h = GetSystemMetricsForDpi(SM_CYSMICON, dpi);
+    if (big_w <= 0) big_w = GetSystemMetrics(SM_CXICON);
+    if (big_h <= 0) big_h = GetSystemMetrics(SM_CYICON);
+    if (small_w <= 0) small_w = GetSystemMetrics(SM_CXSMICON);
+    if (small_h <= 0) small_h = GetSystemMetrics(SM_CYSMICON);
+}
+
+static HICON duplicate_icon_for_size(HICON source, int w, int h) {
+    if (!source) return nullptr;
+    HICON resized = (HICON)CopyImage(source, IMAGE_ICON, w, h, LR_DEFAULTCOLOR);
+    if (resized) return resized;
+    return CopyIcon(source);
+}
+
+static void normalize_icon_pair(WindowIconPair& icons, int big_w, int big_h, int small_w, int small_h) {
+    if (icons.big && !icons.small_icon) {
+        icons.small_icon = duplicate_icon_for_size(icons.big, small_w, small_h);
+        if (!icons.small_icon) icons.small_icon = icons.big;
+    } else if (!icons.big && icons.small_icon) {
+        icons.big = duplicate_icon_for_size(icons.small_icon, big_w, big_h);
+        if (!icons.big) icons.big = icons.small_icon;
+    }
+}
+
+static WindowIconPair load_window_icons_from_file(HWND hwnd, const std::wstring& path) {
+    WindowIconPair icons;
+    if (path.empty()) return icons;
+
+    int big_w, big_h, small_w, small_h;
+    window_icon_metrics(hwnd, big_w, big_h, small_w, small_h);
+    constexpr UINT flags = LR_LOADFROMFILE | LR_DEFAULTCOLOR;
+    icons.big = (HICON)LoadImageW(nullptr, path.c_str(), IMAGE_ICON, big_w, big_h, flags);
+    icons.small_icon = (HICON)LoadImageW(nullptr, path.c_str(), IMAGE_ICON, small_w, small_h, flags);
+    normalize_icon_pair(icons, big_w, big_h, small_w, small_h);
+    return icons;
+}
+
+static bool ico_entry_is_valid(const IcoEntry& entry, size_t total_size) {
+    size_t offset = (size_t)entry.image_offset;
+    size_t size = (size_t)entry.bytes_in_res;
+    return size > 0 && offset <= total_size && size <= total_size - offset;
+}
+
+static int ico_entry_score(const IcoEntry& entry, int desired_w, int desired_h) {
+    int w = icon_size_from_ico_byte(entry.width);
+    int h = icon_size_from_ico_byte(entry.height);
+    int distance = std::abs(w - desired_w) + std::abs(h - desired_h);
+    int undersize_penalty = (w < desired_w || h < desired_h) ? 1000 : 0;
+    int depth = icon_bit_depth(entry);
+    if (depth > 512) depth = 512;
+    return (distance + undersize_penalty) * 1024 - depth;
+}
+
+static HICON create_icon_from_ico_bytes(const unsigned char* bytes, int len, int desired_w, int desired_h) {
+    if (!bytes || len < (int)sizeof(IcoHeader)) return nullptr;
+
+    const auto* header = reinterpret_cast<const IcoHeader*>(bytes);
+    if (header->reserved != 0 || header->type != 1 || header->count == 0) return nullptr;
+
+    size_t count = (size_t)header->count;
+    size_t dir_size = sizeof(IcoHeader) + count * sizeof(IcoEntry);
+    if (dir_size > (size_t)len) return nullptr;
+
+    const auto* entries = reinterpret_cast<const IcoEntry*>(bytes + sizeof(IcoHeader));
+    std::vector<int> order;
+    order.reserve(count);
+    for (size_t i = 0; i < count; ++i) {
+        if (ico_entry_is_valid(entries[i], (size_t)len)) order.push_back((int)i);
+    }
+    std::sort(order.begin(), order.end(), [&](int a, int b) {
+        int score_a = ico_entry_score(entries[a], desired_w, desired_h);
+        int score_b = ico_entry_score(entries[b], desired_w, desired_h);
+        if (score_a != score_b) return score_a < score_b;
+        return icon_bit_depth(entries[a]) > icon_bit_depth(entries[b]);
+    });
+
+    for (int index : order) {
+        const IcoEntry& entry = entries[index];
+        const BYTE* image = reinterpret_cast<const BYTE*>(bytes + entry.image_offset);
+        HICON icon = CreateIconFromResourceEx(
+            const_cast<PBYTE>(image),
+            entry.bytes_in_res,
+            TRUE,
+            0x00030000,
+            desired_w,
+            desired_h,
+            LR_DEFAULTCOLOR);
+        if (icon) return icon;
+    }
+    return nullptr;
+}
+
+static WindowIconPair load_window_icons_from_ico_bytes(HWND hwnd, const unsigned char* bytes, int len) {
+    WindowIconPair icons;
+    int big_w, big_h, small_w, small_h;
+    window_icon_metrics(hwnd, big_w, big_h, small_w, small_h);
+    icons.big = create_icon_from_ico_bytes(bytes, len, big_w, big_h);
+    icons.small_icon = create_icon_from_ico_bytes(bytes, len, small_w, small_h);
+    normalize_icon_pair(icons, big_w, big_h, small_w, small_h);
+    return icons;
+}
+
+static int apply_window_icons(HWND hwnd, WindowIconPair icons) {
+    if (!hwnd || !IsWindow(hwnd) || (!icons.big && !icons.small_icon)) {
+        destroy_icon_pair(icons);
+        return 0;
+    }
+
+    WindowState* st = window_state(hwnd);
+    if (!st) {
+        destroy_icon_pair(icons);
+        return 0;
+    }
+
+    SendMessageW(hwnd, WM_SETICON, ICON_BIG, (LPARAM)icons.big);
+    SendMessageW(hwnd, WM_SETICON, ICON_SMALL, (LPARAM)icons.small_icon);
+
+    HICON old_big = st->window_icon_big;
+    HICON old_small = st->window_icon_small;
+    st->window_icon_big = icons.big;
+    st->window_icon_small = icons.small_icon;
+
+    if (old_big) DestroyIcon(old_big);
+    if (old_small && old_small != old_big) DestroyIcon(old_small);
+    InvalidateRect(hwnd, nullptr, FALSE);
+    return 1;
 }
 
 // ── Window management ────────────────────────────────────────────────
@@ -184,6 +363,15 @@ void __stdcall EU_DestroyWindow(HWND hwnd) {
 
 void __stdcall EU_ShowWindow(HWND hwnd, int visible) {
     ShowWindow(hwnd, visible ? SW_SHOW : SW_HIDE);
+    if (visible) {
+        if (auto* st = window_state(hwnd)) {
+            if (st->rounded_corners) {
+                apply_window_rounded_corners(st);
+            } else {
+                UpdateWindow(hwnd);
+            }
+        }
+    }
 }
 
 int __stdcall EU_RunMessageLoop() {
@@ -200,6 +388,17 @@ void __stdcall EU_SetWindowTitle(HWND hwnd, const unsigned char* bytes, int len)
     std::wstring title = utf8_to_wide(bytes, len);
     SetWindowTextW(hwnd, title.c_str());
     InvalidateRect(hwnd, nullptr, FALSE);
+}
+
+int __stdcall EU_SetWindowIcon(HWND hwnd, const unsigned char* path_bytes, int path_len) {
+    std::wstring path = utf8_to_wide(path_bytes, path_len);
+    WindowIconPair icons = load_window_icons_from_file(hwnd, path);
+    return apply_window_icons(hwnd, icons);
+}
+
+int __stdcall EU_SetWindowIconFromBytes(HWND hwnd, const unsigned char* icon_bytes, int icon_len) {
+    WindowIconPair icons = load_window_icons_from_ico_bytes(hwnd, icon_bytes, icon_len);
+    return apply_window_icons(hwnd, icons);
 }
 
 void __stdcall EU_SetWindowBounds(HWND hwnd, int x, int y, int w, int h) {
@@ -13133,6 +13332,8 @@ void __stdcall EU_SetWindowRoundedCorners(HWND hwnd, int enabled, int radius) {
     if (auto* st = window_state(hwnd)) {
         st->rounded_corners = enabled != 0;
         st->rounded_corner_radius = (std::max)(0, radius);
+        apply_window_rounded_corners(st);
+        InvalidateRect(hwnd, nullptr, FALSE);
     }
 }
 

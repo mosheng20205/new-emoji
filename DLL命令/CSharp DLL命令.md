@@ -1,7 +1,7 @@
 # new_emoji.dll C# DLL 命令
 
 本文件记录 `new_emoji.dll` 的 C# P/Invoke 声明，按 `src/new_emoji.def` 和 `src/exports.h` 生成。
-当前导出命令数量：1153。
+当前导出命令数量：1253。
 
 通用约定：
 - x86 应用加载 `bin/Win32/Release/new_emoji.dll`，x64 应用加载 `bin/x64/Release/new_emoji.dll`。
@@ -95,6 +95,18 @@ public static extern int EU_RunMessageLoop();
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetWindowTitle(IntPtr hwnd, byte[] bytes, int len);
+```
+## EU_SetWindowIcon
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_SetWindowIcon(IntPtr hwnd, byte[] path_bytes, int path_len);
+```
+## EU_SetWindowIconFromBytes
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_SetWindowIconFromBytes(IntPtr hwnd, byte[] icon_bytes, int icon_len);
 ```
 ## EU_SetWindowBounds
 
@@ -7073,6 +7085,7 @@ C# P/Invoke 应补充以下入口：
 EU_CreateWindowEx
 EU_GetWindowFrameFlags
 EU_SetWindowFrameFlags
+EU_SetWindowRoundedCorners
 EU_SetWindowResizeBorder
 EU_GetWindowResizeBorder
 EU_SetWindowNoDragRegion
@@ -7081,4 +7094,13 @@ EU_SetElementWindowCommand
 EU_GetElementWindowCommand
 ```
 
+圆角窗口绑定：
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetWindowRoundedCorners(IntPtr hwnd, int enabled, int radius);
+```
+
 命名统一使用 Window Frame / 窗口框架，不使用 ChromeFlags；浏览器式外壳只是 `frame_flags` 的推荐组合。
+
+`EU_SetWindowRoundedCorners(hwnd, enabled, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 主路径回退到 per-pixel alpha 分层窗口并按当前 DPI / 屏幕缩放换算逻辑半径，layered 连续提交失败时会退到真实窗口区域圆角。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。

@@ -109,6 +109,10 @@ dll.EU_CreateWindowEx.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
                                   ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                   ctypes.c_uint32, ctypes.c_int]
 dll.EU_CreateWindowEx.restype = wintypes.HWND
+dll.EU_SetWindowIcon.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetWindowIcon.restype = ctypes.c_int
+dll.EU_SetWindowIconFromBytes.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetWindowIconFromBytes.restype = ctypes.c_int
 
 dll.EU_DestroyWindow.argtypes = [wintypes.HWND]
 dll.EU_ShowWindow.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -3576,6 +3580,14 @@ def create_window_ex(title="New Emoji Test", x=300, y=200, w=800, h=600,
         titlebar_color,
         frame_flags,
     )
+
+def set_window_icon(hwnd, icon_path):
+    data = make_utf8(os.fspath(icon_path))
+    return bool(dll.EU_SetWindowIcon(hwnd, bytes_arg(data), len(data)))
+
+def set_window_icon_from_bytes(hwnd, icon_bytes):
+    data = bytes(icon_bytes or b"")
+    return bool(dll.EU_SetWindowIconFromBytes(hwnd, bytes_arg(data), len(data)))
 
 def create_borderless_window(title="无标题栏窗口", x=300, y=200, w=800, h=600):
     flags = (

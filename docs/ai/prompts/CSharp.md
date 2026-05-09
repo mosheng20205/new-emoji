@@ -19,3 +19,7 @@
 ```
 
 Table 普通表格行级增删使用 `EU_AddTableRow`、`EU_InsertTableRow`、`EU_DeleteTableRow`、`EU_ClearTableRows`；虚表数据由回调数据源维护。
+
+窗口图标：调用 `EU_SetWindowIcon` 传入 UTF-8 `.ico` 路径字节，或调用 `EU_SetWindowIconFromBytes` 传入 `.ico` 文件完整字节。
+
+窗口圆角：调用 `EU_SetWindowRoundedCorners(hwnd, enabled, radius)` 设置 Windows 窗口外形圆角；支持 DWM 的系统会优先使用平滑圆角，Win10 主路径会回退为 per-pixel alpha 分层窗口，layered 连续提交失败时会退到真实窗口区域圆角。
