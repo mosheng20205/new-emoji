@@ -7089,4 +7089,4 @@ dll.EU_SetWindowRoundedCorners.restype = None
 
 底层 DLL 入口为 `EU_CreateWindowEx`、`EU_GetWindowFrameFlags`、`EU_SetWindowFrameFlags`、`EU_SetWindowRoundedCorners`、`EU_SetWindowResizeBorder`、`EU_GetWindowResizeBorder`、`EU_SetWindowNoDragRegion`、`EU_ClearWindowNoDragRegions`、`EU_SetElementWindowCommand`、`EU_GetElementWindowCommand`。
 
-`set_window_rounded_corners(hwnd, True, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 主路径回退到 per-pixel alpha 分层窗口并按当前 DPI / 屏幕缩放换算逻辑半径，layered 连续提交失败时会退到真实窗口区域圆角。传入 `False` 或半径 `0` 可恢复矩形窗口。
+`set_window_rounded_corners(hwnd, True, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 回退到 per-pixel alpha 分层窗口并通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交，内部按当前 DPI / 屏幕缩放换算逻辑半径。传入 `False` 或半径 `0` 可恢复矩形窗口。

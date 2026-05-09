@@ -8170,4 +8170,4 @@ JSON 示例：
 
 `frame_flags` 使用通用窗口框架语义，不使用 Chrome 专属命名：`0x0001=无边框`，`0x0002=自定义标题栏`，`0x0004=自绘窗口按钮`，`0x0008=可缩放`，`0x0010=圆角`，`0x0020=隐藏内置标题栏`。
 
-`设置窗口圆角` 绑定 `EU_SetWindowRoundedCorners(hwnd, enabled, radius)`，会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 主路径回退到 per-pixel alpha 分层窗口并按当前 DPI / 屏幕缩放换算逻辑半径，layered 连续提交失败时会退到真实窗口区域圆角。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。
+`设置窗口圆角` 绑定 `EU_SetWindowRoundedCorners(hwnd, enabled, radius)`，会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 回退到 per-pixel alpha 分层窗口并通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交，内部按当前 DPI / 屏幕缩放换算逻辑半径。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。

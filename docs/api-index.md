@@ -1188,7 +1188,7 @@
 | `EU_SetWindowIconFromBytes` | 从 .ico 文件完整字节集设置当前窗口的标题栏/任务栏图标。 |
 | `EU_GetWindowFrameFlags` | 读取窗口框架 flags。 |
 | `EU_SetWindowFrameFlags` | 设置窗口框架 flags，其中 `EU_WINDOW_FRAME_ROUNDED` 会应用真实 Windows 窗口圆角。 |
-| `EU_SetWindowRoundedCorners` | 设置或关闭 Windows 窗口外形圆角，优先使用 DWM 抗锯齿圆角，Win10 主路径回退为 per-pixel alpha 分层窗口，layered 连续失败时退到真实区域圆角。 |
+| `EU_SetWindowRoundedCorners` | 设置或关闭 Windows 窗口外形圆角，优先使用 DWM 抗锯齿圆角，Win10 回退为 per-pixel alpha 分层窗口并通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交。 |
 | `EU_SetWindowResizeBorder` | 设置四边自定义缩放命中宽度。 |
 | `EU_GetWindowResizeBorder` | 读取四边自定义缩放命中宽度。 |
 | `EU_SetWindowNoDragRegion` | 设置非拖拽区域，避免按钮、地址栏、标签项被拖拽区覆盖。 |

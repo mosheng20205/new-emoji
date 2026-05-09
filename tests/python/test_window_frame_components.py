@@ -15,16 +15,8 @@ def assert_state(condition, message):
         raise RuntimeError(message)
 
 
-gdi32 = ctypes.WinDLL("gdi32", use_last_error=True)
 user32 = ctypes.WinDLL("user32", use_last_error=True)
 dwmapi = ctypes.WinDLL("dwmapi", use_last_error=True)
-HRGN = ctypes.c_void_p
-gdi32.CreateRectRgn.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
-gdi32.CreateRectRgn.restype = HRGN
-gdi32.DeleteObject.argtypes = [HRGN]
-gdi32.DeleteObject.restype = ctypes.c_int
-user32.GetWindowRgn.argtypes = [wintypes.HWND, HRGN]
-user32.GetWindowRgn.restype = ctypes.c_int
 dwmapi.DwmGetWindowAttribute.argtypes = [wintypes.HWND, ctypes.c_uint32, ctypes.c_void_p, ctypes.c_uint32]
 dwmapi.DwmGetWindowAttribute.restype = ctypes.c_long
 if hasattr(user32, "GetWindowLongPtrW"):
@@ -33,15 +25,6 @@ else:
     get_window_long = user32.GetWindowLongW
 get_window_long.argtypes = [wintypes.HWND, ctypes.c_int]
 get_window_long.restype = ctypes.c_size_t
-
-
-def window_has_region(hwnd):
-    region = gdi32.CreateRectRgn(0, 0, 1, 1)
-    assert_state(region, "创建窗口区域检测对象失败")
-    try:
-        return user32.GetWindowRgn(hwnd, region) != 0
-    finally:
-        gdi32.DeleteObject(region)
 
 
 def dwm_corner_preference(hwnd):
@@ -60,7 +43,7 @@ def window_is_layered(hwnd):
 
 def window_has_rounding(hwnd):
     preference = dwm_corner_preference(hwnd)
-    return preference in (2, 3) or window_has_region(hwnd) or window_is_layered(hwnd)
+    return preference in (2, 3) or window_is_layered(hwnd)
 
 
 def make_test_ico_bytes():

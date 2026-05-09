@@ -7103,4 +7103,4 @@ public static extern void EU_SetWindowRoundedCorners(IntPtr hwnd, int enabled, i
 
 命名统一使用 Window Frame / 窗口框架，不使用 ChromeFlags；浏览器式外壳只是 `frame_flags` 的推荐组合。
 
-`EU_SetWindowRoundedCorners(hwnd, enabled, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 主路径回退到 per-pixel alpha 分层窗口并按当前 DPI / 屏幕缩放换算逻辑半径，layered 连续提交失败时会退到真实窗口区域圆角。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。
+`EU_SetWindowRoundedCorners(hwnd, enabled, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 回退到 per-pixel alpha 分层窗口并通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交，内部按当前 DPI / 屏幕缩放换算逻辑半径。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。

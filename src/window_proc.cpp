@@ -95,29 +95,15 @@ static void clear_window_region(HWND hwnd, bool redraw) {
     SetWindowRgn(hwnd, nullptr, redraw ? TRUE : FALSE);
 }
 
-static bool apply_rounded_window_region(WindowState* st) {
-    if (!st || !st->hwnd || st->rounded_layered_radius_px <= 0) return false;
-    RECT wr{};
-    if (!GetWindowRect(st->hwnd, &wr)) return false;
-    int w = wr.right - wr.left;
-    int h = wr.bottom - wr.top;
-    if (w <= 0 || h <= 0) return false;
-
-    int radius = (std::max)(1, (std::min)(st->rounded_layered_radius_px,
-                                          (std::min)(w, h) / 2));
-    HRGN region = CreateRoundRectRgn(0, 0, w + 1, h + 1, radius * 2, radius * 2);
-    if (!region) return false;
-    SetWindowRgn(st->hwnd, region, TRUE);
-    st->rounded_region_active = true;
-    st->rounded_region_radius_px = radius;
-    st->rounded_layered_active = false;
-    st->rounded_layered_radius_px = 0;
-    st->rounded_layered_failures = 0;
-    return true;
-}
-
-static void set_layered_window(HWND hwnd, bool enabled) {
+static void set_layered_window(HWND hwnd, bool enabled, bool force_reset = false) {
     LONG_PTR ex = GetWindowLongPtrW(hwnd, GWL_EXSTYLE);
+    if (enabled && force_reset && (ex & WS_EX_LAYERED)) {
+        SetWindowLongPtrW(hwnd, GWL_EXSTYLE, ex & ~WS_EX_LAYERED);
+        SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
+                     SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER |
+                     SWP_NOACTIVATE | SWP_FRAMECHANGED);
+        ex &= ~WS_EX_LAYERED;
+    }
     LONG_PTR next = enabled ? (ex | WS_EX_LAYERED) : (ex & ~WS_EX_LAYERED);
     if (next == ex) return;
     SetWindowLongPtrW(hwnd, GWL_EXSTYLE, next);
@@ -203,6 +189,9 @@ static void apply_rounded_alpha_mask(BYTE* bits, int w, int h, int stride, int r
 }
 
 static bool render_layered_window(WindowState* st) {
+    if (!g_d2d_factory || !g_dwrite_factory || !g_wic_factory) {
+        ensure_factories();
+    }
     if (!st || !st->hwnd || !st->rounded_layered_active || !g_d2d_factory ||
         !g_dwrite_factory || !g_wic_factory || !st->element_tree) {
         return false;
@@ -222,7 +211,7 @@ static bool render_layered_window(WindowState* st) {
     ID2D1RenderTarget* rt = nullptr;
     D2D1_RENDER_TARGET_PROPERTIES props = D2D1::RenderTargetProperties(
         D2D1_RENDER_TARGET_TYPE_DEFAULT,
-        D2D1::PixelFormat(DXGI_FORMAT_B8G8R8A8_UNORM, D2D1_ALPHA_MODE_PREMULTIPLIED),
+        D2D1::PixelFormat(DXGI_FORMAT_UNKNOWN, D2D1_ALPHA_MODE_PREMULTIPLIED),
         96.0f, 96.0f);
     hr = g_d2d_factory->CreateWicBitmapRenderTarget(bitmap, props, &rt);
     if (FAILED(hr) || !rt) {
@@ -312,7 +301,7 @@ static bool render_layered_window(WindowState* st) {
     return ok;
 }
 
-static bool render_layered_window_or_retry(WindowState* st, bool allow_region_fallback) {
+static bool render_layered_window_or_retry(WindowState* st) {
     if (!st || !st->rounded_layered_active) return false;
     if (render_layered_window(st)) {
         st->rounded_layered_failures = 0;
@@ -320,17 +309,13 @@ static bool render_layered_window_or_retry(WindowState* st, bool allow_region_fa
     }
 
     ++st->rounded_layered_failures;
-    if (allow_region_fallback && st->rounded_layered_failures >= 3) {
-        int radius = st->rounded_layered_radius_px;
-        set_layered_window(st->hwnd, false);
-        st->rounded_layered_radius_px = radius;
-        if (apply_rounded_window_region(st)) {
-            InvalidateRect(st->hwnd, nullptr, FALSE);
-        }
-        return false;
+    set_layered_window(st->hwnd, true, true);
+    if (render_layered_window(st)) {
+        st->rounded_layered_failures = 0;
+        return true;
     }
 
-    if (IsWindowVisible(st->hwnd)) {
+    if (IsWindowVisible(st->hwnd) && st->rounded_layered_failures < 8) {
         PostMessageW(st->hwnd, WM_NEWEMOJI_RENDER_LAYERED, 0, 0);
     }
     return false;
@@ -340,8 +325,6 @@ void apply_window_rounded_corners(WindowState* st) {
     if (!st || !st->hwnd || !IsWindow(st->hwnd)) return;
 
     bool should_round = st->rounded_corners && st->rounded_corner_radius > 0 && !IsZoomed(st->hwnd);
-    st->rounded_region_active = false;
-    st->rounded_region_radius_px = 0;
     st->rounded_layered_active = false;
     st->rounded_layered_radius_px = 0;
     st->rounded_layered_failures = 0;
@@ -367,13 +350,10 @@ void apply_window_rounded_corners(WindowState* st) {
     st->rounded_layered_active = radius > 0;
     st->rounded_layered_radius_px = radius;
     st->rounded_layered_failures = 0;
-    set_layered_window(st->hwnd, st->rounded_layered_active);
+    set_layered_window(st->hwnd, st->rounded_layered_active, true);
     clear_window_region(st->hwnd, true);
     if (st->rounded_layered_active && IsWindowVisible(st->hwnd)) {
-        render_layered_window_or_retry(st, true);
-    }
-    if (!st->rounded_layered_active) {
-        InvalidateRect(st->hwnd, nullptr, FALSE);
+        render_layered_window_or_retry(st);
     }
 }
 
@@ -590,7 +570,7 @@ void register_window_class() {
 
         case WM_NEWEMOJI_RENDER_LAYERED:
             if (st && st->rounded_layered_active) {
-                render_layered_window_or_retry(st, true);
+                render_layered_window_or_retry(st);
             }
             return 0;
 
@@ -704,7 +684,7 @@ void register_window_class() {
             PAINTSTRUCT ps;
             BeginPaint(hwnd, &ps);
             if (st && st->rounded_layered_active) {
-                render_layered_window_or_retry(st, true);
+                render_layered_window_or_retry(st);
                 EndPaint(hwnd, &ps);
                 return 0;
             }

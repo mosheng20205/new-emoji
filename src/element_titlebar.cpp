@@ -10,8 +10,7 @@ static const int kBtnCount = 3;
 int TitleBar::corner_safe_inset() const {
     WindowState* st = window_state(owner_hwnd);
     if (!st) return 0;
-    int radius = st->rounded_layered_active ? st->rounded_layered_radius_px :
-        (st->rounded_region_active ? st->rounded_region_radius_px : 0);
+    int radius = st->rounded_layered_active ? st->rounded_layered_radius_px : 0;
     if (radius <= 0) return 0;
     int inset = (int)std::ceil((float)radius * 0.55f);
     int max_inset = (std::max)(0, bounds.h - (int)std::ceil(6.0f * dpi_scale));

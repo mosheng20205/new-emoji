@@ -54,8 +54,6 @@ struct WindowState {
     Color titlebar_close_hover_bg = 0;
     bool rounded_corners = false;
     int rounded_corner_radius = 0;
-    bool rounded_region_active = false;
-    int rounded_region_radius_px = 0;
     bool rounded_layered_active = false;
     int rounded_layered_radius_px = 0;
     int rounded_layered_failures = 0;

@@ -20,7 +20,7 @@
 ## 窗口圆角
 
 - 窗口外形圆角使用 `EU_SetWindowRoundedCorners(hwnd, enabled, radius)`；Python 对应 `set_window_rounded_corners(hwnd, True, radius)`。
-- 支持 DWM 圆角的系统会优先使用系统抗锯齿圆角；Win10 等旧系统主路径回退到 per-pixel alpha 分层窗口，并按当前 DPI / 屏幕缩放换算逻辑半径；如果 layered 连续提交失败，会退到真实窗口区域圆角。关闭时传 `enabled=0` 或 `radius<=0`。
+- 支持 DWM 圆角的系统会优先使用系统抗锯齿圆角；Win10 等旧系统回退到 per-pixel alpha 分层窗口，通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交 32bpp PBGRA 位图，并按当前 DPI / 屏幕缩放换算逻辑半径。关闭时传 `enabled=0` 或 `radius<=0`。
 - Python 示例可参考 `examples/python/window_rounded_corners_demo.py`，窗口会保持打开直到用户手动关闭。
 
 ## 通用约束

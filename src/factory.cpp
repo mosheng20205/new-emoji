@@ -22,6 +22,13 @@ bool ensure_factories() {
     if (!g_wic_factory) {
         hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
                               IID_PPV_ARGS(&g_wic_factory));
+        if (hr == CO_E_NOTINITIALIZED) {
+            HRESULT co_hr = CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED);
+            if (SUCCEEDED(co_hr) || co_hr == RPC_E_CHANGED_MODE) {
+                hr = CoCreateInstance(CLSID_WICImagingFactory, nullptr, CLSCTX_INPROC_SERVER,
+                                      IID_PPV_ARGS(&g_wic_factory));
+            }
+        }
     }
     return SUCCEEDED(hr);
 }
