@@ -168,6 +168,32 @@ int Dropdown::menu_height() const {
 }
 
 int Dropdown::menu_x() const {
+    if (popup_anchor_point_active) {
+        int own_x = 0, own_y = 0;
+        get_absolute_pos(own_x, own_y);
+        int mw = menu_width();
+        int x = popup_anchor_point_x;
+        int side = popup_side(popup_placement);
+        int align = popup_align(popup_placement);
+        if (side == 2) {
+            x = popup_anchor_point_x - mw - popup_offset;
+        } else if (side == 3) {
+            x = popup_anchor_point_x + popup_offset;
+        } else {
+            if (align > 0) x = popup_anchor_point_x - mw;
+        }
+        x += popup_offset_x;
+        const Element* root = root_element(this);
+        if (root) {
+            int rx = 0, ry = 0;
+            root->get_absolute_pos(rx, ry);
+            int min_x = rx + 6;
+            int max_x = rx + root->bounds.w - mw - 6;
+            if (max_x < min_x) max_x = min_x;
+            x = (std::max)(min_x, (std::min)(max_x, x));
+        }
+        return x - own_x;
+    }
     if (popup_anchor_element_id <= 0) return 0;
     const Element* root = root_element(this);
     const Element* anchor = find_element_by_id(root, popup_anchor_element_id);
@@ -206,6 +232,32 @@ int Dropdown::menu_x() const {
 }
 
 int Dropdown::menu_y() const {
+    if (popup_anchor_point_active) {
+        int own_x = 0, own_y = 0;
+        get_absolute_pos(own_x, own_y);
+        int mh = menu_height();
+        int y = popup_anchor_point_y + popup_offset;
+        int side = popup_side(popup_placement);
+        if (side == 0) {
+            y = popup_anchor_point_y - mh - popup_offset;
+        } else if (side == 2 || side == 3) {
+            y = popup_anchor_point_y - mh / 2;
+            int align = popup_align(popup_placement);
+            if (align < 0) y = popup_anchor_point_y;
+            else if (align > 0) y = popup_anchor_point_y - mh;
+        }
+        y += popup_offset_y;
+        const Element* root = root_element(this);
+        if (root) {
+            int rx = 0, ry = 0;
+            root->get_absolute_pos(rx, ry);
+            int min_y = ry + 6;
+            int max_y = ry + root->bounds.h - mh - 6;
+            if (max_y < min_y) max_y = min_y;
+            y = (std::max)(min_y, (std::min)(max_y, y));
+        }
+        return y - own_y;
+    }
     if (popup_anchor_element_id > 0) {
         const Element* root = root_element(this);
         const Element* anchor = find_element_by_id(root, popup_anchor_element_id);
@@ -380,6 +432,16 @@ bool Dropdown::is_open() const {
 
 void Dropdown::set_popup_anchor(int anchor_id) {
     popup_anchor_element_id = anchor_id;
+    popup_anchor_point_active = false;
+    trigger_mode = 2;
+    invalidate();
+}
+
+void Dropdown::set_popup_anchor_point(int absolute_x, int absolute_y) {
+    popup_anchor_point_active = true;
+    popup_anchor_element_id = 0;
+    popup_anchor_point_x = absolute_x;
+    popup_anchor_point_y = absolute_y;
     trigger_mode = 2;
     invalidate();
 }

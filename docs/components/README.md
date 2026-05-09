@@ -73,7 +73,7 @@
 | `Empty` | 空状态：描述、图片、尺寸、操作按钮和插槽按钮 | `EU_CreateEmpty` | 全样式已完成 | [空状态](./empty.md) |
 | `Skeleton` | 骨架屏 | `EU_CreateSkeleton` | 已完成 | [骨架屏](./skeleton.md) |
 | `Descriptions` | 描述列表 | `EU_CreateDescriptions` | 全样式已完成 | [描述列表](./descriptions.md) |
-| `Table` | 高级表格：固定列、多级表头、纵横滚动条、表头拖拽、Excel 导入导出、单元格点击回调、筛选搜索、树形、合计、内置单元格控件、虚表 | `EU_CreateTable` | 高级样式完成 | [表格](./table.md) |
+| `Table` | 高级表格：固定列、多级表头、纵横滚动条、行级增删、表头拖拽、Excel 导入导出、单元格点击回调、筛选搜索、树形、合计、内置单元格控件、虚表 | `EU_CreateTable` | 高级样式完成 | [表格](./table.md) |
 | `InfiniteScroll` | 无限滚动 | `EU_CreateInfiniteScroll` | 已完成 | [无限滚动](./infinite-scroll.md) |
 | `Card` | 卡片：标题、正文、列表、页脚操作、阴影、样式读回和子元素插槽图片卡片 | `EU_CreateCard` | 全样式已完成 | [卡片](./card.md) |
 | `Collapse` | 折叠面板：多展开、手风琴、自定义标题、禁用项和状态读回 | `EU_CreateCollapse` | 全样式已完成 | [折叠面板](./collapse.md) |

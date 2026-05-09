@@ -62,6 +62,6 @@ private:
     bool     dismiss_popups_at(int x, int y);
     bool     dismiss_popups_on_escape();
     bool     toggle_icon_button_popup(Element* button);
-    bool     trigger_element_popup(Element* element, int trigger, bool toggle);
+    bool     trigger_element_popup(Element* element, int trigger, bool toggle, int x = -1, int y = -1);
     void     close_other_popups(int keep_popup_id);
 };

@@ -2762,6 +2762,30 @@ dll.EU_SetTableColumnsEx.restype = None
 dll.EU_SetTableRowsEx.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTableRowsEx.restype = None
 ```
+## EU_AddTableRow
+
+```python
+dll.EU_AddTableRow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_AddTableRow.restype = ctypes.c_int
+```
+## EU_InsertTableRow
+
+```python
+dll.EU_InsertTableRow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_InsertTableRow.restype = ctypes.c_int
+```
+## EU_DeleteTableRow
+
+```python
+dll.EU_DeleteTableRow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_DeleteTableRow.restype = ctypes.c_int
+```
+## EU_ClearTableRows
+
+```python
+dll.EU_ClearTableRows.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_ClearTableRows.restype = ctypes.c_int
+```
 ## EU_SetTableCellEx
 
 ```python

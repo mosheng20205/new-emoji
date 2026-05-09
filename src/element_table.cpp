@@ -344,6 +344,159 @@ void Table::set_rows_ex(const std::wstring& spec) {
     invalidate();
 }
 
+int Table::add_row_ex(const std::wstring& spec) {
+    return insert_row_ex((int)adv_rows.size(), spec);
+}
+
+int Table::insert_row_ex(int row_index, const std::wstring& spec) {
+    if (virtual_mode || row_index < 0) return -1;
+    if (row_index > (int)adv_rows.size()) row_index = (int)adv_rows.size();
+
+    std::wstring line = spec;
+    size_t line_end = line.find_first_of(L"\r\n");
+    if (line_end != std::wstring::npos) line = line.substr(0, line_end);
+
+    TableRow row = parse_row_line(line, row_index);
+    adv_rows.insert(adv_rows.begin() + row_index, std::move(row));
+
+    if (selected_row >= row_index) ++selected_row;
+    for (int& selected : selected_rows) {
+        if (selected >= row_index) ++selected;
+    }
+    for (auto& span : spans) {
+        if (span.row >= row_index) ++span.row;
+        else if (span.row + span.rowspan > row_index) ++span.rowspan;
+    }
+
+    int actual_index = row_index;
+    std::wstring inserted_key = adv_rows[row_index].key;
+    if (sort_column >= 0 && !tree_mode) {
+        std::wstring selected_key = (selected_row >= 0 && selected_row < (int)adv_rows.size()) ? adv_rows[selected_row].key : L"";
+        std::vector<std::wstring> selected_keys;
+        for (int selected : selected_rows) {
+            if (selected >= 0 && selected < (int)adv_rows.size()) selected_keys.push_back(adv_rows[selected].key);
+        }
+        set_sort(sort_column, sort_desc);
+        if (!selected_key.empty()) {
+            selected_row = -1;
+            for (int i = 0; i < (int)adv_rows.size(); ++i) {
+                if (adv_rows[i].key == selected_key) {
+                    selected_row = i;
+                    break;
+                }
+            }
+        }
+        if (!selected_keys.empty()) {
+            selected_rows.clear();
+            for (const auto& key : selected_keys) {
+                for (int i = 0; i < (int)adv_rows.size(); ++i) {
+                    if (adv_rows[i].key == key) {
+                        selected_rows.push_back(i);
+                        break;
+                    }
+                }
+            }
+        }
+        clamp_scroll();
+        sync_selection_cells();
+        sync_legacy_vectors();
+        invalidate();
+        for (int i = 0; i < (int)adv_rows.size(); ++i) {
+            if (adv_rows[i].key == inserted_key) {
+                actual_index = i;
+                break;
+            }
+        }
+    } else {
+        clamp_scroll();
+        sync_selection_cells();
+        sync_legacy_vectors();
+        invalidate();
+        invalidate();
+    }
+    return actual_index;
+}
+
+bool Table::delete_row(int row_index) {
+    if (virtual_mode || row_index < 0 || row_index >= (int)adv_rows.size()) return false;
+    adv_rows.erase(adv_rows.begin() + row_index);
+
+    if (selected_row == row_index) selected_row = -1;
+    else if (selected_row > row_index) --selected_row;
+
+    std::vector<int> next_selected;
+    for (int selected : selected_rows) {
+        if (selected == row_index) continue;
+        next_selected.push_back(selected > row_index ? selected - 1 : selected);
+    }
+    selected_rows = std::move(next_selected);
+    if (selection_mode == 2 && selected_row < 0 && !selected_rows.empty()) selected_row = selected_rows.front();
+
+    std::vector<TableSpan> next_spans;
+    for (auto span : spans) {
+        if (span.row == row_index) continue;
+        if (span.row > row_index) --span.row;
+        else if (span.row + span.rowspan > row_index) {
+            --span.rowspan;
+            if (span.rowspan <= 0) continue;
+        }
+        next_spans.push_back(span);
+    }
+    spans = std::move(next_spans);
+
+    if (sort_column >= 0 && !tree_mode) {
+        std::wstring selected_key = (selected_row >= 0 && selected_row < (int)adv_rows.size()) ? adv_rows[selected_row].key : L"";
+        std::vector<std::wstring> selected_keys;
+        for (int selected : selected_rows) {
+            if (selected >= 0 && selected < (int)adv_rows.size()) selected_keys.push_back(adv_rows[selected].key);
+        }
+        set_sort(sort_column, sort_desc);
+        if (!selected_key.empty()) {
+            selected_row = -1;
+            for (int i = 0; i < (int)adv_rows.size(); ++i) {
+                if (adv_rows[i].key == selected_key) {
+                    selected_row = i;
+                    break;
+                }
+            }
+        }
+        if (!selected_keys.empty()) {
+            selected_rows.clear();
+            for (const auto& key : selected_keys) {
+                for (int i = 0; i < (int)adv_rows.size(); ++i) {
+                    if (adv_rows[i].key == key) {
+                        selected_rows.push_back(i);
+                        break;
+                    }
+                }
+            }
+        }
+        clamp_scroll();
+        sync_selection_cells();
+        sync_legacy_vectors();
+    } else {
+        clamp_scroll();
+        sync_selection_cells();
+        sync_legacy_vectors();
+        invalidate();
+    }
+    return true;
+}
+
+bool Table::clear_rows() {
+    if (virtual_mode) return false;
+    adv_rows.clear();
+    selected_row = -1;
+    selected_rows.clear();
+    spans.clear();
+    scroll_row = 0;
+    scroll_x = 0;
+    clear_virtual_cache();
+    sync_legacy_vectors();
+    invalidate();
+    return true;
+}
+
 void Table::set_cell_ex(int row, int col, int type, const std::wstring& value, const std::wstring& options) {
     if (row < 0 || col < 0) return;
     if (virtual_mode) {

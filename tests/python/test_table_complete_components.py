@@ -102,6 +102,47 @@ def dump_state(prefix):
     print(f"{prefix} 单元格(0,4)={cell_value} 状态={full_state} 回调次数={g_action_count}")
 
 
+def run_row_crud_smoke():
+    hwnd = ui.create_window("📊 表格行级增删测试", 180, 140, 760, 420)
+    if not hwnd:
+        raise RuntimeError("table row crud window create failed")
+    try:
+        root = ui.create_container(hwnd, 0, 0, 0, 720, 340)
+        columns = [
+            {"title": "编号 🔢", "key": "id", "width": 100},
+            {"title": "姓名 😊", "key": "name", "width": 160},
+            {"title": "状态 ✅", "key": "state", "width": 140},
+        ]
+        table = ui.create_table_ex(hwnd, root, columns, [], True, True, 20, 20, 660, 220, selection_mode=1)
+
+        assert ui.add_table_row(hwnd, table, ["001", "小明 😊", "待处理"]) == 0
+        assert ui.add_table_row(hwnd, table, ["002", "小红 🌸", "已完成"]) == 1
+        assert ui.get_table_row_count(hwnd, table) == 2
+        assert ui.get_table_cell_value(hwnd, table, 1, 1) == "小红 🌸"
+
+        ui.dll.EU_SetTableSelectedRow(hwnd, table, 1)
+        assert ui.insert_table_row(hwnd, table, 1, ["001-1", "插入行 ✨", "处理中"]) == 1
+        assert ui.get_table_row_count(hwnd, table) == 3
+        assert ui.get_table_cell_value(hwnd, table, 1, 1) == "插入行 ✨"
+        assert ui.dll.EU_GetTableSelectedRow(hwnd, table) == 2
+
+        assert ui.delete_table_row(hwnd, table, 0)
+        assert ui.get_table_row_count(hwnd, table) == 2
+        assert ui.get_table_cell_value(hwnd, table, 0, 0) == "001-1"
+        assert ui.dll.EU_GetTableSelectedRow(hwnd, table) == 1
+
+        assert ui.delete_table_row(hwnd, table, 1)
+        assert ui.get_table_row_count(hwnd, table) == 1
+        assert ui.dll.EU_GetTableSelectedRow(hwnd, table) == -1
+
+        assert ui.clear_table_rows(hwnd, table)
+        assert ui.get_table_row_count(hwnd, table) == 0
+        assert ui.dll.EU_GetTableSelectedRow(hwnd, table) == -1
+        assert not ui.delete_table_row(hwnd, table, 0)
+    finally:
+        ui.dll.EU_DestroyWindow(hwnd)
+
+
 def run_virtual_table_smoke():
     hwnd = ui.create_window("📊 Table 虚表烟雾测试", 160, 120, 920, 520)
     if not hwnd:
@@ -145,6 +186,11 @@ def run_virtual_table_smoke():
         ui.set_table_virtual_row_provider(hwnd, table, provider)
         ui.set_table_header_drag_options(hwnd, table, True, True, 72, 360, 48, 132)
         assert ui.get_table_row_count(hwnd, table) == 96
+        assert ui.add_table_row(hwnd, table, ["虚表新增失败"]) == -1
+        assert ui.insert_table_row(hwnd, table, 0, ["虚表插入失败"]) == -1
+        assert not ui.delete_table_row(hwnd, table, 0)
+        assert not ui.clear_table_rows(hwnd, table)
+        assert ui.get_table_row_count(hwnd, table) == 96
         assert ui.get_table_cell_value(hwnd, table, 0, 1) == "2026-05-01"
         assert ui.get_table_cell_value(hwnd, table, 12, 2) == "虚表 13"
         before = hits["count"]
@@ -170,6 +216,7 @@ def run_virtual_table_smoke():
 def main():
     global g_hwnd, g_table_id
 
+    run_row_crud_smoke()
     run_virtual_table_smoke()
 
     hwnd = ui.create_window("📊 Table 高级样式与单元格控件验证", 140, 70, WINDOW_W, WINDOW_H)

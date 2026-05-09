@@ -2778,6 +2778,30 @@ public static extern void EU_SetTableColumnsEx(IntPtr hwnd, int element_id, byte
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetTableRowsEx(IntPtr hwnd, int element_id, byte[] rows_bytes, int rows_len);
 ```
+## EU_AddTableRow
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_AddTableRow(IntPtr hwnd, int element_id, byte[] row_bytes, int row_len);
+```
+## EU_InsertTableRow
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_InsertTableRow(IntPtr hwnd, int element_id, int row_index, byte[] row_bytes, int row_len);
+```
+## EU_DeleteTableRow
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_DeleteTableRow(IntPtr hwnd, int element_id, int row_index);
+```
+## EU_ClearTableRows
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_ClearTableRows(IntPtr hwnd, int element_id);
+```
 ## EU_SetTableCellEx
 
 ```csharp

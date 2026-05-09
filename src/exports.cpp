@@ -6671,6 +6671,28 @@ void __stdcall EU_SetTableRowsEx(HWND hwnd, int element_id,
     }
 }
 
+int __stdcall EU_AddTableRow(HWND hwnd, int element_id,
+                             const unsigned char* row_bytes, int row_len) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el ? el->add_row_ex(utf8_to_wide(row_bytes, row_len)) : -1;
+}
+
+int __stdcall EU_InsertTableRow(HWND hwnd, int element_id, int row_index,
+                                const unsigned char* row_bytes, int row_len) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el ? el->insert_row_ex(row_index, utf8_to_wide(row_bytes, row_len)) : -1;
+}
+
+int __stdcall EU_DeleteTableRow(HWND hwnd, int element_id, int row_index) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el && el->delete_row(row_index) ? 1 : 0;
+}
+
+int __stdcall EU_ClearTableRows(HWND hwnd, int element_id) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el && el->clear_rows() ? 1 : 0;
+}
+
 void __stdcall EU_SetTableCellEx(HWND hwnd, int element_id, int row, int col, int type,
                                  const unsigned char* value_bytes, int value_len,
                                  const unsigned char* options_bytes, int options_len) {

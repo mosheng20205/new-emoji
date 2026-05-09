@@ -131,9 +131,11 @@ def main() -> int:
         ],
         errors,
     )
-    require_text(ROOT / "AI_USAGE.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji"], errors)
-    require_text(ROOT / "docs" / "ai" / "prompts" / "易语言.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji"], errors)
-    require_text(ROOT / "examples" / "templates" / "易语言" / "空白窗口.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji"], errors)
+    e_callback_needles = ["到整数 (&", "不能将“子程序指针”数据转换到“整数型”数据"]
+    require_text(ROOT / "AI_USAGE.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji", "到整数 (&"], errors)
+    require_text(ROOT / "docs" / "ai" / "e-language-encoding.md", e_callback_needles, errors)
+    require_text(ROOT / "docs" / "ai" / "prompts" / "易语言.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji", "到整数 (&"], errors)
+    require_text(ROOT / "examples" / "templates" / "易语言" / "空白窗口.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji", "到整数 (&"], errors)
     require_text(ROOT / "examples" / "templates" / "csharp" / "BlankWindow.cs", ["Encoding.UTF8.GetBytes", "CallingConvention.StdCall"], errors)
     require_text(ROOT / "examples" / "templates" / "python" / "blank_window.py", ["new_emoji_ui", "欢迎使用 new_emoji 🚀"], errors)
     require_text(ROOT / "examples" / "templates" / "火山" / "空白窗口.md", ["UTF-8 字节指针 + 长度", "欢迎使用 new_emoji 🚀"], errors)

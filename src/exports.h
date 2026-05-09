@@ -946,6 +946,12 @@ void __stdcall EU_SetTableColumnsEx(HWND hwnd, int element_id,
                                     const unsigned char* columns_bytes, int columns_len);
 void __stdcall EU_SetTableRowsEx(HWND hwnd, int element_id,
                                  const unsigned char* rows_bytes, int rows_len);
+int  __stdcall EU_AddTableRow(HWND hwnd, int element_id,
+                              const unsigned char* row_bytes, int row_len);
+int  __stdcall EU_InsertTableRow(HWND hwnd, int element_id, int row_index,
+                                 const unsigned char* row_bytes, int row_len);
+int  __stdcall EU_DeleteTableRow(HWND hwnd, int element_id, int row_index);
+int  __stdcall EU_ClearTableRows(HWND hwnd, int element_id);
 void __stdcall EU_SetTableCellEx(HWND hwnd, int element_id, int row, int col, int type,
                                  const unsigned char* value_bytes, int value_len,
                                  const unsigned char* options_bytes, int options_len);

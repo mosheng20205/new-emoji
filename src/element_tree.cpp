@@ -446,7 +446,7 @@ void ElementTree::dispatch_rbutton_up(int x, int y) {
     int lx = x, ly = y;
     mouse_to_local(hit, lx, ly);
     hit->on_mouse_up(lx, ly, MouseButton::Right);
-    if (trigger_element_popup(hit, 1, true)) return;
+    if (trigger_element_popup(hit, 1, true, x, y)) return;
 }
 
 // ── Keyboard ──────────────────────────────────────────────────────────
@@ -491,7 +491,7 @@ bool ElementTree::toggle_icon_button_popup(Element* button) {
     return true;
 }
 
-bool ElementTree::trigger_element_popup(Element* element, int trigger, bool toggle) {
+bool ElementTree::trigger_element_popup(Element* element, int trigger, bool toggle, int x, int y) {
     if (!element || trigger < 0 || trigger > 4) return false;
     int popup_id = element->popup_bindings[trigger];
     if (popup_id <= 0) return false;
@@ -504,7 +504,11 @@ bool ElementTree::trigger_element_popup(Element* element, int trigger, bool togg
     } else if (auto* menu = dynamic_cast<Menu*>(popup)) {
         menu->popup_anchor_element_id = element->id;
     } else if (auto* dropdown = dynamic_cast<Dropdown*>(popup)) {
-        dropdown->set_popup_anchor(element->id);
+        if (trigger == 1 && x >= 0 && y >= 0) {
+            dropdown->set_popup_anchor_point(x, y);
+        } else {
+            dropdown->set_popup_anchor(element->id);
+        }
     } else {
         return false;
     }

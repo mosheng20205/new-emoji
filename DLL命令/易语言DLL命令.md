@@ -3292,6 +3292,28 @@
     .参数 行数据字节集指针, 整数型, , UTF-8，支持树形、展开、懒加载、行样式和单元格类型
     .参数 行数据长度, 整数型
 
+.DLL命令 添加表格行, 整数型, "new_emoji.dll", "EU_AddTableRow", , 对应 C++ 导出命令 EU_AddTableRow；普通表格追加单行，返回实际行索引，失败返回-1
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 行数据字节集指针, 整数型, , UTF-8，高级行单行协议
+    .参数 行数据长度, 整数型
+
+.DLL命令 插入表格行, 整数型, "new_emoji.dll", "EU_InsertTableRow", , 对应 C++ 导出命令 EU_InsertTableRow；普通表格插入单行，返回实际行索引，失败返回-1
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 行索引, 整数型
+    .参数 行数据字节集指针, 整数型, , UTF-8，高级行单行协议
+    .参数 行数据长度, 整数型
+
+.DLL命令 删除表格行, 整数型, "new_emoji.dll", "EU_DeleteTableRow", , 对应 C++ 导出命令 EU_DeleteTableRow；普通表格删除单行，返回1成功0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 行索引, 整数型
+
+.DLL命令 清空表格行, 整数型, "new_emoji.dll", "EU_ClearTableRows", , 对应 C++ 导出命令 EU_ClearTableRows；普通表格清空所有行，返回1成功0失败
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+
 .DLL命令 设置表格虚表选项, , "new_emoji.dll", "EU_SetTableVirtualOptions", , 对应 C++ 导出命令 EU_SetTableVirtualOptions；设置虚表开关、总行数和缓存窗口
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型

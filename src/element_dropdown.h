@@ -25,6 +25,9 @@ public:
     int popup_offset = 8;
     int popup_offset_x = 0;
     int popup_offset_y = 0;
+    bool popup_anchor_point_active = false;
+    int popup_anchor_point_x = 0;
+    int popup_anchor_point_y = 0;
     bool popup_close_on_outside = true;
     bool popup_close_on_escape = true;
     ElementClickCallback main_click_cb = nullptr;
@@ -58,6 +61,7 @@ public:
     bool is_divided(int index) const;
     bool is_open() const;
     void set_popup_anchor(int anchor_id);
+    void set_popup_anchor_point(int absolute_x, int absolute_y);
     void set_popup_placement(int placement, int offset_x, int offset_y);
     void set_popup_dismiss_behavior(bool close_on_outside, bool close_on_escape);
     Rect popup_rect() const;

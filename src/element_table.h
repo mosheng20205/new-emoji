@@ -140,6 +140,10 @@ public:
 
     void set_columns_ex(const std::wstring& spec);
     void set_rows_ex(const std::wstring& spec);
+    int add_row_ex(const std::wstring& spec);
+    int insert_row_ex(int row_index, const std::wstring& spec);
+    bool delete_row(int row_index);
+    bool clear_rows();
     void set_cell_ex(int row, int col, int type, const std::wstring& value,
                      const std::wstring& options);
     void set_row_style(int row, Color bg, Color fg, int align, int flags, int font_size);

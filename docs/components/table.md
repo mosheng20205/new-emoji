@@ -76,6 +76,8 @@ parent=r0	level=1	c0=2016-05-02	c1=明细行	c2=子行说明	c3=归档 🗃️	c
 | `EU_GetTableSelectedRow` / `EU_GetTableRowCount` / `EU_GetTableColumnCount` | 读取基础状态 |
 | `EU_SetTableColumnsEx` | 设置高级列配置 |
 | `EU_SetTableRowsEx` | 设置高级行数据 |
+| `EU_AddTableRow` / `EU_InsertTableRow` | 普通表格追加或插入一行，行数据使用高级行单行协议 |
+| `EU_DeleteTableRow` / `EU_ClearTableRows` | 普通表格删除单行或清空所有行；虚表模式返回失败 |
 | `EU_SetTableVirtualOptions` | 设置虚表开关、总行数和缓存窗口 |
 | `EU_SetTableVirtualRowProvider` | 设置虚表按行取数回调，返回 UTF-8 高级行协议字符串 |
 | `EU_ClearTableVirtualCache` | 清空虚表行缓存 |
@@ -100,6 +102,7 @@ parent=r0	level=1	c0=2016-05-02	c1=明细行	c2=子行说明	c3=归档 🗃️	c
 - 列宽拖拽命中表头分隔线；表头高度拖拽命中表头底边，适合桌面端手工调宽习惯。
 - `EU_ExportTableExcel` 默认导出整张表，并保留多行表头结构。
 - `EU_ImportTableExcel` 按第一张工作表回填当前 Table；若遇到当前版本尚未支持的压缩格式，会返回 `0`。
+- 行级增删 API 只作用于普通表格；虚表数据由回调数据源负责，`EU_AddTableRow` / `EU_InsertTableRow` 返回 `-1`，`EU_DeleteTableRow` / `EU_ClearTableRows` 返回 `0`。
 
 ## Python 使用
 

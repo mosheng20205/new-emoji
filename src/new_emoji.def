@@ -457,6 +457,10 @@ EXPORTS
     EU_GetTableOptions
     EU_SetTableColumnsEx
     EU_SetTableRowsEx
+    EU_AddTableRow
+    EU_InsertTableRow
+    EU_DeleteTableRow
+    EU_ClearTableRows
     EU_SetTableCellEx
     EU_SetTableRowStyle
     EU_SetTableCellStyle

@@ -7,6 +7,11 @@
 | C# | `DLL命令/CSharp DLL命令.md` | `Encoding.UTF8.GetBytes(text)` + `Length` | 与进程位数一致 | `examples/Csharp/`、`examples/templates/csharp/` | .NET / P/Invoke 用户 |
 | Python | `examples/python/new_emoji_ui.py` | helper 自动处理 UTF-8 | 与 Python 位数一致 | `examples/python/`、`examples/templates/python/` | Python 原型和自动化用户 |
 
+## Table 行级增删
+
+- 普通表格行级增删使用 `EU_AddTableRow` / `EU_InsertTableRow` / `EU_DeleteTableRow` / `EU_ClearTableRows`；Python 优先使用 `add_table_row` / `insert_table_row` / `delete_table_row` / `clear_table_rows`。
+- 虚表数据仍由 `EU_SetTableVirtualRowProvider` 的回调数据源维护，不使用这些行级增删命令。
+
 ## 通用约束
 
 - DLL 导出统一为 `EU_` 前缀。

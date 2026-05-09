@@ -453,6 +453,10 @@
 | `EU_GetTableOptions` | 读取基础表格选项 |
 | `EU_SetTableColumnsEx` | 设置高级列配置：固定列、多级表头、排序、筛选、宽度、单元格类型 |
 | `EU_SetTableRowsEx` | 设置高级行数据：树形、展开、懒加载、行样式和单元格类型 |
+| `EU_AddTableRow` | 普通表格追加一行；行数据使用高级行单行协议，成功返回实际行索引 |
+| `EU_InsertTableRow` | 普通表格插入一行；索引超出末尾时追加，成功返回实际行索引 |
+| `EU_DeleteTableRow` | 普通表格删除指定行，成功返回 1 |
+| `EU_ClearTableRows` | 普通表格清空所有行，成功返回 1 |
 | `EU_SetTableCellEx` | 设置单元格类型、值和选项 |
 | `EU_SetTableRowStyle` | 设置某一行的颜色、对齐、字体标志和字号 |
 | `EU_SetTableCellStyle` | 设置某一单元格的颜色、对齐、字体标志和字号 |

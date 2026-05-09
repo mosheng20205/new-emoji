@@ -1512,12 +1512,22 @@ dll.EU_GetTableOptions.argtypes = [wintypes.HWND, ctypes.c_int,
                                    ctypes.POINTER(ctypes.c_int)]
 dll.EU_GetTableOptions.restype = ctypes.c_int
 dll.EU_SetTableColumnsEx.argtypes = [wintypes.HWND, ctypes.c_int,
-                                      ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTableRowsEx.argtypes = [wintypes.HWND, ctypes.c_int,
-                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_AddTableRow.argtypes = [wintypes.HWND, ctypes.c_int,
+                               ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_AddTableRow.restype = ctypes.c_int
+dll.EU_InsertTableRow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_InsertTableRow.restype = ctypes.c_int
+dll.EU_DeleteTableRow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_DeleteTableRow.restype = ctypes.c_int
+dll.EU_ClearTableRows.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_ClearTableRows.restype = ctypes.c_int
 dll.EU_SetTableCellEx.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
-                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
-                                   ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int,
+                                  ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
 dll.EU_SetTableRowStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int,
                                      ctypes.c_uint32, ctypes.c_uint32,
                                      ctypes.c_int, ctypes.c_int, ctypes.c_int]
@@ -6418,6 +6428,20 @@ def set_table_columns_ex(hwnd, element_id, columns):
 def set_table_rows_ex(hwnd, element_id, rows, columns=None):
     data = make_utf8("\n".join(table_row_line(row, columns) for row in (rows or [])))
     dll.EU_SetTableRowsEx(hwnd, element_id, bytes_arg(data), len(data))
+
+def add_table_row(hwnd, element_id, row, columns=None):
+    data = make_utf8(table_row_line(row, columns))
+    return dll.EU_AddTableRow(hwnd, element_id, bytes_arg(data), len(data))
+
+def insert_table_row(hwnd, element_id, index, row, columns=None):
+    data = make_utf8(table_row_line(row, columns))
+    return dll.EU_InsertTableRow(hwnd, element_id, int(index), bytes_arg(data), len(data))
+
+def delete_table_row(hwnd, element_id, index):
+    return bool(dll.EU_DeleteTableRow(hwnd, element_id, int(index)))
+
+def clear_table_rows(hwnd, element_id):
+    return bool(dll.EU_ClearTableRows(hwnd, element_id))
 
 def set_table_cell(hwnd, element_id, row, col, cell_type="text", value="", options=None):
     if isinstance(value, (list, tuple)):
