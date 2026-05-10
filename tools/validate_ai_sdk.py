@@ -32,6 +32,9 @@ REQUIRED_FILES = [
     ROOT / "DLL命令" / "Python DLL命令.md",
     ROOT / "DLL命令" / "易语言DLL命令.md",
     ROOT / "examples" / "火山" / "src" / "new_emoji_接口.wsv",
+    ROOT / "examples" / "火山" / "new_emoji_module" / "new_emoji.vgrp",
+    ROOT / "examples" / "火山" / "new_emoji_module" / "src" / "new_emoji_接口.wsv",
+    ROOT / "examples" / "火山" / "new_emoji_module" / "src" / "new_emoji_助手.wsv",
 ]
 
 
@@ -118,6 +121,10 @@ def main() -> int:
         if "UTF-8 字节集 + 长度" not in e_binding.get("text_rule", ""):
             fail(f"易语言 text_rule missing UTF-8 rule: {name}", errors)
 
+        volcano_binding = item.get("bindings", {}).get("volcano", {})
+        if volcano_binding.get("file") != "examples/火山/new_emoji_module/src/new_emoji_接口.wsv":
+            fail(f"Volcano binding must point to module interface: {name}", errors)
+
     require_text(
         README,
         [
@@ -139,6 +146,7 @@ def main() -> int:
     require_text(ROOT / "examples" / "templates" / "csharp" / "BlankWindow.cs", ["Encoding.UTF8.GetBytes", "CallingConvention.StdCall"], errors)
     require_text(ROOT / "examples" / "templates" / "python" / "blank_window.py", ["new_emoji_ui", "欢迎使用 new_emoji 🚀"], errors)
     require_text(ROOT / "examples" / "templates" / "火山" / "空白窗口.md", ["UTF-8 字节指针 + 长度", "欢迎使用 new_emoji 🚀"], errors)
+    require_text(ROOT / "docs" / "ai" / "prompts" / "火山.md", ["new_emoji_module", "new_emoji.vcip"], errors)
 
     if errors:
         for error in errors:

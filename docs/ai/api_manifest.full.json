@@ -27,7 +27,7 @@
       },
       "volcano": {
         "entry": "EU_CreatePanel",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 面板 组件；详细参数和行为见组件文档。"
@@ -60,7 +60,7 @@
       },
       "volcano": {
         "entry": "EU_CreateButton",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于普通文本按钮和主要操作按钮；图标工具按钮优先使用 IconButton。"
@@ -71,16 +71,6 @@
     "category": "兼容内核",
     "status": "已完成",
     "create_export": "EU_CreateEditBox",
-    "related_exports": [
-      "EU_SetEditBoxText",
-      "EU_GetEditBoxText",
-      "EU_SetEditBoxOptions",
-      "EU_GetEditBoxOptions",
-      "EU_GetEditBoxState",
-      "EU_SetEditBoxScroll",
-      "EU_GetEditBoxScroll",
-      "EU_SetEditBoxTextCallback"
-    ],
     "calling_convention": "__stdcall",
     "text_encoding": "utf8_bytes_with_length",
     "doc": "docs/components/edit-box.md",
@@ -103,7 +93,7 @@
       },
       "volcano": {
         "entry": "EU_CreateEditBox",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "兼容早期 MVP 的底层编辑内核；新表单输入优先使用 Input。"
@@ -136,7 +126,7 @@
       },
       "volcano": {
         "entry": "EU_CreateInfoBox",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 信息框 组件；详细参数和行为见组件文档。"
@@ -169,7 +159,7 @@
       },
       "volcano": {
         "entry": "EU_CreateText",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 文本 组件；详细参数和行为见组件文档。"
@@ -202,7 +192,7 @@
       },
       "volcano": {
         "entry": "EU_CreateLink",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 链接 组件；详细参数和行为见组件文档。"
@@ -235,7 +225,7 @@
       },
       "volcano": {
         "entry": "EU_CreateIcon",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 图标 组件；详细参数和行为见组件文档。"
@@ -268,7 +258,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSpace",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 间距 组件；详细参数和行为见组件文档。"
@@ -301,7 +291,7 @@
       },
       "volcano": {
         "entry": "EU_CreateContainer",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 容器套件 组件；详细参数和行为见组件文档。"
@@ -334,7 +324,7 @@
       },
       "volcano": {
         "entry": "EU_CreateHeader",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 顶栏 组件；详细参数和行为见组件文档。"
@@ -367,7 +357,7 @@
       },
       "volcano": {
         "entry": "EU_CreateAside",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 侧边栏 组件；详细参数和行为见组件文档。"
@@ -400,7 +390,7 @@
       },
       "volcano": {
         "entry": "EU_CreateMain",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 主要区域 组件；详细参数和行为见组件文档。"
@@ -433,7 +423,7 @@
       },
       "volcano": {
         "entry": "EU_CreateFooter",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 底栏 组件；详细参数和行为见组件文档。"
@@ -466,7 +456,7 @@
       },
       "volcano": {
         "entry": "EU_CreateLayout",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 布局 组件；详细参数和行为见组件文档。"
@@ -499,7 +489,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBorder",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 边框 组件；详细参数和行为见组件文档。"
@@ -532,7 +522,7 @@
       },
       "volcano": {
         "entry": "EU_CreateCheckbox",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 复选框 组件；详细参数和行为见组件文档。"
@@ -565,7 +555,7 @@
       },
       "volcano": {
         "entry": "EU_CreateRadio",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 单选框 组件；详细参数和行为见组件文档。"
@@ -598,7 +588,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSwitch",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 开关 组件；详细参数和行为见组件文档。"
@@ -631,7 +621,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSlider",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 滑块 组件；详细参数和行为见组件文档。"
@@ -664,7 +654,7 @@
       },
       "volcano": {
         "entry": "EU_CreateInputNumber",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 数字输入框 组件；详细参数和行为见组件文档。"
@@ -675,28 +665,6 @@
     "category": "表单/选择",
     "status": "已完成",
     "create_export": "EU_CreateInput",
-    "related_exports": [
-      "EU_SetInputValue",
-      "EU_GetInputValue",
-      "EU_SetInputPlaceholder",
-      "EU_SetInputAffixes",
-      "EU_SetInputIcons",
-      "EU_GetInputIcons",
-      "EU_SetInputClearable",
-      "EU_SetInputOptions",
-      "EU_GetInputState",
-      "EU_SetInputScroll",
-      "EU_GetInputScroll",
-      "EU_SetInputVisualOptions",
-      "EU_GetInputVisualOptions",
-      "EU_SetInputSelection",
-      "EU_GetInputSelection",
-      "EU_SetInputContextMenuEnabled",
-      "EU_GetInputContextMenuEnabled",
-      "EU_SetInputMaxLength",
-      "EU_GetInputMaxLength",
-      "EU_SetInputTextCallback"
-    ],
     "calling_convention": "__stdcall",
     "text_encoding": "utf8_bytes_with_length",
     "doc": "docs/components/input.md",
@@ -719,7 +687,7 @@
       },
       "volcano": {
         "entry": "EU_CreateInput",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "推荐用于新表单输入；兼容编辑内核请使用 EditBox。"
@@ -752,7 +720,7 @@
       },
       "volcano": {
         "entry": "EU_CreateInputGroup",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 组合输入 组件；详细参数和行为见组件文档。"
@@ -785,7 +753,7 @@
       },
       "volcano": {
         "entry": "EU_CreateInputTag",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 标签输入 组件；详细参数和行为见组件文档。"
@@ -818,7 +786,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSelect",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 选择器 组件；详细参数和行为见组件文档。"
@@ -851,7 +819,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSelectV2",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 虚拟选择器 组件；详细参数和行为见组件文档。"
@@ -884,7 +852,7 @@
       },
       "volcano": {
         "entry": "EU_CreateRate",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 评分 组件；详细参数和行为见组件文档。"
@@ -917,7 +885,7 @@
       },
       "volcano": {
         "entry": "EU_CreateColorPicker",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 颜色选择器 组件；详细参数和行为见组件文档。"
@@ -950,7 +918,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTag",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 标签 组件；详细参数和行为见组件文档。"
@@ -983,7 +951,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBadge",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 徽标 组件；详细参数和行为见组件文档。"
@@ -1016,7 +984,7 @@
       },
       "volcano": {
         "entry": "EU_CreateProgress",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 进度条 组件；详细参数和行为见组件文档。"
@@ -1049,7 +1017,7 @@
       },
       "volcano": {
         "entry": "EU_CreateAvatar",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 头像 组件；详细参数和行为见组件文档。"
@@ -1082,7 +1050,7 @@
       },
       "volcano": {
         "entry": "EU_CreateEmpty",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 空状态 组件；详细参数和行为见组件文档。"
@@ -1115,7 +1083,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSkeleton",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 骨架屏 组件；详细参数和行为见组件文档。"
@@ -1148,7 +1116,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDescriptions",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 描述列表 组件；详细参数和行为见组件文档。"
@@ -1181,16 +1149,10 @@
       },
       "volcano": {
         "entry": "EU_CreateTable",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
-    "usage_notes": "用于数据列表、筛选、树形、虚表和增删改查类界面；普通表格可用 EU_AddTableRow / EU_InsertTableRow / EU_DeleteTableRow / EU_ClearTableRows 做行级增删。",
-    "extra_exports": [
-      "EU_AddTableRow",
-      "EU_InsertTableRow",
-      "EU_DeleteTableRow",
-      "EU_ClearTableRows"
-    ]
+    "usage_notes": "用于数据列表、筛选、树形、虚表和增删改查类界面。"
   },
   {
     "component": "Card",
@@ -1220,7 +1182,7 @@
       },
       "volcano": {
         "entry": "EU_CreateCard",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 卡片 组件；详细参数和行为见组件文档。"
@@ -1253,7 +1215,7 @@
       },
       "volcano": {
         "entry": "EU_CreateCollapse",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 折叠面板 组件；详细参数和行为见组件文档。"
@@ -1286,7 +1248,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTimeline",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 时间线 组件；详细参数和行为见组件文档。"
@@ -1319,7 +1281,7 @@
       },
       "volcano": {
         "entry": "EU_CreateStatistic",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 统计数值 组件；详细参数和行为见组件文档。"
@@ -1352,7 +1314,7 @@
       },
       "volcano": {
         "entry": "EU_CreateKpiCard",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 指标卡 组件；详细参数和行为见组件文档。"
@@ -1385,7 +1347,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTrend",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 趋势 组件；详细参数和行为见组件文档。"
@@ -1418,7 +1380,7 @@
       },
       "volcano": {
         "entry": "EU_CreateStatusDot",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 状态点 组件；详细参数和行为见组件文档。"
@@ -1451,7 +1413,7 @@
       },
       "volcano": {
         "entry": "EU_CreateGauge",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 仪表盘 组件；详细参数和行为见组件文档。"
@@ -1484,7 +1446,7 @@
       },
       "volcano": {
         "entry": "EU_CreateRingProgress",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 环形进度 组件；详细参数和行为见组件文档。"
@@ -1517,7 +1479,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBulletProgress",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 子弹进度 组件；详细参数和行为见组件文档。"
@@ -1550,7 +1512,7 @@
       },
       "volcano": {
         "entry": "EU_CreateLineChart",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 折线图 组件；详细参数和行为见组件文档。"
@@ -1583,7 +1545,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBarChart",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 柱状图 组件；详细参数和行为见组件文档。"
@@ -1616,7 +1578,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDonutChart",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 环形图 组件；详细参数和行为见组件文档。"
@@ -1649,7 +1611,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDivider",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 分割线 组件；详细参数和行为见组件文档。"
@@ -1682,7 +1644,7 @@
       },
       "volcano": {
         "entry": "EU_CreateCalendar",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 日历 组件；详细参数和行为见组件文档。"
@@ -1715,7 +1677,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTree",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 树 组件；详细参数和行为见组件文档。"
@@ -1748,7 +1710,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTreeSelect",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 树选择 组件；详细参数和行为见组件文档。"
@@ -1781,7 +1743,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTransfer",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 穿梭框 组件；详细参数和行为见组件文档。"
@@ -1814,7 +1776,7 @@
       },
       "volcano": {
         "entry": "EU_CreateAutocomplete",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 自动补全 组件；详细参数和行为见组件文档。"
@@ -1847,7 +1809,7 @@
       },
       "volcano": {
         "entry": "EU_CreateMentions",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 提及 组件；详细参数和行为见组件文档。"
@@ -1880,7 +1842,7 @@
       },
       "volcano": {
         "entry": "EU_CreateCascader",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 级联选择 组件；详细参数和行为见组件文档。"
@@ -1913,7 +1875,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDatePicker",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 日期选择器 组件；详细参数和行为见组件文档。"
@@ -1946,7 +1908,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTimePicker",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 时间选择器 组件；详细参数和行为见组件文档。"
@@ -1979,7 +1941,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDateTimePicker",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 日期时间选择器 组件；详细参数和行为见组件文档。"
@@ -2012,7 +1974,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTimeSelect",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 时间选择 组件；详细参数和行为见组件文档。"
@@ -2045,7 +2007,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDropdown",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 下拉菜单 组件；详细参数和行为见组件文档。"
@@ -2078,7 +2040,7 @@
       },
       "volcano": {
         "entry": "EU_CreateMenu",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 菜单 组件；详细参数和行为见组件文档。"
@@ -2111,7 +2073,7 @@
       },
       "volcano": {
         "entry": "EU_CreateAnchor",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 锚点 组件；详细参数和行为见组件文档。"
@@ -2144,7 +2106,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBacktop",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 回到顶部 组件；详细参数和行为见组件文档。"
@@ -2177,7 +2139,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSegmented",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 分段控制器 组件；详细参数和行为见组件文档。"
@@ -2210,7 +2172,7 @@
       },
       "volcano": {
         "entry": "EU_CreatePageHeader",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 页头 组件；详细参数和行为见组件文档。"
@@ -2243,7 +2205,7 @@
       },
       "volcano": {
         "entry": "EU_CreateAffix",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 固钉 组件；详细参数和行为见组件文档。"
@@ -2276,7 +2238,7 @@
       },
       "volcano": {
         "entry": "EU_CreateWatermark",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 水印 组件；详细参数和行为见组件文档。"
@@ -2309,7 +2271,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTour",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 漫游引导 组件；详细参数和行为见组件文档。"
@@ -2342,7 +2304,7 @@
       },
       "volcano": {
         "entry": "EU_CreateImage",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 图片 组件；详细参数和行为见组件文档。"
@@ -2375,7 +2337,7 @@
       },
       "volcano": {
         "entry": "EU_CreateCarousel",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 轮播 组件；详细参数和行为见组件文档。"
@@ -2408,7 +2370,7 @@
       },
       "volcano": {
         "entry": "EU_CreateUpload",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 上传 组件；详细参数和行为见组件文档。"
@@ -2441,7 +2403,7 @@
       },
       "volcano": {
         "entry": "EU_CreateInfiniteScroll",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 无限滚动 组件；详细参数和行为见组件文档。"
@@ -2474,7 +2436,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBreadcrumb",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 面包屑 组件；详细参数和行为见组件文档。"
@@ -2507,7 +2469,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTabs",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 标签页 组件；详细参数和行为见组件文档。"
@@ -2540,7 +2502,7 @@
       },
       "volcano": {
         "entry": "EU_CreatePagination",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 分页 组件；详细参数和行为见组件文档。"
@@ -2573,7 +2535,7 @@
       },
       "volcano": {
         "entry": "EU_CreateSteps",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 步骤条 组件；详细参数和行为见组件文档。"
@@ -2606,7 +2568,7 @@
       },
       "volcano": {
         "entry": "EU_CreateAlert",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 警告提示 组件；详细参数和行为见组件文档。"
@@ -2639,7 +2601,7 @@
       },
       "volcano": {
         "entry": "EU_CreateResult",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 结果页 组件；详细参数和行为见组件文档。"
@@ -2672,7 +2634,7 @@
       },
       "volcano": {
         "entry": "EU_ShowMessage",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 消息提示 组件；详细参数和行为见组件文档。"
@@ -2705,7 +2667,7 @@
       },
       "volcano": {
         "entry": "EU_ShowMessageBoxEx",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 消息框 组件；详细参数和行为见组件文档。"
@@ -2738,7 +2700,7 @@
       },
       "volcano": {
         "entry": "EU_CreateNotification",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 通知 组件；详细参数和行为见组件文档。"
@@ -2771,7 +2733,7 @@
       },
       "volcano": {
         "entry": "EU_CreateLoading",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 加载 组件；详细参数和行为见组件文档。"
@@ -2804,7 +2766,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDialog",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于窗口内弹窗、表单编辑和确认流程。"
@@ -2837,7 +2799,7 @@
       },
       "volcano": {
         "entry": "EU_CreateDrawer",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 抽屉 组件；详细参数和行为见组件文档。"
@@ -2870,7 +2832,7 @@
       },
       "volcano": {
         "entry": "EU_CreateTooltip",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 文字提示 组件；详细参数和行为见组件文档。"
@@ -2903,7 +2865,7 @@
       },
       "volcano": {
         "entry": "EU_CreatePopover",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 弹出框 组件；详细参数和行为见组件文档。"
@@ -2936,7 +2898,7 @@
       },
       "volcano": {
         "entry": "EU_CreatePopconfirm",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 气泡确认框 组件；详细参数和行为见组件文档。"
@@ -2969,7 +2931,7 @@
       },
       "volcano": {
         "entry": "EU_CreateIconButton",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于工具栏、标题栏和浏览器外壳中的图标按钮。"
@@ -3002,7 +2964,7 @@
       },
       "volcano": {
         "entry": "EU_CreateOmnibox",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于创建和配置 地址栏 组件；详细参数和行为见组件文档。"
@@ -3035,7 +2997,7 @@
       },
       "volcano": {
         "entry": "EU_CreateBrowserViewport",
-        "file": "examples/火山/src/new_emoji_接口.wsv"
+        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
     "usage_notes": "用于浏览器式外壳的内容占位区域。"

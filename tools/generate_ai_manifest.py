@@ -131,7 +131,7 @@ def build_manifest() -> list[dict]:
                     },
                     "volcano": {
                         "entry": create_export,
-                        "file": "examples/火山/src/new_emoji_接口.wsv",
+                        "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv",
                     },
                 },
                 "usage_notes": USAGE_NOTES.get(
@@ -146,10 +146,9 @@ def build_manifest() -> list[dict]:
 
 def main() -> None:
     OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-    OUTPUT.write_text(
-        json.dumps(build_manifest(), ensure_ascii=False, indent=2) + "\n",
-        encoding="utf-8",
-    )
+    with OUTPUT.open("w", encoding="utf-8", newline="\n") as fp:
+        fp.write(json.dumps(build_manifest(), ensure_ascii=False, indent=2))
+        fp.write("\n")
     print(f"Wrote {OUTPUT}")
 
 

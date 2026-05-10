@@ -22,6 +22,11 @@
 6. 从 `examples/templates/` 复制同语言模板开始改。
 7. 运行 `python tools/validate_ai_sdk.py` 检查 AI SDK 文档一致性。
 
+## 火山模块
+
+- 火山优先使用 `examples/火山/new_emoji_module/new_emoji.vgrp` 模块源；发布给最终用户时，通过火山 IDE“工具 -> 制作模块安装包”生成 `new_emoji.vcip`。
+- `NewEmoji接口类` 覆盖全部 `EU_` 导出，`NewEmoji助手类` 为 91 个组件提供中文入口并负责 UTF-8 文本转换。
+
 ## Table 行级增删
 
 - 生成普通表格增删改查界面时，可使用 `EU_AddTableRow`、`EU_InsertTableRow`、`EU_DeleteTableRow`、`EU_ClearTableRows` 或 Python helper `add_table_row`、`insert_table_row`、`delete_table_row`、`clear_table_rows`。

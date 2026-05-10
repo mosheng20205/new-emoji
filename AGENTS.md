@@ -89,6 +89,15 @@ EU_SetElementText / EU_SetElementColor / EU_SetElementFont / ...
 - 如果某个组件新增、删除、重命名或修改 API，导致 `docs/components/` 中对应组件文档、`docs/components/README.md`、`docs/api-index.md`、`test_new_emoji.py` 或 `DLL命令/易语言DLL命令.md`、`DLL命令/CSharp DLL命令.md`、`DLL命令/Python DLL命令.md` 与实际导出不一致，必须在同一轮修改中同步更新这些文档和封装，不能让组件 API 与对应文档出现出入。
 - 如果任何新增、删除、重命名或修改涉及 AI SDK 可见能力，包括组件、导出 API、绑定、示例、模板、语言规则、prompt 或编码规则，必须在同一轮修改中同步更新 `docs/ai/` 相关文档，尤其是 `docs/ai/api_manifest.full.json`、`docs/ai/README.md`、`docs/ai/language-matrix.md` 和 `docs/ai/prompts/` 下对应语言 prompt；更新后必须运行 `python tools/validate_ai_sdk.py`，确认 AI SDK 文档与实际导出、组件清单和模板保持一致。
 
+## 火山模块封装规则
+
+- 火山普通模块最终交付物是 `.vcip` 安装包；仓库内维护的是模块源目录、`.vgrp` 模块定义文件、`.wsv` 源文件和运行时附属 DLL。`.vcip` 必须通过火山 IDE 的“工具 -> 制作模块安装包”生成，不能手写或伪造。
+- 火山组件模块封装范围以 `docs/components/manifest.json` 为唯一清单，当前共 91 个组件；`NewEmoji接口类` 必须一对一覆盖 `src/new_emoji.def` / `src/exports.h` 中全部 `EU_` 导出，`NewEmoji助手类` 必须为 91 个组件提供中文易用入口。
+- 火山模块源位于 `examples/火山/new_emoji_module/`。新增、删除或修改任何 `EU_` 导出、组件清单、火山绑定或火山示例后，必须重新运行 `python tools/generate_volcano_module.py`，再运行 `python tools/generate_volcano_module.py --check`。
+- 每完成一个火山组件封装，都必须更新根目录本地文件 `火山组件模块封装进度.md`；只有底层导入、助手封装、中文/emoji 示例、x64/Win32 验证和 `.vcip` 打包验证都完成后，才允许标记为“已完成”。
+- `火山组件模块封装进度.md` 是本地执行账本，必须加入 `.gitignore`，不要作为正式仓库文档提交。
+- 火山 `.wsv`、`.vprj`、`.vsln`、`.vgrp` 文件默认按 UTF-16 LE 保存；编辑现有火山文件时必须保持原编码，不要静默转换。
+
 ## 当前状态
 
 MVP 阶段已完成：Panel、Button、EditBox、TitleBar（带窗口控制按钮）。后续按需扩展更多组件。
