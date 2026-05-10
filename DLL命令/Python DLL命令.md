@@ -1,7 +1,7 @@
 # new_emoji.dll Python DLL 命令
 
 本文件记录 `new_emoji.dll` 的 Python `ctypes` 声明，按 `src/new_emoji.def` 和 `src/exports.h` 生成。
-当前导出命令数量：1253。
+当前导出命令数量：1259。
 
 通用约定：
 - 32 位 Python 加载 `bin/Win32/Release/new_emoji.dll`，64 位 Python 加载 `bin/x64/Release/new_emoji.dll`。
@@ -29,6 +29,7 @@ ElementTextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctyp
 ElementValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
 ElementBeforeCloseCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
 TableCellCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+TableCellEditCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 MenuSelectCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
@@ -49,6 +50,12 @@ DateDisabledCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_i
 ```python
 dll.EU_CreateWindow.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_uint32]
 dll.EU_CreateWindow.restype = wintypes.HWND
+```
+## EU_CreateWindowEx
+
+```python
+dll.EU_CreateWindowEx.argtypes = [ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_uint32, ctypes.c_int]
+dll.EU_CreateWindowEx.restype = wintypes.HWND
 ```
 ## EU_CreateWindowDark
 
@@ -145,6 +152,24 @@ dll.EU_CreateLink.restype = ctypes.c_int
 ```python
 dll.EU_CreateIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_CreateIcon.restype = ctypes.c_int
+```
+## EU_CreateIconButton
+
+```python
+dll.EU_CreateIconButton.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateIconButton.restype = ctypes.c_int
+```
+## EU_CreateOmnibox
+
+```python
+dll.EU_CreateOmnibox.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateOmnibox.restype = ctypes.c_int
+```
+## EU_CreateBrowserViewport
+
+```python
+dll.EU_CreateBrowserViewport.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_CreateBrowserViewport.restype = ctypes.c_int
 ```
 ## EU_CreateSpace
 
@@ -2894,6 +2919,36 @@ dll.EU_SetTableScroll.restype = None
 dll.EU_SetTableHeaderDragOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTableHeaderDragOptions.restype = None
 ```
+## EU_SetTableDoubleClickEdit
+
+```python
+dll.EU_SetTableDoubleClickEdit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableDoubleClickEdit.restype = None
+```
+## EU_SetTableColumnDoubleClickEdit
+
+```python
+dll.EU_SetTableColumnDoubleClickEdit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableColumnDoubleClickEdit.restype = None
+```
+## EU_SetTableCellDoubleClickEdit
+
+```python
+dll.EU_SetTableCellDoubleClickEdit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableCellDoubleClickEdit.restype = None
+```
+## EU_GetTableCellDoubleClickEditable
+
+```python
+dll.EU_GetTableCellDoubleClickEditable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTableCellDoubleClickEditable.restype = ctypes.c_int
+```
+## EU_GetTableDoubleClickEditState
+
+```python
+dll.EU_GetTableDoubleClickEditState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTableDoubleClickEditState.restype = ctypes.c_int
+```
 ## EU_ExportTableExcel
 
 ```python
@@ -2917,6 +2972,12 @@ dll.EU_SetTableCellClickCallback.restype = None
 ```python
 dll.EU_SetTableCellActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
 dll.EU_SetTableCellActionCallback.restype = None
+```
+## EU_SetTableCellEditCallback
+
+```python
+dll.EU_SetTableCellEditCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellEditCallback]
+dll.EU_SetTableCellEditCallback.restype = None
 ```
 ## EU_SetTableVirtualOptions
 
@@ -7010,6 +7071,36 @@ dll.EU_GetThemeMode.restype = ctypes.c_int
 dll.EU_SetThemeColor.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_uint32]
 dll.EU_SetThemeColor.restype = ctypes.c_int
 ```
+## EU_SetChromeThemePreset
+
+```python
+dll.EU_SetChromeThemePreset.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetChromeThemePreset.restype = None
+```
+## EU_SetThemeToken
+
+```python
+dll.EU_SetThemeToken.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_uint32]
+dll.EU_SetThemeToken.restype = ctypes.c_int
+```
+## EU_GetThemeToken
+
+```python
+dll.EU_GetThemeToken.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_uint32)]
+dll.EU_GetThemeToken.restype = ctypes.c_int
+```
+## EU_SetHighContrastMode
+
+```python
+dll.EU_SetHighContrastMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetHighContrastMode.restype = None
+```
+## EU_SetIncognitoMode
+
+```python
+dll.EU_SetIncognitoMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetIncognitoMode.restype = None
+```
 ## EU_ResetTheme
 
 ```python
@@ -7022,71 +7113,489 @@ dll.EU_ResetTheme.restype = None
 dll.EU_InvalidateElement.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_InvalidateElement.restype = None
 ```
+## EU_SetIconButtonIcon
 
-## Chrome 高仿外壳 API
+```python
+dll.EU_SetIconButtonIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetIconButtonIcon.restype = None
+```
+## EU_SetIconButtonTooltip
 
-### 新增组件
+```python
+dll.EU_SetIconButtonTooltip.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetIconButtonTooltip.restype = None
+```
+## EU_SetIconButtonBadge
 
-| 导出 | 说明 |
-|---|---|
-| `EU_CreateIconButton` | 创建透明默认态的工具栏图标按钮，支持 hover/press/checked、徽标、tooltip、dropdown。 |
-| `EU_CreateOmnibox` | 创建 Chrome 风格地址栏，支持安全状态、前缀 chip、动作图标、建议列表和提交回调。 |
-| `EU_CreateBrowserViewport` | 创建浏览内容占位区，提供空白页、加载中、截图占位、错误页和新标签页状态。 |
+```python
+dll.EU_SetIconButtonBadge.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonBadge.restype = None
+```
+## EU_SetIconButtonChecked
 
-### 主要增强导出
+```python
+dll.EU_SetIconButtonChecked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonChecked.restype = None
+```
+## EU_GetIconButtonChecked
 
-## 通用 Popup API
+```python
+dll.EU_GetIconButtonChecked.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetIconButtonChecked.restype = ctypes.c_int
+```
+## EU_SetIconButtonDropdown
+
+```python
+dll.EU_SetIconButtonDropdown.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonDropdown.restype = None
+```
+## EU_SetIconButtonColors
+
+```python
+dll.EU_SetIconButtonColors.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetIconButtonColors.restype = None
+```
+## EU_SetIconButtonShape
+
+```python
+dll.EU_SetIconButtonShape.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonShape.restype = None
+```
+## EU_SetIconButtonPadding
+
+```python
+dll.EU_SetIconButtonPadding.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonPadding.restype = None
+```
+## EU_SetIconButtonIconSize
+
+```python
+dll.EU_SetIconButtonIconSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetIconButtonIconSize.restype = None
+```
+## EU_GetIconButtonState
+
+```python
+dll.EU_GetIconButtonState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetIconButtonState.restype = ctypes.c_int
+```
+## EU_SetTabsChromeMode
+
+```python
+dll.EU_SetTabsChromeMode.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsChromeMode.restype = None
+```
+## EU_GetTabsChromeMode
+
+```python
+dll.EU_GetTabsChromeMode.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetTabsChromeMode.restype = ctypes.c_int
+```
+## EU_SetTabsItemIcon
+
+```python
+dll.EU_SetTabsItemIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetTabsItemIcon.restype = None
+```
+## EU_SetTabsItemLoading
+
+```python
+dll.EU_SetTabsItemLoading.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemLoading.restype = None
+```
+## EU_SetTabsItemPinned
+
+```python
+dll.EU_SetTabsItemPinned.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemPinned.restype = None
+```
+## EU_SetTabsItemMuted
+
+```python
+dll.EU_SetTabsItemMuted.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemMuted.restype = None
+```
+## EU_SetTabsItemClosable
+
+```python
+dll.EU_SetTabsItemClosable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemClosable.restype = None
+```
+## EU_SetTabsItemChromeState
+
+```python
+dll.EU_SetTabsItemChromeState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsItemChromeState.restype = None
+```
+## EU_GetTabsItemChromeState
+
+```python
+dll.EU_GetTabsItemChromeState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTabsItemChromeState.restype = ctypes.c_int
+```
+## EU_SetTabsChromeMetrics
+
+```python
+dll.EU_SetTabsChromeMetrics.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsChromeMetrics.restype = None
+```
+## EU_SetTabsNewButtonVisible
+
+```python
+dll.EU_SetTabsNewButtonVisible.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsNewButtonVisible.restype = None
+```
+## EU_SetTabsDragOptions
+
+```python
+dll.EU_SetTabsDragOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTabsDragOptions.restype = None
+```
+## EU_SetTabsReorderCallback
+
+```python
+dll.EU_SetTabsReorderCallback.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_void_p]
+dll.EU_SetTabsReorderCallback.restype = None
+```
+## EU_SetOmniboxValue
+
+```python
+dll.EU_SetOmniboxValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxValue.restype = None
+```
+## EU_GetOmniboxValue
+
+```python
+dll.EU_GetOmniboxValue.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_GetOmniboxValue.restype = ctypes.c_int
+```
+## EU_SetOmniboxPlaceholder
+
+```python
+dll.EU_SetOmniboxPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxPlaceholder.restype = None
+```
+## EU_SetOmniboxSecurityState
+
+```python
+dll.EU_SetOmniboxSecurityState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxSecurityState.restype = None
+```
+## EU_SetOmniboxPrefixChip
+
+```python
+dll.EU_SetOmniboxPrefixChip.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetOmniboxPrefixChip.restype = None
+```
+## EU_SetOmniboxActionIcons
+
+```python
+dll.EU_SetOmniboxActionIcons.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxActionIcons.restype = None
+```
+## EU_SetOmniboxSuggestionItems
+
+```python
+dll.EU_SetOmniboxSuggestionItems.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetOmniboxSuggestionItems.restype = None
+```
+## EU_SetOmniboxSuggestionOpen
+
+```python
+dll.EU_SetOmniboxSuggestionOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetOmniboxSuggestionOpen.restype = None
+```
+## EU_SetOmniboxSuggestionSelected
+
+```python
+dll.EU_SetOmniboxSuggestionSelected.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetOmniboxSuggestionSelected.restype = None
+```
+## EU_GetOmniboxSuggestionState
+
+```python
+dll.EU_GetOmniboxSuggestionState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetOmniboxSuggestionState.restype = ctypes.c_int
+```
+## EU_SetOmniboxCommitCallback
+
+```python
+dll.EU_SetOmniboxCommitCallback.argtypes = [wintypes.HWND, ctypes.c_int, ElementTextCallback]
+dll.EU_SetOmniboxCommitCallback.restype = None
+```
+## EU_SetOmniboxIconButtonCallback
+
+```python
+dll.EU_SetOmniboxIconButtonCallback.argtypes = [wintypes.HWND, ctypes.c_int, ElementValueCallback]
+dll.EU_SetOmniboxIconButtonCallback.restype = None
+```
+## EU_SetMenuItemIcon
+
+```python
+dll.EU_SetMenuItemIcon.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMenuItemIcon.restype = None
+```
+## EU_SetMenuItemShortcut
+
+```python
+dll.EU_SetMenuItemShortcut.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetMenuItemShortcut.restype = None
+```
+## EU_SetMenuItemChecked
+
+```python
+dll.EU_SetMenuItemChecked.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuItemChecked.restype = None
+```
+## EU_SetMenuItemSeparator
+
+```python
+dll.EU_SetMenuItemSeparator.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuItemSeparator.restype = None
+```
+## EU_SetMenuItemSubmenu
+
+```python
+dll.EU_SetMenuItemSubmenu.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuItemSubmenu.restype = None
+```
+## EU_SetMenuPopupPosition
+
+```python
+dll.EU_SetMenuPopupPosition.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetMenuPopupPosition.restype = None
+```
+## EU_SetContextMenuCallback
+
+```python
+dll.EU_SetContextMenuCallback.argtypes = [wintypes.HWND, ctypes.c_int, ElementValueCallback]
+dll.EU_SetContextMenuCallback.restype = None
+```
+## EU_SetPopoverAnchorElement
+
+```python
+dll.EU_SetPopoverAnchorElement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverAnchorElement.restype = None
+```
+## EU_SetPopoverArrow
+
+```python
+dll.EU_SetPopoverArrow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverArrow.restype = None
+```
+## EU_SetPopoverElevation
+
+```python
+dll.EU_SetPopoverElevation.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverElevation.restype = None
+```
+## EU_SetPopoverAutoPlacement
+
+```python
+dll.EU_SetPopoverAutoPlacement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverAutoPlacement.restype = None
+```
+## EU_SetPopoverDismissBehavior
+
+```python
+dll.EU_SetPopoverDismissBehavior.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetPopoverDismissBehavior.restype = None
+```
+## EU_SetPopupAnchorElement
 
 ```python
 dll.EU_SetPopupAnchorElement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopupAnchorElement.restype = None
+```
+## EU_SetPopupPlacement
+
+```python
 dll.EU_SetPopupPlacement.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopupPlacement.restype = None
+```
+## EU_SetPopupOpen
+
+```python
 dll.EU_SetPopupOpen.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopupOpen.restype = None
+```
+## EU_GetPopupOpen
+
+```python
 dll.EU_GetPopupOpen.argtypes = [wintypes.HWND, ctypes.c_int]
 dll.EU_GetPopupOpen.restype = ctypes.c_int
+```
+## EU_SetPopupDismissBehavior
+
+```python
 dll.EU_SetPopupDismissBehavior.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetPopupDismissBehavior.restype = None
+```
+## EU_SetElementPopup
+
+```python
 dll.EU_SetElementPopup.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetElementPopup.restype = None
+```
+## EU_ClearElementPopup
+
+```python
 dll.EU_ClearElementPopup.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_ClearElementPopup.restype = None
+```
+## EU_GetElementPopup
+
+```python
 dll.EU_GetElementPopup.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_GetElementPopup.restype = ctypes.c_int
 ```
+## EU_SetTitleBarVisible
 
-`EU_SetPopup*` 支持 `Popover`、`Menu` 和 `Dropdown`。`EU_SetElementPopup` 的 `trigger`：`0=左键`、`1=右键`、`2=悬停`、`3=聚焦`、`4=手动`。
-
-`EU_SetTabsChromeMode`、`EU_GetTabsChromeMode`、`EU_SetTabsItemChromeState`、`EU_GetTabsItemChromeState`、`EU_SetMenuItemIcon`、`EU_SetMenuItemShortcut`、`EU_SetMenuItemChecked`、`EU_SetPopoverAnchorElement`、`EU_SetPopoverDismissBehavior`、`EU_SetPopupAnchorElement`、`EU_SetPopupPlacement`、`EU_SetPopupOpen`、`EU_GetPopupOpen`、`EU_SetPopupDismissBehavior`、`EU_SetElementPopup`、`EU_ClearElementPopup`、`EU_GetElementPopup`、`EU_SetWindowDragRegion`、`EU_SetContainerFlexLayout`、`EU_SetChromeThemePreset`、`EU_SetThemeToken`、`EU_GetThemeToken`、`EU_SetHighContrastMode`、`EU_SetIncognitoMode`。
-
-易语言命令左侧可使用中文名，例如 `创建工具栏图标按钮`、`创建地址栏`、`创建浏览内容占位区`；右侧 DLL 入口名保持上述 `EU_` 导出名。
-## Window Frame 通用窗口框架 API
-
-Python helper 已新增：
-
-```text
-create_window_ex(...)
-create_borderless_window(...)
-create_browser_shell_window(...)
-get_window_frame_flags(...)
-set_window_frame_flags(...)
-set_window_rounded_corners(...)
-set_window_resize_border(...)
-get_window_resize_border(...)
-set_window_no_drag_region(...)
-clear_window_no_drag_regions(...)
-set_element_window_command(...)
-get_element_window_command(...)
+```python
+dll.EU_SetTitleBarVisible.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetTitleBarVisible.restype = None
 ```
+## EU_SetTitleBarHeight
 
-ctypes 绑定：
+```python
+dll.EU_SetTitleBarHeight.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetTitleBarHeight.restype = None
+```
+## EU_SetTitleBarButtonStyle
+
+```python
+dll.EU_SetTitleBarButtonStyle.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_uint32, ctypes.c_uint32, ctypes.c_uint32]
+dll.EU_SetTitleBarButtonStyle.restype = None
+```
+## EU_GetWindowFrameFlags
+
+```python
+dll.EU_GetWindowFrameFlags.argtypes = [wintypes.HWND]
+dll.EU_GetWindowFrameFlags.restype = ctypes.c_int
+```
+## EU_SetWindowFrameFlags
+
+```python
+dll.EU_SetWindowFrameFlags.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_SetWindowFrameFlags.restype = None
+```
+## EU_SetWindowResizeBorder
+
+```python
+dll.EU_SetWindowResizeBorder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetWindowResizeBorder.restype = None
+```
+## EU_GetWindowResizeBorder
+
+```python
+dll.EU_GetWindowResizeBorder.argtypes = [wintypes.HWND, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetWindowResizeBorder.restype = ctypes.c_int
+```
+## EU_SetWindowDragRegion
+
+```python
+dll.EU_SetWindowDragRegion.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetWindowDragRegion.restype = None
+```
+## EU_ClearWindowDragRegions
+
+```python
+dll.EU_ClearWindowDragRegions.argtypes = [wintypes.HWND]
+dll.EU_ClearWindowDragRegions.restype = None
+```
+## EU_SetWindowNoDragRegion
+
+```python
+dll.EU_SetWindowNoDragRegion.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetWindowNoDragRegion.restype = None
+```
+## EU_ClearWindowNoDragRegions
+
+```python
+dll.EU_ClearWindowNoDragRegions.argtypes = [wintypes.HWND]
+dll.EU_ClearWindowNoDragRegions.restype = None
+```
+## EU_SetElementWindowCommand
+
+```python
+dll.EU_SetElementWindowCommand.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementWindowCommand.restype = None
+```
+## EU_GetElementWindowCommand
+
+```python
+dll.EU_GetElementWindowCommand.argtypes = [wintypes.HWND, ctypes.c_int]
+dll.EU_GetElementWindowCommand.restype = ctypes.c_int
+```
+## EU_SetWindowCaptionButtonBounds
+
+```python
+dll.EU_SetWindowCaptionButtonBounds.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetWindowCaptionButtonBounds.restype = None
+```
+## EU_SetWindowRoundedCorners
 
 ```python
 dll.EU_SetWindowRoundedCorners.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
 dll.EU_SetWindowRoundedCorners.restype = None
 ```
+## EU_SetContainerFlexLayout
 
-底层 DLL 入口为 `EU_CreateWindowEx`、`EU_GetWindowFrameFlags`、`EU_SetWindowFrameFlags`、`EU_SetWindowRoundedCorners`、`EU_SetWindowResizeBorder`、`EU_GetWindowResizeBorder`、`EU_SetWindowNoDragRegion`、`EU_ClearWindowNoDragRegions`、`EU_SetElementWindowCommand`、`EU_GetElementWindowCommand`。
+```python
+dll.EU_SetContainerFlexLayout.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetContainerFlexLayout.restype = None
+```
+## EU_SetElementFlexGrow
 
-`set_window_rounded_corners(hwnd, True, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 回退到 per-pixel alpha 分层窗口并通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交，内部按当前 DPI / 屏幕缩放换算逻辑半径。传入 `False` 或半径 `0` 可恢复矩形窗口。
+```python
+dll.EU_SetElementFlexGrow.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementFlexGrow.restype = None
+```
+## EU_SetElementMinMaxSize
+
+```python
+dll.EU_SetElementMinMaxSize.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementMinMaxSize.restype = None
+```
+## EU_SetElementMargin
+
+```python
+dll.EU_SetElementMargin.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementMargin.restype = None
+```
+## EU_SetElementAlignSelf
+
+```python
+dll.EU_SetElementAlignSelf.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetElementAlignSelf.restype = None
+```
+## EU_SetBrowserViewportState
+
+```python
+dll.EU_SetBrowserViewportState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetBrowserViewportState.restype = None
+```
+## EU_SetBrowserViewportPlaceholder
+
+```python
+dll.EU_SetBrowserViewportPlaceholder.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetBrowserViewportPlaceholder.restype = None
+```
+## EU_SetBrowserViewportLoading
+
+```python
+dll.EU_SetBrowserViewportLoading.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetBrowserViewportLoading.restype = None
+```
+## EU_SetBrowserViewportScreenshot
+
+```python
+dll.EU_SetBrowserViewportScreenshot.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int]
+dll.EU_SetBrowserViewportScreenshot.restype = None
+```
+## EU_GetBrowserViewportState
+
+```python
+dll.EU_GetBrowserViewportState.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetBrowserViewportState.restype = ctypes.c_int
+```

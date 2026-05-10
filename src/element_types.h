@@ -53,6 +53,8 @@ typedef void (__stdcall *ElementReorderCallback)(int element_id, int from_index,
 typedef int  (__stdcall *ElementBeforeCloseCallback)(int element_id, int action);
 typedef int  (__stdcall *DateDisabledCallback)(int element_id, int yyyymmdd);
 typedef void (__stdcall *TableCellCallback)(int table_id, int row, int col, int action, int value);
+typedef void (__stdcall *TableCellEditCallback)(int table_id, int row, int col, int action,
+                                                const unsigned char* utf8, int len);
 typedef int  (__stdcall *TableVirtualRowCallback)(int table_id, int row, unsigned char* buffer, int buffer_size);
 typedef void (__stdcall *DropdownCommandCallback)(int element_id, int item_index,
                                                  const unsigned char* command_utf8, int command_len);

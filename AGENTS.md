@@ -89,6 +89,14 @@ EU_SetElementText / EU_SetElementColor / EU_SetElementFont / ...
 - 如果某个组件新增、删除、重命名或修改 API，导致 `docs/components/` 中对应组件文档、`docs/components/README.md`、`docs/api-index.md`、`test_new_emoji.py` 或 `DLL命令/易语言DLL命令.md`、`DLL命令/CSharp DLL命令.md`、`DLL命令/Python DLL命令.md` 与实际导出不一致，必须在同一轮修改中同步更新这些文档和封装，不能让组件 API 与对应文档出现出入。
 - 如果任何新增、删除、重命名或修改涉及 AI SDK 可见能力，包括组件、导出 API、绑定、示例、模板、语言规则、prompt 或编码规则，必须在同一轮修改中同步更新 `docs/ai/` 相关文档，尤其是 `docs/ai/api_manifest.full.json`、`docs/ai/README.md`、`docs/ai/language-matrix.md` 和 `docs/ai/prompts/` 下对应语言 prompt；更新后必须运行 `python tools/validate_ai_sdk.py`，确认 AI SDK 文档与实际导出、组件清单和模板保持一致。
 
+## C# 界面库封装规则
+
+- C# 界面库封装源位于 `bindings/csharp/NewEmoji/`，第一阶段目标是对象式代码封装，第二阶段目标是可视化拖拽设计器，最终验收目标是完成可视化拖拽设计器，并把复杂组件从“可创建 + NativeMethods 兜底”继续封装成更细的 C# 属性和方法。
+- 每完成一个 C# 界面库封装进度，包括 Native 绑定生成、运行时加载、对象式 API、组件强类型属性/方法、事件封装、示例、文档、可视化设计器能力或验收验证，都必须同步更新根目录本地文件 `C#界面库封装进度.md`。
+- 更新 `C#界面库封装进度.md` 时必须写清楚当前阶段、已完成内容、未完成内容、下一步和已通过校验；如果某项能力只做到“可创建 + NativeMethods 兜底”，不能标记为最终完成。
+- `C#界面库封装进度.md` 是本地执行账本，必须加入 `.gitignore`，不要作为正式仓库文档提交。
+- 修改 C# 封装、C# 示例、C# 文档、C# prompt 或 AI SDK 可见能力后，必须同步检查 `docs/examples/csharp.md`、`docs/ai/prompts/CSharp.md`、`docs/ai/language-matrix.md`、`docs/ai/api_manifest.full.json` 和 `examples/templates/csharp/BlankWindow.cs`，并运行 `python tools/validate_ai_sdk.py`。
+
 ## 火山模块封装规则
 
 - 火山普通模块最终交付物是 `.vcip` 安装包；仓库内维护的是模块源目录、`.vgrp` 模块定义文件、`.wsv` 源文件和运行时附属 DLL。`.vcip` 必须通过火山 IDE 的“工具 -> 制作模块安装包”生成，不能手写或伪造。

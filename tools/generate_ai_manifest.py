@@ -29,7 +29,7 @@ USAGE_NOTES = {
     "IconButton": "用于工具栏、标题栏和浏览器外壳中的图标按钮。",
     "Input": "推荐用于新表单输入；兼容编辑内核请使用 EditBox。",
     "EditBox": "兼容早期 MVP 的底层编辑内核；新表单输入优先使用 Input。",
-    "Table": "用于数据列表、筛选、树形、虚表和增删改查类界面。",
+    "Table": "用于数据列表、筛选、树形、虚表、增删改查和普通文本单元格双击编辑；双击编辑使用 EU_SetTableDoubleClickEdit / EU_SetTableCellEditCallback。",
     "Dialog": "用于窗口内弹窗、表单编辑和确认流程。",
     "BrowserViewport": "用于浏览器式外壳的内容占位区域。",
 }
@@ -91,6 +91,18 @@ def command_name(component: dict) -> str:
     return prefix + component["zh"]
 
 
+def csharp_wrapper_method(component: dict) -> str:
+    name = component["name"]
+    export = first_export(component["create"])
+    if export == "EU_ShowMessage":
+        return "EmojiWindow.ShowMessage"
+    if export == "EU_ShowMessageBoxEx":
+        return "EmojiWindow.ShowMessageBox"
+    if name in {"Dialog", "Drawer"}:
+        return f"EmojiWindow.Create{name}"
+    return f"EmojiElement.Add{name}"
+
+
 def build_manifest() -> list[dict]:
     helpers = load_python_helpers()
     exports = load_exports()
@@ -118,9 +130,11 @@ def build_manifest() -> list[dict]:
                         "file": "examples/python/new_emoji_ui.py",
                     },
                     "csharp": {
-                        "entry": create_export,
-                        "file": "DLL命令/CSharp DLL命令.md",
-                        "text_rule": "Encoding.UTF8.GetBytes(text)",
+                        "wrapper": csharp_wrapper_method(item),
+                        "wrapper_file": "bindings/csharp/NewEmoji",
+                        "native_entry": create_export,
+                        "native_file": "DLL命令/CSharp DLL命令.md",
+                        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)",
                     },
                     "e_language": {
                         "command_name": command_name(item),

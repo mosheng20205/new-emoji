@@ -49,6 +49,12 @@ CALLBACKS = {
         "cs_decl": "public delegate void TableCellCallback(int table_id, int row, int col, int action, int value);",
         "py_decl": "TableCellCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)",
     },
+    "TableCellEditCallback": {
+        "cs": "TableCellEditCallback",
+        "py": "TableCellEditCallback",
+        "cs_decl": "public delegate void TableCellEditCallback(int table_id, int row, int col, int action, IntPtr utf8, int len);",
+        "py_decl": "TableCellEditCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)",
+    },
     "TableVirtualRowCallback": {
         "cs": "TableVirtualRowCallback",
         "py": "TableVirtualRowCallback",
@@ -301,6 +307,8 @@ def csharp_doc(exports: list[str], prototypes: dict[str, dict[str, object]]) -> 
 本文件记录 `new_emoji.dll` 的 C# P/Invoke 声明，按 `src/new_emoji.def` 和 `src/exports.h` 生成。
 当前导出命令数量：{len(exports)}。
 
+推荐普通 C# 程序优先使用 `bindings/csharp/NewEmoji` 对象式封装库；本文件作为高级能力和底层 P/Invoke 参考。
+
 通用约定：
 - x86 应用加载 `bin/Win32/Release/new_emoji.dll`，x64 应用加载 `bin/x64/Release/new_emoji.dll`。
 - 所有导出 API 使用 `CallingConvention.StdCall`。
@@ -374,8 +382,10 @@ def main() -> None:
     if missing:
         raise SystemExit(f"Missing prototypes for exports: {', '.join(missing[:20])}")
     COMMAND_DIR.mkdir(exist_ok=True)
-    CSHARP_DOC.write_text(csharp_doc(exports, prototypes), encoding="utf-8")
-    PYTHON_DOC.write_text(python_doc(exports, prototypes), encoding="utf-8")
+    with CSHARP_DOC.open("w", encoding="utf-8", newline="\n") as fp:
+        fp.write(csharp_doc(exports, prototypes))
+    with PYTHON_DOC.open("w", encoding="utf-8", newline="\n") as fp:
+        fp.write(python_doc(exports, prototypes))
     print(f"Wrote {CSHARP_DOC.relative_to(ROOT)}")
     print(f"Wrote {PYTHON_DOC.relative_to(ROOT)}")
     print(f"Export count: {len(exports)}")

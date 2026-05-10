@@ -3,6 +3,7 @@ AGENTS.md
 组件封装计划.md
 组件封装进度.md
 火山组件模块封装进度.md
+C#界面库封装进度.md
 .claude/
 
 # Visual Studio user/local state
@@ -21,6 +22,8 @@ build/
 dist/
 obj/
 examples/Csharp/bin/
+examples/CsharpNet48/bin/
+bindings/csharp/**/bin/
 examples/火山/_int/
 examples/火山/runtime_x64/*.exe
 Debug/

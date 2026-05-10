@@ -431,6 +431,16 @@ void ElementTree::dispatch_lbutton_up(int x, int y) {
     if (should_click && tree_cb) tree_cb(captured_id);
 }
 
+void ElementTree::dispatch_lbutton_double_click(int x, int y) {
+    dismiss_popups_at(x, y);
+    Element* hit = hit_test_impl(m_root.get(), x, y);
+    if (!hit || !hit->enabled || !hit->accepts_input()) return;
+    set_focus(hit);
+    int lx = x, ly = y;
+    mouse_to_local(hit, lx, ly);
+    hit->on_mouse_double_click(lx, ly, MouseButton::Left);
+}
+
 void ElementTree::dispatch_rbutton_down(int x, int y) {
     dismiss_popups_at(x, y);
     Element* hit = hit_test_impl(m_root.get(), x, y);

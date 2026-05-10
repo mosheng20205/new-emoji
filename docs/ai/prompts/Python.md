@@ -20,4 +20,5 @@
 - 窗口图标示例可参考 `examples/python/window_icon_demo.py`；示例窗口应进入消息循环，不能自动关闭。
 - 窗口圆角示例可参考 `examples/python/window_rounded_corners_demo.py`；示例窗口应进入消息循环，不能自动关闭。
 - Table 普通表格行级增删优先使用 `add_table_row`、`insert_table_row`、`delete_table_row`、`clear_table_rows`；虚表数据由 provider 维护。
+- Table 普通文本单元格双击编辑使用 `set_table_double_click_edit` 开启；列/单元格覆盖使用 `set_table_column_double_click_edit` / `set_table_cell_double_click_edit`，提交回调使用 `TableCellEditCallback`。
 ```

@@ -474,8 +474,14 @@
 | `EU_SetTableTreeOptions` | 设置树形、缩进和懒加载模式 |
 | `EU_SetTableViewportOptions` | 设置最大高度、固定表头、横向滚动和合计显示 |
 | `EU_SetTableScroll` | 设置垂直/水平滚动位置；Table 内容溢出时会显示可拖拽滚动条 |
+| `EU_SetTableDoubleClickEdit` | 设置 Table 单元格双击原地编辑总开关 |
+| `EU_SetTableColumnDoubleClickEdit` | 设置某一列是否允许双击编辑，`-1` 继承、`0` 禁用、`1` 启用 |
+| `EU_SetTableCellDoubleClickEdit` | 设置某个单元格是否允许双击编辑，优先级高于列级设置 |
+| `EU_GetTableCellDoubleClickEditable` | 查询指定单元格当前是否可双击编辑 |
+| `EU_GetTableDoubleClickEditState` | 读取双击编辑开关和当前编辑中的行列 |
 | `EU_SetTableCellClickCallback` | 设置任意单元格点击回调 |
 | `EU_SetTableCellActionCallback` | 设置单元格按钮、开关、选择、展开等交互回调 |
+| `EU_SetTableCellEditCallback` | 设置单元格双击编辑回调，`action=1` 开始、`2` 提交、`3` 取消，文本为 UTF-8 |
 | `EU_GetTableCellValue` | 读取单元格值 |
 | `EU_GetTableFullState` | 读取高级表格摘要状态 |
 | `EU_SetCardTitle` | 设置 Card 标题 |

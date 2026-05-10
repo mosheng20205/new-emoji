@@ -14,9 +14,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreatePanel",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddPanel",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreatePanel",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建面板",
@@ -47,9 +49,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateButton",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddButton",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateButton",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建按钮",
@@ -80,9 +84,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateEditBox",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddEditBox",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateEditBox",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建兼容编辑内核",
@@ -113,9 +119,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateInfoBox",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddInfoBox",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateInfoBox",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建信息框",
@@ -146,9 +154,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateText",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddText",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateText",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建文本",
@@ -179,9 +189,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateLink",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddLink",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateLink",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建链接",
@@ -212,9 +224,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateIcon",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddIcon",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateIcon",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建图标",
@@ -245,9 +259,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSpace",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSpace",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSpace",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建间距",
@@ -278,9 +294,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateContainer",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddContainer",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateContainer",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建容器套件",
@@ -311,9 +329,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateHeader",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddHeader",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateHeader",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建顶栏",
@@ -344,9 +364,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateAside",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddAside",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateAside",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建侧边栏",
@@ -377,9 +399,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateMain",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddMain",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateMain",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建主要区域",
@@ -410,9 +434,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateFooter",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddFooter",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateFooter",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建底栏",
@@ -443,9 +469,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateLayout",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddLayout",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateLayout",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建布局",
@@ -476,9 +504,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBorder",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBorder",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBorder",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建边框",
@@ -509,9 +539,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateCheckbox",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddCheckbox",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateCheckbox",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建复选框",
@@ -542,9 +574,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateRadio",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddRadio",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateRadio",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建单选框",
@@ -575,9 +609,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSwitch",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSwitch",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSwitch",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建开关",
@@ -608,9 +644,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSlider",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSlider",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSlider",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建滑块",
@@ -641,9 +679,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateInputNumber",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddInputNumber",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateInputNumber",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建数字输入框",
@@ -674,9 +714,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateInput",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddInput",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateInput",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建输入框",
@@ -707,9 +749,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateInputGroup",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddInputGroup",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateInputGroup",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建组合输入",
@@ -740,9 +784,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateInputTag",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddInputTag",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateInputTag",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建标签输入",
@@ -773,9 +819,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSelect",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSelect",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSelect",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建选择器",
@@ -806,9 +854,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSelectV2",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSelectV2",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSelectV2",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建虚拟选择器",
@@ -839,9 +889,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateRate",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddRate",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateRate",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建评分",
@@ -872,9 +924,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateColorPicker",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddColorPicker",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateColorPicker",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建颜色选择器",
@@ -905,9 +959,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTag",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTag",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTag",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建标签",
@@ -938,9 +994,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBadge",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBadge",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBadge",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建徽标",
@@ -971,9 +1029,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateProgress",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddProgress",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateProgress",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建进度条",
@@ -1004,9 +1064,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateAvatar",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddAvatar",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateAvatar",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建头像",
@@ -1037,9 +1099,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateEmpty",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddEmpty",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateEmpty",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建空状态",
@@ -1070,9 +1134,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSkeleton",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSkeleton",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSkeleton",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建骨架屏",
@@ -1103,9 +1169,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDescriptions",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddDescriptions",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDescriptions",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建描述列表",
@@ -1136,9 +1204,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTable",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTable",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTable",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建表格",
@@ -1152,7 +1222,7 @@
         "file": "examples/火山/new_emoji_module/src/new_emoji_接口.wsv"
       }
     },
-    "usage_notes": "用于数据列表、筛选、树形、虚表和增删改查类界面。"
+    "usage_notes": "用于数据列表、筛选、树形、虚表、增删改查和普通文本单元格双击编辑；双击编辑使用 EU_SetTableDoubleClickEdit / EU_SetTableCellEditCallback。"
   },
   {
     "component": "Card",
@@ -1169,9 +1239,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateCard",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddCard",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateCard",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建卡片",
@@ -1202,9 +1274,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateCollapse",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddCollapse",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateCollapse",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建折叠面板",
@@ -1235,9 +1309,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTimeline",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTimeline",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTimeline",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建时间线",
@@ -1268,9 +1344,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateStatistic",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddStatistic",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateStatistic",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建统计数值",
@@ -1301,9 +1379,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateKpiCard",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddKpiCard",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateKpiCard",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建指标卡",
@@ -1334,9 +1414,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTrend",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTrend",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTrend",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建趋势",
@@ -1367,9 +1449,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateStatusDot",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddStatusDot",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateStatusDot",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建状态点",
@@ -1400,9 +1484,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateGauge",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddGauge",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateGauge",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建仪表盘",
@@ -1433,9 +1519,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateRingProgress",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddRingProgress",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateRingProgress",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建环形进度",
@@ -1466,9 +1554,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBulletProgress",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBulletProgress",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBulletProgress",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建子弹进度",
@@ -1499,9 +1589,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateLineChart",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddLineChart",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateLineChart",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建折线图",
@@ -1532,9 +1624,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBarChart",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBarChart",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBarChart",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建柱状图",
@@ -1565,9 +1659,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDonutChart",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddDonutChart",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDonutChart",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建环形图",
@@ -1598,9 +1694,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDivider",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddDivider",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDivider",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建分割线",
@@ -1631,9 +1729,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateCalendar",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddCalendar",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateCalendar",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建日历",
@@ -1664,9 +1764,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTree",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTree",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTree",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建树",
@@ -1697,9 +1799,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTreeSelect",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTreeSelect",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTreeSelect",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建树选择",
@@ -1730,9 +1834,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTransfer",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTransfer",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTransfer",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建穿梭框",
@@ -1763,9 +1869,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateAutocomplete",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddAutocomplete",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateAutocomplete",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建自动补全",
@@ -1796,9 +1904,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateMentions",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddMentions",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateMentions",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建提及",
@@ -1829,9 +1939,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateCascader",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddCascader",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateCascader",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建级联选择",
@@ -1862,9 +1974,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDatePicker",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddDatePicker",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDatePicker",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建日期选择器",
@@ -1895,9 +2009,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTimePicker",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTimePicker",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTimePicker",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建时间选择器",
@@ -1928,9 +2044,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDateTimePicker",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddDateTimePicker",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDateTimePicker",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建日期时间选择器",
@@ -1961,9 +2079,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTimeSelect",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTimeSelect",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTimeSelect",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建时间选择",
@@ -1994,9 +2114,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDropdown",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddDropdown",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDropdown",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建下拉菜单",
@@ -2027,9 +2149,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateMenu",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddMenu",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateMenu",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建菜单",
@@ -2060,9 +2184,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateAnchor",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddAnchor",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateAnchor",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建锚点",
@@ -2093,9 +2219,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBacktop",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBacktop",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBacktop",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建回到顶部",
@@ -2126,9 +2254,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSegmented",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSegmented",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSegmented",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建分段控制器",
@@ -2159,9 +2289,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreatePageHeader",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddPageHeader",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreatePageHeader",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建页头",
@@ -2192,9 +2324,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateAffix",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddAffix",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateAffix",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建固钉",
@@ -2225,9 +2359,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateWatermark",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddWatermark",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateWatermark",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建水印",
@@ -2258,9 +2394,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTour",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTour",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTour",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建漫游引导",
@@ -2291,9 +2429,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateImage",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddImage",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateImage",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建图片",
@@ -2324,9 +2464,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateCarousel",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddCarousel",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateCarousel",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建轮播",
@@ -2357,9 +2499,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateUpload",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddUpload",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateUpload",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建上传",
@@ -2390,9 +2534,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateInfiniteScroll",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddInfiniteScroll",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateInfiniteScroll",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建无限滚动",
@@ -2423,9 +2569,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBreadcrumb",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBreadcrumb",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBreadcrumb",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建面包屑",
@@ -2456,9 +2604,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTabs",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTabs",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTabs",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建标签页",
@@ -2489,9 +2639,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreatePagination",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddPagination",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreatePagination",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建分页",
@@ -2522,9 +2674,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateSteps",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddSteps",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateSteps",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建步骤条",
@@ -2555,9 +2709,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateAlert",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddAlert",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateAlert",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建警告提示",
@@ -2588,9 +2744,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateResult",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddResult",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateResult",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建结果页",
@@ -2621,9 +2779,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_ShowMessage",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiWindow.ShowMessage",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_ShowMessage",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "显示消息提示",
@@ -2654,9 +2814,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_ShowMessageBoxEx",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiWindow.ShowMessageBox",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_ShowMessageBoxEx",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "显示消息框",
@@ -2687,9 +2849,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateNotification",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddNotification",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateNotification",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建通知",
@@ -2720,9 +2884,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateLoading",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddLoading",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateLoading",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建加载",
@@ -2753,9 +2919,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDialog",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiWindow.CreateDialog",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDialog",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建对话框",
@@ -2786,9 +2954,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateDrawer",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiWindow.CreateDrawer",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateDrawer",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建抽屉",
@@ -2819,9 +2989,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateTooltip",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddTooltip",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateTooltip",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建文字提示",
@@ -2852,9 +3024,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreatePopover",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddPopover",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreatePopover",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建弹出框",
@@ -2885,9 +3059,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreatePopconfirm",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddPopconfirm",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreatePopconfirm",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建气泡确认框",
@@ -2918,9 +3094,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateIconButton",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddIconButton",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateIconButton",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建工具栏图标按钮",
@@ -2951,9 +3129,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateOmnibox",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddOmnibox",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateOmnibox",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建地址栏",
@@ -2984,9 +3164,11 @@
         "file": "examples/python/new_emoji_ui.py"
       },
       "csharp": {
-        "entry": "EU_CreateBrowserViewport",
-        "file": "DLL命令/CSharp DLL命令.md",
-        "text_rule": "Encoding.UTF8.GetBytes(text)"
+        "wrapper": "EmojiElement.AddBrowserViewport",
+        "wrapper_file": "bindings/csharp/NewEmoji",
+        "native_entry": "EU_CreateBrowserViewport",
+        "native_file": "DLL命令/CSharp DLL命令.md",
+        "text_rule": "封装库自动处理 UTF-8；直接 P/Invoke 时使用 Encoding.UTF8.GetBytes(text)"
       },
       "e_language": {
         "command_name": "创建浏览内容占位区",

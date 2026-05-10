@@ -49,11 +49,15 @@
 优先阅读：
 
 - `docs/ai/prompts/CSharp.md`
-- `DLL命令/CSharp DLL命令.md`
+- `bindings/csharp/NewEmoji/NewEmoji.csproj`
+- `bindings/csharp/NewEmoji.Design/NewEmoji.Design.csproj`
+- `bindings/csharp/NewEmoji.Designer.WinForms48/NewEmoji.Designer.WinForms48.csproj`
 - `examples/Csharp/MinimalExample.cs`
+- `examples/CsharpNet48/MinimalWinFormsExample.csproj`
 - `examples/templates/csharp/BlankWindow.cs`
+- `DLL命令/CSharp DLL命令.md`
 
-C# 使用 P/Invoke，`CallingConvention` 必须为 `CallingConvention.StdCall`。中文和 emoji 文本必须使用 `Encoding.UTF8.GetBytes(text)` 转成 `byte[]`，并传入数组长度。
+C# 优先使用 `NewEmoji` 对象式封装库，普通界面用 `EmojiWindow.Create`、`CreateContainer`、`AddButton`、`AddInput` 和 `EmojiApplication.Run()`。WinForms `.NET Framework 4.8` 示例使用 `Application.Run()` 消息循环，参考 `examples/CsharpNet48/`；可视化设计器 MVP 位于 `bindings/csharp/NewEmoji.Designer.WinForms48/`。只有封装库暂未覆盖高级能力时才直接 P/Invoke；直接调用 `EU_` 导出时，`CallingConvention` 必须为 `CallingConvention.StdCall`，中文和 emoji 文本必须使用 `Encoding.UTF8.GetBytes(text)` 转成 `byte[]`，并传入数组长度。
 
 ## Python
 

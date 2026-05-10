@@ -1,0 +1,11 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>NewEmoji.Design</AssemblyName>
+    <RootNamespace>NewEmoji.Design</RootNamespace>
+    <Description>Layout model and C# code generator for new_emoji C# designer.</Description>
+  </PropertyGroup>
+</Project>

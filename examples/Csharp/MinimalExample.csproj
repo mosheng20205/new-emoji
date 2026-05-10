@@ -8,6 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\bin\x64\Release\new_emoji.dll" Link="new_emoji.dll" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="..\..\bindings\csharp\NewEmoji\NewEmoji.csproj" />
   </ItemGroup>
 </Project>

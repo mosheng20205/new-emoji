@@ -54,6 +54,7 @@ public:
     virtual void on_mouse_leave();
     virtual void on_mouse_down(int x, int y, MouseButton btn);
     virtual void on_mouse_up(int x, int y, MouseButton btn);
+    virtual void on_mouse_double_click(int x, int y, MouseButton btn);
     virtual void on_mouse_move(int x, int y);
     virtual void on_mouse_wheel(int x, int y, int delta);
     virtual void on_key_down(int vk, int mods);

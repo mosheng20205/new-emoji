@@ -1,6 +1,6 @@
 # new_emoji
 
-`new_emoji` 是一个 Windows 原生 UI DLL，已提供易语言、Python ctypes 和 C# P/Invoke 接入说明；同时通过统一的 `EU_` C API、`__stdcall` 调用约定和 UTF-8 字节数组文本参数，也可被 C/C++、Delphi、VB6/VBA、Go、Rust、Node.js FFI、Java JNA/JNI 等能够调用 Windows DLL 的语言接入。它采用单一 HWND + 纯 Direct2D / DirectWrite 渲染，把所有 UI 控件封装成 Element 组件，重点解决传统 GDI 子窗口在缩放和重绘时的闪烁问题，同时原生支持中文与彩色 emoji。
+`new_emoji` 是一个 Windows 原生 UI DLL，已提供易语言、Python ctypes、C# 对象式封装、WinForms .NET Framework 4.8 设计器和 C# P/Invoke 接入说明；同时通过统一的 `EU_` C API、`__stdcall` 调用约定和 UTF-8 字节数组文本参数，也可被 C/C++、Delphi、VB6/VBA、Go、Rust、Node.js FFI、Java JNA/JNI 等能够调用 Windows DLL 的语言接入。它采用单一 HWND + 纯 Direct2D / DirectWrite 渲染，把所有 UI 控件封装成 Element 组件，重点解决传统 GDI 子窗口在缩放和重绘时的闪烁问题，同时原生支持中文与彩色 emoji。
 
 ## 特性
 
@@ -134,55 +134,21 @@ while user32.GetMessageW(ctypes.byref(msg), None, 0, 0):
 ## 最短 C# 示例
 
 ```csharp
-using System;
-using System.Runtime.InteropServices;
-using System.Text;
+using NewEmoji;
 
 class Program
 {
-    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
-    static extern IntPtr EU_CreateWindow(byte[] title, int titleLen, int x, int y, int w, int h, uint titlebarColor);
-
-    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
-    static extern int EU_CreateContainer(IntPtr hwnd, int parentId, int x, int y, int w, int h);
-
-    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
-    static extern int EU_CreateText(IntPtr hwnd, int parentId, byte[] text, int textLen, int x, int y, int w, int h);
-
-    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
-    static extern int EU_CreateButton(IntPtr hwnd, int parentId, byte[] emoji, int emojiLen, byte[] text, int textLen, int x, int y, int w, int h);
-
-    [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
-    static extern void EU_ShowWindow(IntPtr hwnd, int visible);
-
-    [DllImport("user32.dll")] static extern int GetMessageW(out MSG msg, IntPtr hwnd, uint min, uint max);
-    [DllImport("user32.dll")] static extern bool TranslateMessage(ref MSG msg);
-    [DllImport("user32.dll")] static extern IntPtr DispatchMessageW(ref MSG msg);
-
-    [StructLayout(LayoutKind.Sequential)]
-    struct MSG { public IntPtr hwnd; public uint message; public UIntPtr wParam; public IntPtr lParam; public uint time; public int ptX; public int ptY; }
-
-    static byte[] U8(string text) => Encoding.UTF8.GetBytes(text);
-
     static void Main()
     {
-        byte[] title = U8("✨ new_emoji 示例");
-        IntPtr hwnd = EU_CreateWindow(title, title.Length, 240, 120, 820, 560, 0xFF2D7DFF);
-        int root = EU_CreateContainer(hwnd, 0, 0, 0, 780, 500);
+        var win = EmojiWindow.Create("✨ new_emoji C# 示例", 860, 560);
+        var root = win.CreateContainer(0, 0, 820, 500);
 
-        byte[] hello = U8("你好，new_emoji 🚀");
-        EU_CreateText(hwnd, root, hello, hello.Length, 32, 32, 360, 40);
+        root.AddText("欢迎使用 new_emoji C# 界面库 🚀", 32, 32, 420, 40);
+        root.AddButton("✅", "确认操作", 32, 96, 160, 42)
+            .Clicked += (_, _) => win.ShowMessage("操作成功 🎉", EmojiMessageType.Success);
 
-        byte[] emoji = U8("✅");
-        byte[] button = U8("确认操作");
-        EU_CreateButton(hwnd, root, emoji, emoji.Length, button, button.Length, 32, 96, 160, 42);
-
-        EU_ShowWindow(hwnd, 1);
-        while (GetMessageW(out MSG msg, IntPtr.Zero, 0, 0) > 0)
-        {
-            TranslateMessage(ref msg);
-            DispatchMessageW(ref msg);
-        }
+        win.Show();
+        EmojiApplication.Run();
     }
 }
 ```
@@ -193,7 +159,23 @@ class Program
 dotnet run -c Release --project examples\Csharp\MinimalExample.csproj
 ```
 
-> C# 进程位数必须和 DLL 位数一致：x86 应用加载 Win32 DLL，x64 应用加载 x64 DLL。完整声明见 [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)。
+> C# 推荐使用 [NewEmoji 封装库](bindings/csharp/NewEmoji)。封装库会按当前进程位数加载 x64 / Win32 DLL；完整底层声明仍可查 [C# DLL 命令](DLL命令/CSharp%20DLL命令.md)。
+
+## C# WinForms .NET Framework 4.8 与设计器
+
+仓库已提供 WinForms `.NET Framework 4.8` 示例：
+
+```powershell
+dotnet run --project examples\CsharpNet48\MinimalWinFormsExample.csproj
+```
+
+也提供独立 WinForms `.NET Framework 4.8` 可视化设计器 MVP：
+
+```powershell
+dotnet run --project bindings\csharp\NewEmoji.Designer.WinForms48\NewEmoji.Designer.WinForms48.csproj
+```
+
+设计器支持拖入基础组件、编辑中文/emoji 文案和坐标尺寸、保存 JSON、导出 C# `.NET Framework 4.8` 项目并构建运行。布局模型和代码生成位于 [NewEmoji.Design](bindings/csharp/NewEmoji.Design)。
 
 ## 火山视窗示例入口
 

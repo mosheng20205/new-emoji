@@ -36,6 +36,7 @@ public:
     void dispatch_mouse_wheel(int x, int y, int delta);
     void dispatch_lbutton_down(int x, int y);
     void dispatch_lbutton_up(int x, int y);
+    void dispatch_lbutton_double_click(int x, int y);
     void dispatch_rbutton_down(int x, int y);
     void dispatch_rbutton_up(int x, int y);
     void dispatch_key_down(int vk, int mods);

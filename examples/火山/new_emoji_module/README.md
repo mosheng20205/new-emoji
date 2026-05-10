@@ -5,7 +5,7 @@
 - 底层 DLL 导入：`src/new_emoji_接口.wsv`
 - 中文助手封装：`src/new_emoji_助手.wsv`
 - DLL 附属文件：`runtime/win32/new_emoji.dll`、`runtime/x64/new_emoji.dll`
-- 当前导入导出数量：1253
+- 当前导入导出数量：1259
 - 当前组件助手数量：91
 
 使用规则：

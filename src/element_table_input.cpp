@@ -1,8 +1,12 @@
 #include "element_table.h"
+#include "emoji_fallback.h"
+#include "factory.h"
 #include "render_context.h"
+#include "utf8_helpers.h"
 #include <algorithm>
 #include <cmath>
 #include <cwctype>
+#include <cstring>
 #include <map>
 
 static bool point_in_rect(float x, float y, const D2D1_RECT_F& r) {
@@ -170,6 +174,48 @@ static bool header_height_resize_hit(const Table& table, int x, int y) {
     return (float)x >= left && (float)x <= right && std::fabs((float)y - edge) <= 5.0f;
 }
 
+static bool table_edit_has_selection(const Table& table) {
+    return table.editing_sel_start >= 0 && table.editing_sel_end >= 0 &&
+           table.editing_sel_start != table.editing_sel_end;
+}
+
+static void table_edit_selection_bounds(const Table& table, int& start, int& end) {
+    start = table.editing_sel_start;
+    end = table.editing_sel_end;
+    if (start > end) std::swap(start, end);
+    int total = (int)table.editing_text.size();
+    start = (std::max)(0, (std::min)(start, total));
+    end = (std::max)(0, (std::min)(end, total));
+}
+
+static IDWriteTextLayout* create_table_edit_layout(const Table& table, int col, float w, float h) {
+    if (!g_dwrite_factory) return nullptr;
+    int cursor = (std::max)(0, (std::min)(table.editing_cursor, (int)table.editing_text.size()));
+    std::wstring value = table.editing_text.substr(0, cursor) +
+        table.editing_composition_text + table.editing_text.substr(cursor);
+    if (value.empty()) value = L" ";
+    if (w < 1.0f) w = 1.0f;
+    if (h < 1.0f) h = 1.0f;
+    IDWriteTextFormat* fmt = nullptr;
+    HRESULT hr = g_dwrite_factory->CreateTextFormat(
+        table.style.font_name.c_str(), nullptr,
+        DWRITE_FONT_WEIGHT_NORMAL, DWRITE_FONT_STYLE_NORMAL,
+        DWRITE_FONT_STRETCH_NORMAL, table.style.font_size, L"", &fmt);
+    if (FAILED(hr) || !fmt) return nullptr;
+    IDWriteTextLayout* layout = nullptr;
+    hr = g_dwrite_factory->CreateTextLayout(value.c_str(), (UINT32)value.size(), fmt, w, h, &layout);
+    fmt->Release();
+    if (FAILED(hr) || !layout) return nullptr;
+    apply_emoji_font_fallback(layout, value);
+    int align = 0;
+    if (col >= 0 && col < (int)table.adv_columns.size()) align = table.adv_columns[col].align;
+    layout->SetTextAlignment(align == 1 ? DWRITE_TEXT_ALIGNMENT_CENTER :
+                             (align == 2 ? DWRITE_TEXT_ALIGNMENT_TRAILING : DWRITE_TEXT_ALIGNMENT_LEADING));
+    layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+    layout->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+    return layout;
+}
+
 int Table::header_height_px() const {
     if (!show_header) return 0;
     bool grouped = false;
@@ -226,6 +272,86 @@ bool Table::needs_vertical_scrollbar() const {
 
 bool Table::needs_horizontal_scrollbar() const {
     return max_scroll_x() > 0;
+}
+
+void Table::delete_edit_selection() {
+    if (!table_edit_has_selection(*this)) return;
+    int start = 0, end = 0;
+    table_edit_selection_bounds(*this, start, end);
+    if (end <= start) return;
+    editing_text.erase(start, end - start);
+    editing_cursor = start;
+    editing_sel_start = -1;
+    editing_sel_end = -1;
+}
+
+void Table::insert_edit_text(const std::wstring& value) {
+    if (value.empty()) return;
+    delete_edit_selection();
+    int pos = (std::max)(0, (std::min)(editing_cursor, (int)editing_text.size()));
+    editing_text.insert(pos, value);
+    editing_cursor = pos + (int)value.size();
+    editing_sel_start = -1;
+    editing_sel_end = -1;
+    invalidate();
+}
+
+void Table::move_edit_cursor(int delta, bool extend) {
+    if (!extend) {
+        editing_sel_start = -1;
+        editing_sel_end = -1;
+    } else if (editing_sel_start < 0) {
+        editing_sel_start = editing_cursor;
+    }
+    editing_cursor += delta;
+    editing_cursor = (std::max)(0, (std::min)(editing_cursor, (int)editing_text.size()));
+    if (extend) editing_sel_end = editing_cursor;
+    invalidate();
+}
+
+int Table::edit_hit_to_cursor(int col, int x, int y) const {
+    if (!is_editing_cell()) return 0;
+    D2D1_RECT_F cell{};
+    if (!table_cell_rect(*this, editing_row, editing_col, cell)) return (int)editing_text.size();
+    float pad = 10.0f;
+    float w = (std::max)(1.0f, cell.right - cell.left - pad * 2.0f);
+    float h = (std::max)(1.0f, cell.bottom - cell.top - 6.0f);
+    IDWriteTextLayout* layout = create_table_edit_layout(*this, col, w, h);
+    if (!layout) {
+        float cw = (std::max)(6.0f, style.font_size * 0.58f);
+        int pos = (int)(((float)x - cell.left - pad) / cw + 0.5f);
+        return (std::max)(0, (std::min)(pos, (int)editing_text.size()));
+    }
+    BOOL trailing = FALSE;
+    BOOL inside = FALSE;
+    DWRITE_HIT_TEST_METRICS metrics{};
+    HRESULT hr = layout->HitTestPoint((float)x - cell.left - pad,
+                                      (float)y - cell.top - 3.0f,
+                                      &trailing, &inside, &metrics);
+    layout->Release();
+    if (FAILED(hr)) return (int)editing_text.size();
+    int pos = (int)metrics.textPosition + (trailing ? 1 : 0);
+    return (std::max)(0, (std::min)(pos, (int)editing_text.size()));
+}
+
+void Table::set_composition_text(const std::wstring& value) {
+    if (!is_editing_cell()) return;
+    editing_composition_text = value;
+    editing_composing = !value.empty();
+    invalidate();
+}
+
+void Table::end_composition() {
+    if (!is_editing_cell()) return;
+    editing_composition_text.clear();
+    editing_composing = false;
+    invalidate();
+}
+
+void Table::commit_text(const std::wstring& value) {
+    if (!is_editing_cell()) return;
+    if (!value.empty()) insert_edit_text(value);
+    end_composition();
 }
 
 float Table::column_width_at(int col, float table_w) const {
@@ -472,6 +598,19 @@ void Table::on_mouse_leave() {
 }
 
 void Table::on_mouse_down(int x, int y, MouseButton) {
+    if (is_editing_cell()) {
+        int edit_row = row_at(x, y);
+        int edit_col = column_at(x, y);
+        if (edit_row == editing_row && edit_col == editing_col) {
+            editing_cursor = edit_hit_to_cursor(editing_col, x, y);
+            editing_sel_start = -1;
+            editing_sel_end = -1;
+            pressed = true;
+            invalidate();
+            return;
+        }
+        commit_cell_edit();
+    }
     if (header_height_resize_hit(*this, x, y)) {
         m_header_drag = 2;
         m_header_drag_col = -1;
@@ -535,6 +674,18 @@ void Table::on_mouse_down(int x, int y, MouseButton) {
     m_press_action = 0;
     pressed = true;
     invalidate();
+}
+
+void Table::on_mouse_double_click(int x, int y, MouseButton) {
+    int row = row_at(x, y);
+    int col = column_at(x, y);
+    if (row >= 0 && col >= 0 && begin_cell_edit(row, col)) {
+        editing_cursor = edit_hit_to_cursor(col, x, y);
+        editing_sel_start = -1;
+        editing_sel_end = -1;
+        pressed = false;
+        invalidate();
+    }
 }
 
 void Table::on_mouse_up(int x, int y, MouseButton) {
@@ -630,12 +781,120 @@ void Table::on_mouse_up(int x, int y, MouseButton) {
 }
 
 void Table::on_mouse_wheel(int, int, int delta) {
+    if (is_editing_cell()) commit_cell_edit();
     scroll_row += delta < 0 ? 1 : -1;
     clamp_scroll();
     invalidate();
 }
 
 void Table::on_key_down(int vk, int) {
+    if (is_editing_cell()) {
+        bool shift = (GetKeyState(VK_SHIFT) & 0x8000) != 0;
+        bool ctrl = (GetKeyState(VK_CONTROL) & 0x8000) != 0;
+        switch (vk) {
+        case VK_ESCAPE:
+            cancel_cell_edit();
+            return;
+        case VK_RETURN:
+            commit_cell_edit();
+            return;
+        case VK_LEFT:
+            move_edit_cursor(-1, shift);
+            return;
+        case VK_RIGHT:
+            move_edit_cursor(1, shift);
+            return;
+        case VK_HOME:
+            if (!shift) { editing_sel_start = -1; editing_sel_end = -1; }
+            else if (editing_sel_start < 0) editing_sel_start = editing_cursor;
+            editing_cursor = 0;
+            if (shift) editing_sel_end = editing_cursor;
+            invalidate();
+            return;
+        case VK_END:
+            if (!shift) { editing_sel_start = -1; editing_sel_end = -1; }
+            else if (editing_sel_start < 0) editing_sel_start = editing_cursor;
+            editing_cursor = (int)editing_text.size();
+            if (shift) editing_sel_end = editing_cursor;
+            invalidate();
+            return;
+        case VK_BACK:
+            if (table_edit_has_selection(*this)) delete_edit_selection();
+            else if (editing_cursor > 0) {
+                editing_text.erase(editing_cursor - 1, 1);
+                --editing_cursor;
+            }
+            invalidate();
+            return;
+        case VK_DELETE:
+            if (table_edit_has_selection(*this)) delete_edit_selection();
+            else if (editing_cursor < (int)editing_text.size()) {
+                editing_text.erase(editing_cursor, 1);
+            }
+            invalidate();
+            return;
+        case 'A':
+            if (ctrl) {
+                editing_sel_start = 0;
+                editing_sel_end = (int)editing_text.size();
+                editing_cursor = editing_sel_end;
+                invalidate();
+                return;
+            }
+            break;
+        case 'C':
+            if (ctrl && table_edit_has_selection(*this) && OpenClipboard(owner_hwnd)) {
+                int s = 0, e = 0;
+                table_edit_selection_bounds(*this, s, e);
+                std::wstring sel = editing_text.substr(s, e - s);
+                EmptyClipboard();
+                size_t bytes = (sel.size() + 1) * sizeof(wchar_t);
+                HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, bytes);
+                if (hMem) {
+                    memcpy(GlobalLock(hMem), sel.c_str(), bytes);
+                    GlobalUnlock(hMem);
+                    SetClipboardData(CF_UNICODETEXT, hMem);
+                }
+                CloseClipboard();
+                return;
+            }
+            break;
+        case 'X':
+            if (ctrl && table_edit_has_selection(*this) && OpenClipboard(owner_hwnd)) {
+                int s = 0, e = 0;
+                table_edit_selection_bounds(*this, s, e);
+                std::wstring sel = editing_text.substr(s, e - s);
+                EmptyClipboard();
+                size_t bytes = (sel.size() + 1) * sizeof(wchar_t);
+                HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, bytes);
+                if (hMem) {
+                    memcpy(GlobalLock(hMem), sel.c_str(), bytes);
+                    GlobalUnlock(hMem);
+                    SetClipboardData(CF_UNICODETEXT, hMem);
+                }
+                CloseClipboard();
+                delete_edit_selection();
+                invalidate();
+                return;
+            }
+            break;
+        case 'V':
+            if (ctrl && OpenClipboard(owner_hwnd)) {
+                HANDLE hData = GetClipboardData(CF_UNICODETEXT);
+                if (hData) {
+                    wchar_t* p = (wchar_t*)GlobalLock(hData);
+                    if (p) {
+                        insert_edit_text(p);
+                        GlobalUnlock(hData);
+                    }
+                }
+                CloseClipboard();
+                return;
+            }
+            break;
+        }
+        return;
+    }
     if (!selectable || row_count() <= 0) return;
     if (virtual_mode) {
         int pos = selected_row < 0 ? 0 : selected_row;
@@ -657,4 +916,15 @@ void Table::on_key_down(int vk, int) {
     else if (vk == VK_END) pos = (int)visible.size() - 1;
     else return;
     set_selected_row(visible[pos]);
+}
+
+void Table::on_char(wchar_t ch) {
+    if (!is_editing_cell()) return;
+    if (ch < 32) return;
+    insert_edit_text(std::wstring(1, ch));
+}
+
+void Table::on_blur() {
+    if (is_editing_cell()) commit_cell_edit();
+    Element::on_blur();
 }

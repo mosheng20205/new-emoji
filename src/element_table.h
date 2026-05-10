@@ -123,8 +123,11 @@ public:
     void on_mouse_leave() override;
     void on_mouse_down(int x, int y, MouseButton btn) override;
     void on_mouse_up(int x, int y, MouseButton btn) override;
+    void on_mouse_double_click(int x, int y, MouseButton btn) override;
     void on_mouse_wheel(int x, int y, int delta) override;
     void on_key_down(int vk, int mods) override;
+    void on_char(wchar_t ch) override;
+    void on_blur() override;
 
     void set_columns(const std::vector<std::wstring>& values);
     void set_rows(const std::vector<std::vector<std::wstring>>& values);
@@ -164,6 +167,14 @@ public:
     void set_header_drag_options(bool column_resize, bool header_height_resize,
                                  int min_col_width, int max_col_width,
                                  int min_header_height, int max_header_height);
+    void set_double_click_edit(bool enabled);
+    void set_column_double_click_edit(int col, int editable);
+    void set_cell_double_click_edit(int row, int col, int editable);
+    bool is_cell_double_click_editable(int row, int col) const;
+    bool is_editing_cell() const;
+    void set_composition_text(const std::wstring& value);
+    void end_composition();
+    void commit_text(const std::wstring& value);
     void set_virtual_options(bool enabled, int row_count, int cache_window);
     void set_virtual_row_provider(TableVirtualRowCallback cb);
     void clear_virtual_cache();
@@ -188,6 +199,20 @@ public:
     bool needs_vertical_scrollbar() const;
     bool needs_horizontal_scrollbar() const;
     void clamp_scroll();
+
+    bool double_click_edit_enabled = false;
+    std::map<int, int> column_editable_overrides;
+    std::map<std::pair<int, int>, int> cell_editable_overrides;
+    TableCellEditCallback cell_edit_cb = nullptr;
+    int editing_row = -1;
+    int editing_col = -1;
+    std::wstring editing_original_text;
+    std::wstring editing_text;
+    std::wstring editing_composition_text;
+    int editing_cursor = 0;
+    int editing_sel_start = -1;
+    int editing_sel_end = -1;
+    bool editing_composing = false;
 
 private:
     int m_hover_row = -1;
@@ -216,6 +241,15 @@ private:
     bool is_virtual_active() const;
     void invoke_cell(int row, int col, int action, int value);
     void invoke_cell_click(int row, int col);
+    void invoke_cell_edit(int row, int col, int action, const std::wstring& value);
+    bool begin_cell_edit(int row, int col);
+    void commit_cell_edit();
+    void cancel_cell_edit();
+    void clear_cell_edit_state();
+    void delete_edit_selection();
+    void insert_edit_text(const std::wstring& value);
+    void move_edit_cursor(int delta, bool extend);
+    int edit_hit_to_cursor(int col, int x, int y) const;
     bool is_span_hidden(int row, int col) const;
     TableSpan span_for(int row, int col) const;
 };

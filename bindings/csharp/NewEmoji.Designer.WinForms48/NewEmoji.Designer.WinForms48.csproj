@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>NewEmoji.Designer.WinForms48</AssemblyName>
+    <RootNamespace>NewEmoji.Designer.WinForms48</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\NewEmoji.Design\NewEmoji.Design.csproj" />
+    <ProjectReference Include="..\NewEmoji\NewEmoji.csproj" />
+    <None Include="..\..\..\bin\x64\Release\new_emoji.dll" Link="new_emoji.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -32,6 +32,8 @@ TextCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.POINTER(ctypes.c_ub
 ValueCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
 BeforeCloseCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int)
 TableCellCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int)
+TableCellEditCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int,
+                                           ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 TableVirtualRowCallback = ctypes.WINFUNCTYPE(ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                              ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int)
 DropdownCommandCallback = ctypes.WINFUNCTYPE(None, ctypes.c_int, ctypes.c_int,
@@ -1500,6 +1502,16 @@ dll.EU_SetTableViewportOptions.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_SetTableScroll.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTableHeaderDragOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int,
                                               ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableDoubleClickEdit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableColumnDoubleClickEdit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_SetTableCellDoubleClickEdit.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTableCellDoubleClickEditable.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int]
+dll.EU_GetTableCellDoubleClickEditable.restype = ctypes.c_int
+dll.EU_GetTableDoubleClickEditState.argtypes = [wintypes.HWND, ctypes.c_int,
+                                                ctypes.POINTER(ctypes.c_int),
+                                                ctypes.POINTER(ctypes.c_int),
+                                                ctypes.POINTER(ctypes.c_int)]
+dll.EU_GetTableDoubleClickEditState.restype = ctypes.c_int
 dll.EU_ExportTableExcel.argtypes = [wintypes.HWND, ctypes.c_int,
                                     ctypes.POINTER(ctypes.c_ubyte), ctypes.c_int, ctypes.c_int]
 dll.EU_ExportTableExcel.restype = ctypes.c_int
@@ -1508,6 +1520,7 @@ dll.EU_ImportTableExcel.argtypes = [wintypes.HWND, ctypes.c_int,
 dll.EU_ImportTableExcel.restype = ctypes.c_int
 dll.EU_SetTableCellClickCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
 dll.EU_SetTableCellActionCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellCallback]
+dll.EU_SetTableCellEditCallback.argtypes = [wintypes.HWND, ctypes.c_int, TableCellEditCallback]
 dll.EU_SetTableVirtualOptions.argtypes = [wintypes.HWND, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int]
 dll.EU_SetTableVirtualRowProvider.argtypes = [wintypes.HWND, ctypes.c_int, TableVirtualRowCallback]
 dll.EU_ClearTableVirtualCache.argtypes = [wintypes.HWND, ctypes.c_int]
@@ -6033,11 +6046,35 @@ def import_table_excel(hwnd, element_id, path, flags=0):
     data = make_utf8(path)
     return bool(dll.EU_ImportTableExcel(hwnd, element_id, bytes_arg(data), len(data), flags))
 
+def set_table_double_click_edit(hwnd, element_id, enabled=True):
+    dll.EU_SetTableDoubleClickEdit(hwnd, element_id, 1 if enabled else 0)
+
+def set_table_column_double_click_edit(hwnd, element_id, col, editable):
+    dll.EU_SetTableColumnDoubleClickEdit(hwnd, element_id, int(col), int(editable))
+
+def set_table_cell_double_click_edit(hwnd, element_id, row, col, editable):
+    dll.EU_SetTableCellDoubleClickEdit(hwnd, element_id, int(row), int(col), int(editable))
+
+def get_table_cell_double_click_editable(hwnd, element_id, row, col):
+    return bool(dll.EU_GetTableCellDoubleClickEditable(hwnd, element_id, int(row), int(col)))
+
+def get_table_double_click_edit_state(hwnd, element_id):
+    enabled = ctypes.c_int()
+    row = ctypes.c_int()
+    col = ctypes.c_int()
+    ok = dll.EU_GetTableDoubleClickEditState(
+        hwnd, element_id, ctypes.byref(enabled), ctypes.byref(row), ctypes.byref(col)
+    )
+    return None if not ok else (bool(enabled.value), row.value, col.value)
+
 def set_table_cell_click_callback(hwnd, element_id, callback):
     dll.EU_SetTableCellClickCallback(hwnd, element_id, callback)
 
 def set_table_cell_action_callback(hwnd, element_id, callback):
     dll.EU_SetTableCellActionCallback(hwnd, element_id, callback)
+
+def set_table_cell_edit_callback(hwnd, element_id, callback):
+    dll.EU_SetTableCellEditCallback(hwnd, element_id, callback)
 
 _table_virtual_row_provider_refs = {}
 

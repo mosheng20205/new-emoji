@@ -13,6 +13,7 @@
 #include "element_input.h"
 #include "element_inputtag.h"
 #include "element_mentions.h"
+#include "element_table.h"
 #include "element_upload.h"
 #include "element_message.h"
 #include "element_messagebox.h"
@@ -751,6 +752,9 @@ void register_window_class() {
             int x = GET_X_LPARAM(lp), y = GET_Y_LPARAM(lp);
             if (!is_modal_overlay_point(st, x, y) && is_titlebar_drag_point(st, x, y)) {
                 ShowWindow(hwnd, IsZoomed(hwnd) ? SW_RESTORE : SW_MAXIMIZE);
+            } else if (st && st->element_tree) {
+                SetFocus(hwnd);
+                st->element_tree->dispatch_lbutton_double_click(x, y);
             }
             return 0;
         }
@@ -861,6 +865,8 @@ void register_window_class() {
             if (st && st->element_tree) {
                 if (auto* edit = dynamic_cast<EditBox*>(st->element_tree->focused())) {
                     edit->set_composition_text(L"");
+                } else if (auto* table = dynamic_cast<Table*>(st->element_tree->focused())) {
+                    table->set_composition_text(L"");
                 }
             }
             return 0;
@@ -902,6 +908,17 @@ void register_window_class() {
                         }
                         ImmReleaseContext(hwnd, imc);
                     }
+                } else if (auto* table = dynamic_cast<Table*>(st->element_tree->focused())) {
+                    HIMC imc = ImmGetContext(hwnd);
+                    if (imc) {
+                        if (lp & GCS_RESULTSTR) {
+                            table->commit_text(get_ime_string(hwnd, imc, GCS_RESULTSTR));
+                        }
+                        if (lp & GCS_COMPSTR) {
+                            table->set_composition_text(get_ime_string(hwnd, imc, GCS_COMPSTR));
+                        }
+                        ImmReleaseContext(hwnd, imc);
+                    }
                 }
             }
             return 0;
@@ -910,6 +927,8 @@ void register_window_class() {
             if (st && st->element_tree) {
                 if (auto* edit = dynamic_cast<EditBox*>(st->element_tree->focused())) {
                     edit->end_composition();
+                } else if (auto* table = dynamic_cast<Table*>(st->element_tree->focused())) {
+                    table->end_composition();
                 }
             }
             return 0;

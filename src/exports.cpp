@@ -6997,6 +6997,39 @@ void __stdcall EU_SetTableHeaderDragOptions(HWND hwnd, int element_id, int colum
     }
 }
 
+void __stdcall EU_SetTableDoubleClickEdit(HWND hwnd, int element_id, int enabled) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_double_click_edit(enabled != 0);
+    }
+}
+
+void __stdcall EU_SetTableColumnDoubleClickEdit(HWND hwnd, int element_id, int col, int editable) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_column_double_click_edit(col, editable);
+    }
+}
+
+void __stdcall EU_SetTableCellDoubleClickEdit(HWND hwnd, int element_id, int row, int col, int editable) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
+        el->set_cell_double_click_edit(row, col, editable);
+    }
+}
+
+int __stdcall EU_GetTableCellDoubleClickEditable(HWND hwnd, int element_id, int row, int col) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    return el && el->is_cell_double_click_editable(row, col) ? 1 : 0;
+}
+
+int __stdcall EU_GetTableDoubleClickEditState(HWND hwnd, int element_id,
+                                              int* enabled, int* editing_row, int* editing_col) {
+    auto* el = find_typed_element<Table>(hwnd, element_id);
+    if (!el) return 0;
+    if (enabled) *enabled = el->double_click_edit_enabled ? 1 : 0;
+    if (editing_row) *editing_row = el->editing_row;
+    if (editing_col) *editing_col = el->editing_col;
+    return 1;
+}
+
 int __stdcall EU_ExportTableExcel(HWND hwnd, int element_id,
                                   const unsigned char* path_bytes, int path_len, int flags) {
     if (auto* el = find_typed_element<Table>(hwnd, element_id)) {
@@ -7019,6 +7052,10 @@ void __stdcall EU_SetTableCellClickCallback(HWND hwnd, int element_id, TableCell
 
 void __stdcall EU_SetTableCellActionCallback(HWND hwnd, int element_id, TableCellCallback cb) {
     if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->cell_cb = cb;
+}
+
+void __stdcall EU_SetTableCellEditCallback(HWND hwnd, int element_id, TableCellEditCallback cb) {
+    if (auto* el = find_typed_element<Table>(hwnd, element_id)) el->cell_edit_cb = cb;
 }
 
 void __stdcall EU_SetTableVirtualOptions(HWND hwnd, int element_id, int enabled,

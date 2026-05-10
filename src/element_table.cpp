@@ -222,6 +222,7 @@ void Table::sync_selection_cells() {
 }
 
 void Table::set_columns(const std::vector<std::wstring>& values) {
+    if (is_editing_cell()) commit_cell_edit();
     clear_virtual_cache();
     adv_columns.clear();
     for (size_t i = 0; i < values.size(); ++i) {
@@ -238,6 +239,7 @@ void Table::set_columns(const std::vector<std::wstring>& values) {
 }
 
 void Table::set_rows(const std::vector<std::vector<std::wstring>>& values) {
+    if (is_editing_cell()) commit_cell_edit();
     virtual_mode = false;
     virtual_row_count = 0;
     clear_virtual_cache();
@@ -260,6 +262,7 @@ void Table::set_rows(const std::vector<std::vector<std::wstring>>& values) {
 }
 
 void Table::set_columns_ex(const std::wstring& spec) {
+    if (is_editing_cell()) commit_cell_edit();
     clear_virtual_cache();
     adv_columns.clear();
     for (const auto& line : split_escaped(spec, L'\n')) {
@@ -294,6 +297,7 @@ void Table::set_columns_ex(const std::wstring& spec) {
 }
 
 void Table::set_rows_ex(const std::wstring& spec) {
+    if (is_editing_cell()) commit_cell_edit();
     virtual_mode = false;
     virtual_row_count = 0;
     clear_virtual_cache();
@@ -349,6 +353,7 @@ int Table::add_row_ex(const std::wstring& spec) {
 }
 
 int Table::insert_row_ex(int row_index, const std::wstring& spec) {
+    if (is_editing_cell()) commit_cell_edit();
     if (virtual_mode || row_index < 0) return -1;
     if (row_index > (int)adv_rows.size()) row_index = (int)adv_rows.size();
 
@@ -418,6 +423,7 @@ int Table::insert_row_ex(int row_index, const std::wstring& spec) {
 }
 
 bool Table::delete_row(int row_index) {
+    if (is_editing_cell()) commit_cell_edit();
     if (virtual_mode || row_index < 0 || row_index >= (int)adv_rows.size()) return false;
     adv_rows.erase(adv_rows.begin() + row_index);
 
@@ -484,6 +490,7 @@ bool Table::delete_row(int row_index) {
 }
 
 bool Table::clear_rows() {
+    if (is_editing_cell()) commit_cell_edit();
     if (virtual_mode) return false;
     adv_rows.clear();
     selected_row = -1;
@@ -498,6 +505,7 @@ bool Table::clear_rows() {
 }
 
 void Table::set_cell_ex(int row, int col, int type, const std::wstring& value, const std::wstring& options) {
+    if (is_editing_cell()) commit_cell_edit();
     if (row < 0 || col < 0) return;
     if (virtual_mode) {
         if (!ensure_virtual_row(row)) return;
@@ -611,6 +619,7 @@ void Table::set_options(bool striped_value, bool bordered_value, int row_height,
 }
 
 void Table::set_sort(int column_index, bool desc) {
+    if (is_editing_cell()) commit_cell_edit();
     sort_column = column_index;
     sort_desc = desc;
     if (!is_virtual_active() && sort_column >= 0 && !tree_mode) {
@@ -625,12 +634,12 @@ void Table::set_sort(int column_index, bool desc) {
     invalidate();
 }
 
-void Table::set_filter(int col, const std::wstring& value) { if (col >= 0) filters[col] = value; clamp_scroll(); invalidate(); }
-void Table::clear_filter(int col) { if (col < 0) filters.clear(); else filters.erase(col); clamp_scroll(); invalidate(); }
-void Table::set_search(const std::wstring& value) { search_text = lower_key(value); clamp_scroll(); invalidate(); }
-void Table::set_scroll_row(int value) { scroll_row = value; clamp_scroll(); invalidate(); }
+void Table::set_filter(int col, const std::wstring& value) { if (is_editing_cell()) commit_cell_edit(); if (col >= 0) filters[col] = value; clamp_scroll(); invalidate(); }
+void Table::clear_filter(int col) { if (is_editing_cell()) commit_cell_edit(); if (col < 0) filters.clear(); else filters.erase(col); clamp_scroll(); invalidate(); }
+void Table::set_search(const std::wstring& value) { if (is_editing_cell()) commit_cell_edit(); search_text = lower_key(value); clamp_scroll(); invalidate(); }
+void Table::set_scroll_row(int value) { if (is_editing_cell()) commit_cell_edit(); scroll_row = value; clamp_scroll(); invalidate(); }
 void Table::set_column_width(int value) { fixed_column_width = (std::min)(480, (std::max)(0, value)); for (auto& c : adv_columns) if (!c.width) c.width = fixed_column_width; invalidate(); }
-void Table::set_scroll(int row, int x) { scroll_row = row; scroll_x = (std::max)(0, x); clamp_scroll(); invalidate(); }
+void Table::set_scroll(int row, int x) { if (is_editing_cell()) commit_cell_edit(); scroll_row = row; scroll_x = (std::max)(0, x); clamp_scroll(); invalidate(); }
 void Table::set_header_drag_options(bool column_resize, bool height_resize,
                                     int min_col_width, int max_col_width,
                                     int min_header_height, int max_header_height) {
@@ -646,6 +655,54 @@ void Table::set_header_drag_options(bool column_resize, bool height_resize,
 }
 void Table::set_tree_options(bool enabled, int indent, bool lazy) { tree_mode = enabled; tree_indent = (std::max)(8, indent); lazy_mode = lazy; invalidate(); }
 void Table::set_viewport_options(int max_height, bool fh, bool hs, bool ss) { max_height_value = max_height; fixed_header = fh; horizontal_scroll = hs; show_summary = ss; clamp_scroll(); invalidate(); }
+
+static int table_edit_override_value(int value) {
+    if (value < -1) return -1;
+    if (value > 1) return 1;
+    return value;
+}
+
+void Table::set_double_click_edit(bool enabled) {
+    if (!enabled && is_editing_cell()) commit_cell_edit();
+    double_click_edit_enabled = enabled;
+    invalidate();
+}
+
+void Table::set_column_double_click_edit(int col, int editable) {
+    if (col < 0) return;
+    int value = table_edit_override_value(editable);
+    if (value == -1) column_editable_overrides.erase(col);
+    else column_editable_overrides[col] = value;
+    if (is_editing_cell() && editing_col == col && !is_cell_double_click_editable(editing_row, editing_col)) {
+        commit_cell_edit();
+    }
+    invalidate();
+}
+
+void Table::set_cell_double_click_edit(int row, int col, int editable) {
+    if (row < 0 || col < 0) return;
+    int value = table_edit_override_value(editable);
+    std::pair<int, int> key(row, col);
+    if (value == -1) cell_editable_overrides.erase(key);
+    else cell_editable_overrides[key] = value;
+    if (is_editing_cell() && editing_row == row && editing_col == col &&
+        !is_cell_double_click_editable(editing_row, editing_col)) {
+        commit_cell_edit();
+    }
+    invalidate();
+}
+
+bool Table::is_cell_double_click_editable(int row, int col) const {
+    if (!double_click_edit_enabled || is_virtual_active()) return false;
+    const TableRow* target = row_ptr(row);
+    if (!target || col < 0 || col >= (int)target->cells.size()) return false;
+    if (target->cells[col].kind != TableCellKind::Text) return false;
+    auto cell_it = cell_editable_overrides.find(std::pair<int, int>(row, col));
+    if (cell_it != cell_editable_overrides.end()) return cell_it->second == 1;
+    auto col_it = column_editable_overrides.find(col);
+    if (col_it != column_editable_overrides.end()) return col_it->second == 1;
+    return true;
+}
 
 void Table::set_span(int row, int col, int rowspan, int colspan) {
     if (row < 0 || col < 0) return;
@@ -675,6 +732,80 @@ void Table::invoke_cell_click(int row, int col) {
     if (cell_click_cb) cell_click_cb(id, row, col, 1, 0);
 }
 
+void Table::invoke_cell_edit(int row, int col, int action, const std::wstring& value) {
+    if (!cell_edit_cb) return;
+    std::string utf8 = wide_to_utf8(value);
+    cell_edit_cb(id, row, col, action,
+                 reinterpret_cast<const unsigned char*>(utf8.data()),
+                 (int)utf8.size());
+}
+
+bool Table::is_editing_cell() const {
+    return editing_row >= 0 && editing_col >= 0;
+}
+
+void Table::clear_cell_edit_state() {
+    editing_row = -1;
+    editing_col = -1;
+    editing_original_text.clear();
+    editing_text.clear();
+    editing_composition_text.clear();
+    editing_cursor = 0;
+    editing_sel_start = -1;
+    editing_sel_end = -1;
+    editing_composing = false;
+}
+
+bool Table::begin_cell_edit(int row, int col) {
+    if (!is_cell_double_click_editable(row, col)) return false;
+    if (is_editing_cell()) {
+        if (editing_row == row && editing_col == col) return true;
+        commit_cell_edit();
+    }
+    const TableRow* target = row_ptr(row);
+    if (!target || col < 0 || col >= (int)target->cells.size()) return false;
+    editing_row = row;
+    editing_col = col;
+    editing_original_text = target->cells[col].value;
+    editing_text = editing_original_text;
+    editing_composition_text.clear();
+    editing_cursor = (int)editing_text.size();
+    editing_sel_start = -1;
+    editing_sel_end = -1;
+    editing_composing = false;
+    invoke_cell_edit(row, col, 1, editing_text);
+    invalidate();
+    return true;
+}
+
+void Table::commit_cell_edit() {
+    if (!is_editing_cell()) return;
+    int row = editing_row;
+    int col = editing_col;
+    int cursor = (std::max)(0, (std::min)(editing_cursor, (int)editing_text.size()));
+    std::wstring value = editing_text.substr(0, cursor) +
+        editing_composition_text + editing_text.substr(cursor);
+    TableRow* target = row_ptr(row);
+    if (target && col >= 0 && col < (int)target->cells.size() &&
+        target->cells[col].kind == TableCellKind::Text && !is_virtual_active()) {
+        target->cells[col].value = value;
+        sync_legacy_vectors();
+    }
+    clear_cell_edit_state();
+    invoke_cell_edit(row, col, 2, value);
+    invalidate();
+}
+
+void Table::cancel_cell_edit() {
+    if (!is_editing_cell()) return;
+    int row = editing_row;
+    int col = editing_col;
+    std::wstring value = editing_original_text;
+    clear_cell_edit_state();
+    invoke_cell_edit(row, col, 3, value);
+    invalidate();
+}
+
 std::wstring Table::get_cell_value(int row, int col) const {
     const TableRow* target = row_ptr(row);
     if (!target || col < 0 || col >= (int)target->cells.size()) return L"";
@@ -700,6 +831,7 @@ void Table::clear_virtual_cache() {
 }
 
 void Table::set_virtual_options(bool enabled, int row_count_value, int cache_window_value) {
+    if (is_editing_cell()) commit_cell_edit();
     virtual_mode = enabled && row_count_value > 0;
     virtual_row_count = (std::max)(0, row_count_value);
     virtual_cache_window = (std::max)(0, cache_window_value);
@@ -709,6 +841,7 @@ void Table::set_virtual_options(bool enabled, int row_count_value, int cache_win
 }
 
 void Table::set_virtual_row_provider(TableVirtualRowCallback cb) {
+    if (is_editing_cell()) commit_cell_edit();
     virtual_row_cb = cb;
     clear_virtual_cache();
     invalidate();

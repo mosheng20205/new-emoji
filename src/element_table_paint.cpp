@@ -597,6 +597,78 @@ void Table::paint(RenderContext& ctx) {
     if (horizontal_scroll_track(*this, track) && horizontal_scroll_thumb(*this, thumb)) {
         draw_scrollbar(ctx, track, thumb, t, m_scroll_drag == 2);
     }
+    if (is_editing_cell()) {
+        D2D1_RECT_F edit_cell{};
+        if (table_cell_rect(*this, editing_row, editing_col, edit_cell)) {
+            D2D1_RECT_F editor{
+                edit_cell.left + 4.0f,
+                edit_cell.top + 4.0f,
+                edit_cell.right - 4.0f,
+                edit_cell.bottom - 4.0f
+            };
+            D2D1_RECT_F editor_clip = intersect_rect(editor, { left, body_top, left + table_w, table_bottom });
+            if (push_clip_if_visible(ctx, editor_clip)) {
+                Color editor_bg = dark ? 0xFF1F2433 : 0xFFFFFFFF;
+                ctx.rt->FillRoundedRectangle(D2D1::RoundedRect(editor, 5.0f, 5.0f), ctx.get_brush(editor_bg));
+                ctx.rt->DrawRoundedRectangle(D2D1::RoundedRect(editor, 5.0f, 5.0f), ctx.get_brush(t->accent), 1.5f);
+
+                float pad = 8.0f;
+                float text_w = (std::max)(1.0f, editor.right - editor.left - pad * 2.0f);
+                float text_h = (std::max)(1.0f, editor.bottom - editor.top);
+                int cursor = (std::max)(0, (std::min)(editing_cursor, (int)editing_text.size()));
+                std::wstring display = editing_text.substr(0, cursor) +
+                    editing_composition_text + editing_text.substr(cursor);
+                std::wstring layout_text = display.empty() ? L" " : display;
+                IDWriteTextLayout* layout = ctx.create_text_layout(layout_text, style.font_name, style.font_size, text_w, text_h);
+                if (layout) {
+                    apply_emoji_font_fallback(layout, layout_text);
+                    int align = editing_col < (int)adv_columns.size() ? adv_columns[editing_col].align : 0;
+                    layout->SetTextAlignment(align == 1 ? DWRITE_TEXT_ALIGNMENT_CENTER :
+                                             (align == 2 ? DWRITE_TEXT_ALIGNMENT_TRAILING : DWRITE_TEXT_ALIGNMENT_LEADING));
+                    layout->SetParagraphAlignment(DWRITE_PARAGRAPH_ALIGNMENT_CENTER);
+                    layout->SetWordWrapping(DWRITE_WORD_WRAPPING_NO_WRAP);
+                    if (editing_sel_start >= 0 && editing_sel_end >= 0 && editing_sel_start != editing_sel_end) {
+                        int s = editing_sel_start;
+                        int e = editing_sel_end;
+                        if (s > e) std::swap(s, e);
+                        s = (std::max)(0, (std::min)(s, (int)editing_text.size()));
+                        e = (std::max)(0, (std::min)(e, (int)editing_text.size()));
+                        if (e > s) {
+                            DWRITE_HIT_TEST_METRICS metrics[16]{};
+                            UINT32 actual = 0;
+                            if (SUCCEEDED(layout->HitTestTextRange((UINT32)s, (UINT32)(e - s), 0.0f, 0.0f,
+                                                                   metrics, 16, &actual))) {
+                                for (UINT32 i = 0; i < actual; ++i) {
+                                    D2D1_RECT_F sr{
+                                        editor.left + pad + metrics[i].left,
+                                        editor.top + metrics[i].top,
+                                        editor.left + pad + metrics[i].left + metrics[i].width,
+                                        editor.top + metrics[i].top + metrics[i].height
+                                    };
+                                    ctx.rt->FillRectangle(sr, ctx.get_brush(dark ? 0xFF305A8A : 0xFFBBD7FF));
+                                }
+                            }
+                        }
+                    }
+                    ctx.rt->DrawTextLayout(D2D1::Point2F(editor.left + pad, editor.top), layout,
+                                           ctx.get_brush(t->text_primary), D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+                    float cx = 0.0f, cy = 0.0f;
+                    DWRITE_HIT_TEST_METRICS caret{};
+                    UINT32 caret_pos = (UINT32)(cursor + (int)editing_composition_text.size());
+                    if (SUCCEEDED(layout->HitTestTextPosition(caret_pos, FALSE, &cx, &cy, &caret))) {
+                        float caret_x = editor.left + pad + cx;
+                        float caret_top = editor.top + cy + 4.0f;
+                        float caret_bottom = editor.top + cy + (caret.height > 1.0f ? caret.height : text_h) - 4.0f;
+                        ctx.rt->DrawLine(D2D1::Point2F(caret_x, caret_top),
+                                         D2D1::Point2F(caret_x, caret_bottom),
+                                         ctx.get_brush(t->accent), 1.4f);
+                    }
+                    layout->Release();
+                }
+                ctx.pop_clip();
+            }
+        }
+    }
     if (m_header_drag == 1 && m_header_drag_col >= 0 && m_header_drag_col < col_count) {
         float x = column_x(m_header_drag_col, left, table_w) + column_width_at(m_header_drag_col, table_w);
         ctx.rt->DrawLine(D2D1::Point2F(x, top), D2D1::Point2F(x, table_h - (float)style.pad_bottom),

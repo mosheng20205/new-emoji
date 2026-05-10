@@ -479,10 +479,16 @@ EXPORTS
     EU_SetTableViewportOptions
     EU_SetTableScroll
     EU_SetTableHeaderDragOptions
+    EU_SetTableDoubleClickEdit
+    EU_SetTableColumnDoubleClickEdit
+    EU_SetTableCellDoubleClickEdit
+    EU_GetTableCellDoubleClickEditable
+    EU_GetTableDoubleClickEditState
     EU_ExportTableExcel
     EU_ImportTableExcel
     EU_SetTableCellClickCallback
     EU_SetTableCellActionCallback
+    EU_SetTableCellEditCallback
     EU_SetTableVirtualOptions
     EU_SetTableVirtualRowProvider
     EU_ClearTableVirtualCache

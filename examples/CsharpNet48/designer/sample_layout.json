@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "window": {
+    "title": "✅ 设计器导出示例",
+    "width": 980,
+    "height": 680,
+    "titlebarColor": "#FF2D7DFF"
+  },
+  "root": {
+    "type": "Container",
+    "name": "root",
+    "bounds": {
+      "x": 0,
+      "y": 0,
+      "width": 940,
+      "height": 620
+    },
+    "children": [
+      {
+        "type": "Text",
+        "name": "titleText",
+        "bounds": {
+          "x": 32,
+          "y": 32,
+          "width": 420,
+          "height": 40
+        },
+        "text": "欢迎使用 new_emoji 设计器 🚀"
+      },
+      {
+        "type": "Input",
+        "name": "nameInput",
+        "bounds": {
+          "x": 32,
+          "y": 88,
+          "width": 320,
+          "height": 42
+        },
+        "text": "",
+        "properties": {
+          "placeholder": "请输入中文或 emoji 😊"
+        }
+      },
+      {
+        "type": "Button",
+        "name": "confirmButton",
+        "bounds": {
+          "x": 32,
+          "y": 152,
+          "width": 160,
+          "height": 42
+        },
+        "text": "确认操作",
+        "emoji": "✅",
+        "events": {
+          "Clicked": "OnConfirmClicked"
+        }
+      },
+      {
+        "type": "Card",
+        "name": "statusCard",
+        "bounds": {
+          "x": 420,
+          "y": 88,
+          "width": 260,
+          "height": 140
+        },
+        "text": "数据卡片",
+        "properties": {
+          "title": "数据卡片 📊",
+          "body": "这里展示核心指标。"
+        }
+      },
+      {
+        "type": "Notification",
+        "name": "taskNotification",
+        "bounds": {
+          "x": 420,
+          "y": 252,
+          "width": 320,
+          "height": 110
+        },
+        "text": "通知提醒",
+        "properties": {
+          "title": "任务提醒 🔔",
+          "body": "新任务已经同步完成。"
+        }
+      },
+      {
+        "type": "Drawer",
+        "name": "settingsDrawer",
+        "bounds": {
+          "x": 32,
+          "y": 230,
+          "width": 280,
+          "height": 180
+        },
+        "text": "抽屉",
+        "properties": {
+          "title": "设置抽屉 ⚙️",
+          "body": "这里是抽屉内容。"
+        }
+      }
+    ]
+  }
+}

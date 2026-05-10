@@ -1,7 +1,9 @@
 # new_emoji.dll C# DLL 命令
 
 本文件记录 `new_emoji.dll` 的 C# P/Invoke 声明，按 `src/new_emoji.def` 和 `src/exports.h` 生成。
-当前导出命令数量：1253。
+当前导出命令数量：1259。
+
+推荐普通 C# 程序优先使用 `bindings/csharp/NewEmoji` 对象式封装库；本文件作为高级能力和底层 P/Invoke 参考。
 
 通用约定：
 - x86 应用加载 `bin/Win32/Release/new_emoji.dll`，x64 应用加载 `bin/x64/Release/new_emoji.dll`。
@@ -35,6 +37,8 @@ public delegate int ElementBeforeCloseCallback(int element_id, int action);
 [UnmanagedFunctionPointer(CallingConvention.StdCall)]
 public delegate void TableCellCallback(int table_id, int row, int col, int action, int value);
 [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+public delegate void TableCellEditCallback(int table_id, int row, int col, int action, IntPtr utf8, int len);
+[UnmanagedFunctionPointer(CallingConvention.StdCall)]
 public delegate int TableVirtualRowCallback(int table_id, int row, IntPtr buffer, int buffer_size);
 [UnmanagedFunctionPointer(CallingConvention.StdCall)]
 public delegate void DropdownCommandCallback(int element_id, int item_index, IntPtr command_utf8, int command_len);
@@ -65,6 +69,12 @@ public delegate int DateDisabledCallback(int id, int yyyymmdd);
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern IntPtr EU_CreateWindow(byte[] title_bytes, int title_len, int x, int y, int w, int h, uint titlebar_color);
+```
+## EU_CreateWindowEx
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern IntPtr EU_CreateWindowEx(byte[] title_bytes, int title_len, int x, int y, int w, int h, uint titlebar_color, int frame_flags);
 ```
 ## EU_CreateWindowDark
 
@@ -161,6 +171,24 @@ public static extern int EU_CreateLink(IntPtr hwnd, int parent_id, byte[] text_b
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern int EU_CreateIcon(IntPtr hwnd, int parent_id, byte[] text_bytes, int text_len, int x, int y, int w, int h);
+```
+## EU_CreateIconButton
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_CreateIconButton(IntPtr hwnd, int parent_id, byte[] icon_bytes, int icon_len, byte[] tooltip_bytes, int tooltip_len, int x, int y, int w, int h);
+```
+## EU_CreateOmnibox
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_CreateOmnibox(IntPtr hwnd, int parent_id, byte[] value_bytes, int value_len, byte[] placeholder_bytes, int placeholder_len, int x, int y, int w, int h);
+```
+## EU_CreateBrowserViewport
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_CreateBrowserViewport(IntPtr hwnd, int parent_id, int x, int y, int w, int h);
 ```
 ## EU_CreateSpace
 
@@ -2910,6 +2938,36 @@ public static extern void EU_SetTableScroll(IntPtr hwnd, int element_id, int scr
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetTableHeaderDragOptions(IntPtr hwnd, int element_id, int column_resize, int header_height_resize, int min_col_width, int max_col_width, int min_header_height, int max_header_height);
 ```
+## EU_SetTableDoubleClickEdit
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTableDoubleClickEdit(IntPtr hwnd, int element_id, int enabled);
+```
+## EU_SetTableColumnDoubleClickEdit
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTableColumnDoubleClickEdit(IntPtr hwnd, int element_id, int col, int editable);
+```
+## EU_SetTableCellDoubleClickEdit
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTableCellDoubleClickEdit(IntPtr hwnd, int element_id, int row, int col, int editable);
+```
+## EU_GetTableCellDoubleClickEditable
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetTableCellDoubleClickEditable(IntPtr hwnd, int element_id, int row, int col);
+```
+## EU_GetTableDoubleClickEditState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetTableDoubleClickEditState(IntPtr hwnd, int element_id, IntPtr enabled, IntPtr editing_row, IntPtr editing_col);
+```
 ## EU_ExportTableExcel
 
 ```csharp
@@ -2933,6 +2991,12 @@ public static extern void EU_SetTableCellClickCallback(IntPtr hwnd, int element_
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetTableCellActionCallback(IntPtr hwnd, int element_id, TableCellCallback cb);
+```
+## EU_SetTableCellEditCallback
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTableCellEditCallback(IntPtr hwnd, int element_id, TableCellEditCallback cb);
 ```
 ## EU_SetTableVirtualOptions
 
@@ -7026,6 +7090,36 @@ public static extern int EU_GetThemeMode(IntPtr hwnd);
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern int EU_SetThemeColor(IntPtr hwnd, byte[] token_bytes, int token_len, uint value);
 ```
+## EU_SetChromeThemePreset
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetChromeThemePreset(IntPtr hwnd, int preset);
+```
+## EU_SetThemeToken
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_SetThemeToken(IntPtr hwnd, byte[] token_bytes, int token_len, uint value);
+```
+## EU_GetThemeToken
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetThemeToken(IntPtr hwnd, byte[] token_bytes, int token_len, IntPtr value);
+```
+## EU_SetHighContrastMode
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetHighContrastMode(IntPtr hwnd, int enabled);
+```
+## EU_SetIncognitoMode
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIncognitoMode(IntPtr hwnd, int enabled);
+```
 ## EU_ResetTheme
 
 ```csharp
@@ -7038,69 +7132,489 @@ public static extern void EU_ResetTheme(IntPtr hwnd);
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_InvalidateElement(IntPtr hwnd, int element_id);
 ```
+## EU_SetIconButtonIcon
 
-## Chrome 高仿外壳 API
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonIcon(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_SetIconButtonTooltip
 
-### 新增组件
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonTooltip(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_SetIconButtonBadge
 
-| 导出 | 说明 |
-|---|---|
-| `EU_CreateIconButton` | 创建透明默认态的工具栏图标按钮，支持 hover/press/checked、徽标、tooltip、dropdown。 |
-| `EU_CreateOmnibox` | 创建 Chrome 风格地址栏，支持安全状态、前缀 chip、动作图标、建议列表和提交回调。 |
-| `EU_CreateBrowserViewport` | 创建浏览内容占位区，提供空白页、加载中、截图占位、错误页和新标签页状态。 |
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonBadge(IntPtr hwnd, int element_id, byte[] bytes, int len, int visible);
+```
+## EU_SetIconButtonChecked
 
-### 主要增强导出
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonChecked(IntPtr hwnd, int element_id, int @checked);
+```
+## EU_GetIconButtonChecked
 
-## 通用 Popup API
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetIconButtonChecked(IntPtr hwnd, int element_id);
+```
+## EU_SetIconButtonDropdown
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonDropdown(IntPtr hwnd, int element_id, int dropdown_element_id);
+```
+## EU_SetIconButtonColors
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonColors(IntPtr hwnd, int element_id, uint normal_bg, uint hover_bg, uint pressed_bg, uint checked_bg, uint disabled_bg, uint icon_color, uint disabled_icon_color);
+```
+## EU_SetIconButtonShape
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonShape(IntPtr hwnd, int element_id, int shape, int radius);
+```
+## EU_SetIconButtonPadding
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonPadding(IntPtr hwnd, int element_id, int left, int top, int right, int bottom);
+```
+## EU_SetIconButtonIconSize
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetIconButtonIconSize(IntPtr hwnd, int element_id, int size);
+```
+## EU_GetIconButtonState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetIconButtonState(IntPtr hwnd, int element_id, IntPtr @checked, IntPtr hovered, IntPtr pressed, IntPtr badge_visible);
+```
+## EU_SetTabsChromeMode
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsChromeMode(IntPtr hwnd, int element_id, int enabled);
+```
+## EU_GetTabsChromeMode
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetTabsChromeMode(IntPtr hwnd, int element_id);
+```
+## EU_SetTabsItemIcon
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsItemIcon(IntPtr hwnd, int element_id, int index, byte[] bytes, int len);
+```
+## EU_SetTabsItemLoading
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsItemLoading(IntPtr hwnd, int element_id, int index, int loading);
+```
+## EU_SetTabsItemPinned
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsItemPinned(IntPtr hwnd, int element_id, int index, int pinned);
+```
+## EU_SetTabsItemMuted
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsItemMuted(IntPtr hwnd, int element_id, int index, int muted);
+```
+## EU_SetTabsItemClosable
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsItemClosable(IntPtr hwnd, int element_id, int index, int closable);
+```
+## EU_SetTabsItemChromeState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsItemChromeState(IntPtr hwnd, int element_id, int index, int loading, int pinned, int muted, int alerting);
+```
+## EU_GetTabsItemChromeState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetTabsItemChromeState(IntPtr hwnd, int element_id, int index, IntPtr loading, IntPtr pinned, IntPtr muted, IntPtr alerting);
+```
+## EU_SetTabsChromeMetrics
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsChromeMetrics(IntPtr hwnd, int element_id, int min_width, int max_width, int pinned_width, int height, int overlap);
+```
+## EU_SetTabsNewButtonVisible
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsNewButtonVisible(IntPtr hwnd, int element_id, int visible);
+```
+## EU_SetTabsDragOptions
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsDragOptions(IntPtr hwnd, int element_id, int reorder_enabled, int detach_enabled);
+```
+## EU_SetTabsReorderCallback
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTabsReorderCallback(IntPtr hwnd, int element_id, IntPtr cb);
+```
+## EU_SetOmniboxValue
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxValue(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_GetOmniboxValue
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetOmniboxValue(IntPtr hwnd, int element_id, byte[] buffer, int buffer_size);
+```
+## EU_SetOmniboxPlaceholder
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxPlaceholder(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_SetOmniboxSecurityState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxSecurityState(IntPtr hwnd, int element_id, int state, byte[] bytes, int len);
+```
+## EU_SetOmniboxPrefixChip
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxPrefixChip(IntPtr hwnd, int element_id, byte[] icon_bytes, int icon_len, byte[] text_bytes, int text_len, uint bg_color, uint fg_color);
+```
+## EU_SetOmniboxActionIcons
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxActionIcons(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_SetOmniboxSuggestionItems
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxSuggestionItems(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_SetOmniboxSuggestionOpen
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxSuggestionOpen(IntPtr hwnd, int element_id, int open);
+```
+## EU_SetOmniboxSuggestionSelected
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxSuggestionSelected(IntPtr hwnd, int element_id, int index);
+```
+## EU_GetOmniboxSuggestionState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetOmniboxSuggestionState(IntPtr hwnd, int element_id, IntPtr open, IntPtr selected, IntPtr count);
+```
+## EU_SetOmniboxCommitCallback
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxCommitCallback(IntPtr hwnd, int element_id, ElementTextCallback cb);
+```
+## EU_SetOmniboxIconButtonCallback
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetOmniboxIconButtonCallback(IntPtr hwnd, int element_id, ElementValueCallback cb);
+```
+## EU_SetMenuItemIcon
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetMenuItemIcon(IntPtr hwnd, int element_id, int index, byte[] bytes, int len);
+```
+## EU_SetMenuItemShortcut
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetMenuItemShortcut(IntPtr hwnd, int element_id, int index, byte[] bytes, int len);
+```
+## EU_SetMenuItemChecked
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetMenuItemChecked(IntPtr hwnd, int element_id, int index, int @checked);
+```
+## EU_SetMenuItemSeparator
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetMenuItemSeparator(IntPtr hwnd, int element_id, int index, int separator);
+```
+## EU_SetMenuItemSubmenu
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetMenuItemSubmenu(IntPtr hwnd, int element_id, int index, int submenu_element_id);
+```
+## EU_SetMenuPopupPosition
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetMenuPopupPosition(IntPtr hwnd, int element_id, int anchor_element_id, int placement, int offset);
+```
+## EU_SetContextMenuCallback
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetContextMenuCallback(IntPtr hwnd, int element_id, ElementValueCallback cb);
+```
+## EU_SetPopoverAnchorElement
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopoverAnchorElement(IntPtr hwnd, int element_id, int anchor_element_id);
+```
+## EU_SetPopoverArrow
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopoverArrow(IntPtr hwnd, int element_id, int visible, int size);
+```
+## EU_SetPopoverElevation
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopoverElevation(IntPtr hwnd, int element_id, int level);
+```
+## EU_SetPopoverAutoPlacement
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopoverAutoPlacement(IntPtr hwnd, int element_id, int enabled);
+```
+## EU_SetPopoverDismissBehavior
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetPopoverDismissBehavior(IntPtr hwnd, int element_id, int close_on_outside, int close_on_escape);
+```
+## EU_SetPopupAnchorElement
 
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetPopupAnchorElement(IntPtr hwnd, int popup_id, int anchor_element_id);
+```
+## EU_SetPopupPlacement
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetPopupPlacement(IntPtr hwnd, int popup_id, int placement, int offset_x, int offset_y);
+```
+## EU_SetPopupOpen
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetPopupOpen(IntPtr hwnd, int popup_id, int open);
+```
+## EU_GetPopupOpen
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern int EU_GetPopupOpen(IntPtr hwnd, int popup_id);
+```
+## EU_SetPopupDismissBehavior
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetPopupDismissBehavior(IntPtr hwnd, int popup_id, int close_on_outside, int close_on_escape);
+```
+## EU_SetElementPopup
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetElementPopup(IntPtr hwnd, int element_id, int popup_id, int trigger);
+```
+## EU_ClearElementPopup
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_ClearElementPopup(IntPtr hwnd, int element_id, int trigger);
+```
+## EU_GetElementPopup
+
+```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern int EU_GetElementPopup(IntPtr hwnd, int element_id, int trigger);
 ```
+## EU_SetTitleBarVisible
 
-`EU_SetPopup*` 支持 `Popover`、`Menu` 和 `Dropdown`。`EU_SetElementPopup` 的 `trigger`：`0=左键`、`1=右键`、`2=悬停`、`3=聚焦`、`4=手动`。
-
-`EU_SetTabsChromeMode`、`EU_GetTabsChromeMode`、`EU_SetTabsItemChromeState`、`EU_GetTabsItemChromeState`、`EU_SetMenuItemIcon`、`EU_SetMenuItemShortcut`、`EU_SetMenuItemChecked`、`EU_SetPopoverAnchorElement`、`EU_SetPopoverDismissBehavior`、`EU_SetPopupAnchorElement`、`EU_SetPopupPlacement`、`EU_SetPopupOpen`、`EU_GetPopupOpen`、`EU_SetPopupDismissBehavior`、`EU_SetElementPopup`、`EU_ClearElementPopup`、`EU_GetElementPopup`、`EU_SetWindowDragRegion`、`EU_SetContainerFlexLayout`、`EU_SetChromeThemePreset`、`EU_SetThemeToken`、`EU_GetThemeToken`、`EU_SetHighContrastMode`、`EU_SetIncognitoMode`。
-
-易语言命令左侧可使用中文名，例如 `创建工具栏图标按钮`、`创建地址栏`、`创建浏览内容占位区`；右侧 DLL 入口名保持上述 `EU_` 导出名。
-## Window Frame 通用窗口框架 API
-
-C# P/Invoke 应补充以下入口：
-
-```text
-EU_CreateWindowEx
-EU_GetWindowFrameFlags
-EU_SetWindowFrameFlags
-EU_SetWindowRoundedCorners
-EU_SetWindowResizeBorder
-EU_GetWindowResizeBorder
-EU_SetWindowNoDragRegion
-EU_ClearWindowNoDragRegions
-EU_SetElementWindowCommand
-EU_GetElementWindowCommand
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTitleBarVisible(IntPtr hwnd, int visible);
 ```
+## EU_SetTitleBarHeight
 
-圆角窗口绑定：
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTitleBarHeight(IntPtr hwnd, int height);
+```
+## EU_SetTitleBarButtonStyle
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetTitleBarButtonStyle(IntPtr hwnd, int button_width, int button_height, uint icon_color, uint hover_bg, uint close_hover_bg);
+```
+## EU_GetWindowFrameFlags
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetWindowFrameFlags(IntPtr hwnd);
+```
+## EU_SetWindowFrameFlags
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetWindowFrameFlags(IntPtr hwnd, int frame_flags);
+```
+## EU_SetWindowResizeBorder
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetWindowResizeBorder(IntPtr hwnd, int left, int top, int right, int bottom);
+```
+## EU_GetWindowResizeBorder
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetWindowResizeBorder(IntPtr hwnd, IntPtr left, IntPtr top, IntPtr right, IntPtr bottom);
+```
+## EU_SetWindowDragRegion
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetWindowDragRegion(IntPtr hwnd, int x, int y, int w, int h, int enabled);
+```
+## EU_ClearWindowDragRegions
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_ClearWindowDragRegions(IntPtr hwnd);
+```
+## EU_SetWindowNoDragRegion
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetWindowNoDragRegion(IntPtr hwnd, int x, int y, int w, int h, int enabled);
+```
+## EU_ClearWindowNoDragRegions
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_ClearWindowNoDragRegions(IntPtr hwnd);
+```
+## EU_SetElementWindowCommand
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetElementWindowCommand(IntPtr hwnd, int element_id, int command);
+```
+## EU_GetElementWindowCommand
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetElementWindowCommand(IntPtr hwnd, int element_id);
+```
+## EU_SetWindowCaptionButtonBounds
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetWindowCaptionButtonBounds(IntPtr hwnd, int x, int y, int w, int h);
+```
+## EU_SetWindowRoundedCorners
 
 ```csharp
 [DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
 public static extern void EU_SetWindowRoundedCorners(IntPtr hwnd, int enabled, int radius);
 ```
+## EU_SetContainerFlexLayout
 
-命名统一使用 Window Frame / 窗口框架，不使用 ChromeFlags；浏览器式外壳只是 `frame_flags` 的推荐组合。
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetContainerFlexLayout(IntPtr hwnd, int element_id, int direction, int gap, int align_items, int justify_content);
+```
+## EU_SetElementFlexGrow
 
-`EU_SetWindowRoundedCorners(hwnd, enabled, radius)` 会设置 Windows 窗口外形圆角；支持 DWM 圆角的系统会优先使用系统抗锯齿圆角，Win10 回退到 per-pixel alpha 分层窗口并通过 `UpdateLayeredWindow(ULW_ALPHA)` 提交，内部按当前 DPI / 屏幕缩放换算逻辑半径。`enabled=0` 或 `radius<=0` 会恢复矩形窗口。
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetElementFlexGrow(IntPtr hwnd, int element_id, int grow);
+```
+## EU_SetElementMinMaxSize
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetElementMinMaxSize(IntPtr hwnd, int element_id, int min_w, int min_h, int max_w, int max_h);
+```
+## EU_SetElementMargin
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetElementMargin(IntPtr hwnd, int element_id, int left, int top, int right, int bottom);
+```
+## EU_SetElementAlignSelf
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetElementAlignSelf(IntPtr hwnd, int element_id, int align_self);
+```
+## EU_SetBrowserViewportState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetBrowserViewportState(IntPtr hwnd, int element_id, int state);
+```
+## EU_SetBrowserViewportPlaceholder
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetBrowserViewportPlaceholder(IntPtr hwnd, int element_id, byte[] title_bytes, int title_len, byte[] desc_bytes, int desc_len, byte[] icon_bytes, int icon_len);
+```
+## EU_SetBrowserViewportLoading
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetBrowserViewportLoading(IntPtr hwnd, int element_id, int loading, int progress);
+```
+## EU_SetBrowserViewportScreenshot
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern void EU_SetBrowserViewportScreenshot(IntPtr hwnd, int element_id, byte[] bytes, int len);
+```
+## EU_GetBrowserViewportState
+
+```csharp
+[DllImport("new_emoji.dll", CallingConvention = CallingConvention.StdCall)]
+public static extern int EU_GetBrowserViewportState(IntPtr hwnd, int element_id, IntPtr state, IntPtr loading, IntPtr progress);
+```

@@ -986,12 +986,19 @@ void __stdcall EU_SetTableHeaderDragOptions(HWND hwnd, int element_id, int colum
                                             int header_height_resize, int min_col_width,
                                             int max_col_width, int min_header_height,
                                             int max_header_height);
+void __stdcall EU_SetTableDoubleClickEdit(HWND hwnd, int element_id, int enabled);
+void __stdcall EU_SetTableColumnDoubleClickEdit(HWND hwnd, int element_id, int col, int editable);
+void __stdcall EU_SetTableCellDoubleClickEdit(HWND hwnd, int element_id, int row, int col, int editable);
+int  __stdcall EU_GetTableCellDoubleClickEditable(HWND hwnd, int element_id, int row, int col);
+int  __stdcall EU_GetTableDoubleClickEditState(HWND hwnd, int element_id,
+                                               int* enabled, int* editing_row, int* editing_col);
 int  __stdcall EU_ExportTableExcel(HWND hwnd, int element_id,
                                     const unsigned char* path_bytes, int path_len, int flags);
 int  __stdcall EU_ImportTableExcel(HWND hwnd, int element_id,
                                     const unsigned char* path_bytes, int path_len, int flags);
 void __stdcall EU_SetTableCellClickCallback(HWND hwnd, int element_id, TableCellCallback cb);
 void __stdcall EU_SetTableCellActionCallback(HWND hwnd, int element_id, TableCellCallback cb);
+void __stdcall EU_SetTableCellEditCallback(HWND hwnd, int element_id, TableCellEditCallback cb);
 void __stdcall EU_SetTableVirtualOptions(HWND hwnd, int element_id, int enabled,
                                          int row_count, int cache_window);
 void __stdcall EU_SetTableVirtualRowProvider(HWND hwnd, int element_id, TableVirtualRowCallback cb);

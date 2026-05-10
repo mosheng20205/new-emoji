@@ -161,6 +161,7 @@ void Element::on_mouse_enter()  { hovered = true; invalidate(); }
 void Element::on_mouse_leave()  { hovered = false; pressed = false; invalidate(); }
 void Element::on_mouse_down(int, int, MouseButton) { pressed = true; invalidate(); }
 void Element::on_mouse_up(int, int, MouseButton)   { pressed = false; invalidate(); }
+void Element::on_mouse_double_click(int, int, MouseButton) {}
 void Element::on_mouse_move(int, int) {}
 void Element::on_mouse_wheel(int, int, int) {}
 void Element::on_key_down(int, int) {}

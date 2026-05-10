@@ -48,6 +48,7 @@ CALLBACK_TYPES = {
     "MessageBoxExCallback",
     "MessageBoxResultCallback",
     "TableCellCallback",
+    "TableCellEditCallback",
     "TableVirtualRowCallback",
     "TreeNodeAllowDragCallback",
     "TreeNodeAllowDropCallback",

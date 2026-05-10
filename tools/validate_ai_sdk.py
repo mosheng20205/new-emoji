@@ -24,6 +24,13 @@ REQUIRED_FILES = [
     ROOT / "docs" / "ai" / "prompts" / "火山.md",
     ROOT / "docs" / "ai" / "prompts" / "CSharp.md",
     ROOT / "docs" / "ai" / "prompts" / "Python.md",
+    ROOT / "bindings" / "csharp" / "NewEmoji" / "NewEmoji.csproj",
+    ROOT / "bindings" / "csharp" / "NewEmoji.Design" / "NewEmoji.Design.csproj",
+    ROOT / "bindings" / "csharp" / "NewEmoji.Designer.WinForms48" / "NewEmoji.Designer.WinForms48.csproj",
+    ROOT / "bindings" / "csharp" / "NewEmoji" / "Native" / "NativeMethods.Generated.cs",
+    ROOT / "bindings" / "csharp" / "NewEmoji" / "UI" / "GeneratedComponents.cs",
+    ROOT / "examples" / "CsharpNet48" / "MinimalWinFormsExample.csproj",
+    ROOT / "examples" / "CsharpNet48" / "designer" / "sample_layout.json",
     ROOT / "examples" / "templates" / "python" / "blank_window.py",
     ROOT / "examples" / "templates" / "csharp" / "BlankWindow.cs",
     ROOT / "examples" / "templates" / "易语言" / "空白窗口.md",
@@ -121,6 +128,12 @@ def main() -> int:
         if "UTF-8 字节集 + 长度" not in e_binding.get("text_rule", ""):
             fail(f"易语言 text_rule missing UTF-8 rule: {name}", errors)
 
+        csharp_binding = item.get("bindings", {}).get("csharp", {})
+        if "wrapper" not in csharp_binding:
+            fail(f"C# wrapper missing from AI manifest: {name}", errors)
+        if "封装库自动处理 UTF-8" not in csharp_binding.get("text_rule", ""):
+            fail(f"C# text_rule missing wrapper UTF-8 rule: {name}", errors)
+
         volcano_binding = item.get("bindings", {}).get("volcano", {})
         if volcano_binding.get("file") != "examples/火山/new_emoji_module/src/new_emoji_接口.wsv":
             fail(f"Volcano binding must point to module interface: {name}", errors)
@@ -143,10 +156,11 @@ def main() -> int:
     require_text(ROOT / "docs" / "ai" / "e-language-encoding.md", e_callback_needles, errors)
     require_text(ROOT / "docs" / "ai" / "prompts" / "易语言.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji", "到整数 (&"], errors)
     require_text(ROOT / "examples" / "templates" / "易语言" / "空白窗口.md", ["UTF-8 字节集 + 长度", "不要直接写 emoji", "到整数 (&"], errors)
-    require_text(ROOT / "examples" / "templates" / "csharp" / "BlankWindow.cs", ["Encoding.UTF8.GetBytes", "CallingConvention.StdCall"], errors)
+    require_text(ROOT / "examples" / "templates" / "csharp" / "BlankWindow.cs", ["using NewEmoji", "EmojiWindow.Create", "EmojiApplication.Run"], errors)
     require_text(ROOT / "examples" / "templates" / "python" / "blank_window.py", ["new_emoji_ui", "欢迎使用 new_emoji 🚀"], errors)
     require_text(ROOT / "examples" / "templates" / "火山" / "空白窗口.md", ["UTF-8 字节指针 + 长度", "欢迎使用 new_emoji 🚀"], errors)
     require_text(ROOT / "docs" / "ai" / "prompts" / "火山.md", ["new_emoji_module", "new_emoji.vcip"], errors)
+    require_text(ROOT / "docs" / "ai" / "prompts" / "CSharp.md", [".NET Framework 4.8", "NewEmoji.Designer.WinForms48"], errors)
 
     if errors:
         for error in errors:

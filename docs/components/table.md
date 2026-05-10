@@ -90,11 +90,17 @@ parent=r0	level=1	c0=2016-05-02	c1=明细行	c2=子行说明	c3=归档 🗃️	c
 | `EU_SetTableSummary` | 设置合计行文本 |
 | `EU_SetTableRowExpanded` / `EU_SetTableTreeOptions` | 设置展开状态、树形与懒加载选项 |
 | `EU_SetTableViewportOptions` / `EU_SetTableScroll` | 设置最大高度、固定表头、横向滚动、汇总显示和滚动位置；内容溢出时自动绘制可拖拽的纵向/横向滚动条 |
+| `EU_SetTableDoubleClickEdit` | 设置单元格双击原地编辑总开关，默认关闭 |
+| `EU_SetTableColumnDoubleClickEdit` / `EU_SetTableCellDoubleClickEdit` | 设置列级或单元格级编辑覆盖，`-1` 继承、`0` 禁用、`1` 启用；单元格优先级高于列 |
+| `EU_GetTableCellDoubleClickEditable` / `EU_GetTableDoubleClickEditState` | 读取单元格是否可编辑，以及当前是否有正在编辑的行列 |
 | `EU_SetTableCellClickCallback` | 设置任意单元格点击回调；回调签名同动作回调，点击时 `action=1`、`value=0` |
 | `EU_SetTableCellActionCallback` | 设置按钮、开关、选择、展开等单元格交互回调 |
+| `EU_SetTableCellEditCallback` | 设置双击编辑回调；`action=1` 开始编辑、`2` 提交、`3` 取消，文本参数为 UTF-8 |
 | `EU_GetTableCellValue` / `EU_GetTableFullState` | 读取单元格值和表格完整摘要状态 |
 
 样式优先级：**单元格 > 行 > 列 > 表格默认**。
+
+双击编辑只作用于普通文本单元格；按钮、开关、选择框、展开、索引、进度、状态和标签等控制型单元格继续使用原有交互。编辑时 `Enter` 或失焦提交，`Esc` 取消；虚表模式默认不进入原地编辑，由外部数据源维护真实数据。
 
 ## 表头拖拽与 Excel
 

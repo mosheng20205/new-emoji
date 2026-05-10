@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net48;net10.0-windows</TargetFrameworks>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>NewEmoji</AssemblyName>
+    <RootNamespace>NewEmoji</RootNamespace>
+    <Description>C# friendly wrapper for new_emoji.dll.</Description>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net10.0-windows'">
+    <None Include="..\..\..\bin\x64\Release\new_emoji.dll" Link="runtimes\win-x64\native\new_emoji.dll" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="runtimes\win-x64\native\" />
+    <None Include="..\..\..\bin\Win32\Release\new_emoji.dll" Link="runtimes\win-x86\native\new_emoji.dll" CopyToOutputDirectory="PreserveNewest" Pack="true" PackagePath="runtimes\win-x86\native\" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'net48'">
+    <None Include="..\..\..\bin\x64\Release\new_emoji.dll" Link="x64\new_emoji.dll" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\..\..\bin\Win32\Release\new_emoji.dll" Link="Win32\new_emoji.dll" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

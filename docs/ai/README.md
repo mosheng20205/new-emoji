@@ -12,6 +12,14 @@
 - [C# prompt](prompts/CSharp.md)
 - [Python prompt](prompts/Python.md)
 
+## C# 封装库
+
+- C# 优先使用 `bindings/csharp/NewEmoji`，这是对象式界面库封装，负责 UTF-8 文本、回调保活、`HWND` / `element_id` 和 x64 / Win32 DLL 加载。
+- C# 封装库同时支持 `.NET Framework 4.8` 和 `net10.0-windows`；WinForms `.NET Framework 4.8` 示例位于 `examples/CsharpNet48/`。
+- WinForms `.NET Framework 4.8` 可视化设计器 MVP 位于 `bindings/csharp/NewEmoji.Designer.WinForms48`，布局模型和代码生成位于 `bindings/csharp/NewEmoji.Design`。
+- 生成普通 C# 示例时使用 `EmojiWindow.Create`、`CreateContainer`、`AddText`、`AddButton`、`AddInput`、`EmojiApplication.Run()`。
+- `DLL命令/CSharp DLL命令.md` 仍保留为完整 P/Invoke 参考；只有封装库暂未覆盖高级能力时才直接调用 `NewEmoji.Native.NativeMethods`。
+
 ## 推荐流程
 
 1. 先确定目标语言。
@@ -31,6 +39,11 @@
 
 - 生成普通表格增删改查界面时，可使用 `EU_AddTableRow`、`EU_InsertTableRow`、`EU_DeleteTableRow`、`EU_ClearTableRows` 或 Python helper `add_table_row`、`insert_table_row`、`delete_table_row`、`clear_table_rows`。
 - 这些命令只适用于普通表格；虚表数据由 `EU_SetTableVirtualRowProvider` 的外部数据源维护。
+
+## Table 双击编辑
+
+- 普通文本单元格可通过 `EU_SetTableDoubleClickEdit` 开启双击原地编辑，再用 `EU_SetTableColumnDoubleClickEdit` / `EU_SetTableCellDoubleClickEdit` 设置列级或单元格级覆盖。
+- 编辑回调使用 `EU_SetTableCellEditCallback`；`action=1` 开始、`2` 提交、`3` 取消，文本参数是 UTF-8 字节。虚表模式不进入原地编辑，由外部数据源维护。
 
 ## 窗口图标
 

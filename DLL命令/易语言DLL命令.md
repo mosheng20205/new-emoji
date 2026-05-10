@@ -3456,6 +3456,37 @@
     .参数 最小表头高度, 整数型
     .参数 最大表头高度, 整数型
 
+.DLL命令 设置表格双击编辑, , "new_emoji.dll", "EU_SetTableDoubleClickEdit", , 对应 C++ 导出命令 EU_SetTableDoubleClickEdit；开启或关闭普通文本单元格双击原地编辑
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用, 整数型
+
+.DLL命令 设置表格列双击编辑, , "new_emoji.dll", "EU_SetTableColumnDoubleClickEdit", , 对应 C++ 导出命令 EU_SetTableColumnDoubleClickEdit；可编辑值 -1继承 0禁用 1启用
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 列索引, 整数型
+    .参数 可编辑值, 整数型
+
+.DLL命令 设置表格单元格双击编辑, , "new_emoji.dll", "EU_SetTableCellDoubleClickEdit", , 对应 C++ 导出命令 EU_SetTableCellDoubleClickEdit；可编辑值 -1继承 0禁用 1启用
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 行索引, 整数型
+    .参数 列索引, 整数型
+    .参数 可编辑值, 整数型
+
+.DLL命令 取表格单元格可双击编辑, 整数型, "new_emoji.dll", "EU_GetTableCellDoubleClickEditable", , 对应 C++ 导出命令 EU_GetTableCellDoubleClickEditable；返回1可编辑0不可编辑
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 行索引, 整数型
+    .参数 列索引, 整数型
+
+.DLL命令 取表格双击编辑状态, 整数型, "new_emoji.dll", "EU_GetTableDoubleClickEditState", , 对应 C++ 导出命令 EU_GetTableDoubleClickEditState；返回1成功
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 是否启用指针, 整数型
+    .参数 编辑中行指针, 整数型
+    .参数 编辑中列指针, 整数型
+
 .DLL命令 导出表格Excel, 整数型, "new_emoji.dll", "EU_ExportTableExcel", , 对应 C++ 导出命令 EU_ExportTableExcel；返回1成功0失败
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
@@ -3476,6 +3507,11 @@
     .参数 回调函数指针, 整数型
 
 .DLL命令 设置表格单元格动作回调, , "new_emoji.dll", "EU_SetTableCellActionCallback", , 对应 C++ 导出命令 EU_SetTableCellActionCallback；回调签名 table_id,row,col,action,value
+    .参数 窗口句柄, 整数型
+    .参数 元素ID, 整数型
+    .参数 回调函数指针, 整数型
+
+.DLL命令 设置表格单元格编辑回调, , "new_emoji.dll", "EU_SetTableCellEditCallback", , 对应 C++ 导出命令 EU_SetTableCellEditCallback；回调签名 table_id,row,col,action,utf8,len，action 1开始 2提交 3取消
     .参数 窗口句柄, 整数型
     .参数 元素ID, 整数型
     .参数 回调函数指针, 整数型
